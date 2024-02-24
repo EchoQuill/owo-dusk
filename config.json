@@ -1,0 +1,75 @@
+{
+  "discordStatus": "this doesn'twork",
+  "desktopNotificationEnabled": "doesn'twork",
+  "setprefix": "q",
+  "commands": [
+    {
+      "hunt": true,
+      "cooldown": 15
+    },
+    {
+      "battle": true,
+      "cooldown": 15
+    },
+    {
+      "pray": true,
+      "cooldown": 300,
+      "usertopray": null
+    },
+    {
+      "curse": false,
+      "cooldown": 300,
+      "usertocurse": null
+    },
+    {
+      "sell": true,
+      "cooldown": 200,
+      "rarity": ["c","u","r"]
+    },
+    {
+      "slots": true,
+      "cooldown": 10,
+      "doublingMeathod": true,
+      "allottedAmount": 10000,
+      "startValue": 200
+    },
+    {
+       "coinflip": true,
+       "allottedAmount": 6000,
+       "startValue": 200
+       "cooldown": 12
+     }
+  ],
+  "autoDaily": "this doesn't work",
+  "autoUse": {
+     "autoGem": true,
+     "autoUseLootbox": true,
+     "autoUseCrate": true
+  },
+  "webhookEnabled": false,
+  "webhook": "webhook url here",
+  "hitCooldownOdds": "this doesn't work",
+  "termuxAntiCaptchaSupport": {
+    "enabled": false,
+    "vibrate": {
+      "enabled": false,
+      "time": 3
+    },
+    "texttospeech": {
+      "enabled": true,
+      "content": "Captcha detected!"
+    },
+    "notifications": true,
+    "batteryCheck": {
+      "enabled": "this doesn'twork",
+      "percentage": 20
+    }
+  },
+  "mainAccountGiveCoins": {
+    "enabled": false,
+    "mainUserId": "user id of main account",
+    "payoutOnlyMode": false,
+    "tokenWhichWillPayout": "token of an alt",
+    "payoutChannelID": "channel id to payout"
+  }
+}
