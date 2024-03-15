@@ -14,9 +14,12 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto daily
 * auto checklist
 * captcha detection(not solver)
+* ban detection
 * auto slots
 * auto coinflip
 * ~~auto blackjack~~ [under progress]
 * auto quest
 * auto sell/sacrifice
 * auto use crate/lootbox/gem
+* supports both desktop and termux notifications
+* Mobile texttospeech captcha alert
