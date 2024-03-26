@@ -448,6 +448,10 @@ class MyClient(discord.Client):
                 self.huntOrBattle = "sac"
                 self.sellOrSacSelected = True
             self.send_sell_or_sac.start()
+        if customCommands:
+            self.send_custom.start()
+        if autoQuest:
+            self.check_quests.start()
 
         embed1 = discord.Embed(
             title='logging in',
@@ -472,7 +476,7 @@ class MyClient(discord.Client):
             self.f = True
             if termuxNotificationEnabled:
                 os.system("termux-notification -c 'captcha detected!'")
-                os.system("termux-toast -c red -b black 'Captcha Detected please solve'")
+                os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}")
             print("unsolved captcha!!!!, stopping")   
             embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
@@ -625,8 +629,7 @@ def run_bot(token, channel_id):
 if __name__ == "__main__":
     colorama_init(autoreset=True)
     console.log(owoPanel)
-    print('-'*console_width)
-    print() 
+    print('*'+console_width)
     if autoPray == True and autoCurse == True:
         print(f'{Fore.RED}error, both auto pray and auto curse are enabled at the same time, please disable one and restart the code')
     if autoHunt == False and autoBattle == False:
