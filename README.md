@@ -1,5 +1,5 @@
 <div align="center">
-  # owo dusk
+  <h1> owo dusk </h1>
   <img src="logo.png" width="100">
 </div>
 
