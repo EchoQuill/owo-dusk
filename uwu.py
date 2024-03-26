@@ -1,8 +1,21 @@
+# Iam obsessed with imports being in descending order.
+# Written by EchoQuill, on a laggy mobile that too.
+# Make sure to star the github page.
+#------------------------------------------------
+# REMINDER:- THIS IS MOSTLY MADE FOR MOBILE
+# it might look ugly in desktop consoles etc.
+# iam bad with decorating cli
+#------------------------------------------------
+# It would also be great if you understand that iam a new python developer
+# Iam not that skilled so there might be some repetitions etc
+# Please do give me pointers on how to improve.
 from colorama import Fore, Back, init as colorama_init
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from discord import SyncWebhook
+from rich.console import Console
 from threading import Thread
+from rich.panel import Panel
 import discord.errors
 import requests
 import random
@@ -10,34 +23,52 @@ import secrets
 import discord
 import asyncio
 import logging
+import shutil
 import time
 import json
 import sys
 import os
-
-# Random module seed
+import re
+os.system("clear")
+# For console.log thingy
+console = Console()
+# Random module seed for better anti detection.
 seed = secrets.randbelow(1184746474747)
 random.seed(seed)
+# Console width size
+console_width = shutil.get_terminal_size().columns
+# Owo text art for panel 
+owoArt = """
+ _          __      _         
+/ \     _  (_  _ |_|_|_  __|_ 
+\_/\/\/(_) __)(/_| | |_)(_)|_ 
+"""
+owoPanel = Panel(owoArt, style="purple on black")
 
-
+# Load json file
 def resource_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
-
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 
-replied_adv_messages = {}
-webhookEnabled = config["webhookEnabled"]
-termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
-termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
-termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
-termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
-termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
+#----------OTHER VARIABLES----------#
+list_captcha = ["captcha","link below","https://owobot.com/captcha","letter","verification test"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["percentage"]
+termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
+termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
+termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
+termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
+termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
+webhookEnabled = config["webhookEnabled"]
+webhook_url = config["webhook"]
+setprefix = config["setprefix"]
+
+#----------MAIN VARIABLES----------#
+listUserIds = []
 autoHunt = config["commands"][0]["hunt"]
 autoBattle = config["commands"][1]["battle"]
 autoPray = config["commands"][2]["pray"]
@@ -45,172 +76,378 @@ usertopray = config["commands"][2]["usertopray"]
 autoCurse = config["commands"][3]["curse"]
 usertocurse = config["commands"][3]["usertocurse"]
 autoDaily = config["autoDaily"]
-setprefix = config["setprefix"]
-webhook_url = config["webhook"]
-list_captcha = ["captcha","link below","https://owobot.com/captcha","letter","verification test"]
+autoOwo = config["sendOwo"]
+autoCrate = config["autoUse"]["autoUseCrate"]
+autoLootbox = config["autoUse"]["autoUseLootbox"]
+autoHuntGem = config["autoUse"]["autoGem"]["huntGem"]
+autoEmpoweredGem = config["autoUse"]["autoGem"]["empoweredGem"]
+autoLuckyGem = config["autoUse"]["autoGem"]["luckyGem"]
+autoSpecialGem = config["autoUse"]["autoGem"]["specialGem"]
+autoSell = config["commands"][4]["sell"]
+autoSac = config["commands"][4]["sacrifice"]
+autoQuest = config["commands"][8]["quest"]
+ignoreDisable_Quest = config["commands"][8]["doEvenIfDisabled"]
+rarity = ""
+for i in config["commands"][4]["rarity"]:
+    rarity + i + " "
+autoCf = config["commands"][6]["coinflip"]
+cfAmt = config["commands"][6]["startValue"]
+cfCooldown = config["commands"][6]["cooldown"]
+cfAllotedValue = config["commands"][6]["allottedAmount"]
+autoSlots = config["commands"][5]["slots"]
+slotsAmt = config["commands"][5]["startValue"]
+slotsCooldown = config["commands"][5]["cooldown"]
+slotsAllotedValue = config["commands"][5]["allottedAmount"]
+customCommands = config["customCommands"]["enabled"]
+commandsList = config["customCommands"]["commands"]
+commandsCooldown = config["customCommands"]["cooldowns"]
+#dble check
+sorted_pairs = sorted(zip(commandsList, commandsCooldown))
+sorted_list1 = [pair[1] for pair in sorted_pairs]
 
+# Gems.
+huntGems = [57,56,55,54,53,52,51]
+empGems = [71,70,69,68,67,66,65]
+luckGems = [78,77,76,75,74,73,72]
+specialGems = [85,84,83,82,81,80,79]
+time = {
+    0:100,
+    1:100,
+    2:75,
+    3:75,
+    4:50,
+    5:25,
+    6:25
+}
+qtemp = []
+
+# Box print
+async def printBox(text, color):
+    test_panel = Panel(text, style=color)
+    console.print(test_panel)
+    
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id] 
+        
+#----------SENDING COMMANDS----------#
+    #daily
     @tasks.loop()
     async def send_daily(self):
         if self.justStarted:
             await asyncio.sleep(random.uniform(21,67))
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
             await self.cm.send(f"{setprefix}daily")
+            self.last_cmd_time = time.time()
             self.lastcmd = "daily"
-        while self.busy:
-            await asyncio.sleep(random.uniform(10,30))
         self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
         self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
-
+        
         self.formatted_time = "{:02}h {:02}m {:02}s".format(
             int(self.time_until_12am_pst.total_seconds() // 3600),
             int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
             int(self.time_until_12am_pst.total_seconds() % 60)
 )
         self.total_seconds = self.time_until_12am_pst.total_seconds()
-        print(f"Time till mext daily for {self.user.name} = {self.formatted_time}")
-        while self.busy:
-            await asyncio.sleep(random.uniform(10,30))
-        self.busy = True
+        #print(f"Time till mext daily for {self.user.name} = {self.formatted_time}")
+        console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
         await asyncio.sleep(self.total_seconds+random.uniform(30,90))
+        self.current_time = time.time()
+        self.time_since_last_cmd = self.urrent_time - self.last_cmd_time
+        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
         await self.cm.send(f"{setprefix}daily")
         self.lastcmd = "daily"
-
+    #hunt/daily
     @tasks.loop()
-    async def send_hunt(self):
+    async def send_hunt_or_battle(self):
+        #print(self.hb)
+        if not self.huntOrBattleSelected:
+            if self.hb == 1:
+                self.huntOrBattle = "battle"
+            elif self.hb == 0:
+                self.huntOrBattle = "hunt"
         if self.f != True:
-            self.ranint = random.randint(1,5)
-            if self.ranint <= 2: 
-                if self.busy:
-                    await asyncio.sleep(random.uniform(0.6367373,0.98383737))
-                    await self.cm.send(f'{setprefix}h')
-                    self.lastcmd = "hunt"
-                    self.busy = True
-                    await asyncio.sleep(random.uniform(11.6,13.9))
-                else:
-                    await self.cm.send(f'{setprefix}h')
-                    self.lastcmd = "hunt"
-                    self.busy = True
-                    await asyncio.sleep(random.uniform(11.6,13.9)) 
+            self.current_time = time.time()
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+            self.ranint = random.randint(1, 5)
+            if self.ranint <= 2:
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                await self.cm.send(f'{setprefix}{self.huntOrBattle}') # for some reason used yo be self.huntOrBattle[0], dunno how that got there so dble check
+                console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
+                self.last_cmd_time = time.time()
+                await asyncio.sleep(random.uniform(11.6, 13.9))
             else:
-                if self.busy:
-                    await asyncio.sleep(random.uniform(0.6367373,0.98383737))
-                    await self.cm.send(f'{setprefix}h')
-                    self.lastcmd = "hunt"
-                    self.busy = True
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                await self.cm.send(f'{setprefix}{self.huntOrBattle}')
+                console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
+                if self.hb = 1:
                     await asyncio.sleep(random.uniform(14.99, 15.10))
-                else:
-                    await self.cm.send(f'{setprefix}h')
-                    self.lastcmd = "hunt"
-                    self.busy = True
-                    await asyncio.sleep(random.uniform(14.99, 15.10))
-            print(f'{Fore.LIGHTYELLOW_EX}[0|{self.user}] {Fore.LIGHTRED_EX}hunt')
-
+                if self.hb == 0 and autoGem == True:
+                    self.h+=1
+                    if self.h == time[self.gemNum] + 1:
+                        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                        # I hope bot doesn't lag due to this lol
+                        self.sendingGemsIds = ""
+                        if autoHuntGem:
+                            for i in huntGems:
+                                for o in self.invNumbers:
+                                    if i == o:
+                                        self.sendingGemsIds + str(i) + " "
+                                        self.tempForCheck = True
+                                        self.gemHuntCnt = i
+                                        break
+                                if self.tempForCheck == True:
+                                    break
+                        self.tempForCheck = False
+                        if autoEmpoweredGem:
+                            for i in empGems:
+                                for o in self.invNumbers:
+                                    if i == o:
+                                        self.sendingGemsIds + str(i) + " "
+                                        self.tempForCheck = True
+                                        self.gemEmpCnt = i
+                                        break
+                                if self.tempForCheck == True:
+                                    break
+                        self.tempForCheck = False
+                        if autoLuckyGem:
+                            for i in luckyGems:
+                                for o in self.invNumbers:
+                                    if i == o:
+                                        self.sendingGemsIds + str(i) + " "
+                                        self.tempForCheck = True
+                                        self.gemLuckCnt = i
+                                        break
+                                if self.tempForCheck == True:
+                                    break
+                        self.tempForCheck = False
+                        if autoSpecialGem:
+                            for i in specialGems:
+                                for o in self.invNumbers:
+                                    if i == o:
+                                        self.sendingGemsIds + str(i) + " "
+                                        self.tempForCheck = True
+                                        self.gemSpecialCnt = i
+                                        break
+                                if self.tempForCheck == True:
+                                    break
+                        self.tempForCheck = False
+                        await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
+                        console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
+                        #tbc
+    #pray/curse
     @tasks.loop()
-    async def send_battle(self):
-        if self.f != True:
-            if self.justStarted:
-                await asyncio.sleep(random.uniform(1.837,1.9998))
-                await self.cm.send(f'{setprefix}b')
-                self.busy = True
-                self.lastcmd = "battle"
-                await asyncio.sleep(random.uniform(14.99, 15.10))
-            else:
-                self.ranint = random.randint(1,5)
-                if self.ranint <= 2: 
-                    if self.busy:
-                        await asyncio.sleep(random.uniform(0.6367373,0.98383737))
-                        await self.cm.send(f'{setprefix}b')
-                        self.lastcmd = "battle"
-                        self.busy = True
-                        await asyncio.sleep(random.uniform(11.6,13.9))
-                    else:
-                        await self.cm.send(f'{setprefix}b')
-                        self.lastcmd = "battle"
-                        self.busy = True
-                        await asyncio.sleep(random.uniform(11.6,13.9)) 
-                else:
-                    if self.busy:
-                        await asyncio.sleep(random.uniform(0.6367373,0.98383737))
-                        await self.cm.send(f'{setprefix}b')
-                        self.lastcmd = "battle"
-                        self.busy = True
-                        await asyncio.sleep(random.uniform(14.99, 15.10))
-                    else:
-                        await self.cm.send(f'{setprefix}b')
-                        self.lastcmd = "battle"
-                        self.busy = True
-                        await asyncio.sleep(random.uniform(14.99, 15.10))
-            print(f'{Fore.LIGHTYELLOW_EX}[0|{self.user}] {Fore.LIGHTRED_EX}battle')
-
-    @tasks.loop()
-    async def send_curse(self):
+    async def send_curse_and_prayer(self):
         if self.justStarted:
             await asyncio.sleep(random.uniform(0.93535353, 1.726364646))
-        if self.busy:
-            await asyncio.sleep(random.uniform(0.63535353, 0.726364646))
+        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))        
         if self.f != True:
             if usertopray:
-                await self.cm.send(f'{setprefix}curse <@{usertopray}>')
-                self.lastcmd = "curse"
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{usertopray}>')
+                self.lastcmd = self.prayOrCurse
+                self.last_cmd_time = time.time()
             else:
-                await self.cm.send(f'{setprefix}curse')
-                self.lastcmd = "curse"
-            print(f'{Fore.LIGHTYELLOW_EX}[0|{self.user}] {Fore.LIGHTMAGENTA_EX}curse')
-            await asyncio.sleep(random.uniform(300.73635374263,310.4969684))
-
+                await self.cm.send(f'{setprefix}{self.prayOrCurse}')
+                self.lastcmd = self.prayOrCurse
+                self.last_cmd_time = time.time()
+            console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
+            await asyncio.sleep(random.uniform(300.73635377263, 310.5969684))
+     #coinflip
     @tasks.loop()
-    async def send_prayer(self):
-        if self.justStarted:
-            await asyncio.sleep(random.uniform(0.93535353, 1.726364646))
-        if self.busy:
-            await asyncio.sleep(random.uniform(0.63535353, 0.726364646))
+    async def send_cf(self):
         if self.f != True:
-            if usertopray:
-                await self.cm.send(f'{setprefix}pray <@{usertopray}>')
-                self.lastcmd = "pray"
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            if self.cfAmt*self.cfN > 250000:
+                console.print(f"-{self.user}[-] Stopping coin flip [250k exceeded]".center(console_width - 2 ), style = "red on black")
+                self.send_cf.stop()
+            elif self.cfAllotedValue < self.cft:
+                console.print(f"-{self.user}[-] Stopping coin flip [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                self.send_cf.stop()
+            await self.cm.send(f'{setprefix}cf {self.cfAmt*self.cfN}')
+            await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+     # Owo top
+    @tasks.loop()
+    async def send_owo(self):
+        if self.f != T
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            await self.cm.send('owo')
+            console.print(f"-{self.user}[+] ran owo".center(console_width - 2 ), style = "Cyan on black")
+            if autoOwo == False:
+                self.owoTempInt+=1 
+                if self.owoTempInt == self.owoTempIntTwo:
+                    self.send_owo.stop()
+            await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+    # auto sell / auto sac.
+    @tasks.loop()
+    async def send_sell_or_sac(self):
+        #print(self.hb)
+        if not self.sellOrSacSelected:
+            if self.ss == 1:
+                self.sellOrSac = "sac"
+                self.ss = 0
+            elif self.ss == 0:
+                self.sellOrSac = "sell"
+                self.ss = 1
+        if self.f != True:
+            self.current_time = time.time()
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+            self.ranint = random.randint(1, 5)
+            if self.ranint <= 2:
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+                console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
+                self.last_cmd_time = time.time()
+                await asyncio.sleep(random.uniform(11.6, 13.9))
             else:
-                await self.cm.send(f'{setprefix}pray')
-                self.lastcmd = "pray"
-            print(f'{Fore.LIGHTYELLOW_EX}[0|{self.user}] {Fore.LIGHTMAGENTA_EX}pray')
-            await asyncio.sleep(random.uniform(300.73635377263,310.5969684))
-
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+                console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
+                await asyncio.sleep(random.uniform(200.377373, 210.7373828))
+    # Quests
+   @tasks.loop()
+    async def check_quests(self):
+        if self.f != True:
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            await self.cm.send(f'{setprefix}quest')
+            console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "magenta on black")
+            await asyncio.sleep(random.uniform(200.28288282, 201.928292929))
+   # Slots
+   @tasks.loop()
+    async def send_slots(self):
+        if self.f != True:
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
+            console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
+            await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+     # Custom commands
+    @tasks.loop()
+    async def send_custom(self):
+        if self.f != True:
+            self.index = 0
+            for i in commandsList:
+                await asyncio.sleep(random.uniform(commandsCooldown[self.index] + 0.3, commandsCooldown[self.index] + 0.5))
+                self.index+=1
+                await self.cm.send(i)
+#----------ON READY----------#
     async def on_ready(self):
+        await printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'green on black' )
+        await printBox(f'-version:- 1.0.1'.center(console_width - 2 ),'cyan on black' )
         self.on_ready_dn = False
         self.cmds = 1
         self.cmds_cooldown = 0
         await asyncio.sleep(1)
-        print(f'{Fore.LIGHTGREEN_EX}________________________________')
-        print(f'-{Fore.GREEN}Loaded{Fore.YELLOW} {self.user.name}.')
-        print(f'{Fore.LIGHTGREEN_EX}________________________________')
+        await printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'purple on black' )
+        listUserIds.append(self.user.id)
         await asyncio.sleep(0.12)
         self.cm = self.get_channel(self.channel_id)
+        qtemp.append(self.cm.guild.id)
         self.dm = await self.fetch_user(408785106942164992)
         self.list_channel.append(self.dm.dm_channel.id)
+        self.qtemp = False
+        self.owoQuest = False
+        self.friendCurseQuest = False
+        self.friendPrayQuest = False
+        self.actionQuest = False
+        self.owoTempInt = 0
+        self.owoTempIntTwo = 0
+        self.battleWithFriendQuest = False
         self.hunt = None
         self.battle = None
         self.justStarted = True
         self.list_channel = [self.channel_id, self.dm.dm_channel.id]
-        print(self.dm.dm_channel.id)
+        try:
+            self.owoSupportChannel = self.get_channel(465978474163601436)
+            self.list_channel.append(self.owoSupportChannel.channel.id)
+        except:
+            self.owoSupportChannel = None
         self.spams = 0
+        self.last_cmd_time = 0
         self.lastcmd = None
         self.busy = False
+        self.hb = 0
+        self.ss = 0
+        self.hCount = 0
+        self.time_since_last_cmd = 0
+        self.tempForCheck = False
         self.f = False
+        self.questDone = False
+        self.gemHuntCnt = None
+        self.gemEmpCnt = None
+        self.gemLuckCnt = None
+        self.gemSpecialCnt = None
         await asyncio.sleep(0.6)
-        if autoHunt:
-            self.send_hunt.start()
-        if autoBattle:
-            self.send_battle.start()
-        if autoCurse:
-            self.send_curse.start()
-        if autoPray:
-            self.send_prayer.start()
+        # Starting hunt/battle loop
+        if autoHunt or autoBattle:
+            if autoHunt and autoBattle:
+                self.huntOrBattle = None
+                self.huntOrBattleSelected = False
+            elif autoHunt:
+                self.huntOrBattle = "hunt"
+                self.huntOrBattleSelected = True
+            else:
+                self.huntOrBattle = "battle"
+                self.huntOrBattleSelected = True
+            self.send_hunt_or_battle.start()
+         # Starting curse/pray loop
+        if autoCurse or autoPray:
+            if autoCurse:
+                self.prayOrCurse = "curse"
+            else:
+                self.prayOrCurse = "pray"
+            self.send_curse_and_prayer.start()
+        # Starting Daily loop
         if autoDaily:
             self.send_daily.start()
+        # Starting Auto Owo
+        if autoOwo:
+            self.send_owo.start()
+        # Starting Coinflip
+        if autoCf:
+            self.cfAmt = cfAmt
+            self.cfCooldown = cfCooldown
+            self.cfAllotedValue = cfAllotedValue
+            self.cft = cfAllotedValue
+            self.cfN = 1
+            self.cfu = cfAmt
+            self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
+            self.send_cf.start()
+        # Start Sell or Sac
+        if autoSell or autoSac:
+            if autoSell and autoSac:
+                self.huntOrBattle = None
+                self.sellOrSacSelected = False
+            elif autoSell:
+                self.huntOrBattle = "sell"
+                self.sellOrSacSelected = True
+            else:
+                self.huntOrBattle = "sac"
+                self.sellOrSacSelected = True
+            self.send_sell_or_sac.start()
 
         embed1 = discord.Embed(
             title='logging in',
@@ -218,14 +455,14 @@ class MyClient(discord.Client):
             color=discord.Color.dark_green()
         )
 
-        self.webhook = SyncWebhook.from_url(webhook_url)
         if webhookEnabled:
+            self.webhook = SyncWebhook.from_url(webhook_url)0
             self.webhook.send(embed=embed1, username='uwu bot') 
         await asyncio.sleep(random.uniform(2.69,3.69))
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
-
+#----------ON MESSAGE----------#
     async def on_message(self, message):
         if not self.is_ready():
             return
@@ -251,40 +488,129 @@ class MyClient(discord.Client):
             return
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             print("hitting cds")
-            #content.
             self.spams+=1
         if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
             await asyncio.sleep(random.uniform(3.9,5.2))
             if self.lastcmd == "hunt":
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}h")
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.lastcmd == "battle":
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}b")
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
-            if self.lastcmd == "hunt":
-                await asyncio.sleep(random.uniform(0.7,0.9))
-                self.busy = False #crate | kira, You found a weapon crate! [3/3] RESETS IN: 3H 15M 23S
+            self.hb = 1
+            self.last_cmd_time = time.time()
+            self.lastcmd = "hunt"
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
             if "**lootbox**" in message.content.lower():
-                await asyncio.sleep(random.uniform(0.3,0.5))
-                self.busy = True
+                if autoLootbox == False:
+                    return
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}lb all")
                 await asyncio.sleep(random.uniform(0.3,0.5))
-                self.busy = False
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
             elif "**weapon crate**" in message.content.lower():
-                await asyncio.sleep(random.uniform(0.3,0.5))
-                self.busy = True
+                if autoCrate == False:
+                    return
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}crate all")
                 await asyncio.sleep(random.uniform(0.3,0.5))
-                self.busy = False
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+        if "inventory" in message.content.lower() and "=" in message.content.lower():
+            self.invNumbers = re.findall(r'`(\d+)`', text)         
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
-                  #  print("battle works (1)")
-                    if self.lastcmd == "battle":
-                    #    print("battle works (2)")
-                        await asyncio.sleep(random.uniform(0.7,0.9))
-                        self.busy = False
-
+                    self.hb = 0 #check
+                    self.last_cmd_time = time.time()
+                    self.lastcmd = "battle"
+                if embed.author.name is not None and "quest log" in embed.author.name.lower():
+                    if "you finished all of your quests!" in embed.description.lower():
+                        pass
+                    else:
+                        if "You finished all of your quests!" in message.content:
+                            self.qtemp = True
+                            self.check_quests.stop()
+                        if "Say 'owo'" in message.content:
+                            self.owoTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                            if autoOwo == False:
+                                self.send_owo.start()
+                        if "Have a friend pray to you" in message.content:
+                            self.prayTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                            if self.owoSupportChannel != None:
+                                await self.owoSupportChannel.send("owo quest")
+                                self.friendPrayQuest = True
+                        if "Have a friend curse you" in message.content:
+                            self.curseTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                            if self.owoSupportChannel != None:
+                                await self.owoSupportChannel.send("owo quest")
+                                self.friendCurseQuest = True
+                        if "Receive a cookie from 1 friends" in message.content:
+                            self.curseTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                            if self.owoSupportChannel != None:
+                                await self.owoSupportChannel.send("owo quest")
+                                 #= True
+                         if "xp from hunting and battling" in message.content:
+                             pass
+                         if "Use an action" in message.content:
+                             pass
+                         if "Battle with a friend" in message.content:
+                             pass
+             
+#----------ON MESSAGE EDIT----------#
+    async def on_message_edit(self, before, after):
+        #print("ed")
+        if before.author.id != 408785106942164992:
+            return
+        if before.channel.id != self.channel_id:
+            return
+        # slots
+        if "slots" in after.content.lower():
+            if "won" in after.content.lower() and ":c" in after.content.lower():
+                self.slotsFail = True
+                self.slotsT-=self.slotsAmt*self.slotsN
+                if self.slotsDoubleOnLose:
+                    self.slotsN = 1
+            else:
+                print("won")
+                if "<:eggplant:417475705719226369>" in after.content.lower():
+                    self.slotsNope = True
+                else:
+                    self.match = re.search(r'won <:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
+                    self.slotsT+=int(match.group(1).replace(',', ''))
+                    if self.slotsDoubleOnLose:
+                        self.slotsN += 1
+                    self.slotsWon = True
+            #coinflip
+        if "chose" in after.content.lower():
+            if "and you lost it all... :c" in after.content.lower():
+                self.match = re.search(r'<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*)(?:\.\d+)?', after.content)
+                self.cft-=int(self.match.group(1).replace(',', ''))
+                console.print(f"-{self.user}[+] ran Coinflip and lost {self.match.group(1).replace(',', '')} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                if self.cfDoubleOnLose:
+                    self.cfN += 1
+            else:
+                self.match = re.search(r'won \*\*<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
+                console.print(f"-{self.user}[+] ran Coinflip and won {self.match.group(1).replace(',', '')} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                self.cft+=int(self.match.group(1).replace(',', ''))
+                if self.cfDoubleOnLose:
+                    self.cfN = 1
+                
+#----------Idk----------#                 
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
@@ -295,7 +621,7 @@ def run_bots(tokens_and_channels):
         thread.join()
 def run_bot(token, channel_id):
     client = MyClient(token, channel_id)
-    client.run(token)
+    client.run(token, log_handler=None)
 if __name__ == "__main__":
     colorama_init(autoreset=True)
     print(f'''{Fore.LIGHTCYAN_EX}
@@ -314,5 +640,5 @@ if __name__ == "__main__":
     tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
     print(f'{Fore.GREEN}Loaded {len(tokens_and_channels)} tokens and channel IDs.')
     print(f'{Fore.YELLOW} current seed = {seed}')
-    logging.basicConfig(level=logging.WARNING)
+    #logging.basicConfig(level=logging.WARNING)
     run_bots(tokens_and_channels)
