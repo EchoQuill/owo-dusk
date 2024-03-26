@@ -1,6 +1,6 @@
 # owo-grinder
 --------
-> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing skme unfinished codes, the final product is expected to look much different than the one shown in code....
+> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing skme unfinished codes, the final product is expected to look much different than the one shown in code.... all featues in features list is not added yet
 
 
 Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
@@ -15,14 +15,22 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto curse
 * auto owo top
 * auto daily
-* auto checklist
 * captcha detection(not solver)
 * ban detection
 * auto slots
 * auto coinflip
 * ~~auto blackjack~~ [under progress]
+* custom commands, you can add commands that is not currently in the list with your own cooldown :>
+* battery check
+* Play audio file when captcha
 * auto quest
 * auto sell/sacrifice
 * auto use crate/lootbox/gem
 * supports both desktop and termux notifications
 * Mobile texttospeech captcha alert
+* appear typing while bot is sending commands
+* supports asking for help is supported quests in ```owo support server```
+* ban detection
+* level grind
+
+thanks for reading :>, I hope this tool could help you even if a little.
