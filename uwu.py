@@ -9,7 +9,6 @@
 # It would also be great if you understand that iam a new python developer
 # Iam not that skilled so there might be some repetitions etc
 # Please do give me pointers on how to improve.
-from colorama import Fore, Back, init as colorama_init
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from discord import SyncWebhook
@@ -640,7 +639,7 @@ class MyClient(discord.Client):
                 if self.cfDoubleOnLose:
                     self.cfN = 1
                 
-#----------Idk----------#                 
+#----------STARTING BOT----------#                 
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
@@ -657,14 +656,12 @@ if __name__ == "__main__":
     console.log(owoPanel)
     print('*'+console_width)
     if autoPray == True and autoCurse == True:
-        print(f'{Fore.RED}error, both auto pray and auto curse are enabled at the same time, please disable one and restart the code')
-    if autoHunt == False and autoBattle == False:
-        print(f'{Fore.RED}starting without autoHunt and autoBattle')
+        console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
-        print(f"{Fore.RED}can't enable both desktop and termux notifications at the same time in variables.")
+        console.print("Only enable either termux notifs of desktop notifs.", style = "red on black")
     
     tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
-    print(f'{Fore.GREEN}Loaded {len(tokens_and_channels)} tokens and channel IDs.')
-    print(f'{Fore.YELLOW} current seed = {seed}')
+    #print(f'{Fore.GREEN}Loaded {len(tokens_and_channels)} tokens and channel IDs.')
+    #print(f'{Fore.YELLOW} current seed = {seed}')
     #logging.basicConfig(level=logging.WARNING)
     run_bots(tokens_and_channels)
