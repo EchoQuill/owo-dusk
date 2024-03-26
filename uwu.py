@@ -624,11 +624,8 @@ def run_bot(token, channel_id):
     client.run(token, log_handler=None)
 if __name__ == "__main__":
     colorama_init(autoreset=True)
-    print(f'''{Fore.LIGHTCYAN_EX}
- _          __      _         
-/ \     _  (_  _ |_|_|_  __|_ 
-\_/\/\/(_) __)(/_| | |_)(_)|_ 
-''')
+    console.log(owoPanel)
+    print('-'*console_width)
     print() 
     if autoPray == True and autoCurse == True:
         print(f'{Fore.RED}error, both auto pray and auto curse are enabled at the same time, please disable one and restart the code')
