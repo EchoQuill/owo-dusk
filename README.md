@@ -5,7 +5,7 @@
 
 --------
 
-> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown in code.... all featues in features list is not added yet
+> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown in code.... not all featues in features list is added yet
 
 
 Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
