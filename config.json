@@ -1,7 +1,7 @@
 {
   "discordStatus": "invisible",
   "desktopNotificationEnabled": false,
-  "setprefix": "owo",
+  "setprefix": "owo ",
   "commands": [
     {
       "hunt": true,
@@ -60,6 +60,15 @@
     {
       "quest": false,
       "doEvenIfDisabled":false
+    },
+    {
+      "lottery": false,
+      "cooldown": 202,
+      "amount":0
+    },
+    {
+      "lvlGrind": false,
+      "cooldown": 20
     }
   ],
   "autoDaily": false,
