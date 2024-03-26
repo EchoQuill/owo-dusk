@@ -31,6 +31,6 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * appear typing while bot is sending commands
 * supports asking for help is supported quests in ```owo support server```
 * ban detection
-* level grind
+* level grind.
 
 thanks for reading :>, I hope this tool could help you even if a little.
