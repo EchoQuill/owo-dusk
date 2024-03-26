@@ -1,6 +1,7 @@
 # owo-dusk
 <div align="center">
   <img src="logo.png" width="100">
+</div>
 --------
 > ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown in code.... all featues in features list is not added yet
 
