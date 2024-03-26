@@ -1,7 +1,7 @@
 {
-  "discordStatus": "this doesn'twork",
-  "desktopNotificationEnabled": "doesn'twork",
-  "setprefix": "q",
+  "discordStatus": "invisible",
+  "desktopNotificationEnabled": false,
+  "setprefix": "owo",
   "commands": [
     {
       "hunt": true,
@@ -23,36 +23,69 @@
     },
     {
       "sell": true,
+      "sacrifice": false,
       "cooldown": 200,
-      "rarity": ["c","u","r"]
+      "rarity": [
+        "c",
+        "u",
+        "r",
+        "e",
+        "m",
+        "l",
+        "g",
+        "s"
+      ]
     },
     {
-      "slots": true,
+      "slots": false,
       "cooldown": 10,
-      "doublingMeathod": true,
+      "doubleOnLose": false,
       "allottedAmount": 10000,
       "startValue": 200
     },
     {
-       "coinflip": true,
-       "allottedAmount": 6000,
-       "startValue": 200
-       "cooldown": 12
-     }
+      "coinflip": false,
+      "allottedAmount": 6000,
+      "startValue": 200,
+      "cooldown": 12,
+      "doubleOnLose": true
+    },
+    {
+      "blackjack": false,
+      "allottedAmount": 6000,
+      "startValue": 200,
+      "cooldown": 12,
+      "doubleOnLose": false
+    },
+    {
+      "quest": false,
+      "doEvenIfDisabled":false
+    }
   ],
-  "autoDaily": "this doesn't work",
+  "autoDaily": false,
+  "sendOwo": false,
   "autoUse": {
-     "autoGem": true,
-     "autoUseLootbox": true,
-     "autoUseCrate": true
+    "autoGem": {
+      "huntGem": true,
+      "empoweredGem": true,
+      "luckyGem": true,
+      "specialGem": false
+    },
+    "autoUseLootbox": true,
+    "autoUseCrate": true
+  },
+  "customCommands": {
+    "enabled": false,
+    "commands": [],
+    "cooldowns": []
   },
   "webhookEnabled": false,
-  "webhook": "webhook url here",
-  "hitCooldownOdds": "this doesn't work",
+  "webhook": "webhook here",
+  "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
-    "enabled": false,
+    "enabled": true,
     "vibrate": {
-      "enabled": false,
+      "enabled": true,
       "time": 3
     },
     "texttospeech": {
@@ -61,15 +94,8 @@
     },
     "notifications": true,
     "batteryCheck": {
-      "enabled": "this doesn'twork",
+      "enabled": false,
       "percentage": 20
     }
-  },
-  "mainAccountGiveCoins": {
-    "enabled": false,
-    "mainUserId": "user id of main account",
-    "payoutOnlyMode": false,
-    "tokenWhichWillPayout": "token of an alt",
-    "payoutChannelID": "channel id to payout"
   }
 }
