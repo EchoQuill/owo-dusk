@@ -513,8 +513,7 @@ class MyClient(discord.Client):
                 os.system(f"termux-tts-speak {termuxTtsContent}")
             return
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
-            print("hitting cds")
-            self.spams+=1
+            pass
         if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
             await asyncio.sleep(random.uniform(3.9,5.2))
             if self.lastcmd == "hunt":
@@ -544,6 +543,7 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}lb all")
+                console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
             elif "**weapon crate**" in message.content.lower():
@@ -554,6 +554,7 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}crate all")
+                console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if "inventory" in message.content.lower() and "=" in message.content.lower():
