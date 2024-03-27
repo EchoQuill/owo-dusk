@@ -63,7 +63,6 @@
     },
     {
       "lottery": false,
-      "cooldown": 202,
       "amount":0
     },
     {
