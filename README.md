@@ -1,5 +1,6 @@
 <div align="center">
-  <center><img src="logo.png" width="100"></center>
+  <center><img src="logo.png" width="250"></center>
+  <br>
   <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Pacifico&size=40&pause=1000&color=802DF7&center=true&vCenter=true&random=false&width=425&lines=Owo+Dusk" alt="Typing SVG" />
 </div>
 
