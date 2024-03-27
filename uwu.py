@@ -349,7 +349,7 @@ class MyClient(discord.Client):
             await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
             console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
-    # Lottery rough sketch(not done yet properly)
+    # Lottery
     @tasks.loop()
     async def send_lottery(self):
         if self.f != True:
@@ -357,9 +357,17 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            await asyncio.sleep(random.uniform(lotterCooldown + 0.173737, lotteryCooldown + 0.4774848))  # edit thks
+            self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+            self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
+            self.formatted_time = "{:02}h {:02}m {:02}s".format(
+                int(self.time_until_12am_pst.total_seconds() // 3600),
+                int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
+                int(self.time_until_12am_pst.total_seconds() % 60)
+        )
+            self.total_seconds = self.time_until_12am_pst.total_seconds()
             await self.cm.send(f'{setprefix}lottery {self.lotteryAmt')
             console.print(f"-{self.user}[+] ran lottery.".center(console_width - 2 ), style = "cyan on black")
+            await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737)
      # Custom commands
     @tasks.loop()
     async def send_custom(self):
@@ -473,6 +481,8 @@ class MyClient(discord.Client):
             self.send_custom.start()
         if autoQuest:
             self.check_quests.start()
+        if lottery:
+            self.send_lottery.start()
 
         embed1 = discord.Embed(
             title='logging in',
