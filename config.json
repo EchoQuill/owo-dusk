@@ -5,21 +5,14 @@
   "commands": [
     {
       "hunt": true,
-      "cooldown": 15
-    },
-    {
       "battle": true,
       "cooldown": 15
     },
     {
       "pray": true,
-      "cooldown": 300,
-      "usertopray": null
-    },
-    {
       "curse": false,
       "cooldown": 300,
-      "usertocurse": null
+      "userToPrayOrCurse": null
     },
     {
       "sell": true,
