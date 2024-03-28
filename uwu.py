@@ -22,6 +22,7 @@ import secrets
 import discord
 import asyncio
 import logging
+import string
 import shutil
 import time
 import json
@@ -134,6 +135,12 @@ lvlGrindCooldown = config["commands"][8]["cooldown"]
 def printBox(text, color):
     test_panel = Panel(text, style=color)
     console.print(test_panel)
+# For lvl grind
+def generate_random_string():
+    characters = string.ascii_lowercase + ' '
+    length = random.randint(5, 20)
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    return random_string
     
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
@@ -313,16 +320,9 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-            self.ranint = random.randint(1, 5)
-            if self.ranint <= 2:
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
-                console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
                 self.last_cmd_time = time.time()
-                await asyncio.sleep(random.uniform(11.6, 13.9))
-            else:
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
                 console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
                 await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
     # Quests
@@ -370,6 +370,7 @@ class MyClient(discord.Client):
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             await self.cm.send(f'{setprefix}lottery {self.lotteryAmt')
+            self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran lottery.".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737)
      # Custom commands
@@ -381,10 +382,11 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(commandsCooldown[self.index] + 0.3, commandsCooldown[self.index] + 0.5))
                 self.index+=1
                 await self.cm.send(i)
+                self.last_cmd_time = time.time()
+     # Lvl grind
     @tasks.loop()
     async def lvlGrind(self):
-        self.txt = "Place holder" # change this to randomly generade weird numbers and letters later on
-        await self.cm.send(self.txt) # Better than sending quotes(In my opinion).
+        await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
         await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4)) 
 #----------ON READY----------#
     async def on_ready(self):
