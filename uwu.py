@@ -69,11 +69,10 @@ setprefix = config["setprefix"]
 #----------MAIN VARIABLES----------#
 listUserIds = []
 autoHunt = config["commands"][0]["hunt"]
-autoBattle = config["commands"][1]["battle"]
-autoPray = config["commands"][2]["pray"]
-usertopray = config["commands"][2]["usertopray"]
-autoCurse = config["commands"][3]["curse"]
-usertocurse = config["commands"][3]["usertocurse"]
+autoBattle = config["commands"][0]["battle"]
+autoPray = config["commands"][1]["pray"]
+autoCurse = config["commands"][1]["curse"]
+userToPrayOrCurse = config["commands"][1]["usertopray"]
 autoDaily = config["autoDaily"]
 autoOwo = config["sendOwo"]
 autoCrate = config["autoUse"]["autoUseCrate"]
@@ -82,29 +81,26 @@ autoHuntGem = config["autoUse"]["autoGem"]["huntGem"]
 autoEmpoweredGem = config["autoUse"]["autoGem"]["empoweredGem"]
 autoLuckyGem = config["autoUse"]["autoGem"]["luckyGem"]
 autoSpecialGem = config["autoUse"]["autoGem"]["specialGem"]
-autoSell = config["commands"][4]["sell"]
-autoSac = config["commands"][4]["sacrifice"]
-autoQuest = config["commands"][8]["quest"]
-ignoreDisable_Quest = config["commands"][8]["doEvenIfDisabled"]
+autoSell = config["commands"][2]["sell"]
+autoSac = config["commands"][2]["sacrifice"]
+autoQuest = config["commands"][6]["quest"]
+ignoreDisable_Quest = config["commands"][6]["doEvenIfDisabled"]
 rarity = ""
-for i in config["commands"][4]["rarity"]:
+for i in config["commands"][2]["rarity"]:
     rarity + i + " "
-autoCf = config["commands"][6]["coinflip"]
-cfAmt = config["commands"][6]["startValue"]
-cfCooldown = config["commands"][6]["cooldown"]
-cfAllotedValue = config["commands"][6]["allottedAmount"]
-autoSlots = config["commands"][5]["slots"]
-slotsAmt = config["commands"][5]["startValue"]
-slotsCooldown = config["commands"][5]["cooldown"]
-slotsAllotedValue = config["commands"][5]["allottedAmount"]
+autoCf = config["commands"][4]["coinflip"]
+cfAmt = config["commands"][4]["startValue"]
+cfAllotedValue = config["commands"][4]["allottedAmount"]
+autoSlots = config["commands"][3]["slots"]
+slotsAmt = config["commands"][3]["startValue"]
+slotsCooldown = config["commands"][3]["cooldown"]
+slotsAllotedValue = config["commands"][3]["allottedAmount"]
 customCommands = config["customCommands"]["enabled"]
 commandsList = config["customCommands"]["commands"]
 commandsCooldown = config["customCommands"]["cooldowns"]
-lottery = config["commands"][9]["lottery"]
-lotteryCooldown = config["commands"][9]["cooldown"]
-lotterAmt = config["commands"][9]["amount"]
-lvlGrind = config["commands"][10]["lvlGrind"]
-lvlGrindCooldown = config["commands"][10]["cooldown"]
+lottery = config["commands"][7]["lottery"]
+lotterAmt = config["commands"][7]["amount"]
+lvlGrind = config["commands"][8]["lvlGrind"]
 #dble check
 sorted_pairs = sorted(zip(commandsList, commandsCooldown))
 sorted_list1 = [pair[1] for pair in sorted_pairs]
@@ -126,6 +122,14 @@ time = {
     6:25
 }
 qtemp = []
+# Cooldowns
+huntOrBattleCooldown = config["commands"][0]["cooldown"]
+prayOrCurseCooldown = config["commands"][1]["cooldown"]
+sellOrSacCooldown = config["commands"][2]["cooldown"]
+slotsCooldown = config["commands"][3]["cooldown"]
+cfCooldown = config["commands"][4]["cooldown"]
+lvlGrindCooldown = config["commands"][8]["cooldown"]
+
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -188,7 +192,7 @@ class MyClient(discord.Client):
             await self.cm.send(f'{setprefix}{self.huntOrBattle}')
             console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
             if self.hb = 1:
-                await asyncio.sleep(random.uniform(14.99, 15.10))
+                await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
             if self.hb == 0 and autoGem == True:
                 self.h+=1
                 if self.h == time[self.gemNum] + 1:
@@ -262,7 +266,7 @@ class MyClient(discord.Client):
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
-            await asyncio.sleep(random.uniform(300.73635377263, 310.5969684))
+            await asyncio.sleep(prayOrCurseCooldown + random.uniform(0.99, 1.10))
      #coinflip
     @tasks.loop()
     async def send_cf(self):
@@ -278,7 +282,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[-] Stopping coin flip [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_cf.stop()
             await self.cm.send(f'{setprefix}cf {self.cfAmt*self.cfN}')
-            await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+            await asyncio.sleep(cfCooldown + random.uniform(0.28288282, 0.928292929))
      # Owo top
     @tasks.loop()
     async def send_owo(self):
@@ -320,7 +324,7 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
                 console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
-                await asyncio.sleep(random.uniform(200.377373, 210.7373828))
+                await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
     # Quests
    @tasks.loop()
     async def check_quests(self):
@@ -348,7 +352,7 @@ class MyClient(discord.Client):
                 self.send_slots.stop()
             await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
             console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+            await asyncio.sleep(slotsCooldown + random.uniform(0.28288282, 0.928292929))
     # Lottery
     @tasks.loop()
     async def send_lottery(self):
