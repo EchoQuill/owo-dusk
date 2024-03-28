@@ -33,7 +33,7 @@ os.system("clear")
 # For console.log thingy
 console = Console()
 # Random module seed for better anti detection.
-seed = secrets.randbelow(1184746474747)
+seed = secrets.randbelow(4765839360747)
 random.seed(seed)
 # Console width size
 console_width = shutil.get_terminal_size().columns
@@ -139,7 +139,7 @@ def printBox(text, color):
 def generate_random_string():
     characters = string.ascii_lowercase + ' '
     length = random.randint(5, 20)
-    random_string = ''.join(random.choice(characters) for _ in range(length))
+    random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
     
 class MyClient(discord.Client):
@@ -200,60 +200,6 @@ class MyClient(discord.Client):
             console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
             if self.hb = 1:
                 await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
-            if self.hb == 0 and autoGem == True:
-                self.h+=1
-                if self.h == time[self.gemNum] + 1:
-                    if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                        await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                    # I hope bot doesn't lag due to this lol
-                    self.sendingGemsIds = ""
-                    if autoHuntGem:
-                        for i in huntGems:
-                            for o in self.invNumbers:
-                                if i == o:
-                                    self.sendingGemsIds + str(i) + " "
-                                    self.tempForCheck = True
-                                    self.gemHuntCnt = i
-                                    break
-                            if self.tempForCheck == True:
-                                break
-                    self.tempForCheck = False
-                    if autoEmpoweredGem:
-                        for i in empGems:
-                            for o in self.invNumbers:
-                                if i == o:
-                                    self.sendingGemsIds + str(i) + " "
-                                    self.tempForCheck = True
-                                    self.gemEmpCnt = i
-                                    break
-                            if self.tempForCheck == True:
-                                break
-                   self.tempForCheck = False
-                   if autoLuckyGem:
-                        for i in luckyGems:
-                            for o in self.invNumbers:
-                                if i == o:
-                                    self.sendingGemsIds + str(i) + " "
-                                    self.tempForCheck = True
-                                    self.gemLuckCnt = i
-                                    break
-                            if self.tempForCheck == True:
-                                break
-                    self.tempForCheck = False
-                    if autoSpecialGem:
-                        for i in specialGems:
-                            for o in self.invNumbers:
-                                if i == o:
-                                    self.sendingGemsIds + str(i) + " "
-                                    self.tempForCheck = True
-                                    self.gemSpecialCnt = i
-                                    break
-                            if self.tempForCheck == True:
-                                break
-                    self.tempForCheck = False
-                    await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
-                    console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
-                   #tbc
     #pray/curse
     @tasks.loop()
     async def send_curse_and_prayer(self):
@@ -262,10 +208,10 @@ class MyClient(discord.Client):
         if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))        
         if self.f != True:
-            if usertopray:
+            if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{usertopray}>')
+                await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             else:
@@ -336,6 +282,18 @@ class MyClient(discord.Client):
             await self.cm.send(f'{setprefix}quest')
             console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "magenta on black")
             await asyncio.sleep(random.uniform(500.28288282, 701.928292929))
+            if self.qtemp:
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+                self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
+                self.formatted_time = "{:02}h {:02}m {:02}s".format(
+                    int(self.time_until_12am_pst.total_seconds() // 3600),
+                    int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
+                    int(self.time_until_12am_pst.total_seconds() % 60)
+            )
+                self.total_seconds = self.time_until_12am_pst.total_seconds()
+                await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737)
    # Slots
    @tasks.loop()
     async def send_slots(self):
@@ -407,6 +365,7 @@ class MyClient(discord.Client):
         self.owoQuest = False
         self.friendCurseQuest = False
         self.friendPrayQuest = False
+        self.cookieQuest = False
         self.actionQuest = False
         self.owoTempInt = 0
         self.owoTempIntTwo = 0
@@ -549,6 +508,56 @@ class MyClient(discord.Client):
             self.hb = 1
             self.last_cmd_time = time.time()
             self.lastcmd = "hunt"
+            if "you found" in message.content.lower():
+                self.sendingGemsIds = ""
+                if autoHuntGem:
+                    for i in huntGems:
+                        for o in self.invNumbers:
+                            if i == o:
+                                self.sendingGemsIds + str(i) + " "
+                                self.tempForCheck = True
+                                 self.gemHuntCnt = i
+                                 break
+                        if self.tempForCheck == True:
+                            break
+                self.tempForCheck = False
+                if autoEmpoweredGem:
+                    for i in empGems:
+                        for o in self.invNumbers:
+                            if i == o:
+                                self.sendingGemsIds + str(i) + " "
+                                self.tempForCheck = True
+                                self.gemEmpCnt = i
+                                break
+                        if self.tempForCheck == True:
+                            break
+                self.tempForCheck = False
+                if autoLuckyGem:
+                    for i in luckyGems:
+                        for o in self.invNumbers:
+                            if i == o:
+                                self.sendingGemsIds + str(i) + " "
+                                self.tempForCheck = True
+                                self.gemLuckCnt = i
+                                break
+                        if self.tempForCheck == True:
+                            break
+                self.tempForCheck = False
+                if autoSpecialGem:
+                    for i in specialGems:
+                        for o in self.invNumbers:
+                            if i == o:
+                                self.sendingGemsIds + str(i) + " "
+                                self.tempForCheck = True
+                                self.gemSpecialCnt = i
+                                break
+                        if self.tempForCheck == True:
+                            break
+                self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                self.tempForCheck = False
+                await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
+                console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
             if "**lootbox**" in message.content.lower():
                 if autoLootbox == False:
@@ -561,6 +570,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                
             elif "**weapon crate**" in message.content.lower():
                 if autoCrate == False:
                     return
@@ -582,38 +592,49 @@ class MyClient(discord.Client):
                     self.lastcmd = "battle"
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if "you finished all of your quests!" in embed.description.lower():
-                        pass
+                        self.qtemp = True
+                    if "Say 'owo'" is not in message.content:
+                        self.owoQuest = False
                     else:
-                        if "You finished all of your quests!" in message.content:
-                            self.qtemp = True
-                            self.check_quests.stop()
-                        if "Say 'owo'" in message.content:
-                            self.owoTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
-                            if autoOwo == False:
-                                self.send_owo.start()
-                        if "Have a friend pray to you" in message.content:
-                            #self.prayTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                        self.owoTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                        if autoOwo == False:
+                            self.send_owo.start()
+                        self.owoQuest = True
+                    if "Have a friend pray to you" is not in message.content:
+                        self.friendPrayQuest = False
+                    else:
+                        #self.prayTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                        if self.owoSupportChannel != None:
+                            await self.owoSupportChannel.send("owo quest")
+                        self.friendPrayQuest = True
+                    if "Have a friend curse you" is not in message.content:
+                        self.friendCurseQuest = False
+                    else:
+                        #self.curseTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                        if self.owoSupportChannel != None:
+                            await self.owoSupportChannel.send("owo quest")
+                        self.friendCurseQuest = True
+                    if "Receive a cookie from 1 friends" is not in message.content:
+                        self.cookieQuest = False
+                    else:
+                        #self.cookieTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                        if self.owoSupportChannel != None:
+                            await self.owoSupportChannel.send("owo quest")
+                        self.cookieQuest = True
+                        if "xp from hunting and battling" is not in message.content:
+                            pass
+                        else:
+                            pass
+                        if "Use an action" is not in message.content:
+                            self.actionQuest = False
+                        else:
                             if self.owoSupportChannel != None:
                                 await self.owoSupportChannel.send("owo quest")
-                                self.friendPrayQuest = True
-                        if "Have a friend curse you" in message.content:
-                            #self.curseTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
+                            self.actionQuest = True
+                        if "Battle with a friend" is not in message.content:
+                            pass
+                        else:
                             if self.owoSupportChannel != None:
-                                await self.owoSupportChannel.send("owo quest")
-                                self.friendCurseQuest = True
-                        if "Receive a cookie from 1 friends" in message.content:
-                            #self.cookieTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
-                            if self.owoSupportChannel != None:
-                                await self.owoSupportChannel.send("owo quest")
-                                 #= True
-                         if "xp from hunting and battling" in message.content:
-                             #self.curseTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
-                             pass
-                         if "Use an action" in message.content:
-                             if self.owoSupportChannel != None:
-                                await self.owoSupportChannel.send("owo quest")
-                         if "Battle with a friend" in message.content:
-                             if self.owoSupportChannel != None:
                                 await self.owoSupportChannel.send("owo quest")
              
 #----------ON MESSAGE EDIT----------#
@@ -676,8 +697,5 @@ if __name__ == "__main__":
     if termuxNotificationEnabled and desktopNotificationEnabled:
         console.print("Only enable either termux notifs of desktop notifs.", style = "red on black")
     
-    tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
-    #print(f'{Fore.GREEN}Loaded {len(tokens_and_channels)} tokens and channel IDs.')
-    #print(f'{Fore.YELLOW} current seed = {seed}')
-    #logging.basicConfig(level=logging.WARNING)
+    tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     run_bots(tokens_and_channels)
