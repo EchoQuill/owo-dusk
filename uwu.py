@@ -43,7 +43,7 @@ owoArt = """
 / \     _  (_  _ |_|_|_  __|_ 
 \_/\/\/(_) __)(/_| | |_)(_)|_ 
 """
-owoPanel = Panel(owoArt, style="purple on black")
+owoPanel = Panel(owoArt, style="purple on black", highlight=False)
 
 # Load json file
 def resource_path(relative_path):
@@ -73,7 +73,7 @@ autoHunt = config["commands"][0]["hunt"]
 autoBattle = config["commands"][0]["battle"]
 autoPray = config["commands"][1]["pray"]
 autoCurse = config["commands"][1]["curse"]
-userToPrayOrCurse = config["commands"][1]["usertopray"]
+userToPrayOrCurse = config["commands"][1]["userToPrayOrCurse"]
 autoDaily = config["autoDaily"]
 autoOwo = config["sendOwo"]
 autoCrate = config["autoUse"]["autoUseCrate"]
@@ -100,7 +100,7 @@ customCommands = config["customCommands"]["enabled"]
 commandsList = config["customCommands"]["commands"]
 commandsCooldown = config["customCommands"]["cooldowns"]
 lottery = config["commands"][7]["lottery"]
-lotterAmt = config["commands"][7]["amount"]
+lotteryAmt = config["commands"][7]["amount"]
 lvlGrind = config["commands"][8]["lvlGrind"]
 #dble check
 sorted_pairs = sorted(zip(commandsList, commandsCooldown))
@@ -113,15 +113,6 @@ huntGems = [57,56,55,54,53,52,51]
 empGems = [71,70,69,68,67,66,65]
 luckGems = [78,77,76,75,74,73,72]
 specialGems = [85,84,83,82,81,80,79]
-time = {
-    0:100,
-    1:100,
-    2:75,
-    3:75,
-    4:50,
-    5:25,
-    6:25
-}
 qtemp = []
 # Cooldowns
 huntOrBattleCooldown = config["commands"][0]["cooldown"]
@@ -147,8 +138,7 @@ class MyClient(discord.Client):
         super().__init__(*args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
-        self.list_channel = [self.channel_id] 
-        
+        self.list_channel = [self.channel_id]   
 #----------SENDING COMMANDS----------#
     #daily
     @tasks.loop()
@@ -180,6 +170,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
         await self.cm.send(f"{setprefix}daily")
         self.lastcmd = "daily"
+        
     #hunt/daily
     @tasks.loop()
     async def send_hunt_or_battle(self):
@@ -198,7 +189,7 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             await self.cm.send(f'{setprefix}{self.huntOrBattle}')
             console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
-            if self.hb = 1:
+            if self.hb == 1:
                 await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
     #pray/curse
     @tasks.loop()
@@ -236,10 +227,27 @@ class MyClient(discord.Client):
                 self.send_cf.stop()
             await self.cm.send(f'{setprefix}cf {self.cfAmt*self.cfN}')
             await asyncio.sleep(cfCooldown + random.uniform(0.28288282, 0.928292929))
+   # Slots
+    @tasks.loop()
+    async def send_slots(self):
+        if self.f != True:
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            if self.slotsAmt*self.zlotsN > 250000:
+                console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
+                self.send_slots.stop()
+            elif self.slotsAllotedValue < self.slotsT:
+                console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                self.send_slots.stop()
+            await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
+            console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
+            await asyncio.sleep(slotsCooldown + random.uniform(0.28288282, 0.928292929))
      # Owo top
     @tasks.loop()
     async def send_owo(self):
-        if self.f != T
+        if self.f != True:
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
@@ -271,8 +279,18 @@ class MyClient(discord.Client):
                 self.last_cmd_time = time.time()
                 console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
                 await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
+     # Custom commands
+    @tasks.loop()
+    async def send_custom(self):
+        if self.f != True:
+            self.index = 0
+            for i in commandsList:
+                await asyncio.sleep(random.uniform(commandsCooldown[self.index] + 0.3, commandsCooldown[self.index] + 0.5))
+                self.index+=1
+                await self.cm.send(i)
+                self.last_cmd_time = time.time()
     # Quests
-   @tasks.loop()
+    @tasks.loop()
     async def check_quests(self):
         if self.f != True:
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -280,6 +298,7 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             await self.cm.send(f'{setprefix}quest')
+            self.qtemp2 = False
             console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "magenta on black")
             await asyncio.sleep(random.uniform(500.28288282, 701.928292929))
             if self.qtemp:
@@ -293,24 +312,7 @@ class MyClient(discord.Client):
                     int(self.time_until_12am_pst.total_seconds() % 60)
             )
                 self.total_seconds = self.time_until_12am_pst.total_seconds()
-                await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737)
-   # Slots
-   @tasks.loop()
-    async def send_slots(self):
-        if self.f != True:
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            self.current_time = time.time()
-            self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.slotsAmt*self.zlotsN > 250000:
-                console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
-                self.send_slots.stop()
-            elif self.slotsAllotedValue < self.slotsT:
-                console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
-                self.send_slots.stop()
-            await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
-            console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(slotsCooldown + random.uniform(0.28288282, 0.928292929))
+                await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
     # Lottery
     @tasks.loop()
     async def send_lottery(self):
@@ -327,34 +329,25 @@ class MyClient(discord.Client):
                 int(self.time_until_12am_pst.total_seconds() % 60)
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
-            await self.cm.send(f'{setprefix}lottery {self.lotteryAmt')
+            await self.cm.send(f'{setprefix}lottery {self.lotteryAmt}')
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran lottery.".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737)
-     # Custom commands
-    @tasks.loop()
-    async def send_custom(self):
-        if self.f != True:
-            self.index = 0
-            for i in commandsList:
-                await asyncio.sleep(random.uniform(commandsCooldown[self.index] + 0.3, commandsCooldown[self.index] + 0.5))
-                self.index+=1
-                await self.cm.send(i)
-                self.last_cmd_time = time.time()
+            await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
      # Lvl grind
     @tasks.loop()
     async def lvlGrind(self):
         await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
-        await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4)) 
+        await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
+
 #----------ON READY----------#
     async def on_ready(self):
-        printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'green on black' )
-        printBox(f'-version:- 0.0.1'.center(console_width - 2 ),'cyan on black' )
+        printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
+        printBox(f'-version:- 0.0.1'.center(console_width - 2 ),'bold cyan on black' )
         self.on_ready_dn = False
         self.cmds = 1
         self.cmds_cooldown = 0
         await asyncio.sleep(1)
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'purple on black' )
+        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )
         listUserIds.append(self.user.id)
         await asyncio.sleep(0.12)
         self.cm = self.get_channel(self.channel_id)
@@ -362,6 +355,7 @@ class MyClient(discord.Client):
         self.dm = await self.fetch_user(408785106942164992)
         self.list_channel.append(self.dm.dm_channel.id)
         self.qtemp = False
+        self.qtemp2 = True
         self.owoQuest = False
         self.friendCurseQuest = False
         self.friendPrayQuest = False
@@ -430,6 +424,15 @@ class MyClient(discord.Client):
             self.cfu = cfAmt
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
+        # Starting slots CHEXK
+        if autoCf:
+            self.slotsAmt = slotdAmt
+            self.slotsAllotedValue = cfAllotedValue
+            self.cft = cfAllotedValue
+            self.cfN = 1
+            self.cfu = cfAmt
+            self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
+            self.send_cf.start()
         # Start Sell or Sac
         if autoSell or autoSac:
             if autoSell and autoSac:
@@ -456,7 +459,7 @@ class MyClient(discord.Client):
         )
 
         if webhookEnabled:
-            self.webhook = SyncWebhook.from_url(webhook_url)0
+            self.webhook = SyncWebhook.from_url(webhook_url)
             self.webhook.send(embed=embed1, username='uwu bot') 
         await asyncio.sleep(random.uniform(2.69,3.69))
         if desktopNotificationEnabled:
@@ -516,8 +519,7 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                 self.gemHuntCnt = i
-                                 break
+                                break
                         if self.tempForCheck == True:
                             break
                 self.tempForCheck = False
@@ -527,7 +529,6 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                self.gemEmpCnt = i
                                 break
                         if self.tempForCheck == True:
                             break
@@ -538,7 +539,6 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                self.gemLuckCnt = i
                                 break
                         if self.tempForCheck == True:
                             break
@@ -549,19 +549,16 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                self.gemSpecialCnt = i
                                 break
                         if self.tempForCheck == True:
                             break
-                self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
                 await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                 console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
-            if "**lootbox**" in message.content.lower():
-                if autoLootbox == False:
-                    return
+            if "**lootbox**" in message.content.lower() and autoLootbox:
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -571,9 +568,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 
-            elif "**weapon crate**" in message.content.lower():
-                if autoCrate == False:
-                    return
+            elif "**weapon crate**" in message.content.lower() and autoCrate:
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -593,49 +588,55 @@ class MyClient(discord.Client):
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if "you finished all of your quests!" in embed.description.lower():
                         self.qtemp = True
-                    if "Say 'owo'" is not in message.content:
+                        return
+                    if "Say 'owo'" not in message.content:
                         self.owoQuest = False
                     else:
                         self.owoTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
                         if autoOwo == False:
                             self.send_owo.start()
                         self.owoQuest = True
-                    if "Have a friend pray to you" is not in message.content:
+                    if "Have a friend pray to you" not in message.content:
                         self.friendPrayQuest = False
                     else:
                         #self.prayTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
-                        if self.owoSupportChannel != None:
+                        if self.owoSupportChannel != None and self.qtemp2 == False:
                             await self.owoSupportChannel.send("owo quest")
+                            self.qtemp2 = True
                         self.friendPrayQuest = True
-                    if "Have a friend curse you" is not in message.content:
+                    if "Have a friend curse you" not in message.content:
                         self.friendCurseQuest = False
                     else:
                         #self.curseTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
-                        if self.owoSupportChannel != None:
+                        if self.owoSupportChannel != None and self.qtemp2 == False:
                             await self.owoSupportChannel.send("owo quest")
+                            self.qtemp2 = True
                         self.friendCurseQuest = True
-                    if "Receive a cookie from 1 friends" is not in message.content:
+                    if "Receive a cookie from 1 friends" not in message.content:
                         self.cookieQuest = False
                     else:
                         #self.cookieTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
-                        if self.owoSupportChannel != None:
+                        if self.owoSupportChannel != None and self.qtemp2 == False:
                             await self.owoSupportChannel.send("owo quest")
+                            self.qtemp2 = True
                         self.cookieQuest = True
-                        if "xp from hunting and battling" is not in message.content:
+                        if "xp from hunting and battling" not in message.content:
                             pass
                         else:
                             pass
-                        if "Use an action" is not in message.content:
+                        if "Use an action" not in message.content:
                             self.actionQuest = False
                         else:
-                            if self.owoSupportChannel != None:
+                            if self.owoSupportChannel != None and self.qtemp2 == False:
                                 await self.owoSupportChannel.send("owo quest")
+                                self.qtemp2 = True
                             self.actionQuest = True
-                        if "Battle with a friend" is not in message.content:
+                        if "Battle with a friend" not in message.content:
                             pass
                         else:
-                            if self.owoSupportChannel != None:
+                            if self.owoSupportChannel != None and self.qtemp2 == False:
                                 await self.owoSupportChannel.send("owo quest")
+                                self.qtemp2 = True
              
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
@@ -661,7 +662,7 @@ class MyClient(discord.Client):
                     if self.slotsDoubleOnLose:
                         self.slotsN += 1
                     self.slotsWon = True
-            #coinflip
+        #coinflip
         if "chose" in after.content.lower():
             if "and you lost it all... :c" in after.content.lower():
                 self.match = re.search(r'<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*)(?:\.\d+)?', after.content)
@@ -689,13 +690,12 @@ def run_bot(token, channel_id):
     client = MyClient(token, channel_id)
     client.run(token, log_handler=None)
 if __name__ == "__main__":
-    colorama_init(autoreset=True)
     console.log(owoPanel)
-    print('*'+console_width)
+    print('-'*console_width)
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
         console.print("Only enable either termux notifs of desktop notifs.", style = "red on black")
     
-    tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
+    tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
     run_bots(tokens_and_channels)
