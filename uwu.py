@@ -388,7 +388,6 @@ class MyClient(discord.Client):
         self.gemEmpCnt = None
         self.gemLuckCnt = None
         self.gemSpecialCnt = None
-        await asyncio.sleep(0.6)
         # Starting hunt/battle loop
         if autoHunt or autoBattle:
             if autoHunt and autoBattle:
@@ -401,6 +400,7 @@ class MyClient(discord.Client):
                 self.huntOrBattle = "battle"
                 self.huntOrBattleSelected = True
             self.send_hunt_or_battle.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
          # Starting curse/pray loop
         if autoCurse or autoPray:
             if autoCurse:
@@ -408,12 +408,15 @@ class MyClient(discord.Client):
             else:
                 self.prayOrCurse = "pray"
             self.send_curse_and_prayer.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Daily loop
         if autoDaily:
             self.send_daily.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Auto Owo
         if autoOwo:
             self.send_owo.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Coinflip
         if autoCf:
             self.cfAmt = cfAmt
@@ -424,6 +427,7 @@ class MyClient(discord.Client):
             self.cfu = cfAmt
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting slots CHEXK
         if autoCf:
             self.slotsAmt = slotdAmt
@@ -433,6 +437,7 @@ class MyClient(discord.Client):
             self.cfu = cfAmt
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         # Start Sell or Sac
         if autoSell or autoSac:
             if autoSell and autoSac:
@@ -445,10 +450,13 @@ class MyClient(discord.Client):
                 self.huntOrBattle = "sac"
                 self.sellOrSacSelected = True
             self.send_sell_or_sac.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         if customCommands:
             self.send_custom.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         if autoQuest:
             self.check_quests.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
         if lottery:
             self.send_lottery.start()
 
@@ -465,6 +473,8 @@ class MyClient(discord.Client):
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
+        printBox(f'-Loaded all accounts.'.center(console_width - 2 ),'bold magenta on black' )
+        print('-'*console_width)
 #----------ON MESSAGE----------#
     async def on_message(self, message):
         if not self.is_ready():
@@ -690,7 +700,7 @@ def run_bot(token, channel_id):
     client = MyClient(token, channel_id)
     client.run(token, log_handler=None)
 if __name__ == "__main__":
-    console.log(owoPanel)
+    console.print(owoPanel)
     print('-'*console_width)
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
