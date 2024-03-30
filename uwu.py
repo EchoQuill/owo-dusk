@@ -137,6 +137,7 @@ def batteryCheckFunc():
 if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
+#-------------
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -174,7 +175,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
         await self.cm.send(f"{setprefix}daily")
         self.lastcmd = "daily"
-    #hunt/daily
+    #hunt/battle
     @tasks.loop()
     async def send_hunt_or_battle(self):
         #print(self.hb)
@@ -194,6 +195,8 @@ class MyClient(discord.Client):
             console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
             if self.hb == 1:
                 await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
+            else:
+                await asyncio.sleep(random.uniform(0.3,0.6)) 
     #pray/curse
     @tasks.loop()
     async def send_curse_and_prayer(self):
@@ -391,6 +394,8 @@ class MyClient(discord.Client):
         self.gemEmpCnt = None
         self.gemLuckCnt = None
         self.gemSpecialCnt = None
+        printBox(f'-Loaded all accounts.'.center(console_width - 2 ),'bold magenta on black' )
+        print('-'*console_width)
         # Starting hunt/battle loop
         if autoHunt or autoBattle:
             if autoHunt and autoBattle:
@@ -441,13 +446,13 @@ class MyClient(discord.Client):
         # Start Sell or Sac
         if autoSell or autoSac:
             if autoSell and autoSac:
-                self.huntOrBattle = None
+                self.sellOrSac = None
                 self.sellOrSacSelected = False
             elif autoSell:
-                self.huntOrBattle = "sell"
+                self.sellOrSac = "sell"
                 self.sellOrSacSelected = True
             else:
-                self.huntOrBattle = "sac"
+                self.sellOrSac = "sac"
                 self.sellOrSacSelected = True
             self.send_sell_or_sac.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
@@ -474,8 +479,7 @@ class MyClient(discord.Client):
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
-        printBox(f'-Loaded all accounts.'.center(console_width - 2 ),'bold magenta on black' )
-        print('-'*console_width)
+        
 #----------ON MESSAGE----------#
     async def on_message(self, message):
         if not self.is_ready():
@@ -509,20 +513,22 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}h")
+                await self.cm.send(f"{setprefix}hunt")
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.lastcmd == "battle":
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}b")
+                await self.cm.send(f"{setprefix}battle")
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
             self.hb = 1
             self.last_cmd_time = time.time()
             self.lastcmd = "hunt"
             if "you found" in message.content.lower():
+                await self.cm.send(f"{setprefix}inventory")
+                await asyncio.sleep(random.uniform(0.1,0.3)
                 self.sendingGemsIds = ""
                 if autoHuntGem:
                     for i in huntGems:
@@ -590,7 +596,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if "inventory" in message.content.lower() and "=" in message.content.lower():
-            self.invNumbers = re.findall(r'`(\d+)`', text)         
+            self.invNumbers = re.findall(r'`(\d+)`', message.content)         
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
