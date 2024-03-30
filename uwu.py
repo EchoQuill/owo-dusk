@@ -566,8 +566,9 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
-                await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
-                console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
+                if self.sendingGemsIds != "":
+                    await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
+                    console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
             if "**lootbox**" in message.content.lower() and autoLootbox:
                 self.current_time = time.time()
