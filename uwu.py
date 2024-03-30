@@ -18,10 +18,10 @@ from rich.panel import Panel
 import discord.errors
 import requests
 import random
-import secrets
-import discord
 import asyncio
 import logging
+import discord
+import secrets
 import string
 import shutil
 import time
@@ -90,12 +90,7 @@ rarity = ""
 for i in config["commands"][2]["rarity"]:
     rarity + i + " "
 autoCf = config["commands"][4]["coinflip"]
-cfAmt = config["commands"][4]["startValue"]
-cfAllotedValue = config["commands"][4]["allottedAmount"]
 autoSlots = config["commands"][3]["slots"]
-slotsAmt = config["commands"][3]["startValue"]
-slotsCooldown = config["commands"][3]["cooldown"]
-slotsAllotedValue = config["commands"][3]["allottedAmount"]
 customCommands = config["customCommands"]["enabled"]
 commandsList = config["customCommands"]["commands"]
 commandsCooldown = config["customCommands"]["cooldowns"]
@@ -235,7 +230,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.slotsAmt*self.zlotsN > 250000:
+            if self.slotsAmt*self.slotsN > 250000:
                 console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
             elif self.slotsAllotedValue < self.slotsT:
@@ -419,22 +414,21 @@ class MyClient(discord.Client):
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Coinflip
         if autoCf:
-            self.cfAmt = cfAmt
-            self.cfCooldown = cfCooldown
-            self.cfAllotedValue = cfAllotedValue
-            self.cft = cfAllotedValue
+            self.cfAmt = config["commands"][4]["startValue"]
+            self.cfAllotedValue = config["commands"][4]["allottedAmount"]
+            self.cft = config["commands"][4]["allottedAmount"]
             self.cfN = 1
-            self.cfu = cfAmt
+            self.cfu = config["commands"][4]["startValue"]
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting slots CHEXK
-        if autoCf:
-            self.slotsAmt = slotdAmt
-            self.slotsAllotedValue = cfAllotedValue
-            self.cft = cfAllotedValue
-            self.cfN = 1
-            self.cfu = cfAmt
+        if autoSlots:
+            self.slotsAmt = config["commands"][3]["startValue"]
+            self.slotsAllotedValue = config["commands"][3]["allottedAmount"]
+            self.cft = config["commands"][3]["startValue"]
+            self.slotsN = 1
+            self.slotsu = config["commands"][3]["startValue"]
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
