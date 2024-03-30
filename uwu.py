@@ -16,6 +16,7 @@ from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 import discord.errors
+import threading
 import requests
 import random
 import asyncio
@@ -52,11 +53,10 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 with open(resource_path("config.json")) as file:
     config = json.load(file)
-
 #----------OTHER VARIABLES----------#
 list_captcha = ["captcha","link below","https://owobot.com/captcha","letter","verification test"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
-mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["percentage"]
+mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
 termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
 termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
 termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
@@ -66,7 +66,6 @@ desktopNotificationEnabled = config["desktopNotificationEnabled"]
 webhookEnabled = config["webhookEnabled"]
 webhook_url = config["webhook"]
 setprefix = config["setprefix"]
-
 #----------MAIN VARIABLES----------#
 listUserIds = []
 autoHunt = config["commands"][0]["hunt"]
@@ -116,7 +115,6 @@ sellOrSacCooldown = config["commands"][2]["cooldown"]
 slotsCooldown = config["commands"][3]["cooldown"]
 cfCooldown = config["commands"][4]["cooldown"]
 lvlGrindCooldown = config["commands"][8]["cooldown"]
-
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -127,7 +125,18 @@ def generate_random_string():
     length = random.randint(5, 20)
     random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
-    
+# For battery check
+def batteryCheckFunc():
+    while True:
+        battery_status = os.popen("termux-battery-status").read()
+        battery_data = json.loads(battery_status)
+        percentage = battery_data['percentage']
+        if percentage < mobileBatteryStopLimit:
+            break
+    os._exit(0)
+if mobileBatteryCheckEnabled:
+    loop_thread = threading.Thread(target=batteryCheckFunc)
+    loop_thread.start()
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -165,7 +174,6 @@ class MyClient(discord.Client):
             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
         await self.cm.send(f"{setprefix}daily")
         self.lastcmd = "daily"
-        
     #hunt/daily
     @tasks.loop()
     async def send_hunt_or_battle(self):
@@ -249,7 +257,7 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             await self.cm.send('owo')
             console.print(f"-{self.user}[+] ran owo".center(console_width - 2 ), style = "Cyan on black")
-            if autoOwo == False:
+            if autoOwo == False and self.owoQuest == True:
                 self.owoTempInt+=1 
                 if self.owoTempInt == self.owoTempIntTwo:
                     self.send_owo.stop()
@@ -281,8 +289,8 @@ class MyClient(discord.Client):
             self.index = 0
             for i in commandsList:
                 await asyncio.sleep(random.uniform(commandsCooldown[self.index] + 0.3, commandsCooldown[self.index] + 0.5))
-                self.index+=1
                 await self.cm.send(i)
+                self.index+=1
                 self.last_cmd_time = time.time()
     # Quests
     @tasks.loop()
@@ -418,7 +426,6 @@ class MyClient(discord.Client):
             self.cfAllotedValue = config["commands"][4]["allottedAmount"]
             self.cft = config["commands"][4]["allottedAmount"]
             self.cfN = 1
-            self.cfu = config["commands"][4]["startValue"]
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
@@ -426,9 +433,8 @@ class MyClient(discord.Client):
         if autoSlots:
             self.slotsAmt = config["commands"][3]["startValue"]
             self.slotsAllotedValue = config["commands"][3]["allottedAmount"]
-            self.cft = config["commands"][3]["startValue"]
+            self.slotsT = config["commands"][3]["startValue"]
             self.slotsN = 1
-            self.slotsu = config["commands"][3]["startValue"]
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
             self.send_cf.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
@@ -453,7 +459,8 @@ class MyClient(discord.Client):
         await asyncio.sleep(random.uniform(0.4,0.8))
         if lottery:
             self.send_lottery.start()
-
+        if lvlGrind:
+            self.lvlGrind.start()
         embed1 = discord.Embed(
             title='logging in',
             description=f'logged in as {self.user.name}',
@@ -592,6 +599,7 @@ class MyClient(discord.Client):
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if "you finished all of your quests!" in embed.description.lower():
                         self.qtemp = True
+                        self.qtemp2 = False
                         return
                     if "Say 'owo'" not in message.content:
                         self.owoQuest = False
@@ -624,27 +632,25 @@ class MyClient(discord.Client):
                             await self.owoSupportChannel.send("owo quest")
                             self.qtemp2 = True
                         self.cookieQuest = True
-                        if "xp from hunting and battling" not in message.content:
-                            pass
-                        else:
-                            pass
-                        if "Use an action" not in message.content:
-                            self.actionQuest = False
-                        else:
-                            if self.owoSupportChannel != None and self.qtemp2 == False:
-                                await self.owoSupportChannel.send("owo quest")
-                                self.qtemp2 = True
-                            self.actionQuest = True
-                        if "Battle with a friend" not in message.content:
-                            pass
-                        else:
-                            if self.owoSupportChannel != None and self.qtemp2 == False:
-                                await self.owoSupportChannel.send("owo quest")
-                                self.qtemp2 = True
-             
+                    if "xp from hunting and battling" not in message.content:
+                        pass
+                    else:
+                        pass
+                    if "Use an action" not in message.content:
+                        self.actionQuest = False
+                    else:
+                        if self.owoSupportChannel != None and self.qtemp2 == False:
+                            await self.owoSupportChannel.send("owo quest")
+                            self.qtemp2 = True
+                        self.actionQuest = True
+                    if "Battle with a friend" not in message.content:
+                        pass
+                    else:
+                        if self.owoSupportChannel != None and self.qtemp2 == False:
+                            await self.owoSupportChannel.send("owo quest")
+                            self.qtemp2 = True
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
-        #print("ed")
         if before.author.id != 408785106942164992:
             return
         if before.channel.id != self.channel_id:
@@ -680,7 +686,6 @@ class MyClient(discord.Client):
                 self.cft+=int(self.match.group(1).replace(',', ''))
                 if self.cfDoubleOnLose:
                     self.cfN = 1
-                
 #----------STARTING BOT----------#                 
 def run_bots(tokens_and_channels):
     threads = []
