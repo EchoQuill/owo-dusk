@@ -567,8 +567,9 @@ class MyClient(discord.Client):
                     for i in huntGems:
                         for o in self.invNumbers:
                             if i == o:
-                                self.sendingGemsIds + str(i) + " "
+                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
+                                print(self.sendingGemsIds)
                                 break
                         if self.tempForCheck == True:
                             break                            
@@ -577,8 +578,9 @@ class MyClient(discord.Client):
                     for i in empGems:
                         for o in self.invNumbers:
                             if i == o:
-                                self.sendingGemsIds + str(i) + " "
+                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
+                                print(self.sendingGemsIds)
                                 break
                         if self.tempForCheck == True:
                             break
@@ -587,8 +589,9 @@ class MyClient(discord.Client):
                     for i in luckGems:
                         for o in self.invNumbers:
                             if i == o:
-                                self.sendingGemsIds + str(i) + " "
+                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
+                                print(self.sendingGemsIds)
                                 break
                         if self.tempForCheck == True:
                             break
@@ -597,7 +600,7 @@ class MyClient(discord.Client):
                     for i in specialGems:
                         for o in self.invNumbers:
                             if i == o:
-                                self.sendingGemsIds + str(i) + " "
+                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
                                 break
                         if self.tempForCheck == True:
@@ -605,13 +608,16 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
+                print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
+                    print("t1")
                     await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     self.last_cmd_time = time.time()
                 self.invCheck = False
                 self.tempHuntDisable = False
                 self.sendingGemsIds = ""
+                print("passed")
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
