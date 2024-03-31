@@ -87,7 +87,7 @@ autoQuest = config["commands"][6]["quest"]
 ignoreDisable_Quest = config["commands"][6]["doEvenIfDisabled"]
 rarity = ""
 for i in config["commands"][2]["rarity"]:
-    rarity + i + " "
+    rarity = rarity + i + " "
 autoCf = config["commands"][4]["coinflip"]
 autoSlots = config["commands"][3]["slots"]
 customCommands = config["customCommands"]["enabled"]
@@ -103,10 +103,10 @@ sorted_list1 = [pair[1] for pair in sorted_pairs]
 if lotteryAmt > 250000:
     lotteryAmt = 250000
 # Gems.
-huntGems = [57,56,55,54,53,52,51]
-empGems = [71,70,69,68,67,66,65]
-luckGems = [78,77,76,75,74,73,72]
-specialGems = [85,84,83,82,81,80,79]
+huntGems = ["057","056","055","054","053","052","051"]
+empGems = ["071","070","069","068","067","066","065"]
+luckGems = ["078","077","076","075","074","073","072"]
+specialGems = ["085","084","083","082","081","080","079"]
 qtemp = []
 # Cooldowns
 huntOrBattleCooldown = config["commands"][0]["cooldown"]
@@ -191,8 +191,9 @@ class MyClient(discord.Client):
             else:
                 pass
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            await self.cm.send(f'{setprefix}{self.huntOrBattle}')
-            console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
+            if not self.tempHuntDisable:
+                await self.cm.send(f'{setprefix}{self.huntOrBattle}')
+                console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
             if self.hb == 1:
                 await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
             else:
@@ -306,6 +307,7 @@ class MyClient(discord.Client):
             await self.cm.send(f'{setprefix}quest')
             self.qtemp2 = False
             console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "magenta on black")
+            self.last_cmd_time = time.time()
             await asyncio.sleep(random.uniform(500.28288282, 701.928292929))
             if self.qtemp:
                 self.current_time = time.time()
@@ -371,6 +373,7 @@ class MyClient(discord.Client):
         self.owoTempIntTwo = 0
         self.battleWithFriendQuest = False
         self.hunt = None
+        self.tempHuntDisable = False
         self.battle = None
         self.justStarted = True
         self.list_channel = [self.channel_id, self.dm.dm_channel.id]
@@ -394,6 +397,7 @@ class MyClient(discord.Client):
         self.gemEmpCnt = None
         self.gemLuckCnt = None
         self.gemSpecialCnt = None
+        self.invCheck = False
         printBox(f'-Loaded all accounts.'.center(console_width - 2 ),'bold magenta on black' )
         print('-'*console_width)
         # Starting hunt/battle loop
@@ -526,9 +530,38 @@ class MyClient(discord.Client):
             self.hb = 1
             self.last_cmd_time = time.time()
             self.lastcmd = "hunt"
-            if "you found" in message.content.lower():
+            if "caught" in message.content.lower():
+                self.current_time = time.time()
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}inventory")
-                await asyncio.sleep(random.uniform(0.1,0.3)
+                console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
+                self.invCheck = True
+        if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
+            if "**lootbox**" in message.content.lower() and autoLootbox:
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                await self.cm.send(f"{setprefix}lb all")
+                console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
+                await asyncio.sleep(random.uniform(0.3,0.5))
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                
+            elif "**weapon crate**" in message.content.lower() and autoCrate:
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                await self.cm.send(f"{setprefix}crate all")
+                console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
+                await asyncio.sleep(random.uniform(0.3,0.5))
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+        if "Inventory" in message.content and "=" in message.content.lower():
+            self.invNumbers = re.findall(r'`(\d+)`', message.content)
+            self.tempHuntDisable = True
+            self.tempForCheck = False
+            if self.invCheck:
                 self.sendingGemsIds = ""
                 if autoHuntGem:
                     for i in huntGems:
@@ -538,7 +571,7 @@ class MyClient(discord.Client):
                                 self.tempForCheck = True
                                 break
                         if self.tempForCheck == True:
-                            break
+                            break                            
                 self.tempForCheck = False
                 if autoEmpoweredGem:
                     for i in empGems:
@@ -551,7 +584,7 @@ class MyClient(discord.Client):
                             break
                 self.tempForCheck = False
                 if autoLuckyGem:
-                    for i in luckyGems:
+                    for i in luckGems:
                         for o in self.invNumbers:
                             if i == o:
                                 self.sendingGemsIds + str(i) + " "
@@ -575,28 +608,10 @@ class MyClient(discord.Client):
                 if self.sendingGemsIds != "":
                     await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
-        if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
-            if "**lootbox**" in message.content.lower() and autoLootbox:
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}lb all")
-                console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
-                await asyncio.sleep(random.uniform(0.3,0.5))
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                
-            elif "**weapon crate**" in message.content.lower() and autoCrate:
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}crate all")
-                console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
-                await asyncio.sleep(random.uniform(0.3,0.5))
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-        if "inventory" in message.content.lower() and "=" in message.content.lower():
-            self.invNumbers = re.findall(r'`(\d+)`', message.content)         
+                    self.last_cmd_time = time.time()
+                self.invCheck = False
+                self.tempHuntDisable = False
+                self.sendingGemsIds = ""
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
