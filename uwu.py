@@ -91,14 +91,18 @@ for i in config["commands"][2]["rarity"]:
 autoCf = config["commands"][4]["coinflip"]
 autoSlots = config["commands"][3]["slots"]
 customCommands = config["customCommands"]["enabled"]
-commandsList = config["customCommands"]["commands"]
-commandsCooldown = config["customCommands"]["cooldowns"]
 lottery = config["commands"][7]["lottery"]
 lotteryAmt = config["commands"][7]["amount"]
 lvlGrind = config["commands"][8]["lvlGrind"]
-#dble check
-sorted_pairs = sorted(zip(commandsList, commandsCooldown))
-sorted_list1 = [pair[1] for pair in sorted_pairs]
+customCommandCnt = -1
+for i in config["customCommands"]["commands"]:
+    customCommandCnt+=1
+if customCommandCnt >= 1:
+    sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1]) 
+    sorted_list1, sorted_list2 = zip(*sorted_zipped_lists)
+elif customCommandCnt == 0:
+    sorted_list1 = config["customCommands"]["commands"]
+    sorted_list2 = config["customCommands"]["cooldowns"]
 #lotter amt check:-
 if lotteryAmt > 250000:
     lotteryAmt = 250000
@@ -178,12 +182,15 @@ class MyClient(discord.Client):
     #hunt/battle
     @tasks.loop()
     async def send_hunt_or_battle(self):
-        #print(self.hb)
+        print(self.hb)
         if not self.huntOrBattleSelected:
             if self.hb == 1:
                 self.huntOrBattle = "battle"
             elif self.hb == 0:
                 self.huntOrBattle = "hunt"
+        if self.lastHb == 0:
+            await asyncio.sleep(random.uniform(2.5,3.5))
+        self.lastHb = self.hb
         if self.f != True:
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -194,10 +201,10 @@ class MyClient(discord.Client):
             if not self.tempHuntDisable:
                 await self.cm.send(f'{setprefix}{self.huntOrBattle}')
                 console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
-            if self.hb == 1:
-                await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
-            else:
-                await asyncio.sleep(random.uniform(0.3,0.6)) 
+                if self.hb == 1:
+                    await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
+                else:
+                    await asyncio.sleep(random.uniform(0.3,0.6)) 
     #pray/curse
     @tasks.loop()
     async def send_curse_and_prayer(self):
@@ -290,11 +297,14 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_custom(self):
         if self.f != True:
-            self.index = 0
-            for i in commandsList:
-                await asyncio.sleep(random.uniform(commandsCooldown[self.index] + 0.3, commandsCooldown[self.index] + 0.5))
-                await self.cm.send(i)
-                self.index+=1
+            for i in range(customCommandCnt):
+                if i != 0 and i+1 < customCommandCnt:                  
+                    await asyncio.sleep(random.uniform((sorted_list2[i] - sorted_list2[i-1]) + 0.3, (sorted_list2[i] - sorted_list2[i-1]) + 0.5))
+                elif i == 0:
+                    await asyncio.sleep(random.uniform(sorted_list2[i] + 0.3, sorted_list2[i] + 0.5))
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+                await self.cm.send(sorted_list1[i])
                 self.last_cmd_time = time.time()
     # Quests
     @tasks.loop()
@@ -354,7 +364,6 @@ class MyClient(discord.Client):
         self.on_ready_dn = False
         self.cmds = 1
         self.cmds_cooldown = 0
-        await asyncio.sleep(1)
         printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )
         listUserIds.append(self.user.id)
         await asyncio.sleep(0.12)
@@ -387,6 +396,7 @@ class MyClient(discord.Client):
         self.lastcmd = None
         self.busy = False
         self.hb = 0
+        self.lastHb = None
         self.ss = 0
         self.hCount = 0
         self.time_since_last_cmd = 0
@@ -570,7 +580,6 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                print(self.sendingGemsIds)
                                 break
                         if self.tempForCheck == True:
                             break                            
@@ -581,7 +590,6 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                print(self.sendingGemsIds)
                                 break
                         if self.tempForCheck == True:
                             break
@@ -592,7 +600,6 @@ class MyClient(discord.Client):
                             if i == o:
                                 self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
                                 self.tempForCheck = True
-                                print(self.sendingGemsIds)
                                 break
                         if self.tempForCheck == True:
                             break
@@ -611,14 +618,12 @@ class MyClient(discord.Client):
                 self.tempForCheck = False
                 print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
-                    print("t1")
                     await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     self.last_cmd_time = time.time()
                 self.invCheck = False
                 self.tempHuntDisable = False
                 self.sendingGemsIds = ""
-                print("passed")
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
