@@ -325,8 +325,6 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_lottery(self):
         if self.f != True:
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
@@ -337,6 +335,8 @@ class MyClient(discord.Client):
                 int(self.time_until_12am_pst.total_seconds() % 60)
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             await self.cm.send(f'{setprefix}lottery {self.lotteryAmt}')
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran lottery.".center(console_width - 2 ), style = "cyan on black")
@@ -401,6 +401,7 @@ class MyClient(discord.Client):
         printBox(f'-Loaded all accounts.'.center(console_width - 2 ),'bold magenta on black' )
         print('-'*console_width)
         # Starting hunt/battle loop
+        self.on_ready_dn = True
         if autoHunt or autoBattle:
             if autoHunt and autoBattle:
                 self.huntOrBattle = None
@@ -445,7 +446,7 @@ class MyClient(discord.Client):
             self.slotsT = config["commands"][3]["startValue"]
             self.slotsN = 1
             self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
-            self.send_cf.start()
+            self.send_slots.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Start Sell or Sac
         if autoSell or autoSac:
@@ -486,7 +487,7 @@ class MyClient(discord.Client):
         
 #----------ON MESSAGE----------#
     async def on_message(self, message):
-        if not self.is_ready():
+        if not self.on_ready_dn:
             return
         if message.author.id != 408785106942164992:
             return
@@ -625,6 +626,8 @@ class MyClient(discord.Client):
                     self.last_cmd_time = time.time()
                     self.lastcmd = "battle"
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
+                    if not autoQuest:
+                        return
                     if "you finished all of your quests!" in embed.description.lower():
                         self.qtemp = True
                         self.qtemp2 = False
