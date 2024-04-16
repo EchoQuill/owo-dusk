@@ -161,6 +161,7 @@ class MyClient(discord.Client):
             await self.cm.send(f"{setprefix}daily")
             self.last_cmd_time = time.time()
             self.lastcmd = "daily"
+            console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
         self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
         self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
         
@@ -171,18 +172,18 @@ class MyClient(discord.Client):
 )
         self.total_seconds = self.time_until_12am_pst.total_seconds()
         #print(f"Time till mext daily for {self.user.name} = {self.formatted_time}")
-        console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
         await asyncio.sleep(self.total_seconds+random.uniform(30,90))
         self.current_time = time.time()
         self.time_since_last_cmd = self.urrent_time - self.last_cmd_time
         if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
         await self.cm.send(f"{setprefix}daily")
+        console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
         self.lastcmd = "daily"
+    
     #hunt/battle
     @tasks.loop()
     async def send_hunt_or_battle(self):
-        print(self.hb)
         if not self.huntOrBattleSelected:
             if self.hb == 1:
                 self.huntOrBattle = "battle"
@@ -335,6 +336,10 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_lottery(self):
         if self.f != True:
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
+            self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
@@ -345,11 +350,7 @@ class MyClient(discord.Client):
                 int(self.time_until_12am_pst.total_seconds() % 60)
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send(f'{setprefix}lottery {self.lotteryAmt}')
-            self.last_cmd_time = time.time()
-            console.print(f"-{self.user}[+] ran lottery.".center(console_width - 2 ), style = "cyan on black")
+            console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
      # Lvl grind
     @tasks.loop()
@@ -568,7 +569,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-        if "Inventory" in message.content and "=" in message.content.lower():
+        if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
             self.invNumbers = re.findall(r'`(\d+)`', message.content)
             self.tempHuntDisable = True
             self.tempForCheck = False
