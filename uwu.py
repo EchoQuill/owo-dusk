@@ -81,6 +81,10 @@ autoHuntGem = config["autoUse"]["autoGem"]["huntGem"]
 autoEmpoweredGem = config["autoUse"]["autoGem"]["empoweredGem"]
 autoLuckyGem = config["autoUse"]["autoGem"]["luckyGem"]
 autoSpecialGem = config["autoUse"]["autoGem"]["specialGem"]
+if autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem:
+    autoGem = True
+else:
+    autoGem = False
 autoSell = config["commands"][2]["sell"]
 autoSac = config["commands"][2]["sacrifice"]
 autoQuest = config["commands"][6]["quest"]
@@ -132,9 +136,11 @@ def generate_random_string():
 # For battery check
 def batteryCheckFunc():
     while True:
+        time.sleep(120)
         battery_status = os.popen("termux-battery-status").read()
         battery_data = json.loads(battery_status)
         percentage = battery_data['percentage']
+        console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
         if percentage < mobileBatteryStopLimit:
             break
     os._exit(0)
@@ -147,7 +153,7 @@ class MyClient(discord.Client):
         super().__init__(*args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
-        self.list_channel = [self.channel_id]   
+        self.list_channel = [self.channel_id]
 #----------SENDING COMMANDS----------#
     #daily
     @tasks.loop()
@@ -360,8 +366,6 @@ class MyClient(discord.Client):
 
 #----------ON READY----------#
     async def on_ready(self):
-        printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
-        printBox(f'-version:- 0.0.1'.center(console_width - 2 ),'bold cyan on black' )
         self.on_ready_dn = False
         self.cmds = 1
         self.cmds_cooldown = 0
@@ -409,8 +413,6 @@ class MyClient(discord.Client):
         self.gemLuckCnt = None
         self.gemSpecialCnt = None
         self.invCheck = False
-        printBox(f'-Loaded all accounts.'.center(console_width - 2 ),'bold magenta on black' )
-        print('-'*console_width)
         # Starting hunt/battle loop
         self.on_ready_dn = True
         if autoHunt or autoBattle:
@@ -495,7 +497,6 @@ class MyClient(discord.Client):
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
-        
 #----------ON MESSAGE----------#
     async def on_message(self, message):
         if not self.on_ready_dn:
@@ -505,8 +506,8 @@ class MyClient(discord.Client):
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             self.f = True
             if termuxNotificationEnabled:
-                os.system("termux-notification -c 'captcha detected!'")
-                os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}")
+                os.system(f"termux-notification -c 'captcha detected! {self.user.name}'")
+                os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
             print("unsolved captcha!!!!, stopping")   
             embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
@@ -542,7 +543,7 @@ class MyClient(discord.Client):
             self.hb = 1
             self.last_cmd_time = time.time()
             self.lastcmd = "hunt"
-            if "caught" in message.content.lower():
+            if "caught" in message.content.lower() and autoGem:
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
@@ -738,10 +739,14 @@ def run_bot(token, channel_id):
 if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
+    printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
+    printBox(f'-version:- 0.0.6'.center(console_width - 2 ),'bold cyan on black' )
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
         console.print("Only enable either termux notifs of desktop notifs.", style = "red on black")
-    
     tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
+    token_len = len(tokens_and_channels)
+    printBox(f'-Loaded {token_len} accounts.'.center(console_width - 2 ),'bold magenta on black' )
+    #print(token_len)
     run_bots(tokens_and_channels)
