@@ -571,10 +571,10 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
-            self.invNumbers = re.findall(r'`(\d+)`', message.content)
-            self.tempHuntDisable = True
-            self.tempForCheck = False
             if self.invCheck:
+                self.invNumbers = re.findall(r'`(\d+)`', message.content)
+                self.tempHuntDisable = True
+                self.tempForCheck = False
                 self.sendingGemsIds = ""
                 if autoHuntGem:
                     for i in huntGems:
