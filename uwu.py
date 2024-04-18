@@ -54,7 +54,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-list_captcha = ["captcha","https://owobot.com/captcha","please reply with the following"]
+list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
 termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
@@ -764,7 +764,7 @@ if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
-    printBox(f'-version:- 0.0.7'.center(console_width - 2 ),'bold cyan on black' )
+    printBox(f'-version:- 0.0.8'.center(console_width - 2 ),'bold cyan on black' )
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
