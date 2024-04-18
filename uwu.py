@@ -525,6 +525,10 @@ class MyClient(discord.Client):
         if message.author.id != 408785106942164992:
             return
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
+            if "**👍 |** I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
+                self.f = False
+                console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
+                return
             self.f = True
             if termuxNotificationEnabled:
                 os.system(f"termux-notification -c 'captcha detected! {self.user.name}'")
