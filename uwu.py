@@ -433,6 +433,7 @@ class MyClient(discord.Client):
         self.gemEmpCnt = None
         self.gemLuckCnt = None
         self.gemSpecialCnt = None
+        self.gems = autoGem
         self.invCheck = False
         # Starting hunt/battle loop
         self.on_ready_dn = True
@@ -571,7 +572,7 @@ class MyClient(discord.Client):
             self.hb = 1
             self.last_cmd_time = time.time()
             self.lastcmd = "hunt"
-            if "caught" in message.content.lower() and autoGem:
+            if "caught" in message.content.lower() and self.gems:
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
@@ -651,6 +652,9 @@ class MyClient(discord.Client):
                     await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     self.last_cmd_time = time.time()
+                else:
+                    self.gems = False
+                    console.print(f"-{self.user}[!] No gems to use... disabling...".center(console_width - 2 ), style = "deep_pink2 on black")
                 self.invCheck = False
                 self.tempHuntDisable = False
                 self.sendingGemsIds = ""
