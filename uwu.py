@@ -54,7 +54,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-list_captcha = ["captcha","link below","https://owobot.com/captcha","letter","verification test"]
+list_captcha = ["captcha","https://owobot.com/captcha","please reply with the following"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
 termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
@@ -158,35 +158,37 @@ class MyClient(discord.Client):
     #daily
     @tasks.loop()
     async def send_daily(self):
-        if self.justStarted:
-            await asyncio.sleep(random.uniform(21,67))
+        if self.f != True:
+            if self.justStarted:
+                await asyncio.sleep(random.uniform(21,67))
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                await self.cm.send(f"{setprefix}daily")
+                self.last_cmd_time = time.time()
+                self.lastcmd = "daily"
+                console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
+            self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+            self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
+        
+            self.formatted_time = "{:02}h {:02}m {:02}s".format(
+                int(self.time_until_12am_pst.total_seconds() // 3600),
+                int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
+                int(self.time_until_12am_pst.total_seconds() % 60)
+)
+            self.total_seconds = self.time_until_12am_pst.total_seconds()
+        #print(f"Time till mext daily for {self.user.name} = {self.formatted_time}")
+            await asyncio.sleep(self.total_seconds+random.uniform(30,90))
             self.current_time = time.time()
-            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            self.time_since_last_cmd = self.urrent_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
             await self.cm.send(f"{setprefix}daily")
-            self.last_cmd_time = time.time()
-            self.lastcmd = "daily"
             console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
-        self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
-        self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
-        
-        self.formatted_time = "{:02}h {:02}m {:02}s".format(
-            int(self.time_until_12am_pst.total_seconds() // 3600),
-            int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
-            int(self.time_until_12am_pst.total_seconds() % 60)
-)
-        self.total_seconds = self.time_until_12am_pst.total_seconds()
-        #print(f"Time till mext daily for {self.user.name} = {self.formatted_time}")
-        await asyncio.sleep(self.total_seconds+random.uniform(30,90))
-        self.current_time = time.time()
-        self.time_since_last_cmd = self.urrent_time - self.last_cmd_time
-        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-        await self.cm.send(f"{setprefix}daily")
-        console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
-        self.lastcmd = "daily"
-    
+            self.lastcmd = "daily"
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     #hunt/battle
     @tasks.loop()
     async def send_hunt_or_battle(self):
@@ -211,7 +213,9 @@ class MyClient(discord.Client):
                 if self.hb == 1:
                     await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
                 else:
-                    await asyncio.sleep(random.uniform(0.3,0.6)) 
+                    await asyncio.sleep(random.uniform(0.3,0.6))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     #pray/curse
     @tasks.loop()
     async def send_curse_and_prayer(self):
@@ -232,7 +236,9 @@ class MyClient(discord.Client):
                 self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
             await asyncio.sleep(prayOrCurseCooldown + random.uniform(0.99, 1.10))
-     #coinflip
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+     #coinflip jejejdjdj
     @tasks.loop()
     async def send_cf(self):
         if self.f != True:
@@ -265,6 +271,8 @@ class MyClient(discord.Client):
             await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
             console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(slotsCooldown + random.uniform(0.28288282, 0.928292929))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Owo top
     @tasks.loop()
     async def send_owo(self):
@@ -280,6 +288,8 @@ class MyClient(discord.Client):
                 if self.owoTempInt == self.owoTempIntTwo:
                     self.send_owo.stop()
             await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # auto sell / auto sac.
     @tasks.loop()
     async def send_sell_or_sac(self):
@@ -300,6 +310,8 @@ class MyClient(discord.Client):
                 self.last_cmd_time = time.time()
                 console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
                 await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Custom commands
     @tasks.loop()
     async def send_custom(self):
@@ -313,6 +325,8 @@ class MyClient(discord.Client):
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 await self.cm.send(sorted_list1[i])
                 self.last_cmd_time = time.time()
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Quests
     @tasks.loop()
     async def check_quests(self):
@@ -338,6 +352,8 @@ class MyClient(discord.Client):
             )
                 self.total_seconds = self.time_until_12am_pst.total_seconds()
                 await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
+        else:        
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Lottery
     @tasks.loop()
     async def send_lottery(self):
@@ -358,11 +374,16 @@ class MyClient(discord.Client):
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Lvl grind
     @tasks.loop()
     async def lvlGrind(self):
-        await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
-        await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
+        if self.f != True:
+            await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+            await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
 
 #----------ON READY----------#
     async def on_ready(self):
@@ -508,7 +529,7 @@ class MyClient(discord.Client):
             if termuxNotificationEnabled:
                 os.system(f"termux-notification -c 'captcha detected! {self.user.name}'")
                 os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
-            print("unsolved captcha!!!!, stopping")   
+            console.print(f"-{self.user}[!] CAPTCHA DETECTED. waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
                     description=f"user got captcha :- {self.user} ;<",
@@ -521,6 +542,9 @@ class MyClient(discord.Client):
             if termuxTtsEnabled:
                 os.system(f"termux-tts-speak {termuxTtsContent}")
             return
+        if "**👍 |** I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
+            self.f = False
+            console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
         if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
@@ -618,7 +642,7 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
-                print(self.sendingGemsIds)
+               # print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
                     await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
@@ -740,7 +764,7 @@ if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
-    printBox(f'-version:- 0.0.6'.center(console_width - 2 ),'bold cyan on black' )
+    printBox(f'-version:- 0.0.7'.center(console_width - 2 ),'bold cyan on black' )
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
