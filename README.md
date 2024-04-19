@@ -24,6 +24,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto lottery
 * captcha detection(not solver)
 * ban detection
+* auto cookie
 * ~~auto slots~~
 * ~~auto coinflip~~
 * ~~auto blackjack~~ [under progress]
@@ -39,6 +40,5 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * Mobile texttospeech captcha alert
 * Sends toasts when captcha {Mobile only}
 * level grind.
-* 
 
 thanks for reading :>, I hope this tool could help you even if a little.
