@@ -6,7 +6,7 @@
 
 --------
 
-> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown in code.... not all featues in features list is added yet
+> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown.... not all featues in features list is added yet (the ~~crosed~~ ones are not working/requires fix, this will be fixed/added as soon as I have time to do so)
 
 
 Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
@@ -21,22 +21,24 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto curse
 * auto owo top
 * auto daily
+* auto lottery
 * captcha detection(not solver)
 * ban detection
-* auto slots
-* auto coinflip
+* ~~auto slots~~
+* ~~auto coinflip~~
 * ~~auto blackjack~~ [under progress]
-* custom commands, you can add commands that is not currently in the list with your own cooldown :>
+* ~~custom commands, you can add commands that is not currently in the list with your own cooldown :>~~
 * battery check
-* Play audio file when captcha
-* auto quest
+* ~~Play audio file when captcha~~
+* ~~auto quest~~
 * auto sell/sacrifice
-* auto use crate/lootbox/gem
-* supports both desktop and termux notifications
+* auto use crate
+* auto use lootbox
+* auto use Gems (hunt gem, empowered gem, lucky gem and special gem)
+* supports both ~~desktop~~ and termux notifications [I have to add desktop notifs]
 * Mobile texttospeech captcha alert
-* appear typing while bot is sending commands
-* supports asking for help is supported quests in ```owo support server```
-* ban detection
+* Sends toasts when captcha {Mobile only}
 * level grind.
+* 
 
 thanks for reading :>, I hope this tool could help you even if a little.
