@@ -8,7 +8,7 @@
 #------------------------------------------------
 # It would also be great if you understand that iam a new python developer
 # Iam not that skilled so there might be some repetitions etc
-# Please do give me pointers on how to improve.
+# Please do give me advice on how to improve.
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from discord import SyncWebhook
@@ -98,6 +98,8 @@ customCommands = config["customCommands"]["enabled"]
 lottery = config["commands"][7]["lottery"]
 lotteryAmt = config["commands"][7]["amount"]
 lvlGrind = config["commands"][8]["lvlGrind"]
+cookie = config["commands"][9]["cookie"]
+cookieUserId = config["commands"][9]["userid"]
 customCommandCnt = -1
 for i in config["customCommands"]["commands"]:
     customCommandCnt+=1
@@ -384,6 +386,28 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+    # cookie
+    @tasks.loop()
+    async def send_cookie(self):
+        if self.f != True:
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            await self.cm.send(f'{setprefix}cookie {cookieUserId}')
+            self.last_cmd_time = time.time()
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+            self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
+            self.formatted_time = "{:02}h {:02}m {:02}s".format(
+                int(self.time_until_12am_pst.total_seconds() // 3600),
+                int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
+                int(self.time_until_12am_pst.total_seconds() % 60)
+        )
+            self.total_seconds = self.time_until_12am_pst.total_seconds()
+            console.print(f"-{self.user}[+] send cookie. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
+            await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
 
 #----------ON READY----------#
     async def on_ready(self):
@@ -464,6 +488,9 @@ class MyClient(discord.Client):
         # Starting Auto Owo
         if autoOwo:
             self.send_owo.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
+        if cookie:
+            self.send_cookie.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Coinflip
         if autoCf:
