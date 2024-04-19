@@ -15,7 +15,7 @@
       "userToPrayOrCurse": null
     },
     {
-      "sell": true,
+      "sell": false,
       "sacrifice": false,
       "cooldown": 200,
       "rarity": [
@@ -31,16 +31,16 @@
     },
     {
       "slots": false,
-      "cooldown": 10,
-      "doubleOnLose": false,
-      "allottedAmount": 10000,
+      "cooldown": 20,
+      "doubleOnLose": true,
+      "allottedAmount": 6000,
       "startValue": 200
     },
     {
       "coinflip": false,
       "allottedAmount": 6000,
       "startValue": 200,
-      "cooldown": 12,
+      "cooldown": 15,
       "doubleOnLose": true
     },
     {
@@ -56,15 +56,19 @@
     },
     {
       "lottery": false,
-      "amount":0
+      "amount":1
     },
     {
-      "lvlGrind": false,
+      "lvlGrind": true,
       "cooldown": 20
-    }
+    },
+   {
+      "cookie": true,
+      "userid": 408785106942164992
+   }
   ],
   "autoDaily": false,
-  "sendOwo": false,
+  "sendOwo": true,
   "autoUse": {
     "autoGem": {
       "huntGem": true,
@@ -72,7 +76,7 @@
       "luckyGem": true,
       "specialGem": false
     },
-    "autoUseLootbox": true,
+    "autoUseLootbox": false,
     "autoUseCrate": true
   },
   "customCommands": {
@@ -87,16 +91,16 @@
     "enabled": true,
     "vibrate": {
       "enabled": true,
-      "time": 3
+      "time": 5
     },
     "texttospeech": {
       "enabled": true,
-      "content": "Captcha detected!"
+      "content": "Captcha detected! owo"
     },
     "notifications": true,
     "batteryCheck": {
-      "enabled": false,
-      "percentage": 20
+      "enabled": true,
+      "minPercentage": 15
     }
   }
 }
