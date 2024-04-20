@@ -48,6 +48,10 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
   <center><img src="imgs/mobile_cli.jpg" width="300" height="600"></center>
   <br>
   <p>Mobile CLI screenshot</p>
+  <br>
+  <center><img src="imgs/desktop_cli.jpg" width="600" height="300"></center>
+  <br>
+  <p>Desktop CLI screenshot</p>
 </div>
 
 ----
