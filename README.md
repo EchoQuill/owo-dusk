@@ -49,7 +49,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
   <br>
   <p>Mobile CLI screenshot</p>
   <br>
-  <center><img src="imgs/desktop_cli.jpg" width="600" height="300"></center>
+  <center><img src="imgs/desktop_cli.png" width="500" height="300"></center>
   <br>
   <p>Desktop CLI screenshot</p>
 </div>
