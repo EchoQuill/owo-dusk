@@ -40,5 +40,14 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * Mobile texttospeech captcha alert
 * Sends toasts when captcha {Mobile only}
 * level grind.
+----
+# Screenshots 📸 
+----
 
+<div align="center">
+  <center><img src="imgs/mobile_cli.jpg"></center>
+  <br>
+  <p>Mobile CLI screenshot</p>
+</div>
+----
 thanks for reading :>, I hope this tool could help you even if a little.
