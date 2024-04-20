@@ -49,5 +49,6 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
   <br>
   <p>Mobile CLI screenshot</p>
 </div>
+
 ----
 thanks for reading :>, I hope this tool could help you even if a little.
