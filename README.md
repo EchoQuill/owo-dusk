@@ -45,10 +45,10 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 ----
 
 <div align="center">
-  <center><img src="imgs/mobile_cli.jpg" width="300" height="450"></center>
+  <center><img src="imgs/mobile_cli.jpg" width="300" height="550"></center>
   <br>
   <p>Mobile CLI screenshot</p>
 </div>
 
 ----
-thanks for reading :>, I hope this tool could help you even if a little.
+thanks for reading :>, I hope this tool could help you even if a little ❤ .
