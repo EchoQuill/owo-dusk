@@ -6,12 +6,12 @@
 
 --------
 
-> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown.... not all featues in features list is added yet (the ~~crosed~~ ones are not working/requires fix, this will be fixed/added as soon as I have time to do so)
+> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown.... not all featues in features list is added yet (the ~~crosed~~ ones are not working/requires fix, this will be fixed/added as soon as I have time to do so) EDIT:- Took care of some things that had been making me unable to give proper time for working on this proj, so expect me to start speedrunning updates starting today!
 
 
 Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 
-> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbotd to grind owo.
+> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbot to grind owo. 
 
 # 🌟 Features
 ----
