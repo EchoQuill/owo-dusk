@@ -69,6 +69,10 @@ desktopNotificationEnabled = config["desktopNotificationEnabled"]
 if desktopNotificationEnabled:
     from plyer import notification
 webhookEnabled = config["webhookEnabled"]
+if webhookEnabled:
+    webhookUselessLog = config["webhookUselessLog"]
+else:
+    webhookUselessLog = False
 webhook_url = config["webhook"]
 setprefix = config["setprefix"]
 #----------MAIN VARIABLES----------#
@@ -154,6 +158,13 @@ def batteryCheckFunc():
 if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
+# Webhook Logging
+def webhookSender(msg, desc=None):
+    embed2 = discord.Embed(
+        title=msg
+        description=desc
+        color=discord.Color.purple() # Double check
+        )
 #-------------
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
@@ -193,6 +204,8 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
             await self.cm.send(f"{setprefix}daily")
             console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
+            if webhookUselessLog:
+                webhookSender(f"-{self.user}[+] ran daily", f"next daily in {self.formatted_time}")
             self.lastcmd = "daily"
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -217,6 +230,8 @@ class MyClient(discord.Client):
             if not self.tempHuntDisable:
                 await self.cm.send(f'{setprefix}{self.huntOrBattle}')
                 console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
                 if self.hb == 1:
                     await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
                 else:
@@ -242,6 +257,8 @@ class MyClient(discord.Client):
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
+            if webhookUselessLog:
+                webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.")
             await asyncio.sleep(prayOrCurseCooldown + random.uniform(0.99, 1.10))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -255,9 +272,13 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.cfAmt*self.cfN > 250000:
                 console.print(f"-{self.user}[-] Stopping coin flip [250k exceeded]".center(console_width - 2 ), style = "red on black")
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[-] Stopping coin flip [250k exceeded].")
                 self.send_cf.stop()
             elif self.cfAllotedValue < self.cft:
                 console.print(f"-{self.user}[-] Stopping coin flip [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[-] Stopping coin flip [allotted value exceeded].")
                 self.send_cf.stop()
             await self.cm.send(f'{setprefix}cf {self.cfAmt*self.cfN}')
             await asyncio.sleep(cfCooldown + random.uniform(0.28288282, 0.928292929))
@@ -270,12 +291,18 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.slotsAmt*self.slotsN > 250000:
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[-] Stopping coin flip [250k exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
             elif self.slotsAllotedValue < self.slotsT:
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[-] Stopping coin flip [allotted value exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
             await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
+            if webhookUselessLog:
+                webhookSender(f"-{self.user}[-] ran Coinflip")
             console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(slotsCooldown + random.uniform(0.28288282, 0.928292929))
         else:
@@ -290,6 +317,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             await self.cm.send('owo')
             console.print(f"-{self.user}[+] ran owo".center(console_width - 2 ), style = "Cyan on black")
+            if webhookUselessLog:
+                webhookSender(f"-{self.user}[-] ran OwO")
             if autoOwo == False and self.owoQuest == True:
                 self.owoTempInt+=1 
                 if self.owoTempInt == self.owoTempIntTwo:
@@ -315,6 +344,8 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
                 self.last_cmd_time = time.time()
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[+] ran {self.sellOrSac}")
                 console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
                 await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
         else:
@@ -380,6 +411,8 @@ class MyClient(discord.Client):
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
+            if webhookEnabled:
+                webhookSender(f"-{self.user}[+] ran lottery.", f"Running Lottery again in {self.total_seconds}")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -398,6 +431,7 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             await self.cm.send(f'{setprefix}cookie {cookieUserId}')
+            
             self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -409,6 +443,8 @@ class MyClient(discord.Client):
                 int(self.time_until_12am_pst.total_seconds() % 60)
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
+            if webhookEnabled:
+                webhookSender(f"-{self.user}[+] send cookie.", f"Trying cookie again in {self.total_seconds}")
             console.print(f"-{self.user}[+] send cookie. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
@@ -561,6 +597,8 @@ class MyClient(discord.Client):
             if "**👍 |** I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
                 self.f = False
                 console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
                 return
             self.f = True
             if termuxNotificationEnabled:
@@ -624,6 +662,9 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}hunt")
+                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] ran hunt")
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.lastcmd == "battle":
                 self.current_time = time.time()
@@ -631,6 +672,9 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}battle")
+                console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] ran battle")
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
             self.hb = 1
@@ -642,6 +686,8 @@ class MyClient(discord.Client):
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}inventory")
                 console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
                 self.invCheck = True
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
             if "**lootbox**" in message.content.lower() and autoLootbox:
@@ -651,6 +697,8 @@ class MyClient(discord.Client):
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}lb all")
                 console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] used lootbox")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 
@@ -660,6 +708,8 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 await self.cm.send(f"{setprefix}crate all")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] used crates")
                 console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -715,6 +765,8 @@ class MyClient(discord.Client):
                 if self.sendingGemsIds != "":
                     await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
+                    if webhookUselessLog:
+                        webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})")
                     self.last_cmd_time = time.time()
                 else:
                     self.gems = False
@@ -836,7 +888,7 @@ if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
-    printBox(f'-version:- 0.0.8'.center(console_width - 2 ),'bold cyan on black' )
+    printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold cyan on black' )
     if ver_check != version:
         console.print("""version does not seem to match the one at github
 please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yellow on black")
