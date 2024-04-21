@@ -36,7 +36,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto use crate
 * auto use lootbox
 * auto use Gems (hunt gem, empowered gem, lucky gem and special gem)
-* supports both ~~desktop~~ and termux notifications [I have to add desktop notifs]
+* supports both desktop and termux notifications.
 * Mobile texttospeech captcha alert
 * Sends toasts when captcha {Mobile only}
 * level grind.
