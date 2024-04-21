@@ -54,6 +54,9 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
+version = "0.0.8"
+ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
+ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
@@ -818,6 +821,9 @@ if __name__ == "__main__":
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
     printBox(f'-version:- 0.0.8'.center(console_width - 2 ),'bold cyan on black' )
+    if ver_check != version:
+        console.print("""version does not seem to match the one at github
+please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yellow on black")
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
