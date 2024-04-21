@@ -1,7 +1,7 @@
 {
   "discordStatus": "invisible",
   "desktopNotificationEnabled": false,
-  "setprefix": "owo ",
+  "setprefix": "q",
   "commands": [
     {
       "hunt": true,
@@ -71,9 +71,9 @@
   "sendOwo": true,
   "autoUse": {
     "autoGem": {
-      "huntGem": true,
-      "empoweredGem": true,
-      "luckyGem": true,
+      "huntGem": false,
+      "empoweredGem": false,
+      "luckyGem": false,
       "specialGem": false
     },
     "autoUseLootbox": false,
@@ -85,6 +85,7 @@
     "cooldowns": []
   },
   "webhookEnabled": false,
+  "webhookUselessLog": false,
   "webhook": "webhook here",
   "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
