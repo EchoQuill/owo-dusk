@@ -159,12 +159,22 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
+dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
-    embed2 = discord.Embed(
-        title=msg
-        description=desc
+    try:
+        emb = discord.Embed(
+        title=msg,
+        description=desc,
         color=discord.Color.purple() # Double check
         )
+    
+        dwebhook.send(embed=emb, username='uwu bot warnings')
+    except discord.Forbidden as e:
+        print("Bot does not have permission to execute this command:", e)
+    except discord.NotFound as e:
+        print("The specified command was not found:", e)
+    except Exception as e:
+        print(e)
 #-------------
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
@@ -581,8 +591,7 @@ class MyClient(discord.Client):
         )
 
         if webhookEnabled:
-            self.webhook = SyncWebhook.from_url(webhook_url)
-            self.webhook.send(embed=embed1, username='uwu bot') 
+            dwebhook.send(embed=embed1, username='uwu bot') 
         await asyncio.sleep(random.uniform(2.69,3.69))
         if desktopNotificationEnabled:
             pass
@@ -611,7 +620,7 @@ class MyClient(discord.Client):
                 color=discord.Color.red()
             )
             if webhookEnabled:
-                self.webhook.send(embed=embed2, username='uwu bot warnings')
+                dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 os.system(f"termux-vibrate -d {termuxVibrationTime}")
             if termuxTtsEnabled:
@@ -639,7 +648,7 @@ class MyClient(discord.Client):
                     color=discord.Color.red()
                                 )
             if webhookEnabled:
-                self.webhook.send(embed=embed2, username='uwu bot warnings')
+                dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 os.system(f"termux-vibrate -d {termuxVibrationTime}")
             if termuxTtsEnabled:
