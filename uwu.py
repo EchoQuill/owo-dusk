@@ -4,7 +4,7 @@
 #------------------------------------------------
 # REMINDER:- THIS IS MOSTLY MADE FOR MOBILE
 # it might look ugly in desktop consoles etc.
-# iam bad with decorating cli
+# iam bad with decorating cli.
 #------------------------------------------------
 # It would also be great if you understand that iam a new python developer
 # Iam not that skilled so there might be some repetitions etc
@@ -577,6 +577,24 @@ class MyClient(discord.Client):
         if "**👍 |** I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
             self.f = False
             console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
+        if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
+            self.f = True
+            if termuxNotificationEnabled:
+                os.system(f"termux-notification -c 'BAN DETECTED! {self.user.name}'")
+                os.system(f"termux-toast -c red -b black 'BAN DETECTED:- {self.user.name}'")
+            console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
+            embed2 = discord.Embed(
+                    title=f'BANNED IN OWO :- {self.user} ;<',
+                    description=f"user got banned :- {self.user} ;<",
+                    color=discord.Color.red()
+                                )
+            if webhookEnabled:
+                self.webhook.send(embed=embed2, username='uwu bot warnings')
+            if termuxVibrationEnabled:
+                os.system(f"termux-vibrate -d {termuxVibrationTime}")
+            if termuxTtsEnabled:
+                os.system(f"termux-tts-speak user got banned!")
+            return
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
         if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
