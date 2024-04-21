@@ -66,6 +66,8 @@ termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
 termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
+if desktopNotificationEnabled:
+    from plyer import notification
 webhookEnabled = config["webhookEnabled"]
 webhook_url = config["webhook"]
 setprefix = config["setprefix"]
@@ -566,16 +568,23 @@ class MyClient(discord.Client):
                 os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
             console.print(f"-{self.user}[!] CAPTCHA DETECTED. waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
-                    title=f'CAPTCHA :- {self.user} ;<',
-                    description=f"user got captcha :- {self.user} ;<",
-                    color=discord.Color.red()
-                                )
+                title=f'CAPTCHA :- {self.user} ;<',
+                description=f"user got captcha :- {self.user} ;<",
+                color=discord.Color.red()
+            )
             if webhookEnabled:
                 self.webhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 os.system(f"termux-vibrate -d {termuxVibrationTime}")
             if termuxTtsEnabled:
                 os.system(f"termux-tts-speak {termuxTtsContent}")
+            if desktopNotificationEnabled:
+                notification.notify(
+                    title = f'{self.user}  DETECTED CAPTCHA',
+                    message = "Pls solve it within 10min to prevent ban",
+                    app_icon = None,
+                    timeout = 15,
+                    )
             return
         if "**👍 |** I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
             self.f = False
@@ -597,6 +606,13 @@ class MyClient(discord.Client):
                 os.system(f"termux-vibrate -d {termuxVibrationTime}")
             if termuxTtsEnabled:
                 os.system(f"termux-tts-speak user got banned!")
+            if desktopNotificationEnabled:
+                notification.notify(
+                    title = f'{self.user}[!] User BANNED in OwO!!',
+                    message = "Sad...",
+                    app_icon = None,
+                    timeout = 15,
+                    )
             return
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
@@ -831,5 +847,12 @@ please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yello
     tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Loaded {token_len} accounts.'.center(console_width - 2 ),'bold magenta on black' )
+    if desktopNotificationEnabled:
+        notification.notify(
+            title = f'{token_len} Tokens loaded!',
+            message = "Thankyou for putting your trust on OwO-Dusk",
+            app_icon = None,
+            timeout = 15,
+            )
     #print(token_len)
     run_bots(tokens_and_channels)
