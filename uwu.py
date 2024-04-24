@@ -314,12 +314,13 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[-] Stopping Slots [250k exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
-            elif gambleAllottedAmount <= self.gambleTotal:
+            elif 0 <= self.gambleTotal:
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
-                #add other gamble here...
+                self.send_cf.stop()
+                #add bj here...
             await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
             if webhookUselessLog:
                 webhookSender(f"-{self.user}[-] ran Slots")
@@ -865,17 +866,16 @@ class MyClient(discord.Client):
             if "won" in after.content.lower() and ":c" in after.content.lower():
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 self.slotsLastAmt = self.slotsLastAmt * 2
+                self.gambleTotal-=self.slotsLastAmt
             else:
                 print("won")
                 if "<:eggplant:417475705719226369>" in after.content.lower():
                     self.slotsNope = True
+                    console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 else:
-                    self.match = re.search(r'won <:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
-                    # this is not going to be accurate amt, fix this...
-                    self.gambleTotal+=int(match.group(1).replace(',', ''))
-                    if self.slotsDoubleOnLose:
-                        self.slotsN += 1
-                    self.slotsWon = True
+                    self.gambleTotal+=self.slotsLastAmt
+                    console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
+                    self.slotsLastAmt = gambleStartValue
         #coinflip
         if "chose" in after.content.lower():
             if "and you lost it all... :c" in after.content.lower():
