@@ -31,24 +31,12 @@
     },
     {
       "slots": false,
+      "coinflip": false,
+      "blackjack": false,
       "cooldown": 20,
       "doubleOnLose": true,
       "allottedAmount": 6000,
       "startValue": 200
-    },
-    {
-      "coinflip": false,
-      "allottedAmount": 6000,
-      "startValue": 200,
-      "cooldown": 15,
-      "doubleOnLose": true
-    },
-    {
-      "blackjack": false,
-      "allottedAmount": 6000,
-      "startValue": 200,
-      "cooldown": 12,
-      "doubleOnLose": false
     },
     {
       "quest": false,
@@ -85,8 +73,8 @@
     "cooldowns": []
   },
   "webhookEnabled": false,
-  "webhookUselessLog": false,
-  "webhook": "webhook here",
+  "webhookUselessLog": true,
+  "webhook": "Webhook Url Here",
   "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
     "enabled": true,
