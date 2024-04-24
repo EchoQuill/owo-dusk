@@ -289,17 +289,22 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.cfAmt*self.cfN > 250000:
-                console.print(f"-{self.user}[-] Stopping coin flip [250k exceeded]".center(console_width - 2 ), style = "red on black")
+            if self.slotsLastAmt >= 250000:
+                console.print(f"-{self.user}[-] Stopping coinflip [250k exceeded]".center(console_width - 2 ), style = "red on black")
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping coin flip [250k exceeded].")
+                    webhookSender(f"-{self.user}[-] Stopping coinflip [250k exceeded].")
                 self.send_cf.stop()
-            elif self.cfAllotedValue < self.cft:
-                console.print(f"-{self.user}[-] Stopping coin flip [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+            elif 0 <= self.gambleTotal:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping coin flip [allotted value exceeded].")
+                    webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
+                console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                self.send_slots.stop()
                 self.send_cf.stop()
-            await self.cm.send(f'{setprefix}cf {self.cfAmt*self.cfN}')
+                #add bj here...
+            await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
+            if webhookUselessLog:
+                webhookSender(f"-{self.user}[-] ran Coinflip")
+            console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
    # Slots
     @tasks.loop()
@@ -557,11 +562,11 @@ class MyClient(discord.Client):
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Coinflip
         if autoCf:
-            self.cfAmt = config["commands"][3]["startValue"]
-            self.cfAllotedValue = config["commands"][3]["allottedAmount"]
-            self.cft = config["commands"][3]["allottedAmount"]
-            self.cfN = 1
-            self.cfDoubleOnLose = config["commands"][3]["doubleOnLose"]
+            if doubleOnLose:
+                self.cfMulti = 2
+            else:
+                self.cfMulti = 1
+            self.cfLastAmt = gambleStartValue
             self.send_cf.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting slots CHEXK
@@ -865,31 +870,31 @@ class MyClient(discord.Client):
         if "slots" in after.content.lower():
             if "won" in after.content.lower() and ":c" in after.content.lower():
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.slotsLastAmt = self.slotsLastAmt * 2
+                if doubleOnLose:
+                    self.slotsLastAmt = self.slotsLastAmt * 2
                 self.gambleTotal-=self.slotsLastAmt
             else:
                 print("won")
                 if "<:eggplant:417475705719226369>" in after.content.lower():
-                    self.slotsNope = True
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 else:
                     self.gambleTotal+=self.slotsLastAmt
                     console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
-                    self.slotsLastAmt = gambleStartValue
+                    if doubleOnLose:
+                        self.slotsLastAmt = gambleStartValue
         #coinflip
         if "chose" in after.content.lower():
             if "and you lost it all... :c" in after.content.lower():
-                self.match = re.search(r'<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*)(?:\.\d+)?', after.content)
-                self.gambleTotal-=int(self.match.group(1).replace(',', ''))
-                console.print(f"-{self.user}[+] ran Coinflip and lost {self.match.group(1).replace(',', '')} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                if self.cfDoubleOnLose:
-                    self.cfN += 1
+                console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                self.gambleTotal-=self.cfLastAmt
+                if doubleOnLose:
+                    self.cfLastAmt = self.cfLastAmt*2
             else:
                 self.match = re.search(r'won \*\*<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
-                console.print(f"-{self.user}[+] ran Coinflip and won {self.match.group(1).replace(',', '')} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal+=int(self.match.group(1).replace(',', ''))
-                if self.cfDoubleOnLose:
-                    self.cfN = 1
+                console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                self.gambleTotal+=self.cfLastAmt
+                if doubleOnLose:
+                    self.cfLastAmt = gambleStartValue
 #----------STARTING BOT----------#                 
 def run_bots(tokens_and_channels):
     threads = []
