@@ -67,7 +67,12 @@ termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
 if desktopNotificationEnabled:
-    from plyer import notification
+    try:
+        from plyer import notification
+    except:
+        os.system("clear")
+        console.print(f"-{System}[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
+        os.system("pip install plyer")
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
@@ -96,19 +101,24 @@ else:
     autoGem = False
 autoSell = config["commands"][2]["sell"]
 autoSac = config["commands"][2]["sacrifice"]
-autoQuest = config["commands"][6]["quest"]
-ignoreDisable_Quest = config["commands"][6]["doEvenIfDisabled"]
+autoQuest = config["commands"][4]["quest"]
+ignoreDisable_Quest = config["commands"][4]["doEvenIfDisabled"]
 rarity = ""
 for i in config["commands"][2]["rarity"]:
     rarity = rarity + i + " "
-autoCf = config["commands"][4]["coinflip"]
+autoCf = config["commands"][3]["coinflip"]
 autoSlots = config["commands"][3]["slots"]
+#GAMBLE
+doubleOnLose = config["commands"][3]["doubleOnLose"]
+gambleAllottedAmount = config["commands"][3]["allottedAmount"]
+gambleStartValue = config["commands"][3]["startValue"]
+#%%%%%%%
 customCommands = config["customCommands"]["enabled"]
-lottery = config["commands"][7]["lottery"]
-lotteryAmt = config["commands"][7]["amount"]
-lvlGrind = config["commands"][8]["lvlGrind"]
-cookie = config["commands"][9]["cookie"]
-cookieUserId = config["commands"][9]["userid"]
+lottery = config["commands"][5]["lottery"]
+lotteryAmt = config["commands"][5]["amount"]
+lvlGrind = config["commands"][6]["lvlGrind"]
+cookie = config["commands"][7]["cookie"]
+cookieUserId = config["commands"][7]["userid"]
 customCommandCnt = -1
 for i in config["customCommands"]["commands"]:
     customCommandCnt+=1
@@ -131,9 +141,8 @@ qtemp = []
 huntOrBattleCooldown = config["commands"][0]["cooldown"]
 prayOrCurseCooldown = config["commands"][1]["cooldown"]
 sellOrSacCooldown = config["commands"][2]["cooldown"]
-slotsCooldown = config["commands"][3]["cooldown"]
-cfCooldown = config["commands"][4]["cooldown"]
-lvlGrindCooldown = config["commands"][8]["cooldown"]
+gambleCd = config["commands"][3]["cooldown"]
+lvlGrindCooldown = config["commands"][6]["cooldown"]
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -272,7 +281,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(prayOrCurseCooldown + random.uniform(0.99, 1.10))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
-     #coinflip jejejdjdj
+     # Coinflip
     @tasks.loop()
     async def send_cf(self):
         if self.f != True:
@@ -291,7 +300,7 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[-] Stopping coin flip [allotted value exceeded].")
                 self.send_cf.stop()
             await self.cm.send(f'{setprefix}cf {self.cfAmt*self.cfN}')
-            await asyncio.sleep(cfCooldown + random.uniform(0.28288282, 0.928292929))
+            await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
    # Slots
     @tasks.loop()
     async def send_slots(self):
@@ -300,21 +309,22 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.slotsAmt*self.slotsN > 250000:
+            if self.slotsLastAmt >= 250000:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping coin flip [250k exceeded].")
+                    webhookSender(f"-{self.user}[-] Stopping Slots [250k exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
-            elif self.slotsAllotedValue < self.slotsT:
+            elif gambleAllottedAmount <= self.gambleTotal:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping coin flip [allotted value exceeded].")
+                    webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
-            await self.cm.send(f'{setprefix}slots {slotsAmt*slotsN}')
+                #add other gamble here...
+            await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
             if webhookUselessLog:
-                webhookSender(f"-{self.user}[-] ran Coinflip")
-            console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(slotsCooldown + random.uniform(0.28288282, 0.928292929))
+                webhookSender(f"-{self.user}[-] ran Slots")
+            console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "cyan on black")
+            await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Owo top
@@ -365,7 +375,7 @@ class MyClient(discord.Client):
     async def send_custom(self):
         if self.f != True:
             for i in range(customCommandCnt):
-                if i != 0 and i+1 < customCommandCnt:                  
+                if i != 0 and i+1 <= customCommandCnt:    
                     await asyncio.sleep(random.uniform((sorted_list2[i] - sorted_list2[i-1]) + 0.3, (sorted_list2[i] - sorted_list2[i-1]) + 0.5))
                 elif i == 0:
                     await asyncio.sleep(random.uniform(sorted_list2[i] + 0.3, sorted_list2[i] + 0.5))
@@ -510,6 +520,7 @@ class MyClient(discord.Client):
         self.gemSpecialCnt = None
         self.gems = autoGem
         self.invCheck = False
+        self.gambleTotal = gambleAllottedAmount
         # Starting hunt/battle loop
         self.on_ready_dn = True
         if autoHunt or autoBattle:
@@ -545,20 +556,20 @@ class MyClient(discord.Client):
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting Coinflip
         if autoCf:
-            self.cfAmt = config["commands"][4]["startValue"]
-            self.cfAllotedValue = config["commands"][4]["allottedAmount"]
-            self.cft = config["commands"][4]["allottedAmount"]
+            self.cfAmt = config["commands"][3]["startValue"]
+            self.cfAllotedValue = config["commands"][3]["allottedAmount"]
+            self.cft = config["commands"][3]["allottedAmount"]
             self.cfN = 1
-            self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
+            self.cfDoubleOnLose = config["commands"][3]["doubleOnLose"]
             self.send_cf.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Starting slots CHEXK
         if autoSlots:
-            self.slotsAmt = config["commands"][3]["startValue"]
-            self.slotsAllotedValue = config["commands"][3]["allottedAmount"]
-            self.slotsT = config["commands"][3]["startValue"]
-            self.slotsN = 1
-            self.cfDoubleOnLose = config["commands"][6]["doubleOnLose"]
+            if doubleOnLose:
+                self.slotsMulti = 2
+            else:
+                self.slotsMulti = 1
+            self.slotsLastAmt = gambleStartValue
             self.send_slots.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         # Start Sell or Sac
@@ -710,7 +721,6 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[+] used lootbox")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                
             elif "**weapon crate**" in message.content.lower() and autoCrate:
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -853,17 +863,16 @@ class MyClient(discord.Client):
         # slots
         if "slots" in after.content.lower():
             if "won" in after.content.lower() and ":c" in after.content.lower():
-                self.slotsFail = True
-                self.slotsT-=self.slotsAmt*self.slotsN
-                if self.slotsDoubleOnLose:
-                    self.slotsN = 1
+                console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                self.slotsLastAmt = self.slotsLastAmt * 2
             else:
                 print("won")
                 if "<:eggplant:417475705719226369>" in after.content.lower():
                     self.slotsNope = True
                 else:
                     self.match = re.search(r'won <:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
-                    self.slotsT+=int(match.group(1).replace(',', ''))
+                    # this is not going to be accurate amt, fix this...
+                    self.gambleTotal+=int(match.group(1).replace(',', ''))
                     if self.slotsDoubleOnLose:
                         self.slotsN += 1
                     self.slotsWon = True
@@ -871,14 +880,14 @@ class MyClient(discord.Client):
         if "chose" in after.content.lower():
             if "and you lost it all... :c" in after.content.lower():
                 self.match = re.search(r'<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*)(?:\.\d+)?', after.content)
-                self.cft-=int(self.match.group(1).replace(',', ''))
+                self.gambleTotal-=int(self.match.group(1).replace(',', ''))
                 console.print(f"-{self.user}[+] ran Coinflip and lost {self.match.group(1).replace(',', '')} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 if self.cfDoubleOnLose:
                     self.cfN += 1
             else:
                 self.match = re.search(r'won \*\*<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
                 console.print(f"-{self.user}[+] ran Coinflip and won {self.match.group(1).replace(',', '')} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.cft+=int(self.match.group(1).replace(',', ''))
+                self.gambleTotal+=int(self.match.group(1).replace(',', ''))
                 if self.cfDoubleOnLose:
                     self.cfN = 1
 #----------STARTING BOT----------#                 
@@ -917,3 +926,9 @@ please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yello
             )
     #print(token_len)
     run_bots(tokens_and_channels)
+    
+# To-Do:-
+# 1) Add checks to stop hunt if no coins
+# 2) add checks to stop gamble if no coins
+# 3) Fix Hunt-Battle spam
+# 4) Try fix Bot stopping randomly and/or relogging error when captcha at start
