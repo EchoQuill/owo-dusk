@@ -878,16 +878,17 @@ class MyClient(discord.Client):
             return
         # slots
         if "slots" in after.content.lower():
-            if "won" in after.content.lower() and ":c" in after.content.lower():
+            if "and won nothing... :c" in after.content:
+              #  print(after.content)
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 if doubleOnLose:
                     self.slotsLastAmt = self.slotsLastAmt * 2
                 self.gambleTotal-=self.slotsLastAmt
             else:
-                print("won")
-                if "<:eggplant:417475705719226369>" in after.content.lower():
+                #print(after.content)
+                if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
-                else:
+                elif "and won" in after.content.lower():
                     self.gambleTotal+=self.slotsLastAmt
                     console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
                     if doubleOnLose:
