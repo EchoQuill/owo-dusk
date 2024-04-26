@@ -294,12 +294,14 @@ class MyClient(discord.Client):
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping coinflip 《250k exceeded》.")
                 self.send_cf.stop()
+                return
             elif 0 >= self.gambleTotal:
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping All Gambling. 《allotted value exceeded》.")
                 console.print(f"-{self.user}[-] Stopping coinflip 《allotted value exceeded》".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 self.send_cf.stop()
+                return
                 #add bj here...
             await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
             if webhookUselessLog:
@@ -319,12 +321,14 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[-] Stopping Slots 《250k exceeded》.")
                 console.print(f"-{self.user}[-] Stopping slots 《250k exceeded》".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
+                return
             elif 0 >= self.gambleTotal:
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping All Gambling. 《allotted value exceeded》.")
                 console.print(f"-{self.user}[-] Stopping slots 《allotted value exceeded》".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 self.send_cf.stop()
+                return
                 #add bj here...
             await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
             if webhookUselessLog:
