@@ -290,14 +290,14 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.slotsLastAmt >= 250000:
-                console.print(f"-{self.user}[-] Stopping coinflip [250k exceeded]".center(console_width - 2 ), style = "red on black")
+                console.print(f"-{self.user}[-] Stopping coinflip 《250k exceeded》".center(console_width - 2 ), style = "red on black")
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping coinflip [250k exceeded].")
+                    webhookSender(f"-{self.user}[-] Stopping coinflip 《250k exceeded》.")
                 self.send_cf.stop()
             elif 0 >= self.gambleTotal:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
-                console.print(f"-{self.user}[-] Stopping coinflip [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                    webhookSender(f"-{self.user}[-] Stopping All Gambling. 《allotted value exceeded》.")
+                console.print(f"-{self.user}[-] Stopping coinflip 《allotted value exceeded》".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 self.send_cf.stop()
                 #add bj here...
@@ -316,13 +316,13 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.slotsLastAmt >= 250000:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping Slots [250k exceeded].")
-                console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
+                    webhookSender(f"-{self.user}[-] Stopping Slots 《250k exceeded》.")
+                console.print(f"-{self.user}[-] Stopping slots 《250k exceeded》".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
             elif 0 >= self.gambleTotal:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
-                console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                    webhookSender(f"-{self.user}[-] Stopping All Gambling. 《allotted value exceeded》.")
+                console.print(f"-{self.user}[-] Stopping slots 《allotted value exceeded》".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 self.send_cf.stop()
                 #add bj here...
