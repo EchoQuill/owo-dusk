@@ -294,10 +294,10 @@ class MyClient(discord.Client):
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping coinflip [250k exceeded].")
                 self.send_cf.stop()
-            elif 0 <= self.gambleTotal:
+            elif 0 >= self.gambleTotal:
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
-                console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
+                console.print(f"-{self.user}[-] Stopping coinflip [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 self.send_cf.stop()
                 #add bj here...
@@ -319,7 +319,7 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[-] Stopping Slots [250k exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [250k exceeded]".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
-            elif 0 <= self.gambleTotal:
+            elif 0 >= self.gambleTotal:
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[-] Stopping All Gambling. [allotted value exceeded].")
                 console.print(f"-{self.user}[-] Stopping slots [allotted value exceeded]".center(console_width - 2 ), style = "red on black")
@@ -811,14 +811,15 @@ class MyClient(discord.Client):
                     if "you finished all of your quests!" in embed.description.lower():
                         self.qtemp = True
                         self.qtemp2 = False
+                        #set qtemp2 to True if quest. Otherwise False
                         return
-                    if "Say 'owo'" not in message.content:
+                    if "Manually hunt'" not in message.content:
                         self.owoQuest = False
                     else:
                         self.owoTempIntTwo = re.findall(r"\'owo\'\s*(\d+)\s*times", message.content)
                         if autoOwo == False:
+                            self.owoQuest = True
                             self.send_owo.start()
-                        self.owoQuest = True
                     if "Have a friend pray to you" not in message.content:
                         self.friendPrayQuest = False
                     else:
@@ -847,7 +848,7 @@ class MyClient(discord.Client):
                         pass
                     else:
                         pass
-                    if "Use an action" not in message.content:
+                    if "Use an action command on someone" not in message.content:
                         self.actionQuest = False
                     else:
                         if self.owoSupportChannel != None and self.qtemp2 == False:
@@ -890,7 +891,6 @@ class MyClient(discord.Client):
                 if doubleOnLose:
                     self.cfLastAmt = self.cfLastAmt*2
             else:
-                self.match = re.search(r'won \*\*<:cowoncy:416043450337853441> (\d{1,3}(?:,\d{3})*(?:\.\d+)?)', after.content)
                 console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 self.gambleTotal+=self.cfLastAmt
                 if doubleOnLose:
