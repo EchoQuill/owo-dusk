@@ -73,6 +73,12 @@ if desktopNotificationEnabled:
         os.system("clear")
         console.print(f"-{System}[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
         os.system("pip install plyer")
+if termuxTtsEnabled:
+    os.system("clear")
+    os.system("mkfifo ~/.tts")
+    console.print(f"-{System}[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling TermuxTTs...", style = "cyan on black")
+    os.system("cat ~/.tts | termux-tts-speak")
+    os.system("clear")
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
@@ -491,9 +497,9 @@ class MyClient(discord.Client):
         self.cm = self.get_channel(self.channel_id)
         qtemp.append(self.cm.guild.id)
         self.dm = await self.fetch_user(408785106942164992)
-        print(self.dm.dm_channel.id)
+        #print(self.dm.dm_channel.id)
         self.list_channel.append(self.dm.dm_channel.id)
-        print(self.list_channel)
+        #print(self.list_channel)
         self.qtemp = False
         self.qtemp2 = True
         self.owoQuest = False
@@ -642,30 +648,36 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
                 return
             else:
-                self.f = True
-                if termuxNotificationEnabled:
-                    os.system(f"termux-notification -c 'captcha detected! {self.user.name}'")
-                    os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
-                console.print(f"-{self.user}[!] CAPTCHA DETECTED. waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
-                embed2 = discord.Embed(
-                    title=f'CAPTCHA :- {self.user} ;<',
-                    description=f"user got captcha :- {self.user} ;<",
-                    color=discord.Color.red()
-                )
-                if webhookEnabled:
-                    dwebhook.send(embed=embed2, username='uwu bot warnings')
-                if termuxVibrationEnabled:
-                    os.system(f"termux-vibrate -d {termuxVibrationTime}")
-                if termuxTtsEnabled:
-                    os.system(f"termux-tts-speak {termuxTtsContent}")
-                if desktopNotificationEnabled:
-                    notification.notify(
-                        title = f'{self.user}  DETECTED CAPTCHA',
-                        message = "Pls solve it within 10min to prevent ban",
-                        app_icon = None,
-                        timeout = 15,
+                try:
+                    self.f = True
+                    if termuxNotificationEnabled:
+                        os.system(f"termux-notification -c 'captcha detected! {self.user.name}'")
+                        os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
+                    console.print(f"-{self.user}[!] CAPTCHA DETECTED. waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
+                    embed2 = discord.Embed(
+                        title=f'CAPTCHA :- {self.user} ;<',
+                        description=f"user got captcha :- {self.user} ;<",
+                        color=discord.Color.red()
+                    )
+                    if webhookEnabled:
+                        dwebhook.send(embed=embed2, username='uwu bot warnings')
+                    if termuxVibrationEnabled:
+                       os.system(f"termux-vibrate -d {termuxVibrationTime}")
+                       #print("vibration")
+                    if termuxTtsEnabled:
+                        os.system(f'echo "{termuxTtsContent}" > ~/.tts')
+                        #print("tts")
+                    if desktopNotificationEnabled:
+                        notification.notify(
+                            title = f'{self.user}  DETECTED CAPTCHA',
+                            message = "Pls solve it within 10min to prevent ban",
+                            app_icon = None,
+                            timeout = 15,
                         )
-                return
+                    console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
+                    return
+                except Exception as e:
+                    print(e)
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.f = True
             if termuxNotificationEnabled:
@@ -690,6 +702,7 @@ class MyClient(discord.Client):
                     app_icon = None,
                     timeout = 15,
                     )
+            console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
             return
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
