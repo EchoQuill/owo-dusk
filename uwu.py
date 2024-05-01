@@ -71,12 +71,12 @@ if desktopNotificationEnabled:
         from plyer import notification
     except:
         os.system("clear")
-        console.print(f"-{System}[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
+        console.print(f"-System[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
         os.system("pip install plyer")
 if termuxTtsEnabled:
     os.system("clear")
     os.system("mkfifo ~/.tts")
-    console.print(f"-{System}[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling TermuxTTs...", style = "cyan on black")
+    console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling TermuxTTs...", style = "cyan on black")
     os.system("cat ~/.tts | termux-tts-speak")
     os.system("clear")
 webhookEnabled = config["webhookEnabled"]
