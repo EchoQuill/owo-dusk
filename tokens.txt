@@ -1,0 +1,3 @@
+token1 channel1
+token2 channel2
+and so on....
