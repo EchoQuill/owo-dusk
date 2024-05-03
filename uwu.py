@@ -538,6 +538,9 @@ class MyClient(discord.Client):
     async def lvlGrind(self):
         if self.f != True:
             await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+            console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
+            if webhookEnabled:
+                webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
             await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
