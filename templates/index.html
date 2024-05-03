@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OwO Dusk</title>
+    <style>
+        /* Style for the page */
+        body {
+            background-color: black; /* Change the background color to "ref" */
+            color: purple; /* Change the text color to purple */
+            text-align: center; /* Center-align content */
+        }
+
+        /* Style for title and subheading */
+        h1 {
+            color: purple; /* Purple color for title */
+        }
+        h3 {
+            color: purple; /* Purple color for subheading */
+        }
+
+        /* Style for captcha boxes */
+        .box {
+            border: 2px solid #061038; /* Blue border */
+            width: 300px; /* Width of the box */
+            padding: 10px; /* Padding inside the box */
+            text-align: center; /* Center-align content */
+            margin: 20px auto; /* Center the box on the page */
+        }
+
+        /* Style for the image */
+        .box img {
+            width: 100px; /* Set width of the image */
+            height: 100px; /* Set height of the image */
+            display: block;
+            margin: 0 auto; /* Center the image */
+        }
+
+        /* Style for input and button */
+        .input-container {
+            display: flex; /* Use flexbox for side-by-side layout */
+            margin-top: 10px; /* Margin above the container */
+        }
+
+        /* Style for the input bar */
+        .input-container input[type="text"] {
+            flex: 1; /* Allow input to take remaining width */
+            padding: 5px; /* Padding inside the input */
+            border: 1px solid purple; /* Gray border */
+            background-color: black;
+            color: green
+        }
+
+        /* Style for the send button */
+        .input-container button {
+            padding: 5px 10px; /* Padding inside the button */
+            border: none; /* Remove border */
+            background-color: #1b033b; /* Button background color */
+            color: white; /* Button text color */
+            cursor: pointer; /* Pointer cursor on hover */
+        }
+
+        /* Style for the green text */
+        .green-text {
+            color: #4CAF50; /* Green color for "no captchas to solve" text */
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Title -->
+    <h2>OwO Dusk</h2>
+    <h3>Captcha Logger</h3>
+    <hr/>
+
+    {% if no_captchas %}
+        <!-- Display green text if no captchas are present -->
+        <p class="green-text">No captchas to solve</p>
+    {% else %}
+        <!-- Loop through captcha data and render boxes -->
+        {% for captcha in captchas %}
+            <div class="box">
+                {% if captcha.type == 'image' %}
+                    <!-- Display image captcha -->
+                    <img src="{{ captcha.url }}" alt="Captcha Image">
+                {% else %}
+                    <!-- Display link captcha -->
+                    <p>Link Captcha: <a href="{{ captcha.url }}">{{ captcha.url }}</a></p>
+                {% endif %}
+                <!-- Username -->
+                <p>User: {{ captcha.username }}</p>
+                <!-- Form to submit the captcha -->
+                <form action="/submit" method="POST" class="input-container">
+                    <input type="text" name="text" placeholder="Type here...">
+                    <input type="hidden" name="captcha_index" value="{{ loop.index0 }}">
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>
