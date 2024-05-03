@@ -9,6 +9,7 @@
 # It would also be great if you understand that iam a new python developer
 # Iam not that skilled so there might be some repetitions etc
 # Please do give me advice on how to improve.
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from discord import SyncWebhook
@@ -23,7 +24,6 @@ import asyncio
 import logging
 import discord
 import secrets
-import signal
 import string
 import shutil
 import time
@@ -67,23 +67,23 @@ termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
 termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
+websiteEnabled = config["website"]
 if desktopNotificationEnabled:
     try:
         from plyer import notification
     except:
         os.system("clear")
-        console.print(f"-System[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
+        console.print(f"-{System}[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
         os.system("pip install plyer")
 if termuxTtsEnabled:
     os.system("clear")
     os.system("mkfifo ~/.tts")
-    console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling TermuxTTs...", style = "cyan on black")
+    console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling Termux TTs...", style = "cyan on black")
     os.system("cat ~/.tts | termux-tts-speak")
     os.system("clear")
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
-    dwebhook = SyncWebhook.from_url(webhook_url)
 else:
     webhookUselessLog = False
 webhook_url = config["webhook"]
@@ -176,7 +176,7 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
-
+dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
@@ -193,6 +193,73 @@ def webhookSender(msg, desc=None):
     except Exception as e:
         print(e)
 #-------------
+
+
+#----------------------
+#WEBSITE
+#_____________
+
+
+#APP
+app = Flask(__name__)
+
+# List to store captcha data
+captchas = []
+captchaAnswers = []
+# API endpoint to add captchas
+@app.route('/add_captcha', methods=['POST'])
+def add_captcha():
+    # Get data from API request
+    data = request.get_json()
+    captcha_type = data.get('type')
+    url = data.get('url')
+    username = data.get('username')
+
+    # Add captcha to the list
+    temp_index = len(captchas)
+    captchaAnswers.append(None)
+    captchas.append({'type': captcha_type, 'url': url, 'username': username})
+    print(captchas)
+    print(captchaAnswers)    
+    # Return a response
+    return jsonify({'status': temp_index})
+
+# Render the main page
+@app.route('/', methods=['GET'])
+def index():
+    try:
+        if not captchas:
+            # Render the green text if there are no captchas
+            return render_template('index.html', no_captchas=True)
+        else:
+            # Render the page with captcha boxes
+            return render_template('index.html', captchas=captchas)
+    except Exception as e:
+        print(f"error in index(): <index.html> :-> {e}")
+
+# Handle form submission
+@app.route('/submit', methods=['POST'])
+def submit():
+    # Get the text from the input bar
+    captcha_ans = request.form.get('text')
+    captcha_index = request.form.get('captcha_index', type=int) 
+    captchaAnswers[captcha_index] = captcha_ans
+    print(captcha_ans)
+    print(captchaAnswers[captcha_index])
+    # Redirect back to the index page
+    return redirect(url_for('index'))
+
+def web_start():
+    flaskLog = logging.getLogger('werkzeug')
+    flaskLog.disabled = True
+    cli = sys.modules['flask.cli']
+    cli.show_server_banner = lambda *x: None
+    app.run(debug=False, use_reloader=False)
+if websiteEnabled:
+    web_thread = threading.Thread(target=web_start)
+    web_thread.start()
+
+#-------------
 class MyClient(discord.Client):
     def __init__(self, token, channel_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -200,6 +267,18 @@ class MyClient(discord.Client):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
 #----------SENDING COMMANDS----------#
+    #Solve Captchas
+    @tasks.loop()
+    async def captchaSolver(self):
+        if self.webInt != None and self.webSend == True:
+            print(captchaAnswers)
+            print(captchaAnswers[self.webInt])
+            print(self.user)
+            if captchaAnswers[self.webInt] != None:
+                print("attemting to solve")
+                await self.dm.send(captchaAnswers[self.webInt])
+                await asyncio.sleep(random.uniform(5.5,9.7))
+            await asyncio.sleep(random.uniform(1.5,2.7))
     #daily
     @tasks.loop()
     async def send_daily(self):
@@ -499,9 +578,10 @@ class MyClient(discord.Client):
         self.cm = self.get_channel(self.channel_id)
         qtemp.append(self.cm.guild.id)
         self.dm = await self.fetch_user(408785106942164992)
-        #print(self.dm.dm_channel.id)
+        print(self.dm.dm_channel.id)
         self.list_channel.append(self.dm.dm_channel.id)
-        #print(self.list_channel)
+        print(self.list_channel)
+        print(f'{type(self.user)} , {type(self.user.name)}')
         self.qtemp = False
         self.qtemp2 = True
         self.owoQuest = False
@@ -513,6 +593,8 @@ class MyClient(discord.Client):
         self.owoTempIntTwo = 0
         self.battleWithFriendQuest = False
         self.hunt = None
+        self.webInt = None
+        self.webSend = False
         self.tempHuntDisable = False
         self.battle = None
         self.justStarted = True
@@ -639,15 +721,38 @@ class MyClient(discord.Client):
             self.f = False
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
+            print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
+            if websiteEnabled and self.webInt != None:
+                captchas.pop(int(self.webInt))
+                captchaAnswers.pop(int(self.webInt))
+                print(captchas , captchaAnswers)
+                self.webInt = None
+                    
+                self.captchaSolver.stop()
+                self.webSend = False
+                print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
+                print(f"{self.user} stopped captcha solver")
             return
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             print("test")
             if "I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
                 console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
                 self.f = False
+                self.webSend = False
                 console.print(f"-{self.user}[+] Captcha solved. restarted!!...".center(console_width - 2 ), style = "dark_magenta on black")
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
+                print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
+                if websiteEnabled and self.webInt != None:
+                    captchas.pop(int(self.webInt))
+                    captchaAnswers.pop(int(self.webInt))
+                    print(captchas , captchaAnswers)
+                    self.webInt = None
+                    
+                    self.captchaSolver.stop()
+                    self.webSend = False
+                    print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
+                    print(f"{self.user} stopped captcha solver")
                 return
             else:
                 try:
@@ -665,10 +770,10 @@ class MyClient(discord.Client):
                         dwebhook.send(embed=embed2, username='uwu bot warnings')
                     if termuxVibrationEnabled:
                        os.system(f"termux-vibrate -d {termuxVibrationTime}")
-                       #print("vibration")
-                    if termuxTtsEnabled:
-                        os.system(f'echo "{termuxTtsContent}" > ~/.tts')
-                        #print("tts")
+                       print("vibration")
+                    #if termuxTtsEnabled:
+                    #    os.system(f"termux-tts-speak {termuxTtsContent}")
+                    #    print("tts")
                     if desktopNotificationEnabled:
                         notification.notify(
                             title = f'{self.user}  DETECTED CAPTCHA',
@@ -676,6 +781,43 @@ class MyClient(discord.Client):
                             app_icon = None,
                             timeout = 15,
                         )
+                    if self.webSend == False and websiteEnabled:
+                        try:
+                            if list_captcha[1] in message.content:
+                           #self.curl_command = f'''curl -X POST http://localhost:5000/add_captcha \
+  #-H "Content-Type: application/json" \
+ # -d '{"type": "link", "url": "https://owobot.com/captcha", "username": "{self.user.name}}" ' '''
+                                self.dataToSend = {
+                                   "type": "link",
+                                   "url": "https://owobot.com/captcha",
+                                   "username": self.user.name
+                                    }
+                                
+                                
+                            elif message.attachments:
+                                if message.attachments[0].url != None:
+                                #self.curl_command = f'''curl -v -X POST http://localhost:5000/add_captcha \ -H "Content-Type: application/json" \ -d '{"type": "image", "url": "{str(message.attachments[0].url)}", "username": "{self.user.name}}" ' '''
+                                    self.dataToSend = {
+                                       "type": "image",
+                                       "url": str(message.attachments[0].url),
+                                       "username": self.user.name
+                                        }
+                                    self.captchaSolver.start()
+                                    self.webSend = True
+                        except Exception as e:
+                            print(f"error when attempting to send captcha to web {e}")
+                            print(f"error for {self.user}")
+                        try:
+                            self.data_json = json.dumps(self.dataToSend)
+                            self.curl_command = f'curl -X POST http://localhost:5000/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
+                            self.response_json = os.popen(self.curl_command).read() 
+                            self.response_dict = json.loads(self.response_json)
+                            self.webInt = int(self.response_dict.get('status'))
+                            print(self.webInt , "from curl post section")
+                            
+                            print("captcha solver started")
+                        except Exception as e:
+                            print(f'Error when trying to get status :-> {e} Error for {self.user}')
                     console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
                     return
                 except Exception as e:
@@ -695,8 +837,9 @@ class MyClient(discord.Client):
                 dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 os.system(f"termux-vibrate -d {termuxVibrationTime}")
-            if termuxTtsEnabled:
-                os.system(f"termux-tts-speak user got banned!")
+            #if termuxTtsEnabled:
+            #    os.system(f"termux-tts-speak user got banned!")
+            # temp disabled tts
             if desktopNotificationEnabled:
                 notification.notify(
                     title = f'{self.user}[!] User BANNED in OwO!!',
@@ -709,9 +852,9 @@ class MyClient(discord.Client):
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
         if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
+            await asyncio.sleep(random.uniform(3.9,5.2))
             if self.f:
                 return
-            await asyncio.sleep(random.uniform(3.9,5.2))
             if self.lastcmd == "hunt":
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -957,6 +1100,7 @@ please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yello
     tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Loaded {token_len} accounts.'.center(console_width - 2 ),'bold magenta on black' )
+    
     if desktopNotificationEnabled:
         notification.notify(
             title = f'{token_len} Tokens loaded!',
@@ -966,10 +1110,3 @@ please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yello
             )
     #print(token_len)
     run_bots(tokens_and_channels)
-    
-# To-Do:-
-# 1) Add checks to stop hunt if no coins
-# 2) add checks to stop gamble if no coins
-# 3) Fix Hunt-Battle spam
-# 4) Try fix Bot stopping randomly and/or relogging error when captcha at start
-# 5) fix signal
