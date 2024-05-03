@@ -7,5 +7,6 @@ multidict==6.0.4
 six==1.16.0
 yarl==1.9.3
 rich==13.7.0
+Flask==3.0.3
 requests==2.31.0
 discord.py-self @ git+https://github.com/dolfies/discord.py-self.git
