@@ -709,6 +709,8 @@ class MyClient(discord.Client):
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
         if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
+            if self.f:
+                return
             await asyncio.sleep(random.uniform(3.9,5.2))
             if self.lastcmd == "hunt":
                 self.current_time = time.time()
@@ -735,6 +737,8 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             self.lastcmd = "hunt"
             if "caught" in message.content.lower() and self.gems:
+                if self.f:
+                    return
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
@@ -744,6 +748,8 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
                 self.invCheck = True
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
+            if self.f:
+                return
             if "**lootbox**" in message.content.lower() and autoLootbox:
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
