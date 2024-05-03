@@ -744,8 +744,14 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
                 print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
                 if websiteEnabled and self.webInt != None:
-                    captchas.pop(int(self.webInt))
-                    captchaAnswers.pop(int(self.webInt))
+                    if captchas[self.webInt] == self.tempJsonData:
+                        captchas.pop(self.webInt)
+                        captchaAnswers.pop(self.webInt)
+                    else:
+                        for i in captchas:
+                            if i == self.tempJsonData:
+                                captchas.pop(i)
+                                captchaAnswers.pop(i)
                     print(captchas , captchaAnswers)
                     self.webInt = None
                     
@@ -813,6 +819,7 @@ class MyClient(discord.Client):
                             self.response_json = os.popen(self.curl_command).read() 
                             self.response_dict = json.loads(self.response_json)
                             self.webInt = int(self.response_dict.get('status'))
+                            self.tempJsonData = captchas[self.webInt]
                             print(self.webInt , "from curl post section")
                             
                             print("captcha solver started")
