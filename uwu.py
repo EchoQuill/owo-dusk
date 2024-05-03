@@ -23,6 +23,7 @@ import asyncio
 import logging
 import discord
 import secrets
+import signal
 import string
 import shutil
 import time
@@ -82,6 +83,7 @@ if termuxTtsEnabled:
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
+    dwebhook = SyncWebhook.from_url(webhook_url)
 else:
     webhookUselessLog = False
 webhook_url = config["webhook"]
@@ -174,7 +176,7 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
-dwebhook = SyncWebhook.from_url(webhook_url)
+
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
@@ -946,7 +948,7 @@ please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yello
         console.print("Both autoPray and autoCurse enabled", style = "red on black")
     if termuxNotificationEnabled and desktopNotificationEnabled:
         console.print("Only enable either termux notifs of desktop notifs.", style = "red on black")
-    tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
+    tokens_and_channels = [line.strip().split() for line in open("toke.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Loaded {token_len} accounts.'.center(console_width - 2 ),'bold magenta on black' )
     if desktopNotificationEnabled:
@@ -964,3 +966,4 @@ please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yello
 # 2) add checks to stop gamble if no coins
 # 3) Fix Hunt-Battle spam
 # 4) Try fix Bot stopping randomly and/or relogging error when captcha at start
+# 5) fix signal
