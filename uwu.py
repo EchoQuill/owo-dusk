@@ -846,7 +846,7 @@ class MyClient(discord.Client):
                             print(f"error when attempting to send captcha to web {e}")
                             print(f"error for {self.user}")
                         try:
-                            if self.webSend == False:
+                            if self.webInt == None:
                                 self.data_json = json.dumps(self.dataToSend)
                                 self.curl_command = f'curl -X POST http://localhost:5000/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
                                 self.response_json = os.popen(self.curl_command).read() 
@@ -855,6 +855,7 @@ class MyClient(discord.Client):
                                 self.tempJsonData = captchas[self.webInt]
                                 print(self.webInt , "from curl post section")                            
                                 print("captcha solver started")
+                                
                         except Exception as e:
                             print(f'Error when trying to get status :-> {e} Error for {self.user}')
                     console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
