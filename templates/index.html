@@ -50,7 +50,6 @@
             padding: 5px; /* Padding inside the input */
             border: 1px solid purple; /* Gray border */
             background-color: black;
-            color: green
         }
 
         /* Style for the send button */
@@ -99,5 +98,12 @@
             </div>
         {% endfor %}
     {% endif %}
+    <!-- Add the auto-refresh script just before the closing body tag -->
+    <script>
+        // Set an interval to refresh the page every 7 seconds
+        setInterval(function() {
+            location.reload();
+        }, 7000); // 7000 milliseconds = 7 seconds
+    </script>
 </body>
 </html>
