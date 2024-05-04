@@ -732,6 +732,7 @@ class MyClient(discord.Client):
                 webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
             print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
+                print("on it!")
                 if captchas[self.webInt] == self.tempJsonData:
                     print("attempting to pop captcha directly")
                     try:
@@ -742,11 +743,13 @@ class MyClient(discord.Client):
                     print("popped captcha directly")
                 else:
                     print("attempting to pop captcha indirectly")
-                    for i in range(captchas):
-                        if captchas[i] == self.tempJsonData:
-                            captchas.pop(i)
-                            captchaAnswers.pop(i)
+                    self.tempListCount = 0
+                    for i in captchas:
+                        if i == self.tempJsonData:
+                            captchas.pop(self.tempListCount)
+                            captchaAnswers.pop(self.tempListCount)
                             print("popped captcha indirectly")
+                        self.tempListCount+=1
                 print(captchas , captchaAnswers)
                 self.webInt = None
                     
@@ -843,15 +846,15 @@ class MyClient(discord.Client):
                             print(f"error when attempting to send captcha to web {e}")
                             print(f"error for {self.user}")
                         try:
-                            self.data_json = json.dumps(self.dataToSend)
-                            self.curl_command = f'curl -X POST http://localhost:5000/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
-                            self.response_json = os.popen(self.curl_command).read() 
-                            self.response_dict = json.loads(self.response_json)
-                            self.webInt = int(self.response_dict.get('status'))
-                            self.tempJsonData = captchas[self.webInt]
-                            print(self.webInt , "from curl post section")
-                            
-                            print("captcha solver started")
+                            if self.webSend == False:
+                                self.data_json = json.dumps(self.dataToSend)
+                                self.curl_command = f'curl -X POST http://localhost:5000/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
+                                self.response_json = os.popen(self.curl_command).read() 
+                                self.response_dict = json.loads(self.response_json)
+                                self.webInt = int(self.response_dict.get('status'))
+                                self.tempJsonData = captchas[self.webInt]
+                                print(self.webInt , "from curl post section")                            
+                                print("captcha solver started")
                         except Exception as e:
                             print(f'Error when trying to get status :-> {e} Error for {self.user}')
                     console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
