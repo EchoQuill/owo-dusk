@@ -732,8 +732,21 @@ class MyClient(discord.Client):
                 webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
             print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
-                captchas.pop(int(self.webInt))
-                captchaAnswers.pop(int(self.webInt))
+                if captchas[self.webInt] == self.tempJsonData:
+                    print("attempting to pop captcha directly")
+                    try:
+                        captchas.pop(self.webInt)
+                        captchaAnswers.pop(self.webInt)
+                    except Exception as e:
+                        print(e)
+                    print("popped captcha directly")
+                else:
+                    print("attempting to pop captcha indirectly")
+                    for i in range(captchas):
+                        if captchas[i] == self.tempJsonData:
+                            captchas.pop(i)
+                            captchaAnswers.pop(i)
+                            print("popped captcha indirectly")
                 print(captchas , captchaAnswers)
                 self.webInt = None
                     
@@ -754,14 +767,20 @@ class MyClient(discord.Client):
                 print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
                 if websiteEnabled and self.webInt != None:
                     if captchas[self.webInt] == self.tempJsonData:
-                        captchas.pop(self.webInt)
-                        captchaAnswers.pop(self.webInt)
+                        print("attempting to pop captcha directly")
+                        try:
+                            captchas.pop(self.webInt)
+                            captchaAnswers.pop(self.webInt)
+                        except Exception as e:
+                            print(e)
                         print("popped captcha directly")
                     else:
+                        print("attempting to pop captcha indirectly")
                         for i in range(captchas):
                             if captchas[i] == self.tempJsonData:
                                 captchas.pop(i)
                                 captchaAnswers.pop(i)
+                                print("popped captcha indirectly")
                     print(captchas , captchaAnswers)
                     self.webInt = None
                     
