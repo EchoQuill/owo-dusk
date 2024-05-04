@@ -732,24 +732,21 @@ class MyClient(discord.Client):
                 webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
             print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
-                print("on it!")
-                if captchas[self.webInt] == self.tempJsonData:
-                    print("attempting to pop captcha directly")
-                    try:
-                        captchas.pop(self.webInt)
-                        captchaAnswers.pop(self.webInt)
-                    except Exception as e:
-                        print(e)
-                    print("popped captcha directly")
-                else:
-                    print("attempting to pop captcha indirectly")
+                print("attempting to pop captcha indirectly")
+                while True:
                     self.tempListCount = 0
+                    self.popped = False
                     for i in captchas:
                         if i == self.tempJsonData:
                             captchas.pop(self.tempListCount)
                             captchaAnswers.pop(self.tempListCount)
                             print("popped captcha indirectly")
+                            self.popped = True
+                            break
                         self.tempListCount+=1
+                    if self.popped:
+                        break
+                    print("loopinh while")
                 print(captchas , captchaAnswers)
                 self.webInt = None
                     
