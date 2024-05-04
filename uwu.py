@@ -578,9 +578,15 @@ class MyClient(discord.Client):
         printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )
         listUserIds.append(self.user.id)
         await asyncio.sleep(0.12)
-        self.cm = self.get_channel(self.channel_id)
-        qtemp.append(self.cm.guild.id)
-        self.dm = await self.fetch_user(408785106942164992)
+        try:
+            self.cm = self.get_channel(self.channel_id)           
+            qtemp.append(self.cm.guild.id)
+        except Exception as e:
+            print(e)
+        try:
+            self.dm = await self.fetch_user(408785106942164992)
+        except Exception as e:
+            print(e)
         print(self.dm.dm_channel.id)
         self.list_channel.append(self.dm.dm_channel.id)
         print(self.list_channel)
@@ -750,9 +756,10 @@ class MyClient(discord.Client):
                     if captchas[self.webInt] == self.tempJsonData:
                         captchas.pop(self.webInt)
                         captchaAnswers.pop(self.webInt)
+                        print("popped captcha directly")
                     else:
-                        for i in captchas:
-                            if i == self.tempJsonData:
+                        for i in range(captchas):
+                            if captchas[i] == self.tempJsonData:
                                 captchas.pop(i)
                                 captchaAnswers.pop(i)
                     print(captchas , captchaAnswers)
