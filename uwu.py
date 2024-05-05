@@ -35,8 +35,8 @@ os.system("clear")
 # For console.log thingy
 console = Console()
 # Random module seed for better anti detection.
-seed = secrets.randbelow(4765839360747)
-random.seed(seed)
+#seed = secrets.randbelow(4765839360747)
+#random.seed(seed)
 # Console width size
 console_width = shutil.get_terminal_size().columns
 # Owo text art for panel 
@@ -632,6 +632,7 @@ class MyClient(discord.Client):
         self.gems = autoGem
         self.invCheck = False
         self.gambleTotal = gambleAllottedAmount
+        self.task_methods = []
         # Starting hunt/battle loop
         self.on_ready_dn = True
         if autoHunt or autoBattle:
@@ -644,27 +645,25 @@ class MyClient(discord.Client):
             else:
                 self.huntOrBattle = "battle"
                 self.huntOrBattleSelected = True
-            self.send_hunt_or_battle.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            #self.send_hunt_or_battle.start()
+            self.task_methods.append(self.send_hunt_or_battle.start)
          # Starting curse/pray loop
         if autoCurse or autoPray:
             if autoCurse:
                 self.prayOrCurse = "curse"
             else:
                 self.prayOrCurse = "pray"
-            self.send_curse_and_prayer.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            self.task_methods.append(self.send_curse_and_prayer.start)
         # Starting Daily loop
         if autoDaily:
-            self.send_daily.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            self.task_methods.append(self.send_daily.start)
         # Starting Auto Owo
         if autoOwo:
-            self.send_owo.start()
+            self.task_methods.append(self.send_owo.start)
+            #self.send_owo.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
         if cookie:
-            self.send_cookie.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            self.task_methods.append(self.send_cookie.start)
         # Starting Coinflip
         if autoCf:
             if doubleOnLose:
@@ -672,8 +671,7 @@ class MyClient(discord.Client):
             else:
                 self.cfMulti = 1
             self.cfLastAmt = gambleStartValue
-            self.send_cf.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            self.task_methods.append(self.send_cf.start)
         # Starting slots CHEXK
         if autoSlots:
             if doubleOnLose:
@@ -681,8 +679,7 @@ class MyClient(discord.Client):
             else:
                 self.slotsMulti = 1
             self.slotsLastAmt = gambleStartValue
-            self.send_slots.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            self.task_methods.append(self.send_slots.start)
         # Start Sell or Sac
         if autoSell or autoSac:
             if autoSell and autoSac:
@@ -694,18 +691,25 @@ class MyClient(discord.Client):
             else:
                 self.sellOrSac = "sac"
                 self.sellOrSacSelected = True
-            self.send_sell_or_sac.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            #self.send_sell_or_sac.start()
+            self.task_methods.append(self.send_sell_or_sac.start)
         if customCommands:
-            self.send_custom.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            #self.send_custom.start()
+            self.task_methods.append(self.send_custom.start)
         if autoQuest:
-            self.check_quests.start()
-        await asyncio.sleep(random.uniform(0.4,0.8))
+            #self.check_quests.start()
+            self.task_methods.append(self.check_quests.start)
+        
         if lottery:
-            self.send_lottery.start()
+            #self.send_lottery.start()
+            self.task_methods.append(self.send_lottery.start)
         if lvlGrind:
-            self.lvlGrind.start()
+            self.task_methods.append(self.lvlGrind.start)
+        random.shuffle(self.task_methods)
+        for task_method in self.task_methods:
+            task_method()
+            await asyncio.sleep(random.uniform(0.4,0.8))
+                
         embed1 = discord.Embed(
             title='logging in',
             description=f'logged in as {self.user.name}',
