@@ -176,7 +176,8 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
-dwebhook = SyncWebhook.from_url(webhook_url)
+if webhookEnabled:
+    dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
