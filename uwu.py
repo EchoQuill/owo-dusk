@@ -817,7 +817,7 @@ class MyClient(discord.Client):
                                 print("popped captcha indirectly")
                     print(captchas , captchaAnswers)
                     self.webInt = None
-                    
+                    self.tempJsonData = None
                     self.captchaSolver.stop()
                     self.webSend = False
                     print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
