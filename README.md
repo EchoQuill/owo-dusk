@@ -14,6 +14,10 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 
 > ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbot to grind owo. 
 
+> [!IMPORTANT]  
+> DO NOT ENABLE ANYTHING THATS IS ~~CROSSED~~ OUT.
+> unexpected errors may occur if you do so.
+
 # 🌟 Features
 ----
 * Multi Account Support!!
@@ -30,7 +34,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * ban detection
 * auto cookie
 * auto slots
-* auto coinflip
+* ~~auto coinflip~~ (a weird bug came up)
 * ~~auto blackjack~~ [under progress]
 * ~~custom commands, you can add commands that is not currently in the list with your own cooldown :>~~
 * battery check
@@ -41,7 +45,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto use lootbox
 * auto use Gems (hunt gem, empowered gem, lucky gem and special gem)
 * supports both desktop and termux notifications.
-* Mobile texttospeech captcha alert
+* ~~Mobile texttospeech captcha alert~~ (temp disabled due to performance issues in older phones)
 * Sends toasts when captcha {Mobile only}
 * level grind.
 ----
