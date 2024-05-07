@@ -1,16 +1,14 @@
 {
-  "discordStatus": "invisible",
-  "website": true,
   "desktopNotificationEnabled": false,
-  "setprefix": "owo ",
+  "setprefix": "q",
   "commands": [
     {
-      "hunt": false,
-      "battle": false,
+      "hunt": true,
+      "battle": true,
       "cooldown": 15
     },
     {
-      "pray": false,
+      "pray": true,
       "curse": false,
       "cooldown": 300,
       "userToPrayOrCurse": null
@@ -35,7 +33,7 @@
       "coinflip": false,
       "blackjack": false,
       "cooldown": 15,
-      "doubleOnLose": false,
+      "doubleOnLose": true,
       "allottedAmount": 30000,
       "startValue": 200
     },
@@ -48,13 +46,18 @@
       "amount":1
     },
     {
-      "lvlGrind": false,
+      "lvlGrind": true,
       "cooldown": 20
     },
    {
       "cookie": false,
       "userid": 408785106942164992
-   }
+   },
+   {
+     "sleep": true,
+     "randomness": 12,
+     "minTime": 1,
+     "maxTime": 10
   ],
   "autoDaily": false,
   "sendOwo": true,
@@ -65,7 +68,7 @@
       "luckyGem": false,
       "specialGem": false
     },
-    "autoUseLootbox": false,
+    "autoUseLootbox": true,
     "autoUseCrate": true
   },
   "customCommands": {
@@ -73,23 +76,23 @@
     "commands": [],
     "cooldowns": []
   },
-  "webhookEnabled": false,
-  "webhookUselessLog": false,
-  "webhook": "",
+  "webhookEnabled": true,
+  "webhookUselessLog": true,
+  "webhook": "https://discord.com/api/webhooks/1203928306127339540/Q4hJwzSCEtK72oU-lxMB5ubkoLWBYxDFbsTDOsLQe3GpFhrwgvOanzcKwSDPRMaaF0sv",
   "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
     "enabled": true,
     "vibrate": {
-      "enabled": false,
+      "enabled": true,
       "time": 5
     },
     "texttospeech": {
       "enabled": false,
       "content": "Captcha detected! owo"
     },
-    "notifications": false,
+    "notifications": true,
     "batteryCheck": {
-      "enabled": false,
+      "enabled": true,
       "minPercentage": 15
     }
   }
