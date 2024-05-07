@@ -590,6 +590,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+    @tasks.loop()
     async def sleeper():
         if random.randint(1,100) >= sleepRandomness:
             self.f = True
