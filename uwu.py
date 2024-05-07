@@ -31,7 +31,16 @@ import json
 import sys
 import os
 import re
-os.system("clear")
+# Clear Console.
+def clear():
+    try:
+        if os.name == 'nt': 
+            os.system('cls')  # Windows
+        else: 
+            os.system('clear') #Others
+    except:
+        pass
+clear()
 # For console.log thingy
 console = Console()
 # Random module seed for better anti detection.
@@ -72,19 +81,18 @@ if desktopNotificationEnabled:
     try:
         from plyer import notification
     except:
-        os.system("clear")
+        clear()
         console.print(f"-{System}[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
         os.system("pip install plyer")
 if termuxTtsEnabled:
-    os.system("clear")
+    clear()
     os.system("mkfifo ~/.tts")
     console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling Termux TTs...", style = "cyan on black")
     os.system("cat ~/.tts | termux-tts-speak")
-    os.system("clear")
+    clear()
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
-    dwebhook = SyncWebhook.from_url(webhook_url)
 else:
     webhookUselessLog = False
 webhook_url = config["webhook"]
@@ -177,6 +185,7 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
+dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
