@@ -2,7 +2,7 @@
   <center><img src="imgs/logo.png" width="150"></center>
   <br>
   <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Pacifico&size=40&pause=1000&color=802DF7&center=true&vCenter=true&random=false&width=425&lines=Owo+Dusk" alt="Typing SVG" />
-  <a href="https://discord.gg/hDDrKhWPqr"><img src="https://discordapp.com/api/guilds/1209019075271856128/widget.png?style=banner1" alt="Discord Invite"/>
+  <a href="https://discord.gg/hDDrKhWPqr"><img src="https://invidget.switchblade.xyz/hDDrKhWPqr" alt="Discord Invite"/>
 </div>
 
 --------
