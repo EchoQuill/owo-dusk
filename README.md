@@ -25,6 +25,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * Multi Account Support!!
 * Supports Both mobile and desktop/laptop!
 * Cool website for solving captchas in one place (localhost one)
+* Customizable sleep system.
 * auto hunt
 * auto battle
 * auto pray
