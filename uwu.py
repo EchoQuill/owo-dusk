@@ -93,6 +93,7 @@ if termuxTtsEnabled:
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
+    dwebhook = SyncWebhook.from_url(webhook_url)
 else:
     webhookUselessLog = False
 webhook_url = config["webhook"]
@@ -112,6 +113,10 @@ autoHuntGem = config["autoUse"]["autoGem"]["huntGem"]
 autoEmpoweredGem = config["autoUse"]["autoGem"]["empoweredGem"]
 autoLuckyGem = config["autoUse"]["autoGem"]["luckyGem"]
 autoSpecialGem = config["autoUse"]["autoGem"]["specialGem"]
+sleepEnabled = config["commands"][8]["sleep"]
+minSleepTime = config["commands"][8]["minTime"]
+maxSleepTime = config["commands"][8]["maxTime"]
+sleepRandomness = config["commands"][8]["randomness"]
 if autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem:
     autoGem = True
 else:
@@ -185,7 +190,6 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
-dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
@@ -586,8 +590,16 @@ class MyClient(discord.Client):
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
-
-#----------ON READY----------#
+    async def sleeper():
+        if random.randint(1,100) >= sleepRandomness:
+            self.f = True
+            self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
+            console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+            await asyncio.sleep(self.sleepTime)
+            console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+            self.f = False
+        await asyncio.sleep(random.uniform(60,120))
+#---------ON READY----------#
     async def on_ready(self):
         self.on_ready_dn = False
         self.cmds = 1
@@ -716,7 +728,8 @@ class MyClient(discord.Client):
         if autoQuest:
             #self.check_quests.start()
             self.task_methods.append(self.check_quests.start)
-        
+        if sleepEnabled:
+            self.task_methods.append(self.sleeper.start())
         if lottery:
             #self.send_lottery.start()
             self.task_methods.append(self.send_lottery.start)
