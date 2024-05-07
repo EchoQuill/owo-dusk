@@ -290,7 +290,7 @@ class MyClient(discord.Client):
                 if i == self.tempJsonData:
                     if captchaAnswers[self.tempListCount] != None:
                         print("got ans")
-                        await self.dm.send(captchaAnswers[self.webInt])
+                        await self.dm.send(captchaAnswers[self.tempListCount])
                         await asyncio.sleep(random.uniform(5.5,9.7))
                         print(captchaAnswers[self.tempListCount])
                         captchaAnswers[self.tempListCount] = None
