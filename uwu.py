@@ -93,7 +93,6 @@ if termuxTtsEnabled:
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
-    dwebhook = SyncWebhook.from_url(webhook_url)
 else:
     webhookUselessLog = False
 webhook_url = config["webhook"]
@@ -186,6 +185,7 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
+dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
@@ -279,14 +279,22 @@ class MyClient(discord.Client):
     #Solve Captchas
     @tasks.loop()
     async def captchaSolver(self):
-        if self.webInt != None and self.webSend == True:
+        if self.webInt != None and self.webSend == True and self.tempJsonData != None:
             print(captchaAnswers)
             print(captchaAnswers[self.webInt])
             print(self.user)
-            if captchaAnswers[self.webInt] != None:
-                print("attemting to solve")
-                await self.dm.send(captchaAnswers[self.webInt])
-                await asyncio.sleep(random.uniform(5.5,9.7))
+            self.tempListCount = 0
+            #self.captchaAnswerGot = False
+            print("attemting to solve")
+            for i in captchas:
+                if i == self.tempJsonData:
+                    if captchaAnswers[self.tempListCount] != None:
+                        print("got ans")
+                        await self.dm.send(captchaAnswers[self.webInt])
+                        await asyncio.sleep(random.uniform(5.5,9.7))
+                        print(captchaAnswers[self.tempListCount])
+                        captchaAnswers[self.tempListCount] = None
+                self.tempListCount+=1    
             await asyncio.sleep(random.uniform(1.5,2.7))
     #daily
     @tasks.loop()
