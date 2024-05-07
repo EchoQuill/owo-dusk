@@ -93,6 +93,7 @@ if termuxTtsEnabled:
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
     webhookUselessLog = config["webhookUselessLog"]
+    dwebhook = SyncWebhook.from_url(webhook_url)
 else:
     webhookUselessLog = False
 webhook_url = config["webhook"]
@@ -185,7 +186,6 @@ if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 # Webhook Logging
-dwebhook = SyncWebhook.from_url(webhook_url)
 def webhookSender(msg, desc=None):
     try:
         emb = discord.Embed(
