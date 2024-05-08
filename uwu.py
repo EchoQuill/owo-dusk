@@ -31,15 +31,11 @@ import json
 import sys
 import os
 import re
-# Clear Console.
 def clear():
-    try:
-        if os.name == 'nt': 
-            os.system('cls')  # Windows
-        else: 
-            os.system('clear') #Others
-    except:
-        pass
+    if os.name == 'nt':  # Windows
+        os.system('cls')
+    else:  # Others
+        os.system('clear')
 clear()
 # For console.log thingy
 console = Console()
@@ -92,6 +88,7 @@ if termuxTtsEnabled:
     clear()
 webhookEnabled = config["webhookEnabled"]
 if webhookEnabled:
+    webhook_url = config["webhook"]
     webhookUselessLog = config["webhookUselessLog"]
     dwebhook = SyncWebhook.from_url(webhook_url)
 else:
@@ -117,6 +114,7 @@ sleepEnabled = config["commands"][8]["sleep"]
 minSleepTime = config["commands"][8]["minTime"]
 maxSleepTime = config["commands"][8]["maxTime"]
 sleepRandomness = config["commands"][8]["randomness"]
+print(sleepEnabled , minSleepTime , maxSleepTime , sleepRandomness)
 if autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem:
     autoGem = True
 else:
@@ -300,6 +298,23 @@ class MyClient(discord.Client):
                         captchaAnswers[self.tempListCount] = None
                 self.tempListCount+=1    
             await asyncio.sleep(random.uniform(1.5,2.7))
+    #Sleep
+    @tasks.loop()
+    async def random_account_sleeper():
+        try:
+            self.randSleepInt = random.randint(1,100)
+            if self.randSleepInt <= (sleepRandomness - 100):
+                self.f = True
+                self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
+                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                await asyncio.sleep(self.sleepTime)
+                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                self.f = False
+            else:
+                console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "plum4 on black")
+                await asyncio.sleep(random.uniform(60,120))
+        except Exception as e:
+            print(e)
     #daily
     @tasks.loop()
     async def send_daily(self):
@@ -347,6 +362,7 @@ class MyClient(discord.Client):
         if self.lastHb == 0:
             await asyncio.sleep(random.uniform(2.5,3.5))
         self.lastHb = self.hb
+        print("check")
         if self.f != True:
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -359,10 +375,12 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
-                if self.hb == 1:
+                if self.hb == 1 and self.huntOrBattleSelected == False:
                     await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
-                else:
+                elif self.huntOrBattleSelected == False:
                     await asyncio.sleep(random.uniform(0.3,0.6))
+                else:
+                    await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     #pray/curse
@@ -590,16 +608,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
-    @tasks.loop()
-    async def sleeper():
-        if random.randint(1,100) <= sleepRandomness - 100:
-            self.f = True
-            self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
-            console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
-            await asyncio.sleep(self.sleepTime)
-            console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
-            self.f = False
-        await asyncio.sleep(random.uniform(60,120))
+
 #---------ON READY----------#
     async def on_ready(self):
         self.on_ready_dn = False
@@ -645,6 +654,7 @@ class MyClient(discord.Client):
             self.owoSupportChannel = None
         self.spams = 0
         self.last_cmd_time = 0
+        self.randSleepInt = 0
         self.lastcmd = None
         self.busy = False
         self.hb = 0
@@ -702,7 +712,9 @@ class MyClient(discord.Client):
             else:
                 self.cfMulti = 1
             self.cfLastAmt = gambleStartValue
+            print("ctest")
             self.task_methods.append(self.send_cf.start)
+            print("ctest2")
         # Starting slots CHEXK
         if autoSlots:
             if doubleOnLose:
@@ -710,7 +722,9 @@ class MyClient(discord.Client):
             else:
                 self.slotsMulti = 1
             self.slotsLastAmt = gambleStartValue
+            print("test")
             self.task_methods.append(self.send_slots.start)
+            print("test2")
         # Start Sell or Sac
         if autoSell or autoSac:
             if autoSell and autoSac:
@@ -734,7 +748,15 @@ class MyClient(discord.Client):
             self.task_methods.append(self.check_quests.start)
         # Random Breaks
         if sleepEnabled:
-            self.task_methods.append(self.sleeper.start())
+            print(self.randSleepInt)
+            try:
+                print(self.random_account_sleeper.start)
+                self.random_account_sleeper.start()
+                if self.random_account_sleeper.is_running():
+                    print("running")
+            except Exception as e:
+                print(e)
+            print("dn")
         # Auto Lottery
         if lottery:
             #self.send_lottery.start()
@@ -745,9 +767,11 @@ class MyClient(discord.Client):
             
         # Shuffle and start all loops
         random.shuffle(self.task_methods)
+        print(self.task_methods)
         for task_method in self.task_methods:
             task_method()
             await asyncio.sleep(random.uniform(0.4,0.8))
+            print("d")
                 
         embed1 = discord.Embed(
             title='logging in',
@@ -1131,13 +1155,13 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 if doubleOnLose:
                     self.slotsLastAmt = self.slotsLastAmt * 2
-                self.gambleTotal = self.gambleTotal-=self.slotsLastAmt
+                self.gambleTotal-=self.slotsLastAmt
             else:
                 #print(after.content)
                 if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 elif "and won" in after.content.lower():
-                    self.gambleTotal = self.gambleTotal+=self.slotsLastAmt
+                    self.gambleTotal+=self.slotsLastAmt
                     console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
                     if doubleOnLose:
                         self.slotsLastAmt = gambleStartValue
@@ -1145,12 +1169,12 @@ class MyClient(discord.Client):
         if "chose" in after.content.lower():
             if "and you lost it all... :c" in after.content.lower():
                 console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal = self.gambleTotal-=self.cfLastAmt
+                self.gambleTotal-=self.cfLastAmt
                 if doubleOnLose:
                     self.cfLastAmt = self.cfLastAmt*2
             else:
                 console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal = self.gambleTotal+=self.cfLastAmt
+                self.gambleTotal+=self.cfLastAmt
                 if doubleOnLose:
                     self.cfLastAmt = gambleStartValue
 #----------STARTING BOT----------#                 
@@ -1170,6 +1194,7 @@ if __name__ == "__main__":
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold cyan on black' )
+    printBox(f'-This is a test version, anything can go wrong at any time. use at your own risk...'.center(console_width - 2 ),'bold plum4 on black' )
     if ver_check != version:
         console.print("""version does not seem to match the one at github
 please update from:> https://github.com/EchoQuill/owo-dusk :>""", style = "yellow on black")
