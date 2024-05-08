@@ -1131,13 +1131,13 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 if doubleOnLose:
                     self.slotsLastAmt = self.slotsLastAmt * 2
-                self.gambleTotal-=self.slotsLastAmt
+                self.gambleTotal = self.gambleTotal-=self.slotsLastAmt
             else:
                 #print(after.content)
                 if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 elif "and won" in after.content.lower():
-                    self.gambleTotal+=self.slotsLastAmt
+                    self.gambleTotal = self.gambleTotal+=self.slotsLastAmt
                     console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
                     if doubleOnLose:
                         self.slotsLastAmt = gambleStartValue
@@ -1145,12 +1145,12 @@ class MyClient(discord.Client):
         if "chose" in after.content.lower():
             if "and you lost it all... :c" in after.content.lower():
                 console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal-=self.cfLastAmt
+                self.gambleTotal = self.gambleTotal-=self.cfLastAmt
                 if doubleOnLose:
                     self.cfLastAmt = self.cfLastAmt*2
             else:
                 console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal+=self.cfLastAmt
+                self.gambleTotal = self.gambleTotal+=self.cfLastAmt
                 if doubleOnLose:
                     self.cfLastAmt = gambleStartValue
 #----------STARTING BOT----------#                 
