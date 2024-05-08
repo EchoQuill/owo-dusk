@@ -303,7 +303,7 @@ class MyClient(discord.Client):
         try:
             self.randSleepInt = random.randint(1,100)
             print(self.randSleepInt)
-            if self.randSleepInt < (sleepRandomness - 100):
+            if self.randSleepInt < (100 - sleepRandomness):
                 self.f = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
                 console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
@@ -362,7 +362,6 @@ class MyClient(discord.Client):
         if self.lastHb == 0:
             await asyncio.sleep(random.uniform(2.5,3.5))
         self.lastHb = self.hb
-        print("check")
         if self.f != True:
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
