@@ -9,25 +9,31 @@
         /* Style for the page */
         body {
             background-color: black; /* Change the background color to "ref" */
-            color: purple; /* Change the text color to purple */
             text-align: center; /* Center-align content */
+            font-family: Arial, Helvetica, sans-serif;
         }
-
+        p {
+            color: rgb(220, 150, 253);
+        }
+        h2 {
+            color: rgb(181, 117, 255); /* Change the title color to purple */
+            font-family: Arial, Helvetica, sans-serif;
+        }
         /* Style for title and subheading */
-        h1 {
-            color: purple; /* Purple color for title */
-        }
         h3 {
-            color: purple; /* Purple color for subheading */
+            color: rgb(212, 212, 212); /* Purple color for subheading */
+            font-family: Arial, Helvetica, sans-serif;
+            margin-bottom: 12px;
         }
 
         /* Style for captcha boxes */
         .box {
-            border: 2px solid #061038; /* Blue border */
+            border: 2px solid #1e0025; /* Blue border */
             width: 300px; /* Width of the box */
-            padding: 10px; /* Padding inside the box */
+            padding: 8px; /* Padding inside the box */
             text-align: center; /* Center-align content */
-            margin: 20px auto; /* Center the box on the page */
+            margin: 15px auto; /* Center the box on the page */
+            border-radius: 4px;
         }
 
         /* Style for the image */
@@ -41,29 +47,34 @@
         /* Style for input and button */
         .input-container {
             display: flex; /* Use flexbox for side-by-side layout */
-            margin-top: 10px; /* Margin above the container */
+            margin-top: 9px; /* Margin above the container */
         }
 
         /* Style for the input bar */
         .input-container input[type="text"] {
             flex: 1; /* Allow input to take remaining width */
             padding: 5px; /* Padding inside the input */
-            border: 1px solid purple; /* Gray border */
+            border: 1px solid rgb(255, 255, 255); /* Gray border */
             background-color: black;
+            border-radius: 5px;
         }
 
         /* Style for the send button */
         .input-container button {
             padding: 5px 10px; /* Padding inside the button */
             border: none; /* Remove border */
-            background-color: #1b033b; /* Button background color */
+            background-color: #4d00b1; /* Button background color */
             color: white; /* Button text color */
             cursor: pointer; /* Pointer cursor on hover */
+            border-radius: 5px;
         }
 
         /* Style for the green text */
         .green-text {
-            color: #4CAF50; /* Green color for "no captchas to solve" text */
+            color: #d60000; /* Green color for "no captchas to solve" text */
+            font-family: Arial, Helvetica, sans-serif;
+            margin-top: 2px;
+            margin-bottom: 2px;
         }
     </style>
 </head>
@@ -71,8 +82,7 @@
     <!-- Page Title -->
     <h2>OwO Dusk</h2>
     <h3>Captcha Logger</h3>
-    <hr/>
-
+    <hr color= "purple"/>
     {% if no_captchas %}
         <!-- Display green text if no captchas are present -->
         <p class="green-text">No captchas to solve</p>
@@ -85,7 +95,7 @@
                     <img src="{{ captcha.url }}" alt="Captcha Image">
                 {% else %}
                     <!-- Display link captcha -->
-                    <p>Link Captcha: <a href="{{ captcha.url }}">{{ captcha.url }}</a></p>
+                    <p>Captcha Link: <a href="{{ captcha.url }}">{{ captcha.url }}</a></p>
                 {% endif %}
                 <!-- Username -->
                 <p>User: {{ captcha.username }}</p>
@@ -107,3 +117,4 @@
     </script>
 </body>
 </html>
+<!-- Edited by Maksotm-->
