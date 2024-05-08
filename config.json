@@ -58,6 +58,7 @@
      "randomness": 12,
      "minTime": 1,
      "maxTime": 10
+    }
   ],
   "autoDaily": false,
   "sendOwo": true,
