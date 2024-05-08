@@ -303,7 +303,7 @@ class MyClient(discord.Client):
         try:
             self.randSleepInt = random.randint(1,100)
             print(self.randSleepInt)
-            if self.randSleepInt < (100 - sleepRandomness):
+            if self.randSleepInt > (100 - sleepRandomness):
                 self.f = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
                 console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
