@@ -1,6 +1,6 @@
 {
   "desktopNotificationEnabled": false,
-  "setprefix": "q",
+  "setprefix": "owo ",
   "commands": [
     {
       "hunt": true,
@@ -78,7 +78,7 @@
   },
   "webhookEnabled": true,
   "webhookUselessLog": true,
-  "webhook": "https://discord.com/api/webhooks/1203928306127339540/Q4hJwzSCEtK72oU-lxMB5ubkoLWBYxDFbsTDOsLQe3GpFhrwgvOanzcKwSDPRMaaF0sv",
+  "webhook": "webhook url here",
   "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
     "enabled": true,
