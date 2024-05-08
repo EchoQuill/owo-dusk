@@ -114,7 +114,6 @@ sleepEnabled = config["commands"][8]["sleep"]
 minSleepTime = config["commands"][8]["minTime"]
 maxSleepTime = config["commands"][8]["maxTime"]
 sleepRandomness = config["commands"][8]["randomness"]
-print(sleepEnabled , minSleepTime , maxSleepTime , sleepRandomness)
 if autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem:
     autoGem = True
 else:
@@ -300,10 +299,11 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(1.5,2.7))
     #Sleep
     @tasks.loop()
-    async def random_account_sleeper():
+    async def random_account_sleeper(self):
         try:
             self.randSleepInt = random.randint(1,100)
-            if self.randSleepInt <= (sleepRandomness - 100):
+            print(self.randSleepInt)
+            if self.randSleepInt < (sleepRandomness - 100):
                 self.f = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
                 console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
@@ -626,10 +626,8 @@ class MyClient(discord.Client):
             self.dm = await self.fetch_user(408785106942164992)
         except Exception as e:
             print(e)
-        print(self.dm.dm_channel.id)
+            print(f"try send a message to owo bot using {self.user.name} acc")
         self.list_channel.append(self.dm.dm_channel.id)
-        print(self.list_channel)
-        print(f'{type(self.user)} , {type(self.user.name)}')
         self.qtemp = False
         self.qtemp2 = True
         self.owoQuest = False
@@ -748,15 +746,7 @@ class MyClient(discord.Client):
             self.task_methods.append(self.check_quests.start)
         # Random Breaks
         if sleepEnabled:
-            print(self.randSleepInt)
-            try:
-                print(self.random_account_sleeper.start)
                 self.random_account_sleeper.start()
-                if self.random_account_sleeper.is_running():
-                    print("running")
-            except Exception as e:
-                print(e)
-            print("dn")
         # Auto Lottery
         if lottery:
             #self.send_lottery.start()
@@ -767,11 +757,9 @@ class MyClient(discord.Client):
             
         # Shuffle and start all loops
         random.shuffle(self.task_methods)
-        print(self.task_methods)
         for task_method in self.task_methods:
             task_method()
             await asyncio.sleep(random.uniform(0.4,0.8))
-            print("d")
                 
         embed1 = discord.Embed(
             title='logging in',
