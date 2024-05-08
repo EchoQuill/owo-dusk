@@ -592,7 +592,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     @tasks.loop()
     async def sleeper():
-        if random.randint(1,100) >= sleepRandomness:
+        if random.randint(1,100) <= sleepRandomness - 100:
             self.f = True
             self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
             console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
@@ -692,6 +692,7 @@ class MyClient(discord.Client):
             self.task_methods.append(self.send_owo.start)
             #self.send_owo.start()
         await asyncio.sleep(random.uniform(0.4,0.8))
+        # Send Cookie
         if cookie:
             self.task_methods.append(self.send_cookie.start)
         # Starting Coinflip
@@ -723,19 +724,26 @@ class MyClient(discord.Client):
                 self.sellOrSacSelected = True
             #self.send_sell_or_sac.start()
             self.task_methods.append(self.send_sell_or_sac.start)
+        # Send Custom Commands
         if customCommands:
             #self.send_custom.start()
             self.task_methods.append(self.send_custom.start)
+        # Do auto quest
         if autoQuest:
             #self.check_quests.start()
             self.task_methods.append(self.check_quests.start)
+        # Random Breaks
         if sleepEnabled:
             self.task_methods.append(self.sleeper.start())
+        # Auto Lottery
         if lottery:
             #self.send_lottery.start()
             self.task_methods.append(self.send_lottery.start)
+        # Send Random strings
         if lvlGrind:
             self.task_methods.append(self.lvlGrind.start)
+            
+        # Shuffle and start all loops
         random.shuffle(self.task_methods)
         for task_method in self.task_methods:
             task_method()
