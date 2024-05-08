@@ -37,7 +37,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * ban detection
 * auto cookie
 * auto slots
-* ~~auto coinflip~~ (a weird bug came up)
+* auto coinflip
 * ~~auto blackjack~~ [under progress]
 * ~~custom commands, you can add commands that is not currently in the list with your own cooldown :>~~
 * battery check
