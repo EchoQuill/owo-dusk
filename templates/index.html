@@ -8,7 +8,7 @@
     <style>
         /* Style for the page */
         body {
-            background-color: black; /* Change the background color to "ref" */
+            background-color: black; /* Change the background color to black */
             text-align: center; /* Center-align content */
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -94,18 +94,20 @@
                 {% if captcha.type == 'image' %}
                     <!-- Display image captcha -->
                     <img src="{{ captcha.url }}" alt="Captcha Image">
+                    <!-- Username (placed before the form) -->
+                    <p>User: {{ captcha.username }}</p>
+                    <!-- Form to submit the captcha -->
+                    <form action="/submit" method="POST" class="input-container">
+                        <input type="text" name="text" placeholder="Type here...">
+                        <input type="hidden" name="captcha_index" value="{{ loop.index0 }}">
+                        <button type="submit">Submit</button>
+                    </form>
                 {% else %}
                     <!-- Display link captcha -->
                     <p>Captcha Link: <a href="{{ captcha.url }}">{{ captcha.url }}</a></p>
+                    <!-- Username -->
+                    <p>User: {{ captcha.username }}</p>
                 {% endif %}
-                <!-- Username -->
-                <p>User: {{ captcha.username }}</p>
-                <!-- Form to submit the captcha -->
-                <form action="/submit" method="POST" class="input-container">
-                    <input type="text" name="text" placeholder="Type here...">
-                    <input type="hidden" name="captcha_index" value="{{ loop.index0 }}">
-                    <button type="submit">Submit</button>
-                </form>
             </div>
         {% endfor %}
     {% endif %}
@@ -118,4 +120,5 @@
     </script>
 </body>
 </html>
+
 <!-- Edited by Maksotm-->
