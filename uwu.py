@@ -281,19 +281,14 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def captchaSolver(self):
         if self.webInt != None and self.webSend == True and self.tempJsonData != None:
-            print(captchaAnswers)
-            print(captchaAnswers[self.webInt])
-            print(self.user)
             self.tempListCount = 0
             #self.captchaAnswerGot = False
-            print("attemting to solve")
             for i in captchas:
                 if i == self.tempJsonData:
                     if captchaAnswers[self.tempListCount] != None:
-                        print("got ans")
                         await self.dm.send(captchaAnswers[self.tempListCount])
                         await asyncio.sleep(random.uniform(5.5,9.7))
-                        print(captchaAnswers[self.tempListCount])
+                        print(f'Attempting answer :- {captchaAnswers[self.tempListCount]}')
                         captchaAnswers[self.tempListCount] = None
                 self.tempListCount+=1    
             await asyncio.sleep(random.uniform(1.5,2.7))
