@@ -60,7 +60,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "0.0.8"
+version = "0.0.9"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
@@ -202,6 +202,32 @@ def webhookSender(msg, desc=None):
         print("The specified command was not found:", e)
     except Exception as e:
         print(e)
+        
+        
+# CAPTCHA NOTIFIER {TERMUX}
+
+def run_system_command(command, timeout, retry=False, delay=5):
+    def target():
+        try:
+            os.system(command)
+        except Exception as e:
+            print(f"Error executing command: {command} - {e}")
+
+    # Create and start a thread to execute the command
+    thread = threading.Thread(target=target)
+    thread.start()
+    
+    # Wait for the thread to finish, with a timeout
+    thread.join(timeout)
+    
+    # If the thread is still alive after the timeout, terminate it
+    if thread.is_alive():
+        print(f"Command '{command}' is stuck, killing thread and moving on.")
+        if retry:
+            print(f"Retrying command '{command}' after {delay} seconds...")
+            time.sleep(delay)
+            run_system_command(command, timeout, retry=False)
+
 #-------------
 
 
@@ -842,8 +868,9 @@ class MyClient(discord.Client):
                 try:
                     self.f = True
                     if termuxNotificationEnabled:
-                        os.system(f"termux-notification -c 'captcha detected! {self.user.name}'")
-                        os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
+                        run_system_command(f"termux-notification -c 'Captcha Detected! {self.user.name}'", timeout=5, retry=True)
+                        run_system_command(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'", timeout=5, retry=True)
+                        #os.system(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'")
                     console.print(f"-{self.user}[!] CAPTCHA DETECTED. waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
                     embed2 = discord.Embed(
                         title=f'CAPTCHA :- {self.user} ;<',
@@ -853,7 +880,7 @@ class MyClient(discord.Client):
                     if webhookEnabled:
                         dwebhook.send(embed=embed2, username='uwu bot warnings')
                     if termuxVibrationEnabled:
-                       os.system(f"termux-vibrate -d {termuxVibrationTime}")
+                       run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
                        print("vibration")
                     #if termuxTtsEnabled:
                     #    os.system(f"termux-tts-speak {termuxTtsContent}")
@@ -911,8 +938,8 @@ class MyClient(discord.Client):
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.f = True
             if termuxNotificationEnabled:
-                os.system(f"termux-notification -c 'BAN DETECTED! {self.user.name}'")
-                os.system(f"termux-toast -c red -b black 'BAN DETECTED:- {self.user.name}'")
+                run_system_command(f"termux-notification -c 'BAN DETECTED! {self.user.name}'", timeout=5, retry=True)
+                run_system_command(f"termux-toast -c red -b black 'BAN DETECTED:- {self.user.name}'", timeout=5, retry=True) 
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
@@ -922,7 +949,7 @@ class MyClient(discord.Client):
             if webhookEnabled:
                 dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
-                os.system(f"termux-vibrate -d {termuxVibrationTime}")
+                run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
             #if termuxTtsEnabled:
             #    os.system(f"termux-tts-speak user got banned!")
             # temp disabled tts
