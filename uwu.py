@@ -321,7 +321,7 @@ class MyClient(discord.Client):
     #Sleep
     @tasks.loop()
     async def random_account_sleeper(self):
-        if self.f != True
+        if self.f != True:
             self.randSleepInt = random.randint(1,100)
             print(self.randSleepInt)
             if self.randSleepInt > (100 - sleepRandomness):
