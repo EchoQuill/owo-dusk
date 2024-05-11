@@ -60,7 +60,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "0.0.9"
+version = "0.1.0"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
@@ -321,7 +321,7 @@ class MyClient(discord.Client):
     #Sleep
     @tasks.loop()
     async def random_account_sleeper(self):
-        try:
+        if self.f != True
             self.randSleepInt = random.randint(1,100)
             print(self.randSleepInt)
             if self.randSleepInt > (100 - sleepRandomness):
@@ -334,8 +334,6 @@ class MyClient(discord.Client):
             else:
                 console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "plum4 on black")
                 await asyncio.sleep(random.uniform(60,120))
-        except Exception as e:
-            print(e)
     #daily
     @tasks.loop()
     async def send_daily(self):
