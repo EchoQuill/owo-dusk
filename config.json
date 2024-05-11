@@ -1,7 +1,7 @@
 {
   "desktopNotificationEnabled": false,
   "setprefix": "owo ",
-  "website": true
+  "website": true,
   "commands": [
     {
       "hunt": true,
