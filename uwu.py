@@ -78,7 +78,7 @@ if desktopNotificationEnabled:
         from plyer import notification
     except:
         clear()
-        console.print(f"-{System}[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
+        console.print(f"-(System)[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
         os.system("pip install plyer")
 if termuxTtsEnabled:
     clear()
