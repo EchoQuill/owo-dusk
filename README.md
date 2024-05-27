@@ -14,7 +14,7 @@
 > Aiohttp doesn't work rn due to ```-fno-openmp-implicit-rpath``` so requirements.txt doesn't install properly. wait for Termux to fix this on their part...
 > Iam not good with such stuff but its not an issue on our part, thats for sure!
 >
-> ~~Temp fix is available in our Discord server, join  using the link above~~ fix stopped working 💀.. ahsjgrjshshs help... i wish this gets fixed soon on termux's part so I can make proper tuto.
+> Temp fix is available in our Discord server, join  using the link above
 
 > ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown.... not all featues in features list is added yet (the ~~crosed~~ ones are not working/requires fix, this will be fixed/added as soon as I have time to do so)
 
