@@ -18,7 +18,13 @@
 # - fix plyer.
 # - add net check xx
 # - change presence, typing indicator.
-# - Fix daily
+# - Fix daily, and quest handler
+# - {
+# auto hunt quest
+# bwf
+# battlw
+# owotop
+# 
 
 # Temp Fix for owo supp channel quest embed
 
@@ -93,6 +99,7 @@ with open(resource_path("config.json")) as file:
 #----------OTHER VARIABLES----------#
 version = "1.0.0"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
+quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
@@ -150,6 +157,8 @@ else:
 autoSell = config["commands"][2]["sell"]
 autoSac = config["commands"][2]["sacrifice"]
 autoQuest = config["commands"][4]["quest"]
+askForHelpChannel = config["commands"][4]["askForHelpChannel"]
+askForHelp = config["commands"][4]["askForHelp"]
 doEvenIfDisabled = config["commands"][4]["doEvenIfDisabled"]
 rarity = ""
 for i in config["commands"][2]["rarity"]:
@@ -165,6 +174,7 @@ customCommands = config["customCommands"]["enabled"]
 lottery = config["commands"][5]["lottery"]
 lotteryAmt = config["commands"][5]["amount"]
 lvlGrind = config["commands"][6]["lvlGrind"]
+useQuoteInstead = config["commands"][6]["useQuoteInstead"]
 cookie = config["commands"][7]["cookie"]
 cookieUserId = config["commands"][7]["userid"]
 customCommandCnt = -1
@@ -634,8 +644,19 @@ class MyClient(discord.Client):
      # Lvl grind
     @tasks.loop()
     async def lvlGrind(self):
-        if self.f != True:
-            await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+        if not self.f:
+            if useQuoteInstead:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(quotesUrl) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            print(data)
+                            self.quote = data[0]["quote"]
+                            await self.cm.send(self.quote)
+                        else:
+                            await self.cm.send(generate_random_string())  # Better than sending quotes(In my opinion).
+            else:
+                await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
             console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
@@ -735,11 +756,11 @@ class MyClient(discord.Client):
         self.battle = None
         self.justStarted = True
         self.list_channel = [self.channel_id, self.dm.dm_channel.id]
-        if sendOwoSuppChannel:
+        if askForHelp:
             try:
-                self.owoSupportChannel = self.get_channel(465978474163601436)
+                self.questChannel = self.get_channel(askForHelpChannel)
             except:
-                self.owoSupportChannel = None
+                self.questChannel = None
         self.spams = 0
         self.last_cmd_time = 0
         self.lastcmd = None
