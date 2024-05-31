@@ -14,7 +14,7 @@
 # - Add more try-except 
 # - Set windows application Id thingy
 # - Update font to Rectangles and rename owo selfbot to owo-dusk.
-# - Fix custom commands xx
+# - Fix custom commands
 # - fix plyer.
 # - add net check xx
 # - change presence, typing indicator.
@@ -177,7 +177,6 @@ lvlGrind = config["commands"][6]["lvlGrind"]
 useQuoteInstead = config["commands"][6]["useQuoteInstead"]
 cookie = config["commands"][7]["cookie"]
 cookieUserId = config["commands"][7]["userid"]
-customCommandCnt = -1
 customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
     sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
@@ -341,7 +340,7 @@ def web_start():
     flaskLog.disabled = True
     cli = sys.modules['flask.cli']
     cli.show_server_banner = lambda *x: None
-    app.run(debug=False, use_reloader=False)
+    app.run(debug=False, use_reloader=False, port=websitePort)
 if websiteEnabled:
     web_thread = threading.Thread(target=web_start)
     web_thread.start()
@@ -579,21 +578,29 @@ class MyClient(discord.Client):
     @tasks.loop(seconds=1)
     async def send_custom(self):
         async def send_command(command, cooldown):
-            while not self.f:
-                self.current_time = time.time()
-                await asyncio.sleep(random.uniform(0.2,0.5) + cooldown)
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time      
-                await self.cm.send(command)
-                self.last_cmd_time = time.time()
-        tasks = []
-        for i in range(customCommandCnt):
-            command = sorted_list1[i]
-            cooldown = sorted_list2[i]
-            tasks.append(send_command(command, cooldown))
-        await asyncio.gather(*tasks)
-        while self.f:
+            try:
+                if self.f != True:
+                    self.current_time = time.time()
+                    await asyncio.sleep(random.uniform(0.2,0.5) + cooldown)
+                    if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                        await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                    self.time_since_last_cmd = self.current_time - self.last_cmd_time      
+                    await self.cm.send(command)
+                    self.last_cmd_time = time.time()
+                    print(self.user, command)
+            except Exception as e:
+                print("send_custon p1", e)
+        try:
+            self.tasks = []
+            for i in range(customCommandCnt):
+                self.ccommand = sorted_list1[i]
+                self.ccooldown = sorted_list2[i]
+                print(self.ccommand, self.ccooldown)
+                self.tasks.append(send_command(self.ccommand, self.ccooldown))
+            await asyncio.gather(*self.tasks)
+        except Exception as e:
+            print("send_custom p2", e)
+        while self.f == True:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Quests
     @tasks.loop()
@@ -697,12 +704,13 @@ class MyClient(discord.Client):
      # emoteTo {Quest}
     @tasks.loop()
     async def emoteTo(self):
-        # Variables :- self.emoteSendedCount , self.emoteToQuestCount
         if self.f != True:
             if self.emoteCount => self.emoteCountGoal:
                 self.emoteTo.stop()
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>')
             self.emoteCount+=1
-            await self.cm.send(f'{setprefix}wave <@408785106942164992>')
             console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
@@ -716,9 +724,13 @@ class MyClient(discord.Client):
             self.send_gamble.stop()
         if self.f != True:
             while self.gambleCount != self.gambleCountGoal:
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 await self.cm.send(f"{setprefix}cf 1")
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(0.83727372,2.73891948))
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 await self.cm.send(f"{setprefix}slots 1")
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(17.83727372,20.73891948))
@@ -963,7 +975,7 @@ class MyClient(discord.Client):
                     try:
                         if self.webInt == None:
                             self.data_json = json.dumps(self.dataToSend)
-                            self.curl_command = f'curl -X POST http://localhost:5000/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
+                            self.curl_command = f'curl -X POST http://localhost:{websitePort}/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
                             self.response_json = os.popen(self.curl_command).read() 
                             self.response_dict = json.loads(self.response_json)
                             self.webInt = int(self.response_dict.get('status'))
@@ -1164,6 +1176,13 @@ class MyClient(discord.Client):
                             self.questsLeft = False
                             self.owoChnl = False
                             #dble check check system.
+                            if self.send_gamble.is_running():
+                                self.send_gamble.stop()
+                            if not autoOwo:
+                                if self.send_owo.is_running():
+                                    self.send_owo.stop()
+                            if self.emoteTo.is_running():
+                                self.emoteTo.stop()
                             return
                         if "Manually hunt'" in i or "Hunt 3 animals that are " in i:
                             self.hbQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
@@ -1340,7 +1359,7 @@ if __name__ == "__main__":
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold cyan on black' )
     if websiteEnabled:
-        printBox(f'-Website captcha logger:- https://localhost:5000/'.center(console_width - 2 ),'bold plum4 on black' )
+        printBox(f'-Website captcha logger:- https://localhost:{websitePort}/'.center(console_width - 2 ),'bold plum4 on black' )
     if int(ver_check.replace(".","")) > int(version.replace(".","")):
         console.print("""new update detected (v{version_check}) (current version:- {version})...
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
