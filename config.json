@@ -1,15 +1,17 @@
 {
   "desktopNotificationEnabled": false,
   "setprefix": "owo ",
-  "website": true,
+  "website": {
+    "enabled": false,
+    "port": 5000
   "commands": [
     {
-      "hunt": true,
-      "battle": true,
+      "hunt": false,
+      "battle": false,
       "cooldown": 15
     },
     {
-      "pray": true,
+      "pray": false,
       "curse": false,
       "cooldown": 300,
       "userToPrayOrCurse": null
@@ -32,7 +34,6 @@
     {
       "slots": false,
       "coinflip": false,
-      "blackjack": false,
       "cooldown": 15,
       "doubleOnLose": true,
       "allottedAmount": 30000,
@@ -47,8 +48,9 @@
       "amount":1
     },
     {
-      "lvlGrind": true,
-      "cooldown": 20
+      "lvlGrind": false,
+      "cooldown": 20,
+      "useQuoteInstead": false,
     },
    {
       "cookie": false,
@@ -62,7 +64,7 @@
     }
   ],
   "autoDaily": false,
-  "sendOwo": true,
+  "sendOwo": false,
   "autoUse": {
     "autoGem": {
       "huntGem": false,
@@ -70,31 +72,30 @@
       "luckyGem": false,
       "specialGem": false
     },
-    "autoUseLootbox": true,
-    "autoUseCrate": true
+    "autoUseLootbox": false,
+    "autoUseCrate": false
   },
   "customCommands": {
     "enabled": false,
     "commands": [],
     "cooldowns": []
   },
-  "webhookEnabled": true,
-  "webhookUselessLog": true,
+  "webhookEnabled": false,
+  "webhookUselessLog": false,
   "webhook": "webhook url here",
   "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
-    "enabled": true,
     "vibrate": {
-      "enabled": true,
+      "enabled": false,
       "time": 5
     },
     "texttospeech": {
       "enabled": false,
       "content": "Captcha detected! owo"
     },
-    "notifications": true,
+    "notifications": false,
     "batteryCheck": {
-      "enabled": true,
+      "enabled": false,
       "minPercentage": 15
     }
   }
