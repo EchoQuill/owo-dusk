@@ -2,10 +2,10 @@
 # Written by EchoQuill, on a laggy mobile.
 # Make sure to star the github page.
 #
-# sorry for bad variable namings. Its hard for me to read them myself as well lol.
+# Oh, sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
 
-# Notes
+# Added
 # - Fix version
 # - Add localhost print {Remove test warning}
 # - Add Mobile notifications at start as well!
@@ -17,8 +17,8 @@
 # - Fix custom commands xx
 # - fix plyer.
 # - add net check xx
-# - change presence, typing indicator. xx
-# - Fix daily, and quest handler
+# - change presence, typing indicator.
+# - Fix daily
 
 # Temp Fix for owo supp channel quest embed
 
@@ -92,7 +92,7 @@ with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
 version = "1.0.0"
-ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/test/version.txt"
+ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
@@ -103,7 +103,9 @@ termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
 termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
-websiteEnabled = config["website"]
+websiteEnabled = config["website"]["enabled"]
+websitePort = config["website"]["port"]
+
 if desktopNotificationEnabled:
     try:
         from plyer import notification
@@ -900,9 +902,8 @@ class MyClient(discord.Client):
                     dwebhook.send(embed=embed2, username='uwu bot warnings')
                 if termuxVibrationEnabled:
                    run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
-                #if termuxTtsEnabled:
-                #    os.system(f"termux-tts-speak {termuxTtsContent}")
-                #    print("tts")
+                if termuxTtsEnabled:
+                    run_system_command(f"termux-tts-speak {termuxTtsContent}", timeout=7, retry=False)
                 if desktopNotificationEnabled:
                     notification.notify(
                         title = f'{self.user}  DETECTED CAPTCHA',
@@ -964,8 +965,8 @@ class MyClient(discord.Client):
                 dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
-            #if termuxTtsEnabled:
-            #    os.system(f"termux-tts-speak user got banned!")
+            if termuxTtsEnabled:
+                run_system_command(f"termux-tts-speak A user got banned", timeout=7, retry=False)
             # temp disabled tts
             if desktopNotificationEnabled:
                 notification.notify(
@@ -1149,7 +1150,8 @@ class MyClient(discord.Client):
                                     self.huntOrBattleSelected = True
                                     self.huntOrBattle = "hunt"
                                     self.hb = 0
-                                    self.send_hunt_or_battle.start()
+                                    if not self.send_hunt_or_battle.is_running():
+                                        self.send_hunt_or_battle.start()
                         if "Battle with a friend " in i:
                             print("battle with a friend detected, but disabled")
                             # frndlyBattle
