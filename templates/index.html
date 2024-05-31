@@ -71,7 +71,7 @@
         }
 
         /* Style for the green text */
-        .green-text {
+        .red-text {
             color: #d60000; /* Green color for "no captchas to solve" text */
             font-family: Arial, Helvetica, sans-serif;
             margin-top: 2px;
@@ -86,7 +86,7 @@
     <hr color= "purple"/>
     {% if no_captchas %}
         <!-- Display green text if no captchas are present -->
-        <p class="green-text">No captchas to solve</p>
+        <p class="red-text">No captchas to solve</p>
     {% else %}
         <!-- Loop through captcha data and render boxes -->
         {% for captcha in captchas %}
@@ -121,4 +121,4 @@
 </body>
 </html>
 
-<!-- Edited by Maksotm-->
+<!--Edited by Maksotm, Made by EchoQuill.-->
