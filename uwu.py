@@ -178,14 +178,14 @@ useQuoteInstead = config["commands"][6]["useQuoteInstead"]
 cookie = config["commands"][7]["cookie"]
 cookieUserId = config["commands"][7]["userid"]
 customCommandCnt = -1
-for i in config["customCommands"]["commands"]:
-    customCommandCnt+=1
+customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
-    sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1]) 
+    sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
     sorted_list1, sorted_list2 = zip(*sorted_zipped_lists)
-elif customCommandCnt == 0:
+else:
     sorted_list1 = config["customCommands"]["commands"]
     sorted_list2 = config["customCommands"]["cooldowns"]
+
 #lotter amt check:-
 if lotteryAmt > 250000:
     lotteryAmt = 250000
@@ -566,29 +566,34 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
-                self.last_cmd_time = time.time()
-                if webhookEnabled:
-                    webhookSender(f"-{self.user}[+] ran {self.sellOrSac}")
-                console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
-                await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+            self.last_cmd_time = time.time()
+            if webhookEnabled:
+                webhookSender(f"-{self.user}[+] ran {self.sellOrSac}")
+            console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
+            await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Custom commands
-    @tasks.loop()
+    @tasks.loop(seconds=1)
     async def send_custom(self):
-        if self.f != True:
-            for i in range(customCommandCnt):
-                if i != 0 and (i+1) <= customCommandCnt:    
-                    await asyncio.sleep(random.uniform((sorted_list2[i] - sorted_list2[i-1]) + 0.3, (sorted_list2[i] - sorted_list2[i-1]) + 0.5))
-                elif i == 0:
-                    await asyncio.sleep(random.uniform(sorted_list2[i] + 0.3, sorted_list2[i] + 0.5))
+        async def send_command(command, cooldown):
+            while not self.f:
+                self.current_time = time.time()
+                await asyncio.sleep(random.uniform(0.2,0.5) + cooldown)
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-                await self.cm.send(sorted_list1[i])
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time      
+                await self.cm.send(command)
                 self.last_cmd_time = time.time()
-        else:
+        tasks = []
+        for i in range(customCommandCnt):
+            command = sorted_list1[i]
+            cooldown = sorted_list2[i]
+            tasks.append(send_command(command, cooldown))
+        await asyncio.gather(*tasks)
+        while self.f:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Quests
     @tasks.loop()
