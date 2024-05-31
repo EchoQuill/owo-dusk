@@ -92,7 +92,7 @@ with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
 version = "1.0.0"
-ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
+ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/test/version.txt"
 ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
