@@ -3,7 +3,7 @@
   "setprefix": "owo ",
   "website": {
     "enabled": false,
-    "port": 5000
+    "port": 6984
   "commands": [
     {
       "hunt": false,
