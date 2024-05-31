@@ -340,7 +340,7 @@ def web_start():
     flaskLog.disabled = True
     cli = sys.modules['flask.cli']
     cli.show_server_banner = lambda *x: None
-    app.run(debug=False, use_reloader=False)
+    app.run(debug=False, use_reloader=False, port=websitePort)
 if websiteEnabled:
     web_thread = threading.Thread(target=web_start)
     web_thread.start()
@@ -704,12 +704,13 @@ class MyClient(discord.Client):
      # emoteTo {Quest}
     @tasks.loop()
     async def emoteTo(self):
-        # Variables :- self.emoteSendedCount , self.emoteToQuestCount
         if self.f != True:
             if self.emoteCount => self.emoteCountGoal:
                 self.emoteTo.stop()
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>')
             self.emoteCount+=1
-            await self.cm.send(f'{setprefix}wave <@408785106942164992>')
             console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
@@ -723,9 +724,13 @@ class MyClient(discord.Client):
             self.send_gamble.stop()
         if self.f != True:
             while self.gambleCount != self.gambleCountGoal:
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 await self.cm.send(f"{setprefix}cf 1")
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(0.83727372,2.73891948))
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 await self.cm.send(f"{setprefix}slots 1")
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(17.83727372,20.73891948))
@@ -970,7 +975,7 @@ class MyClient(discord.Client):
                     try:
                         if self.webInt == None:
                             self.data_json = json.dumps(self.dataToSend)
-                            self.curl_command = f'curl -X POST http://localhost:5000/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
+                            self.curl_command = f'curl -X POST http://localhost:{websitePort}/add_captcha -H "Content-Type: application/json" -d \'{self.data_json}\' ' 
                             self.response_json = os.popen(self.curl_command).read() 
                             self.response_dict = json.loads(self.response_json)
                             self.webInt = int(self.response_dict.get('status'))
@@ -1171,6 +1176,13 @@ class MyClient(discord.Client):
                             self.questsLeft = False
                             self.owoChnl = False
                             #dble check check system.
+                            if self.send_gamble.is_running():
+                                self.send_gamble.stop()
+                            if not autoOwo:
+                                if self.send_owo.is_running():
+                                    self.send_owo.stop()
+                            if self.emoteTo.is_running():
+                                self.emoteTo.stop()
                             return
                         if "Manually hunt'" in i or "Hunt 3 animals that are " in i:
                             self.hbQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
@@ -1347,7 +1359,7 @@ if __name__ == "__main__":
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold cyan on black' )
     if websiteEnabled:
-        printBox(f'-Website captcha logger:- https://localhost:5000/'.center(console_width - 2 ),'bold plum4 on black' )
+        printBox(f'-Website captcha logger:- https://localhost:{websitePort}/'.center(console_width - 2 ),'bold plum4 on black' )
     if int(ver_check.replace(".","")) > int(version.replace(".","")):
         console.print("""new update detected (v{version_check}) (current version:- {version})...
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
