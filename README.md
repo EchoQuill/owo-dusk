@@ -8,18 +8,15 @@
   <p>join our discord!</p>
 </div>
 
---------
+---
+
+Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 
 > [!IMPORTANT]
 > Aiohttp doesn't work rn due to ```-fno-openmp-implicit-rpath``` so requirements.txt doesn't install properly. wait for Termux to fix this on their part...
 > Iam not good with such stuff but its not an issue on our part, thats for sure!
 >
 > Temp fix is available in our Discord server, join  using the link above
-
-> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown.... not all featues in features list is added yet (the ~~crosed~~ ones are not working/requires fix, this will be fixed/added as soon as I have time to do so)
-
-
-Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 
 > ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbot to grind owo. 
 ---
