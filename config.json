@@ -45,7 +45,7 @@
       "quest": false,
       "doEvenIfDisabled": false,
       "askForHelp": false,
-      "askForHelpChannel": 00029829291
+      "askForHelpChannel": 1
     },
     {
       "lottery": false,
