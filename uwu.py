@@ -2,8 +2,10 @@
 # Written by EchoQuill, on a laggy mobile.
 # Make sure to star the github page.
 #
-# sorry for bad variable namings. Its hard for me to read them myself as well lol.
+# Oh, sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
+
+#add channel name in captcha
 
 
 # Check Pray/Curse .pop()
@@ -114,6 +116,7 @@ setprefix = config["setprefix"]
 listUserIds = []
 autoHunt = config["commands"][0]["hunt"]
 autoBattle = config["commands"][0]["battle"]
+useShortForm = config["commands"][0]["useShortForm"]
 autoPray = config["commands"][1]["pray"]
 autoCurse = config["commands"][1]["curse"]
 userToPrayOrCurse = config["commands"][1]["userToPrayOrCurse"]
@@ -416,7 +419,10 @@ class MyClient(discord.Client):
                 pass
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if not self.tempHuntDisable:
-                await self.cm.send(f'{setprefix}{self.huntOrBattle}')
+                if useShortForm:
+                    await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
+                else:
+                    await self.cm.send(f'{setprefix}{self.huntOrBattle}')
                 console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
@@ -1225,9 +1231,12 @@ class MyClient(discord.Client):
                                     self.send_owo.stop()
                             if self.emoteTo.is_running():
                                 self.emoteTo.stop()
+                            if doEvenIfDisabled:
+                                pass
+                            console.print(f"-{self.user}[+] Quests have been fully completed!!".center(console_width - 2 ), style = "medium_purple3 on black")
                             return
                         if "Manually hunt'" in i or "Hunt 3 animals that are " in i:
-                            self.hbQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
+                            self.huntQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
                             if not autoHunt and doEvenIfDisabled:
                                 if autoBattle:
                                     self.huntOrBattleSelected = False
@@ -1294,6 +1303,7 @@ class MyClient(discord.Client):
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                 if askForHelp and self.owoChnl == False:
+                                    console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                         if "Receive a cookie from " in i:
@@ -1310,6 +1320,7 @@ class MyClient(discord.Client):
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                 if askForHelp and self.owoChnl == False:
+                                    console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                         if "Have a friend pray to you " in i:
@@ -1326,6 +1337,7 @@ class MyClient(discord.Client):
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                 if askForHelp and self.owoChnl == False:
+                                    console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                         if "Have a friend curse you" in i:
@@ -1342,6 +1354,7 @@ class MyClient(discord.Client):
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                 if askForHelp and self.owoChnl == False:
+                                    console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                         if "Earn " in i:
