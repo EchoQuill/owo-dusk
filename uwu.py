@@ -1149,30 +1149,6 @@ class MyClient(discord.Client):
             return
         if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
             pass
-        if message.channel.id == self.channel_id and "slow down and try the command again" in message.content.lower():
-            await asyncio.sleep(random.uniform(3.9,5.2))
-            if self.f:
-                return
-            if self.lastcmd == "hunt":
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}hunt")
-                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran hunt")
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.lastcmd == "battle":
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}battle")
-                console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran battle")
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
             self.hb = 1
             self.last_cmd_time = time.time()
