@@ -1279,7 +1279,7 @@ class MyClient(discord.Client):
                     #print()
                     try:
                         self.questToDo = []
-                        self.questProgres = []
+                        self.questProgress = []
                         for match in re.findall(r'Progress: \[(\d+)/(\d+)\]', embed.description):
                             x, y = match #split
                             #print(f'Progress: {x}/{y}')
