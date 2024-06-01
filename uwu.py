@@ -665,7 +665,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             await self.cm.send(f'{setprefix}quest')
             self.questsLeft = False
-            console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "magenta on black")
+            console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "green on black")
             self.last_cmd_time = time.time()
             await asyncio.sleep(random.uniform(300.28288282, 351.928292929))
             if self.questsDone:
@@ -722,7 +722,8 @@ class MyClient(discord.Client):
                                         self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                         if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                        await self.cm.send(f"{setprefix}curse <@{i[0]}")
+                                        await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>')
+                                        print("lsss goooo!")
                                         self.last_cmd_time = time.time()
                                         questsList[self.questsListInt][3][o][1]-=1
                                         if questsList[self.questsListInt][3][o][1]:
@@ -784,13 +785,13 @@ class MyClient(discord.Client):
     async def lvlGrind(self):
         if self.f != True:
             if useQuoteInstead:
-                print("somewhat working")
+                #print("somewhat working")
                 try:
                     async with aiohttp.ClientSession() as session:
                         async with session.get(quotesUrl) as response:
                             if response.status == 200:
                                 data = await response.json()
-                                print(data)
+                                #print(data)
                                 self.quote = data[0]["quote"]
                                 await self.cm.send(self.quote)
                             else:
@@ -894,6 +895,8 @@ class MyClient(discord.Client):
         self.prayBy = False
         self.curseBy = False
         self.owoChnl = False
+        self.questProgress= []
+        self.questToDo = []
         self.tempPrayOrCurse = []
         self.questsList = []
         #-------
@@ -1290,18 +1293,28 @@ class MyClient(discord.Client):
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if not autoQuest:
                         return
-                    for match in re.findall(r'Progress: \[(\d+)/(\d+)\]', embed.description):
-                        x, y = match #split
-                        print(f'Progress: {x}/{y}')
-                        self.questProgress.append(x)
-                        self.questProgress.append(y)
-                    for match in re.findall(r'\*\*(.*?)\*\*', embed.description):
-                        x = match
-                        print(x)
-                        print(questToDo)
-                        self.questsToDo.append(x)
-                    for o,i in enumerate(questToDo):  # o = int, i = item     
+                    print("somewhat works")
+                    #print()
+                    #print(embed.description)
+                    #print()
+                    try:
+                        for match in re.findall(r'Progress: \[(\d+)/(\d+)\]', embed.description):
+                            x, y = match #split
+                            #print(f'Progress: {x}/{y}')
+                            self.questProgress.append(x)
+                            self.questProgress.append(y)
+                        print(self.questProgress , self.user)
+                        for match in re.findall(r'\*\*(.*?)\*\*', embed.description):
+                            x = match
+                            print(x)
+                            print(self.questToDo)
+                            self.questToDo.append(x)
+                        print(self.questToDo, self.user)
+                    except Exception as e:
+                        print(e)
+                    for o,i in enumerate(self.questToDo):  # o = int, i = item     
                     #---------------------Temp Border---------------------#
+                        print(i,o)
                         if "you finished all of your quests!" in embed.description.lower():
                             self.questsDone = True
                             self.questsLeft = False
@@ -1338,7 +1351,7 @@ class MyClient(discord.Client):
                                     self.tempBattleQuestValue = None
                             console.print(f"-{self.user}[+] Quests have been fully completed!!".center(console_width - 2 ), style = "medium_purple3 on black")
                             return
-                        if "Manually hunt'" in i or "Hunt 3 animals that are " in i:  
+                        elif "Manually hunt" in i or "Hunt 3 animals that are " in i:  
                             if not autoHunt and doEvenIfDisabled:
                                 if "Hunt 3 animals that are " in i:
                                     self.huntQuestValue = None
@@ -1356,11 +1369,12 @@ class MyClient(discord.Client):
                                     self.hb = 0
                                     if not self.send_hunt_or_battle.is_running():
                                         self.send_hunt_or_battle.start()
-                                print("man h", self.user)
-                        if "Battle with a friend " in i:
+                            print("man h", self.user)
+                        #print("proceedings 1")
+                        elif "Battle with a friend " in i:
                             print("battle with a friend detected, but disabled")
-                            # frndlyBattle
-                        if "Battle " in i:
+                        #print("proceedings 2")
+                        elif "Battle " in i:
                             self.tempBattleQuestValue = 0
                             self.battleQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
                             if autoHunt:
@@ -1375,14 +1389,16 @@ class MyClient(discord.Client):
                                     self.send_hunt_or_battle.start()          
                             print("battle", self.user)
                             # Battle
-                        if "Gamble " in i:
+                        #print("proceedings 3")
+                        elif "Gamble " in i:
                             self.gambleCount = 0
                             self.gambleCountGoal = questsProgress[(o*2)+1] - questsProgress[o*2]
                             #self.gambleQuest = True
                             if self.send_gamble.is_running() == False and (autoCf == False and autoSlots == False): # add bj later
                                 self.send_gamble.start()
                             print("gamble", self.user)
-                        if "Say 'owo' " in i:
+                        #print("proceedings 4")
+                        elif "Say 'owo' " in i:
                             # Owo
                             self.owoCount = 0
                             self.owoCountGoal = questsProgress[(o*2)+1] - questsProgress[o*2]
@@ -1390,14 +1406,16 @@ class MyClient(discord.Client):
                             if not self.send_owo.is_running():
                                 self.send_owo.start()
                             print("say owo",self.user)
-                        if "Use an action command on someone " in i:
+                        #print("proceedings 5")
+                        elif "Use an action command on someone " in i:
                             # emoteto
                             self.emoteCount = 0
                             self.emoteCountGoal = questsProgress[(o*2)+1] - questsProgress[o*2]
                             if not self.emoteTo.is_running():
                                 self.emoteTo.start()
                             print("action", self.user)
-                        if "Have a friend use an action command on you " in i:
+                        #print("proceedings 6")
+                        elif "Have a friend use an action command on you " in i:
                             # emoteby
                             if token_len != 1:
                                 if self.emoteby == False:
@@ -1413,8 +1431,10 @@ class MyClient(discord.Client):
                                 console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                 await self.questChannel.send("owo quest")
                                 self.owoChnl = True
-                        if "Receive a cookie from " in i:
+                        #print("proceedings 7")
+                        elif "Receive a cookie from " in i:
                             # repBy
+                            print(token_len)
                             if token_len != 1:
                                 if self.repBy == False:
                                     self.questsList.append(["cookie", questsProgress[(o*2)+1] - questsProgress[o*2]])
@@ -1430,7 +1450,8 @@ class MyClient(discord.Client):
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                 await self.questChannel.send("owo quest")
                                 self.owoChnl = True
-                        if "Have a friend pray to you " in i:
+                        #print("proceedings 8")
+                        elif "Have a friend pray to you " in i:
                             # prayBy
                             if token_len != 1:
                                 if self.prayBy == False:
@@ -1447,7 +1468,8 @@ class MyClient(discord.Client):
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                 await self.questChannel.send("owo quest")
                                 self.owoChnl = True
-                        if "Have a friend curse you" in i:
+                        #print("proceedings 9")
+                        elif "Have a friend curse you" in i:
                             # CurseBy
                             if token_len != 1:
                                 if self.curseBy == False:
@@ -1464,7 +1486,8 @@ class MyClient(discord.Client):
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
                                 await self.questChannel.send("owo quest")
                                 self.owoChnl = True
-                        if "Earn " in i:
+                        #print("proceedings 10")
+                        elif "Earn " in i:
                             # XP
                             if autoHunt == False or autoBattle == False and doEvenIfDisabled:
                                 self.huntOrBattleSelected = False
