@@ -2,36 +2,11 @@
 # Written by EchoQuill, on a laggy mobile.
 # Make sure to star the github page.
 #
-# Oh, sorry for bad variable namings. Its hard for me to read them myself as well lol.
+# sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
 
-# Added
-# - Fix version
-# - Add localhost print {Remove test warning}
-# - Add Mobile notifications at start as well!
-# - Add better ver check
-# - Add check for no cash
-# - Add more try-except 
-# - Set windows application Id thingy
-# - Update font to Rectangles and rename owo selfbot to owo-dusk.
-# - Fix custom commands
-# - fix plyer.
-# - add net check xx
-# - change presence, typing indicator.
-# - Fix daily, and quest handler
-# - {
-# auto hunt quest
-# bwf
-# battlw
-# owotop
-# 
 
-# Temp Fix for owo supp channel quest embed
-
-# fIXcaptcha.
-
-#ADD PORT CHANGE + QUEST OWO SUPP CHANNEL ID
-# Add captcha channel name
+# Check Pray/Curse .pop()
 
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
@@ -663,6 +638,9 @@ class MyClient(discord.Client):
                                     else:
                                         await self.cm.send(f"{setprefix}pray <@{i[0]}")
                                         questsList[self.questsListInt][3][o][1]-=1
+                                        if questsList[self.questsListInt][3][o][1]:
+                                            questsList[self.questsListInt][3].pop(o)
+                                            self.prayBy = False
                             elif x[0] == "curse":
                                 if self.prayOrCurse.is_running():
                                     if autoPray or autoCurse:
@@ -671,12 +649,21 @@ class MyClient(discord.Client):
                                     else:
                                         await self.cm.send(f"{setprefix}curse <@{i[0]}")
                                         questsList[self.questsListInt][3][o][1]-=1
+                                        if questsList[self.questsListInt][3][o][1]:
+                                            questsList[self.questsListInt][3].pop(o)
+                                            self.curseBy = False
                             elif x[0] == "cookie":
                                 await self.cm.send(f"{setprefix}rep <@{i[0]}")
                                 questsList[self.questsListInt][3][o][1]-=1
+                                if questsList[self.questsListInt][3][o][1]:
+                                    questsList[self.questsListInt][3].pop(o)
+                                    self.repBy = False
                             elif x[0] == "action":
                                 await self.cm.send(f"{setprefix}rep <@{i[0]}")
                                 questsList[self.questsListInt][3][o][1]-=1
+                                if questsList[self.questsListInt][3][o][1]:
+                                    questsList[self.questsListInt][3].pop(o)
+                                    self.emoteby = False
         else:        
             await asyncio.sleep(random.uniform(3.12667373732, 6.9439393929))
     # Lottery
@@ -979,9 +966,9 @@ class MyClient(discord.Client):
             try:
                 self.f = True
                 if termuxNotificationEnabled:
-                    run_system_command(f"termux-notification -c 'Captcha Detected! {self.user.name}'", timeout=5, retry=True)
+                    run_system_command(f"termux-notification -c 'Captcha Detected! {self.user.name} in {message.channel.name}'", timeout=5, retry=True)
                     run_system_command(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'", timeout=5, retry=True)
-                console.print(f"-{self.user}[!] CAPTCHA DETECTED. waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
+                console.print(f"-{self.user}[!] CAPTCHA DETECTED in {message.channel.name} waiting...".center(console_width - 2 ), style = "deep_pink2 on black")
                 embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
                     description=f"user got captcha :- {self.user} ;<",
@@ -1272,8 +1259,7 @@ class MyClient(discord.Client):
                                     self.hb = 1
                                     if not self.send_hunt_or_battle.is_running():
                                         self.battleQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
-                                        self.send_hunt_or_battle.start()
-                                
+                                        self.send_hunt_or_battle.start()                                
                             # Battle
                         if "Gamble " in i:
                             self.gambleCount = 0
