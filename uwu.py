@@ -2,14 +2,8 @@
 # Written by EchoQuill, on a laggy mobile.
 # Make sure to star the github page.
 #
-# Oh, sorry for bad variable namings. Its hard for me to read them myself as well lol.
+# Sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
-
-#add channel name in captcha
-
-
-# Check Pray/Curse .pop()
-
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
@@ -714,7 +708,7 @@ class MyClient(discord.Client):
                                                 self.prayBy = False
                                 elif x[0] == "curse":
                                     print("qcurse")
-                                    if self.prayOrCurse.is_running():
+                                    if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
                                                 self.tempPrayOrCurse.append([i[0], i[0][0] ])     
@@ -723,7 +717,7 @@ class MyClient(discord.Client):
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                            await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
+                                            await self.cm.send(f'''{setprefix}curse <@{i[0]}>''')
                                             print("lsss goooo!")
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
@@ -731,12 +725,12 @@ class MyClient(discord.Client):
                                                 questsList[y][3].pop(o)
                                                 self.curseBy = False
                                 elif x[0] == "cookie":
-                                    print("qrep")
+                                    print("qcookie")
                                     self.current_time = time.time()
                                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                    await self.cm.send(f"{setprefix}rep <@{i[0]}")
+                                    await self.cm.send(f"{setprefix}rep <@{i[0]}>")
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
                                     if questsList[y][3][o][1]:
@@ -748,7 +742,8 @@ class MyClient(discord.Client):
                                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                    await self.cm.send(f"{setprefix}rep <@{i[0]}")
+                                    await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
+                                    print("lsss goooo!")
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
                                     if questsList[y][3][o][1]:
@@ -758,7 +753,7 @@ class MyClient(discord.Client):
             else:        
                 await asyncio.sleep(random.uniform(3.12667373732, 6.9439393929))
         except Exception as e:
-            print(e)
+            print(e, "quest handler")
   # Lottery
     @tasks.loop()
     async def send_lottery(self):
@@ -1393,7 +1388,7 @@ class MyClient(discord.Client):
                                         self.send_hunt_or_battle.start()          
                                 print("battle", self.user)
                             except Exception as e:
-                                print(e)
+                                print(e, "battle")
                         elif "Gamble " in i:
                             try:
                                 self.gambleCount = 0
@@ -1403,7 +1398,7 @@ class MyClient(discord.Client):
                                     self.send_gamble.start()
                                 print("gamble", self.user)
                             except Exception as e:
-                                print(e)
+                                print(e, "gamble")
                         elif "Say 'owo' " in i:
                             try:
                                 self.owoCount = 0
@@ -1413,7 +1408,7 @@ class MyClient(discord.Client):
                                     self.send_owo.start()
                                 print("say owo",self.user)
                             except Exception as e:
-                                print(e)
+                                print(e,"owo q")
                         elif "Use an action command on someone " in i:
                             try:
                                 self.emoteCount = 0
@@ -1422,7 +1417,7 @@ class MyClient(discord.Client):
                                     self.emoteTo.start()
                                 print("action", self.user)
                             except Exception as e:
-                                print(e)
+                                print(e, "action0")
                         elif "Have a friend use an action command on you " in i:
                             try:
                                 if token_len != 1:
@@ -1440,7 +1435,7 @@ class MyClient(discord.Client):
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                             except Exception as e:
-                                print(e)
+                                print(e, "action")
                         elif "Receive a cookie from " in i:
                             try:
                             # repBy
@@ -1458,7 +1453,7 @@ class MyClient(discord.Client):
                                         await self.questChannel.send("owo quest")
                                         self.owoChnl = True
                             except Exception as e:
-                                print(e)
+                                print(e, "cookie")
                         elif "Have a friend pray to you " in i:
                             try:
                             # prayBy
@@ -1477,7 +1472,7 @@ class MyClient(discord.Client):
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                             except Exception as e:
-                                print(e)
+                                print(e, "prayer")
                         #print("proceedings 9")
                         elif "Have a friend curse you" in i:
                             # CurseBy
@@ -1497,7 +1492,7 @@ class MyClient(discord.Client):
                                     await self.questChannel.send("owo quest")
                                     self.owoChnl = True
                             except Exception as e:
-                                print(e)
+                                print(e, "curse")
                         elif "xp from hunting and battling " in i:
                             try:
                                 if autoHunt == False or autoBattle == False and doEvenIfDisabled:
@@ -1518,22 +1513,22 @@ class MyClient(discord.Client):
                                         self.battleQuestValue = None
                                     print("enabled Earn xp quest", self.user)
                             except Exception as e:
-                                print(e)
+                                print(e, "xp")
                         try:
                             print(self.questsList)
-                            if questListInt != None:
-                                questsList.pop(questListInt)
+                            if self.questsListInt != None:
+                                questsList.pop(self.questsListInt)
                             questsList.append([self.user.id, self.channel_id, self.cm.guild.id, self.questsList])
                             for i in range(token_len):
-                                if questList[i][0] == self.user.id:
+                                if questsList[i][0] == self.user.id:
                                     self.questsListInt = i
                                     break
                             #else:
-                                #questList[self.questsListInt] = [self.user.id, self.channel_id, self.cm.guild.id, self.questsList]
+                                #quesstList[self.questsListInt] = [self.user.id, self.channel_id, self.cm.guild.id, self.questsList]
                             self.questsList = []
-                            print(questsList)
+                            #print(questsList)
                         except Exception as e:
-                            print(e)
+                            print(e, "last part of quest logs")
 
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
