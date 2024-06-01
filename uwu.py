@@ -401,6 +401,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
             else:
                 await asyncio.sleep(random.uniform(2.5,3.5))
+        #print(self.hb, self.huntOrBattle, self.user, "1")
         if self.f != True:
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -429,6 +430,7 @@ class MyClient(discord.Client):
                     self.spams[self.hb] = 0
                 else:
                     self.spams[self.hb]+=1
+                #print(self.hb, self.huntOrBattle, self.user, "2")
                 if useShortForm:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                 else:
@@ -475,6 +477,8 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
                 if self.hb == 1:
                     await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
+                else:
+                    await asyncio.sleep(random.uniform(0.72667373732, 1.9439393929))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     #pray/curse
@@ -1288,11 +1292,6 @@ class MyClient(discord.Client):
                             print(self.questToDo)
                             self.questToDo.append(x)
                         print(self.questToDo, self.user)
-                    except Exception as e:
-                        print(e)
-                    for o,i in enumerate(self.questToDo):  # o = int, i = item     
-                    #---------------------Temp Border---------------------#
-                        print(i,o)
                         if "you finished all of your quests!" in embed.description.lower():
                             self.questsDone = True
                             self.owoChnl = False
@@ -1328,7 +1327,12 @@ class MyClient(discord.Client):
                                     self.tempBattleQuestValue = None
                             console.print(f"-{self.user}[+] Quests have been fully completed!!".center(console_width - 2 ), style = "medium_purple3 on black")
                             return
-                        elif "Manually hunt" in i or "Hunt 3 animals that are " in i:
+                    except Exception as e:
+                        print("f quests", e)
+                    for o,i in enumerate(self.questToDo):  # o = int, i = item     
+                    #---------------------Temp Border---------------------#
+                        print(i,o)                    
+                        if "Manually hunt" in i or "Hunt 3 animals that are " in i:
                             try:
                                 if not autoHunt and doEvenIfDisabled:
                                     if "Hunt 3 animals that are " in i:
