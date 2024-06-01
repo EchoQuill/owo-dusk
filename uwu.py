@@ -65,7 +65,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.0.0"
+version = "1.0.1"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
@@ -415,6 +415,7 @@ class MyClient(discord.Client):
                     console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《Lag detected》".center(console_width - 2 ), style = "plum4 on black")
                     await asyncio.sleep(self.sleepTime)
                     console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                    self.spams = [0,0]
                     self.f = False
                 elif self.spams[self.hb] == 3 and self.huntOrBattleSelected == False:
                     if self.hb != 1:
