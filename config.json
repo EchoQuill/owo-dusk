@@ -8,7 +8,8 @@
     {
       "hunt": false,
       "battle": false,
-      "cooldown": 15
+      "cooldown": 15,
+      "useShortForm": false
     },
     {
       "pray": false,
