@@ -418,14 +418,14 @@ class MyClient(discord.Client):
                 pass
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if not self.tempHuntDisable:
-                if self.spams[0] == 3 and self.spams[1] == 3:
+                if (self.spams[0] >= 3 and self.spams[1] >= 3) or (self.spams[0] >= 3 and autoBattle == False) or (self.spams[1] >= 3 and autoHunt == False):
                     self.f = True
                     self.sleepTime = random.uniform(549.377384, 610.38838393)
                     console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《Lag detected》".center(console_width - 2 ), style = "plum4 on black")
                     await asyncio.sleep(self.sleepTime)
                     console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
                     self.f = False
-                elif self.spams[self.hb] == 3:
+                elif self.spams[self.hb] == 3 and self.huntOrBattleSelected == False:
                     if self.hb != 1:
                         self.hb = 1
                         self.huntOrBattle = "battle"
@@ -440,25 +440,44 @@ class MyClient(discord.Client):
                 if useShortForm:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                 else:
-                    await self.cm.send(f'{setprefix}{self.huntOrBattle}')
-                
+                    await self.cm.send(f'{setprefix}{self.huntOrBattle}')                
                 self.lastHb = self.hb
-                if autoBattle == False or autoHunt == False:
+                if autoBattle == False or autoHunt == False and (self.huntQuestValue != None and self.battleQuestValue != None):
                     if autoHunt == False and autoBattle == False:
                         self.tempBattleQuestValue+=1
                         self.tempHuntQuestValue+=1
-                        if self.huntQuestValue <= self.tempHuntQuestValue:
-                            pass
-                        if self.battleQuestValue <= self.tempBattleQuestValue:
-                            pass
+                        if (self.huntQuestValue <= self.tempHuntQuestValue) and (self.battleQuestValue <= self.tempBattleQuestValue):
+                            self.battleQuestValue = None
+                            self.tempBattleQuestValue = None
+                            self.send_hunt_or_battle.stop()
+                        elif self.huntQuestValue <= self.tempHuntQuestValue:
+                            self.huntOrBattleSelected = False
+                            self.huntOrBattle = "battle"
+                            self.hb = 1
+                            self.battleQuestValue = None
+                            self.tempBattleQuestValue = None
+                        elif self.battleQuestValue <= self.tempBattleQuestValue:
+                            self.huntOrBattleSelected = False
+                            self.huntOrBattle = "hunt"
+                            self.hb = 0
+                            self.battleQuestValue = None
+                            self.tempBattleQuestValue = None
                     elif autohunt:
                         self.tempBattleQuestValue+=1
                         if self.battleQuestValue <= self.tempBattleQuestValue:
-                            pass
+                            self.huntOrBattleSelected = False
+                            self.huntOrBattle = "hunt"
+                            self.hb = 0
+                            self.battleQuestValue = None
+                            self.tempBattleQuestValue = None
                     elif autoBattle:
                         self.tempahuntQuestValue+=1
                         if self.huntQuestValue <= self.tempBattleQuestValue:
-                            pass
+                            self.huntOrBattleSelected = False
+                            self.huntOrBattle = "battle"
+                            self.hb = 1
+                            self.battleQuestValue = None
+                            self.tempBattleQuestValue = None
                 console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
@@ -567,12 +586,13 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_owo(self):
         if self.f != True:
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             await self.cm.send('owo')
-            console.print(f"-{self.user}[+] ran owo".center(console_width - 2 ), style = "Cyan on black")
+            self.last_cmd_time = time.time()
+            console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
             if webhookUselessLog:
                 webhookSender(f"-{self.user}[-] ran OwO")
             if autoOwo == False:
@@ -650,8 +670,8 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             await asyncio.sleep(random.uniform(500.28288282, 701.928292929))
             if self.questsDone:
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                #self.current_time = time.time()
+                #self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
                 self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
                 self.formatted_time = "{:02}h {:02}m {:02}s".format(
@@ -678,7 +698,12 @@ class MyClient(discord.Client):
                                         if self.tempPrayOrCurse == []:
                                             self.tempPrayOrCurse.append([i[0], i[0][0] ])     
                                     else:
+                                        self.current_time = time.time()
+                                        self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                                        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                                            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                         await self.cm.send(f"{setprefix}pray <@{i[0]}")
+                                        self.last_cmd_time = time.time()
                                         questsList[self.questsListInt][3][o][1]-=1
                                         if questsList[self.questsListInt][3][o][1]:
                                             questsList[self.questsListInt][3].pop(o)
@@ -689,19 +714,34 @@ class MyClient(discord.Client):
                                         if self.tempPrayOrCurse == []:
                                             self.tempPrayOrCurse.append([i[0], i[0][0] ])     
                                     else:
+                                        self.current_time = time.time()
+                                        self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                                        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                                            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                         await self.cm.send(f"{setprefix}curse <@{i[0]}")
+                                        self.last_cmd_time = time.time()
                                         questsList[self.questsListInt][3][o][1]-=1
                                         if questsList[self.questsListInt][3][o][1]:
                                             questsList[self.questsListInt][3].pop(o)
                                             self.curseBy = False
                             elif x[0] == "cookie":
+                                self.current_time = time.time()
+                                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                 await self.cm.send(f"{setprefix}rep <@{i[0]}")
+                                self.last_cmd_time = time.time()
                                 questsList[self.questsListInt][3][o][1]-=1
                                 if questsList[self.questsListInt][3][o][1]:
                                     questsList[self.questsListInt][3].pop(o)
                                     self.repBy = False
                             elif x[0] == "action":
+                                self.current_time = time.time()
+                                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                 await self.cm.send(f"{setprefix}rep <@{i[0]}")
+                                self.last_cmd_time = time.time()
                                 questsList[self.questsListInt][3][o][1]-=1
                                 if questsList[self.questsListInt][3][o][1]:
                                     questsList[self.questsListInt][3].pop(o)
@@ -945,7 +985,7 @@ class MyClient(discord.Client):
             #self.send_custom.start()
             self.task_methods.append(self.send_custom.start)
         if autoQuest:
-            #self.check_quests.start()
+            self.questHandler.start()
             self.task_methods.append(self.check_quests.start)
         if lottery:
             #self.send_lottery.start()
@@ -995,7 +1035,7 @@ class MyClient(discord.Client):
                         self.tempListCount+=1
                     if self.popped:
                         break
-                    print("loopinh while")
+                    print("looping while")
                 print(captchas , captchaAnswers)
                 self.webInt = None
                     
@@ -1268,12 +1308,33 @@ class MyClient(discord.Client):
                             if self.emoteTo.is_running():
                                 self.emoteTo.stop()
                             if doEvenIfDisabled:
-                                pass
+                                if autoHunt == False and autoBattle == False:
+                                    if send_hunt_or_battle.is_running():
+                                        self.huntQuestValue = None
+                                        self.battleQuestValue = None
+                                        send_hunt_or_battle.stop()
+                                elif autoHunt == False:
+                                    self.huntOrBattleSelected = False
+                                    self.huntOrBattle = "battle"
+                                    self.hb = 1
+                                    self.battleQuestValue = None
+                                    self.tempBattleQuestValue = None
+                                elif autoBattle == False:
+                                    self.huntOrBattleSelected = False
+                                    self.huntOrBattle = "hunt"
+                                    self.hb = 0
+                                    self.battleQuestValue = None
+                                    self.tempBattleQuestValue = None
                             console.print(f"-{self.user}[+] Quests have been fully completed!!".center(console_width - 2 ), style = "medium_purple3 on black")
                             return
-                        if "Manually hunt'" in i or "Hunt 3 animals that are " in i:
-                            self.huntQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
+                        if "Manually hunt'" in i or "Hunt 3 animals that are " in i:  
                             if not autoHunt and doEvenIfDisabled:
+                                if "Hunt 3 animals that are " in i:
+                                    self.huntQuestValue = None
+                                    self.tempHuntQuestValue = None
+                                else:
+                                    self.tempHuntQuestValue = 0
+                                    self.huntQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
                                 if autoBattle:
                                     self.huntOrBattleSelected = False
                                     self.hb = 0
@@ -1288,24 +1349,18 @@ class MyClient(discord.Client):
                             print("battle with a friend detected, but disabled")
                             # frndlyBattle
                         if "Battle " in i:
-                            if not autoBattle and doEvenIfDisabled:
-                                if autoHunt:
-                                    if self.huntOrBattleSelected == True:
-                                        self.huntOrBattleSelected = False
-                                        self.hb = 0
-                                        self.huntOrBattle = "hunt"
-                                        self.battleQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2]
-                                    else:
-                                        pass
-                                # Put those two vars here with regex.
-                                else:
-                                    self.huntOrBattleSelected = True
-                                    self.huntOrBattle = "battle"
-                                    self.hb = 1
-                                    if not self.send_hunt_or_battle.is_running():
-                                        self.battleQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
-                                        self.tempBattleQuestValue = 0
-                                        self.send_hunt_or_battle.start()                                
+                            self.tempBattleQuestValue = 0
+                            self.battleQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
+                            if autoHunt:
+                                self.huntOrBattleSelected = False
+                                self.hb = 1
+                                self.huntOrBattle = "battle"
+                            else:
+                                self.huntOrBattleSelected = True
+                                self.huntOrBattle = "battle"
+                                self.hb = 1
+                                if not self.send_hunt_or_battle.is_running():
+                                    self.send_hunt_or_battle.start()                   
                             # Battle
                         if "Gamble " in i:
                             self.gambleCount = 0
@@ -1332,75 +1387,81 @@ class MyClient(discord.Client):
                                 if self.emoteby == False:
                                     self.questsList.append(["action", questsProgress[(o*2)+1] - questsProgress[o*2]])
                                     self.emoteby = True
-                            if questAskForHelp and self.owoChnl == False:
+                            if askForHelp and self.owoChnl == False and self.questChannel != None:
                                 #self.list_channel.append(self.owoSupportChannel.channel.id)
-                                self.owoChnl = True
                                 self.current_time = time.time()
                                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                if askForHelp and self.owoChnl == False:
-                                    console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
-                                    self.owoChnl = True
+                                console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
+                                await self.questChannel.send("owo quest")
+                                self.owoChnl = True
                         if "Receive a cookie from " in i:
                             # repBy
                             if token_len != 1:
                                 if self.repBy == False:
                                     self.questsList.append(["cookie", questsProgress[(o*2)+1] - questsProgress[o*2]])
                                     self.repBy = True
-                            if questAskForHelp and self.owoChnl == False:
+                            if askForHelp and self.owoChnl == False and self.questChannel != None:
                                 #self.list_channel.append(self.owoSupportChannel.channel.id)
-                                self.owoChnl = True
                                 self.current_time = time.time()
                                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                if askForHelp and self.owoChnl == False:
+                                if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
-                                    self.owoChnl = True
+                                await self.questChannel.send("owo quest")
+                                self.owoChnl = True
                         if "Have a friend pray to you " in i:
                             # prayBy
                             if token_len != 1:
                                 if self.prayBy == False:
                                     self.questsList.append(["pray", questsProgress[(o*2)+1] - questsProgress[o*2]])
                                     self.prayBy = True
-                            if questAskForHelp and self.owoChnl == False:
+                            if askForHelp and self.owoChnl == False and self.questChannel != None:
                                 #self.list_channel.append(self.owoSupportChannel.channel.id)
-                                self.owoChnl = True
                                 self.current_time = time.time()
                                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                if askForHelp and self.owoChnl == False:
+                                if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
-                                    self.owoChnl = True
+                                await self.questChannel.send("owo quest")
+                                self.owoChnl = True
                         if "Have a friend curse you" in i:
                             # CurseBy
                             if token_len != 1:
                                 if self.curseBy == False:
                                     self.questsList.append([message.channel.id, "curse", questsProgress[(o*2)+1] - questsProgress[o*2]])
                                     self.curseBy = True
-                            if questAskForHelp and self.owoChnl == False:
+                            if askForHelp and self.owoChnl == False and self.questChannel != None:
                                 #self.list_channel.append(self.owoSupportChannel.channel.id)
-                                self.owoChnl = True
                                 self.current_time = time.time()
                                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                if askForHelp and self.owoChnl == False:
+                                if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
-                                    self.owoChnl = True
+                                await self.questChannel.send("owo quest")
+                                self.owoChnl = True
                         if "Earn " in i:
                             # XP
                             if autoHunt == False or autoBattle == False and doEvenIfDisabled:
                                 self.huntOrBattleSelected = False
                                 self.huntOrBattle = None
-                                if autoHunt == False or autoBattle == False:
+                                if autoHunt == False and autoBattle == False:
+                                    self.huntOrBattleSelected = False
+                                    self.huntOrBattle = "hunt"
+                                    self.hb = 0
+                                    self.huntQuestValue = None
+                                    self.battleQuestValue = None
                                     self.send_hunt_or_battle.start()
+                                elif autoHunt or autoBattle:
+                                    self.huntOrBattleSelected = False
+                                    self.huntOrBattle = "hunt"
+                                    self.hb = 0
+                                    self.huntQuestValue = None
+                                    self.battleQuestValue = None
                         questsList.append([self.user.id, self.channel_id, self.cm.guild.id, self.questsList])
                         if self.questsListInt == 0:
                             questsList.append([self.user.id, self.channel_id, self.cm.guild.id, self.questsList])
