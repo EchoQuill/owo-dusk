@@ -8,25 +8,18 @@
   <p>join our discord!</p>
 </div>
 
---------
+---
 
-> [!IMPORTANT]  
+Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
+
+> [!IMPORTANT]
 > Aiohttp doesn't work rn due to ```-fno-openmp-implicit-rpath``` so requirements.txt doesn't install properly. wait for Termux to fix this on their part...
 > Iam not good with such stuff but its not an issue on our part, thats for sure!
 >
 > Temp fix is available in our Discord server, join  using the link above
 
-> ⚠️⚠️⚠️THIS CODE IS NOT FINISHED YET, Iam just publishing some unfinished codes, the final product is expected to look much different than the one shown.... not all featues in features list is added yet (the ~~crosed~~ ones are not working/requires fix, this will be fixed/added as soon as I have time to do so)
-
-
-Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
-
 > ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbot to grind owo. 
-
-> [!IMPORTANT]  
-> DO NOT ENABLE ANYTHING THATS IS ~~CROSSED~~ OUT.
-> unexpected errors may occur if you do so.
-
+---
 # 🌟 Features
 ----
 * Multi Account Support!!
@@ -46,16 +39,15 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto slots
 * auto coinflip
 * ~~auto blackjack~~ [under progress]
-* ~~custom commands, you can add commands that is not currently in the list with your own cooldown :>~~
+* custom commands, you can add commands that is not currently in the list with your own cooldown :>
 * battery check
-* ~~Play audio file when captcha~~
-* ~~auto quest~~
+* auto quest
 * auto sell/sacrifice
 * auto use crate
 * auto use lootbox
 * auto use Gems (hunt gem, empowered gem, lucky gem and special gem)
 * supports both desktop and termux notifications.
-* ~~Mobile texttospeech captcha alert~~ (temp disabled due to performance issues in older phones)
+* Mobile texttospeech captcha alert
 * Sends toasts when captcha {Mobile only}
 * level grind.
 ----
