@@ -3,7 +3,8 @@
   "setprefix": "owo ",
   "website": {
     "enabled": false,
-    "port": 6984
+    "port": 1230
+ },
   "commands": [
     {
       "hunt": false,
@@ -36,13 +37,15 @@
       "slots": false,
       "coinflip": false,
       "cooldown": 15,
-      "doubleOnLose": true,
+      "doubleOnLose": false,
       "allottedAmount": 30000,
       "startValue": 200
     },
     {
       "quest": false,
-      "doEvenIfDisabled":false
+      "doEvenIfDisabled": false,
+      "askForHelp": false,
+      "askForHelpChannel": 00029829291
     },
     {
       "lottery": false,
@@ -51,14 +54,14 @@
     {
       "lvlGrind": false,
       "cooldown": 20,
-      "useQuoteInstead": false,
+      "useQuoteInstead": false
     },
    {
       "cookie": false,
       "userid": 408785106942164992
    },
    {
-     "sleep": true,
+     "sleep": false,
      "randomness": 12,
      "minTime": 1,
      "maxTime": 10
