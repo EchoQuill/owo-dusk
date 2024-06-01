@@ -428,17 +428,20 @@ class MyClient(discord.Client):
                 elif self.spams[self.hb] == 3:
                     if self.hb != 1:
                         self.hb = 1
+                        self.huntOrBattle = "battle"
                     else:
                         self.hb = 0
+                        self.huntOrBattle = "hunt"
+                 if self.lastHb != self.hb:
+                    #self.spams = [0,0] <--> [h,b]
+                    self.spams[self.hb] = 0
+                else:
+                    self.spams[self.hb]+=1
                 if useShortForm:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                 else:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle}')
-                if self.lastHb != self.hb:
-                    #self.spams = [0,0]
-                    self.spams[self.hb] = 0
-                else:
-                    self.spams[self.hb]+=1
+                
                 self.lastHb = self.hb
                 if autoBattle == False or autoHunt == False:
                     if autoHunt == False and autoBattle == False:
@@ -480,7 +483,7 @@ class MyClient(discord.Client):
                 else:
                     await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                     self.tempPrayOrCurse[2]-=1
-                    if self.tempPrayOrCurse[2] => self.questsList[self.questsListInt][3][1]:
+                    if self.tempPrayOrCurse[2] >= self.questsList[self.questsListInt][3][1]:
                         for o,i in enumerate(self.questsList[self.questsListInt][3]):
                             if i[o][1] == self.tempPrayOrCurse[0]:
                                 self.questsList[self.questsListInt].pop(3)
@@ -492,7 +495,7 @@ class MyClient(discord.Client):
                 else:
                     await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                     self.tempPrayOrCurse[2]-=1
-                    if self.tempPrayOrCurse[2] => self.questsList[self.questsListInt][3][1]:
+                    if self.tempPrayOrCurse[2] >= self.questsList[self.questsListInt][3][1]:
                         for o,i in enumerate(self.questsList[self.questsListInt]):
                             if i[3][1] == self.tempPrayOrCurse[0]:
                                 self.questsList[self.questsListInt].pop(3)
@@ -574,7 +577,7 @@ class MyClient(discord.Client):
                 webhookSender(f"-{self.user}[-] ran OwO")
             if autoOwo == False:
                 self.owoCount+=1 
-                if self.owoCount => self.owoCountGoal:
+                if self.owoCount >= self.owoCountGoal:
                     #self.owoQuest = False
                     self.send_owo.stop()
             await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
@@ -781,7 +784,7 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def emoteTo(self):
         if self.f != True:
-            if self.emoteCount => self.emoteCountGoal:
+            if self.emoteCount >= self.emoteCountGoal:
                 self.emoteTo.stop()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
@@ -796,7 +799,7 @@ class MyClient(discord.Client):
      # gamble {Quest}
     @tasks.loop()
     async def send_gamble(self):
-        if self.gambleCount => self.gambleCountGoal:
+        if self.gambleCount >= self.gambleCountGoal:
             self.send_gamble.stop()
         if self.f != True:
             while self.gambleCount != self.gambleCountGoal:
