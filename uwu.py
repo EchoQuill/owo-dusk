@@ -754,6 +754,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(3.12667373732, 6.9439393929))
         except Exception as e:
             print(e, "quest handler")
+            run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
   # Lottery
     @tasks.loop()
     async def send_lottery(self):
@@ -1296,6 +1297,8 @@ class MyClient(discord.Client):
                     #print(embed.description)
                     #print()
                     try:
+                        self.questToDo = []
+                        self.questProgres = []
                         for match in re.findall(r'Progress: \[(\d+)/(\d+)\]', embed.description):
                             x, y = match #split
                             #print(f'Progress: {x}/{y}')
@@ -1369,7 +1372,8 @@ class MyClient(discord.Client):
                                             self.send_hunt_or_battle.start()
                                 print("man h", self.user)
                             except Exception as e:
-                                print(e)
+                                print(e, "man h")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Battle with a friend " in i:
                             print("battle with a friend detected, but disabled")
                         elif "Battle " in i:
@@ -1389,6 +1393,7 @@ class MyClient(discord.Client):
                                 print("battle", self.user)
                             except Exception as e:
                                 print(e, "battle")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Gamble " in i:
                             try:
                                 self.gambleCount = 0
@@ -1399,6 +1404,7 @@ class MyClient(discord.Client):
                                 print("gamble", self.user)
                             except Exception as e:
                                 print(e, "gamble")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Say 'owo' " in i:
                             try:
                                 self.owoCount = 0
@@ -1409,6 +1415,7 @@ class MyClient(discord.Client):
                                 print("say owo",self.user)
                             except Exception as e:
                                 print(e,"owo q")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Use an action command on someone " in i:
                             try:
                                 self.emoteCount = 0
@@ -1418,6 +1425,7 @@ class MyClient(discord.Client):
                                 print("action", self.user)
                             except Exception as e:
                                 print(e, "action0")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Have a friend use an action command on you " in i:
                             try:
                                 if token_len != 1:
@@ -1436,6 +1444,7 @@ class MyClient(discord.Client):
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "action")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Receive a cookie from " in i:
                             try:
                             # repBy
@@ -1454,6 +1463,7 @@ class MyClient(discord.Client):
                                         self.owoChnl = True
                             except Exception as e:
                                 print(e, "cookie")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Have a friend pray to you " in i:
                             try:
                             # prayBy
@@ -1473,6 +1483,7 @@ class MyClient(discord.Client):
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "prayer")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         #print("proceedings 9")
                         elif "Have a friend curse you" in i:
                             # CurseBy
@@ -1493,6 +1504,7 @@ class MyClient(discord.Client):
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "curse")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "xp from hunting and battling " in i:
                             try:
                                 if autoHunt == False or autoBattle == False and doEvenIfDisabled:
@@ -1514,6 +1526,7 @@ class MyClient(discord.Client):
                                     print("enabled Earn xp quest", self.user)
                             except Exception as e:
                                 print(e, "xp")
+                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         try:
                             print(self.questsList)
                             if self.questsListInt != None:
@@ -1529,6 +1542,7 @@ class MyClient(discord.Client):
                             #print(questsList)
                         except Exception as e:
                             print(e, "last part of quest logs")
+                            run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
 
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
