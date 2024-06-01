@@ -403,14 +403,13 @@ class MyClient(discord.Client):
             else:
                 self.hb = 0
                 self.huntOrBattle = "hunt"
-        if self.lastHb == 0:
+        if self.hb == 0:
             if self.broke:
                 self.hb = 1
                 self.huntOrBattle = "battle"
                 await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
             else:
                 await asyncio.sleep(random.uniform(2.5,3.5))
-        self.lastHb = self.hb
         if self.f != True:
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -419,10 +418,44 @@ class MyClient(discord.Client):
                 pass
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if not self.tempHuntDisable:
+                if self.spams[0] == 3 and self.spams[1] == 3:
+                    self.f = True
+                    self.sleepTime = random.uniform(549.377384, 610.38838393)
+                    console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《Lag detected》".center(console_width - 2 ), style = "plum4 on black")
+                    await asyncio.sleep(self.sleepTime)
+                    console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                    self.f = False
+                elif self.spams[self.hb] == 3:
+                    if self.hb != 1:
+                        self.hb = 1
+                    else:
+                        self.hb = 0
                 if useShortForm:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                 else:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle}')
+                if self.lastHb != self.hb:
+                    #self.spams = [0,0]
+                    self.spams[self.hb] = 0
+                else:
+                    self.spams[self.hb]+=1
+                self.lastHb = self.hb
+                if autoBattle == False or autoHunt == False:
+                    if autoHunt == False and autoBattle == False:
+                        self.tempBattleQuestValue+=1
+                        self.tempHuntQuestValue+=1
+                        if self.huntQuestValue <= self.tempHuntQuestValue:
+                            pass
+                        if self.battleQuestValue <= self.tempBattleQuestValue:
+                            pass
+                    elif autohunt:
+                        self.tempBattleQuestValue+=1
+                        if self.battleQuestValue <= self.tempBattleQuestValue:
+                            pass
+                    elif autoBattle:
+                        self.tempahuntQuestValue+=1
+                        if self.huntQuestValue <= self.tempBattleQuestValue:
+                            pass
                 console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
@@ -822,7 +855,7 @@ class MyClient(discord.Client):
                 self.questChannel = self.get_channel(askForHelpChannel)
             except:
                 self.questChannel = None
-        self.spams = 0
+        self.spams = [0,0] # [h,b]
         self.last_cmd_time = 0
         self.lastcmd = None
         self.busy = False
@@ -1268,6 +1301,7 @@ class MyClient(discord.Client):
                                     self.hb = 1
                                     if not self.send_hunt_or_battle.is_running():
                                         self.battleQuestValue = questsProgress[(o*2)+1] - questsProgress[o*2] # (rough.py)
+                                        self.tempBattleQuestValue = 0
                                         self.send_hunt_or_battle.start()                                
                             # Battle
                         if "Gamble " in i:
