@@ -436,6 +436,9 @@ class MyClient(discord.Client):
                 else:
                     await self.cm.send(f'{setprefix}{self.huntOrBattle}')                
                 self.lastHb = self.hb
+                console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
                 if autoBattle == False or autoHunt == False and (self.huntQuestValue != None and self.battleQuestValue != None):
                     if autoHunt == False and autoBattle == False:
                         self.tempBattleQuestValue+=1
@@ -472,9 +475,6 @@ class MyClient(discord.Client):
                             self.hb = 1
                             self.battleQuestValue = None
                             self.tempBattleQuestValue = None
-                console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
                 if self.hb == 1:
                     await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
                 else:
@@ -915,9 +915,10 @@ class MyClient(discord.Client):
             try:
                 self.questChannel = self.get_channel(askForHelpChannel)
                 print(self.questChannel.name, self.user)
+                console.print(f"-{self.user}[~] Quests Help channel {self.questChannel.name} has been fetched!".center(console_width - 2 ), style = "medium_purple3 on black")
             except:
                 self.questChannel = None
-                print("channel failed for", self.user)
+                console.print(f"-{self.user}[!] Failed to get channel with channelid {askForHelpChannel}".center(console_width - 2 ), style = "medium_purple3 on black")
         self.spams = [0,0] # [h,b]
         self.last_cmd_time = 0
         self.lastcmd = None
