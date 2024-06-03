@@ -154,6 +154,8 @@ sleepEnabled = config["commands"][8]["sleep"]
 minSleepTime = config["commands"][8]["minTime"]
 maxSleepTime = config["commands"][8]["maxTime"]
 sleepRandomness = config["commands"][8]["randomness"]
+giveawayEnabled = config["commands"][9]["giveawayJoiner"]
+giveawayChannels = config["commands"][9]["channelsToJoin"]
 customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
     sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
@@ -178,6 +180,8 @@ prayOrCurseCooldown = config["commands"][1]["cooldown"]
 sellOrSacCooldown = config["commands"][2]["cooldown"]
 gambleCd = config["commands"][3]["cooldown"]
 lvlGrindCooldown = config["commands"][6]["cooldown"]
+gawMaxCd = config["commands"][9]["maxCooldown"]
+gawMinCd = config["commands"][9]["minCooldown"]
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -1552,7 +1556,13 @@ class MyClient(discord.Client):
                         except Exception as e:
                             print(e, "last part of quest logs")
                             run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
-
+                    if giveawayEnabled and embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in giveawayChannels:
+                        try:
+                            await asyncio.sleep(random.uniform(gawMinCd,gawMaxCd))
+                            await message.components[0].children[0].click()
+                            console.print(f"-{self.user}[+] Joined giveaway in {message.channel.name} successfuly!".center(console_width - 2 ), style = "medium_purple3 on black")
+                         except:
+                             pass
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
         if before.author.id != 408785106942164992:
