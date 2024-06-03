@@ -65,7 +65,13 @@
      "randomness": 12,
      "minTime": 1,
      "maxTime": 10
-    }
+   },
+   {
+     "giveawayJoiner": false,
+     "channelsToJoin": [1,2,3]
+     "minCooldown": 40,
+     "maxCooldown": 100
+   }
   ],
   "autoDaily": false,
   "sendOwo": false,
