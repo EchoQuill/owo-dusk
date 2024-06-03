@@ -7,6 +7,7 @@
 
 
 # Task Add print
+#dble check hb spam check plus broke system
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
@@ -149,6 +150,10 @@ lvlGrind = config["commands"][6]["lvlGrind"]
 useQuoteInstead = config["commands"][6]["useQuoteInstead"]
 cookie = config["commands"][7]["cookie"]
 cookieUserId = config["commands"][7]["userid"]
+sleepEnabled = config["commands"][8]["sleep"]
+minSleepTime = config["commands"][8]["minTime"]
+maxSleepTime = config["commands"][8]["maxTime"]
+sleepRandomness = config["commands"][8]["randomness"]
 customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
     sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
@@ -1008,6 +1013,9 @@ class MyClient(discord.Client):
                 self.slotsMulti = 1
             self.slotsLastAmt = gambleStartValue
             self.task_methods.append(self.send_slots.start)
+        # Random Breaks
+        if sleepEnabled:
+            self.random_account_sleeper.start()
         # Start Sell or Sac
         if autoSell or autoSac:
             if autoSell and autoSac:
