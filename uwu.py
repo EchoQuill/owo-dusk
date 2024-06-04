@@ -1586,7 +1586,7 @@ class MyClient(discord.Client):
             return
         if before.channel.id != self.channel_id:
             return
-        if autoSlots == False or autoCoinflip == False:
+        if autoSlots != True or autoCf != True:
             return
         # slots
         if "slots" in after.content.lower():
