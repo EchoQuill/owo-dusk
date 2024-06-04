@@ -11,7 +11,7 @@
 
 
 # finally remove bug detected part
-
+# fix print on lvl grind
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -82,7 +82,9 @@ mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["min
 termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
 termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
 termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
-termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
+termuxAudioPlayer = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
+termuxAudioPlayerPath =config["termuxAntiCaptchaSupport"]["playAudio"]["enabled"]
+termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["playAudio"]["path"]
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
 websiteEnabled = config["website"]["enabled"]
@@ -1123,6 +1125,8 @@ class MyClient(discord.Client):
                     dwebhook.send(embed=embed2, username='uwu bot warnings')
                 if termuxVibrationEnabled:
                     run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
+                if termuxAudioPlayer:
+                    run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
                 if termuxTtsEnabled:
                     run_system_command(f"termux-tts-speak {termuxTtsContent}", timeout=7, retry=False)
                 if desktopNotificationEnabled:
@@ -1182,6 +1186,8 @@ class MyClient(discord.Client):
                 dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
+            if termuxAudioPlayer:
+                run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
             if termuxTtsEnabled:
                 run_system_command(f"termux-tts-speak A user got banned", timeout=7, retry=False)
             # temp disabled tts
