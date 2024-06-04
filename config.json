@@ -1,10 +1,9 @@
 {
-  "desktopNotificationEnabled": false,
   "setprefix": "owo ",
   "website": {
     "enabled": false,
-    "port": 1230
- },
+    "port": 1232
+  },
   "commands": [
     {
       "hunt": false,
@@ -38,33 +37,43 @@
       "coinflip": false,
       "cooldown": 15,
       "doubleOnLose": false,
-      "allottedAmount": 30000,
-      "startValue": 200
+      "allottedAmount": 10,
+      "startValue": 1
     },
     {
       "quest": false,
       "doEvenIfDisabled": false,
       "askForHelp": false,
-      "askForHelpChannel": 1
+      "askForHelpChannel": 10029829291
     },
     {
       "lottery": false,
-      "amount":1
+      "amount": 1
     },
     {
       "lvlGrind": false,
       "cooldown": 20,
       "useQuoteInstead": false
     },
-   {
+    {
       "cookie": false,
-      "userid": 408785106942164992
-   },
-   {
-     "sleep": false,
-     "randomness": 12,
-     "minTime": 1,
-     "maxTime": 10
+      "userid": 408785106942165000
+    },
+    {
+      "sleep": false,
+      "randomness": 12,
+      "minTime": 1,
+      "maxTime": 10
+    },
+    {
+      "giveawayJoiner": false,
+      "channelsToJoin": [
+        1,
+        2,
+        3
+      ],
+      "minCooldown": 40,
+      "maxCooldown": 100
     }
   ],
   "autoDaily": false,
@@ -87,7 +96,6 @@
   "webhookEnabled": false,
   "webhookUselessLog": false,
   "webhook": "webhook url here",
-  "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
     "vibrate": {
       "enabled": false,
@@ -97,10 +105,21 @@
       "enabled": false,
       "content": "Captcha detected! owo"
     },
+    "playAudio": {
+      "enabled": false,
+      "path": "path/filename.extention, for example 'audiofile.mp3', audiofile.mp3 should be in owo-cusk folder or put path.. "
+    },
     "notifications": false,
     "batteryCheck": {
       "enabled": false,
       "minPercentage": 15
+    }
+  },
+  "desktop": {
+    "notifications": false,
+    "playAudio": {
+      "enabled": false,
+      "path": "path/filename.extention, for example 'path/audiofile.mp3' "
     }
   }
 }
