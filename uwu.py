@@ -11,7 +11,6 @@
 
 
 # finally remove bug detected part
-# fix print on lvl grind
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -826,15 +825,21 @@ class MyClient(discord.Client):
                                 #print(data)
                                 self.quote = data[0]["quote"]
                                 await self.cm.send(self.quote)
+                                console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
+                                if webhookEnabled:
+                                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")                                
                             else:
-                                await self.cm.send(generate_random_string())  # Better than sending quotes(In my opinion).
+                                await self.cm.send(generate_random_string())
+                                console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
+                                if webhookEnabled:
+                                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")                                
                 except Exception as e:
                     print(e)
             else:
                 await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
-            console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
-            if webhookEnabled:
-                webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
+                console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
+                if webhookEnabled:
+                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
             await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
