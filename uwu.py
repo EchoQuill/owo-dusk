@@ -9,6 +9,9 @@
 # Task Add print
 #dble check hb spam check plus broke system
 
+
+# finally remove bug detected part
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -415,84 +418,88 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(2.5,3.5))
         #print(self.hb, self.huntOrBattle, self.user, "1")
         if self.f != True:
-            self.current_time = time.time()
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-            else:
-                pass
-            self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if not self.tempHuntDisable:
-                if (self.spams[0] >= 3 and self.spams[1] >= 3) or (self.spams[0] >= 3 and autoBattle == False) or (self.spams[1] >= 3 and autoHunt == False):
-                    self.f = True
-                    self.sleepTime = random.uniform(549.377384, 610.38838393)
-                    console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《Lag detected》".center(console_width - 2 ), style = "plum4 on black")
-                    await asyncio.sleep(self.sleepTime)
-                    console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
-                    self.spams = [0,0]
-                    self.f = False
-                elif self.spams[self.hb] == 3 and self.huntOrBattleSelected == False:
-                    if self.hb != 1:
-                        self.hb = 1
-                        self.huntOrBattle = "battle"
+            try:
+                self.current_time = time.time()
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                else:
+                    pass
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if not self.tempHuntDisable:
+                    if (self.spams[0] >= 3 and self.spams[1] >= 3) or (self.spams[0] >= 3 and autoBattle == False) or (self.spams[1] >= 3 and autoHunt == False):
+                        self.f = True
+                        self.sleepTime = random.uniform(549.377384, 610.38838393)
+                        console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《Lag detected》".center(console_width - 2 ), style = "plum4 on black")
+                        await asyncio.sleep(self.sleepTime)
+                        console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                        self.spams = [0,0]
+                        self.f = False
+                    elif self.spams[self.hb] == 3 and self.huntOrBattleSelected == False:
+                        if self.hb != 1:
+                            self.hb = 1
+                            self.huntOrBattle = "battle"
+                        else:
+                            self.hb = 0
+                            self.huntOrBattle = "hunt"
+                    if self.lastHb != self.hb and self.huntOrBattleSelected == False:
+                        #self.spams = [0,0] <--> [h,b]
+                        self.spams[self.hb] = 0
+                    elif self.huntOrBattleSelected == False:
+                        self.spams[self.hb]+=1
+                    #print(self.hb, self.huntOrBattle, self.user, "2")
+                    if useShortForm:
+                        await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                     else:
-                        self.hb = 0
-                        self.huntOrBattle = "hunt"
-                if self.lastHb != self.hb:
-                    #self.spams = [0,0] <--> [h,b]
-                    self.spams[self.hb] = 0
-                else:
-                    self.spams[self.hb]+=1
-                #print(self.hb, self.huntOrBattle, self.user, "2")
-                if useShortForm:
-                    await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
-                else:
-                    await self.cm.send(f'{setprefix}{self.huntOrBattle}')                
-                self.lastHb = self.hb
-                console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
-                if autoBattle == False or autoHunt == False and (self.huntQuestValue != None and self.battleQuestValue != None):
-                    if autoHunt == False and autoBattle == False:
-                        self.tempBattleQuestValue+=1
-                        self.tempHuntQuestValue+=1
-                        if (self.huntQuestValue <= self.tempHuntQuestValue) and (self.battleQuestValue <= self.tempBattleQuestValue):
-                            self.battleQuestValue = None
-                            self.tempBattleQuestValue = None
-                            self.send_hunt_or_battle.stop()
-                        elif self.huntQuestValue <= self.tempHuntQuestValue:
-                            self.huntOrBattleSelected = False
-                            self.huntOrBattle = "battle"
-                            self.hb = 1
-                            self.battleQuestValue = None
-                            self.tempBattleQuestValue = None
-                        elif self.battleQuestValue <= self.tempBattleQuestValue:
-                            self.huntOrBattleSelected = False
-                            self.huntOrBattle = "hunt"
-                            self.hb = 0
-                            self.battleQuestValue = None
-                            self.tempBattleQuestValue = None
-                    elif autohunt:
-                        self.tempBattleQuestValue+=1
-                        if self.battleQuestValue <= self.tempBattleQuestValue:
-                            self.huntOrBattleSelected = False
-                            self.huntOrBattle = "hunt"
-                            self.hb = 0
-                            self.battleQuestValue = None
-                            self.tempBattleQuestValue = None
-                    elif autoBattle:
-                        self.tempahuntQuestValue+=1
-                        if self.huntQuestValue <= self.tempBattleQuestValue:
-                            self.huntOrBattleSelected = False
-                            self.huntOrBattle = "battle"
-                            self.hb = 1
-                            self.battleQuestValue = None
-                            self.tempBattleQuestValue = None
-                if self.hb == 1:
-                    await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
-                else:
-                    await asyncio.sleep(random.uniform(0.72667373732, 1.9439393929))
+                        await self.cm.send(f'{setprefix}{self.huntOrBattle}')                
+                    self.lastHb = self.hb
+                    console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
+                    if webhookUselessLog:
+                        webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.")
+                    if (autoBattle == False or autoHunt == False) and (self.huntQuestValue != None or self.battleQuestValue != None):
+                        if autoHunt == False and autoBattle == False:
+                            self.tempBattleQuestValue+=1
+                            self.tempHuntQuestValue+=1
+                            if (self.huntQuestValue <= self.tempHuntQuestValue) and (self.battleQuestValue <= self.tempBattleQuestValue):
+                                self.battleQuestValue = None
+                                self.tempBattleQuestValue = None
+                                self.send_hunt_or_battle.stop()
+                            elif self.huntQuestValue <= self.tempHuntQuestValue:
+                                self.huntOrBattleSelected = False
+                                self.huntOrBattle = "battle"
+                                self.hb = 1
+                                self.battleQuestValue = None
+                                self.tempBattleQuestValue = None
+                            elif self.battleQuestValue <= self.tempBattleQuestValue:
+                                self.huntOrBattleSelected = False
+                                self.huntOrBattle = "hunt"
+                                self.hb = 0
+                                self.battleQuestValue = None
+                                self.tempBattleQuestValue = None
+                        elif autoHunt:
+                            self.tempBattleQuestValue+=1
+                            if self.battleQuestValue <= self.tempBattleQuestValue:
+                                self.huntOrBattleSelected = False
+                                self.huntOrBattle = "hunt"
+                                self.hb = 0
+                                self.battleQuestValue = None
+                                self.tempBattleQuestValue = None
+                        elif autoBattle:
+                            self.tempahuntQuestValue+=1
+                            if self.huntQuestValue <= self.tempBattleQuestValue:
+                                self.huntOrBattleSelected = False
+                                self.huntOrBattle = "battle"
+                                self.hb = 1
+                                self.battleQuestValue = None
+                                self.tempBattleQuestValue = None
+                    if self.hb == 1 or self.huntOrBattleSelected:
+                        await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
+                    else:
+                        await asyncio.sleep(random.uniform(0.72667373732, 1.9439393929))
+            except Exception as e:
+                print(e)
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+            
     #pray/curse
     # QuestsList = [userid,messageChannel,guildId, [questType,questsProgress]]
     @tasks.loop()
@@ -512,9 +519,11 @@ class MyClient(discord.Client):
                     await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                     self.tempPrayOrCurse[2]-=1
                     if self.tempPrayOrCurse[2] >= questsList[self.questsListInt][3][1]:
-                        for o,i in enumerate(questsList[self.questsListInt][3]):
-                            if i[o][1] == self.tempPrayOrCurse[0]:
-                                questsList[self.questsListInt].pop(3)
+                        pass
+                    for o,i in enumerate(questsList):
+                        if i[0] == self.tempPrayOrCurse[0]:
+                          #  if self.
+                            questsList[self.questsListInt].pop(3)
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             else:
@@ -711,7 +720,7 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], i[0][0] ])     
+                                                self.tempPrayOrCurse.append([i[0], i[3][1] ])     
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -728,7 +737,7 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], i[0][0] ])     
+                                                self.tempPrayOrCurse.append([i[0], i[3][1] ])
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -931,6 +940,8 @@ class MyClient(discord.Client):
         self.tempPrayOrCurse = []
         self.questsList = []
         self.questsListInt = None
+        self.battleQuestValue = None
+        self.huntQuestValue = None
         #-------
         self.hunt = None
         self.webInt = None
@@ -1561,8 +1572,8 @@ class MyClient(discord.Client):
                             await asyncio.sleep(random.uniform(gawMinCd,gawMaxCd))
                             await message.components[0].children[0].click()
                             console.print(f"-{self.user}[+] Joined giveaway in {message.channel.name} successfuly!".center(console_width - 2 ), style = "medium_purple3 on black")
-                         except:
-                             pass
+                        except Exception as e:
+                            console.print(f"-{self.user}[!] Error:- Giveaway,, {e}".center(console_width - 2 ), style = "medium_purple3 on black")
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
         if before.author.id != 408785106942164992:
