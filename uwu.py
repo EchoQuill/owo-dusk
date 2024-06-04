@@ -82,9 +82,9 @@ mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["min
 termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
 termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
 termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
-termuxAudioPlayer = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
-termuxAudioPlayerPath =config["termuxAntiCaptchaSupport"]["playAudio"]["enabled"]
-termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["playAudio"]["path"]
+termuxAudioPlayer = config["termuxAntiCaptchaSupport"]["playAudio"]["enabled"]
+termuxAudioPlayerPath = config["termuxAntiCaptchaSupport"]["playAudio"]["path"]
+termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktopNotificationEnabled"]
 websiteEnabled = config["website"]["enabled"]
@@ -519,12 +519,12 @@ class MyClient(discord.Client):
                     #print("acc2")
                 else:
                     await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
-                    self.tempPrayOrCurse[2]-=1
-                    if self.tempPrayOrCurse[2] >= questsList[self.questsListInt][3][1]:
-                        pass
+                    self.tempPrayOrCurse[1]-=1
+                    #if self.tempPrayOrCurse[2] >= questsList[self.questsListInt][3][1]:
+                        #pass
                     for o,i in enumerate(questsList):
                         if i[0] == self.tempPrayOrCurse[0]:
-                          #  if self.
+                           # if self.
                             questsList[self.questsListInt].pop(3)
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
@@ -550,31 +550,34 @@ class MyClient(discord.Client):
      # Coinflip
     @tasks.loop()
     async def send_cf(self):
-        if self.f != True:
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            self.current_time = time.time()
-            self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.slotsLastAmt >= 250000:
-                console.print(f"-{self.user}[-] Stopping coinflip 《250k exceeded》".center(console_width - 2 ), style = "red on black")
-                if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping coinflip 《250k exceeded》.")
-                self.send_cf.stop()
-                return
-            elif 0 >= self.gambleTotal:
-                if webhookEnabled:
-                    webhookSender(f"-{self.user}[-] Stopping All Gambling. 《allotted value exceeded》.")
-                console.print(f"-{self.user}[-] Stopping coinflip 《allotted value exceeded》".center(console_width - 2 ), style = "red on black")
-                self.send_slots.stop()
-                self.send_cf.stop()
-                return
-                #add bj here...
-            await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
-            if webhookUselessLog:
-                webhookSender(f"-{self.user}[-] ran Coinflip")
-            console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
-   # Slots
+        try:
+            if self.f != True:
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+                self.current_time = time.time()
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.cfLastAmt >= 250000:
+                    console.print(f"-{self.user}[-] Stopping coinflip 《250k exceeded》".center(console_width - 2 ), style = "red on black")
+                    if webhookEnabled:
+                        webhookSender(f"-{self.user}[-] Stopping coinflip 《250k exceeded》.")
+                    self.send_cf.stop()
+                    return
+                elif 0 >= self.gambleTotal:
+                    if webhookEnabled:
+                        webhookSender(f"-{self.user}[-] Stopping All Gambling. 《allotted value exceeded》.")
+                    console.print(f"-{self.user}[-] Stopping coinflip 《allotted value exceeded》".center(console_width - 2 ), style = "red on black")
+                    self.send_slots.stop()
+                    self.send_cf.stop()
+                    return
+                    #add bj here...
+                await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[-] ran Coinflip")
+                console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
+                await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
+        except Exception as e:
+            print(e)
+# Slots    
     @tasks.loop()
     async def send_slots(self):
         if self.f != True:
@@ -1586,7 +1589,7 @@ class MyClient(discord.Client):
             return
         if before.channel.id != self.channel_id:
             return
-        if autoSlots != True or autoCf != True:
+        if autoSlots != True and autoCf != True:
             return
         # slots
         if "slots" in after.content.lower():
