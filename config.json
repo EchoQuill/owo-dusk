@@ -3,8 +3,8 @@
   "setprefix": "owo ",
   "website": {
     "enabled": false,
-    "port": 1230
- },
+    "port": 1232
+  },
   "commands": [
     {
       "hunt": false,
@@ -45,33 +45,37 @@
       "quest": false,
       "doEvenIfDisabled": false,
       "askForHelp": false,
-      "askForHelpChannel": 1
+      "askForHelpChannel": 10029829291
     },
     {
       "lottery": false,
-      "amount":1
+      "amount": 1
     },
     {
       "lvlGrind": false,
       "cooldown": 20,
       "useQuoteInstead": false
     },
-   {
+    {
       "cookie": false,
-      "userid": 408785106942164992
-   },
-   {
-     "sleep": false,
-     "randomness": 12,
-     "minTime": 1,
-     "maxTime": 10
-   },
-   {
-     "giveawayJoiner": false,
-     "channelsToJoin": [1,2,3]
-     "minCooldown": 40,
-     "maxCooldown": 100
-   }
+      "userid": 408785106942165000
+    },
+    {
+      "sleep": false,
+      "randomness": 12,
+      "minTime": 1,
+      "maxTime": 10
+    },
+    {
+      "giveawayJoiner": false,
+      "channelsToJoin": [
+        1,
+        2,
+        3
+      ],
+      "minCooldown": 40,
+      "maxCooldown": 100
+    }
   ],
   "autoDaily": false,
   "sendOwo": false,
@@ -93,7 +97,6 @@
   "webhookEnabled": false,
   "webhookUselessLog": false,
   "webhook": "webhook url here",
-  "hitCooldownOdds": 100,
   "termuxAntiCaptchaSupport": {
     "vibrate": {
       "enabled": false,
@@ -102,6 +105,10 @@
     "texttospeech": {
       "enabled": false,
       "content": "Captcha detected! owo"
+    },
+    "playAudio": {
+      "enabled": false,
+      "path": "path/filename.extention, for example 'audiofile.mp3', if audiofile.mp3 is in owo-cusk folder.. (if its in someother folder like downloads, then the path could be 'storage/downloads/audiofile.mp3'   "
     },
     "notifications": false,
     "batteryCheck": {
