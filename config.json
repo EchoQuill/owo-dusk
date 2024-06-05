@@ -1,6 +1,6 @@
 {
   "setprefix": "owo ",
-  "typingIndicator": true,
+  "typingIndicator": false,
   "website": {
     "enabled": false,
     "port": 1232
@@ -81,6 +81,9 @@
   "sendOwo": false,
   "autoUse": {
     "autoGem": {
+      "order": {
+        "lowestToHighest": false
+      },
       "huntGem": false,
       "empoweredGem": false,
       "luckyGem": false,
