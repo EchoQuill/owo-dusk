@@ -5,12 +5,6 @@
 # Sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
 
-
-# Task Add print
-#dble check hb spam check plus broke system
-
-
-# finally remove bug detected part
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -19,6 +13,7 @@ from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 import discord.errors
+import subprocess
 import threading
 import requests
 import random
@@ -75,10 +70,19 @@ version = "1.1.0"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
+typingIndicator = config["typingIndicator"]
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
-termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
+batteryCheckSleepTime = config["termuxAntiCaptchaSupport"]["batteryCheck"]["refreshInterval"]
+termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]["enabled"]
+notificationCaptchaContent = config["termuxAntiCaptchaSupport"]["notifications"]["captchaContent"]
+notificationBannedContent = config["termuxAntiCaptchaSupport"]["notifications"]["bannedContent"]
+termuxToastEnabled = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["enabled"]
+toastBgColor = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["backgroundColour"]
+toastTextColor = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["textColour"]
+toastCaptchaContent = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["captchaContent"]
+toastBannedContent = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["bannedContent"]
 termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
 termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
 termuxAudioPlayer = config["termuxAntiCaptchaSupport"]["playAudio"]["enabled"]
@@ -91,26 +95,38 @@ desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
 websitePort = config["website"]["port"]
 
-# Install plyer
+
+# ___Dble check these___
+def install_package(package_name):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+
+def try_import_or_install(package_name, import_name=None):
+    try:
+        if import_name:
+            globals()[import_name] = __import__(package_name)
+        else:
+            globals()[package_name] = __import__(package_name)
+    except ImportError:
+        print(f"-System[0] {package_name} is not installed, attempting to install automatically...")
+        try:
+            install_package(package_name)
+            if import_name:
+                globals()[import_name] = __import__(package_name)
+            else:
+                globals()[package_name] = __import__(package_name)
+            print(f"{package_name} installed successfully.")
+            clear()
+        except Exception as e:
+            print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
+
+# Check and install plyer
 if desktopNotificationEnabled:
-    try:
-        from plyer import notification
-    except:
-        clear()
-        console.print(f"-System[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
-        os.system("pip install plyer")
-        from plyer import notification
-        
-# Install playsound
+    try_import_or_install("plyer", "notification")
+
+# Check and install playsound3
 if desktopAudioPlayer:
-    try:
-        from playsound import playsound
-    except:
-        clear()
-        console.print(f"-System[0] Playsound is not installed, attempting to install automatically.. if this doesn't work please run 'pip install playsound' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
-        os.system("pip install playsound3")
-        from playsound import playsound
-        
+    try_import_or_install("playsound3", "playsound")
+#_________
         
 #if termuxTtsEnabled:
 #    clear()
@@ -192,6 +208,11 @@ huntGems = ["057","056","055","054","053","052","051"]
 empGems = ["071","070","069","068","067","066","065"]
 luckGems = ["078","077","076","075","074","073","072"]
 specialGems = ["085","084","083","082","081","080","079"]
+if config["autoUse"]["autoGem"]["order"]["lowestToHighest"]:
+    huntGems.reverse()
+    empGems.reverse()
+    luckGems.reverse()
+    specialGems.reverse()
 questsList = []
 
 # Cooldowns
@@ -214,20 +235,23 @@ def generate_random_string():
     return random_string
 # For battery check
 def batteryCheckFunc():
-    while True:
-        time.sleep(120)
-        try:
-            battery_status = os.popen("termux-battery-status").read()
-        except Exception as e:
-            console.print(f"""-system[0] Battery check failed!!
+    try:
+        while True:
+            time.sleep(batteryCheckSleepTime)
+            try:
+                battery_status = os.popen("termux-battery-status").read()
+            except Exception as e:
+                console.print(f"""-system[0] Battery check failed!!
 Keep in mind that Battery check is only available for Termux users.
 also termuxAntiCaptchaSupport is also only for android/termux users. disable those if your not on Termux/Android...
 try using desktopNotificationEnabled instead if your not on termux.""".center(console_width - 2 ), style = "red on black")
-        battery_data = json.loads(battery_status)
-        percentage = battery_data['percentage']
-        console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
-        if percentage < mobileBatteryStopLimit:
-            break
+            battery_data = json.loads(battery_status)
+            percentage = battery_data['percentage']
+            console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
+            if percentage < mobileBatteryStopLimit:
+                break
+    except Exception as e:
+        print("battery check", e)
     os._exit(0)
 if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
@@ -353,6 +377,14 @@ class MyClient(discord.Client):
         self.token = token
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
+    #send messages
+    async def sendCommands(self, channel, message, typing=False):
+        # await sendCommands(channel=channel, message="", typing=typingIndicator)
+        if typing:
+            async with channel.typing():
+                await channel.send(message)
+        else:
+            await channel.send(message)
 #----------SENDING COMMANDS----------#
     #Solve Captchas
     @tasks.loop()
@@ -364,7 +396,7 @@ class MyClient(discord.Client):
                 if i == self.tempJsonData:
                     if captchaAnswers[self.tempListCount] != None:
                         console.print(f"-{self.user}[0] Attempting to solve image captcha with {captchaAnswers[self.tempListCount]}".center(console_width - 2 ), style = "blue on black")
-                        await self.dm.send(captchaAnswers[self.tempListCount])
+                        await self.sendCommands(channel=self.dm, message=captchaAnswers[self.tempListCount], typing=typingIndicator)
                         await asyncio.sleep(random.uniform(5.5,9.7))
                         captchaAnswers[self.tempListCount] = None #To prevent spamming wrong ans.
                 self.tempListCount+=1    
@@ -396,7 +428,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-            await self.cm.send(f"{setprefix}daily")
+            #await self.cm.send(f"{setprefix}daily")
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}daily", typing=typingIndicator)
             self.last_cmd_time = time.time()
             self.lastcmd = "daily"
             self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
@@ -465,9 +498,10 @@ class MyClient(discord.Client):
                         self.spams[self.hb]+=1
                     #print(self.hb, self.huntOrBattle, self.user, "2")
                     if useShortForm:
-                        await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle[0]}", typing=typingIndicator)
+                        #await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                     else:
-                        await self.cm.send(f'{setprefix}{self.huntOrBattle}')                
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle}", typing=typingIndicator)
                     self.lastHb = self.hb
                     console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                     if webhookUselessLog:
@@ -530,30 +564,34 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.tempPrayOrCurse == []:
-                    await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
+                    #await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>", typing=typingIndicator)
                     #print("acc2")
                 else:
-                    await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
-                    self.tempPrayOrCurse[1]-=1
-                    #if self.tempPrayOrCurse[2] >= questsList[self.questsListInt][3][1]:
-                        #pass
+                    #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
+                    self.tempPrayOrCurse[1]-=1                    
                     for o,i in enumerate(questsList):
-                        if i[0] == self.tempPrayOrCurse[0]:
-                           # if self.
-                            questsList[self.questsListInt].pop(3)
+                        if i[0] == self.tempPrayOrCurse[0]: #userid
+                            for z,x in questsList[o][3]: #[questType,questsProgress]]
+                                if x[0] == self.tempPrayOrCurse[1]: #questType                                    
+                                    questsList[o][3].pop(z)                                  
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             else:
                 if self.tempPrayOrCurse == []:
-                    await self.cm.send(f'{setprefix}{self.prayOrCurse}')
+                    #await self.cm.send(f'{setprefix}{self.prayOrCurse}')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}", typing=typingIndicator)
                     #print("acc")
                 else:
-                    await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
-                    self.tempPrayOrCurse[2]-=1
-                    if self.tempPrayOrCurse[2] >= self.questsList[self.questsListInt][3][1]:
-                        for o,i in enumerate(self.questsList[self.questsListInt]):
-                            if i[3][1] == self.tempPrayOrCurse[0]:
-                                self.questsList[self.questsListInt].pop(3)
+                    #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
+                    self.tempPrayOrCurse[1]-=1                    
+                    for o,i in enumerate(questsList):
+                        if i[0] == self.tempPrayOrCurse[0]: #userid
+                            for z,x in questsList[o][3]: #[questType,questsProgress]]
+                                if x[0] == self.tempPrayOrCurse[1]: #questType                                    
+                                    questsList[o][3].pop(z)
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
@@ -585,7 +623,8 @@ class MyClient(discord.Client):
                     self.send_cf.stop()
                     return
                     #add bj here...
-                await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
+                #await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt}", typing=typingIndicator)
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[-] ran Coinflip")
                 console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
@@ -614,7 +653,8 @@ class MyClient(discord.Client):
                 self.send_cf.stop()
                 return
                 #add bj here...
-            await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
+            #await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}", typing=typingIndicator)
             if webhookUselessLog:
                 webhookSender(f"-{self.user}[-] ran Slots")
             console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "cyan on black")
@@ -629,7 +669,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send('owo')
+            #await self.cm.send('owo')
+            await self.sendCommands(channel=self.cm, message="owo", typing=typingIndicator)
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
             if webhookUselessLog:
@@ -659,7 +700,8 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+            #await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}", typing=typingIndicator)
             self.last_cmd_time = time.time()
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] ran {self.sellOrSac}")
@@ -703,7 +745,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send(f'{setprefix}quest')
+            #await self.cm.send(f'{setprefix}quest')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}quest", typing=typingIndicator)
             console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "green on black")
             self.last_cmd_time = time.time()
             await asyncio.sleep(random.uniform(300.28288282, 351.928292929))
@@ -740,16 +783,17 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], i[3][1] ])     
+                                                self.tempPrayOrCurse.append([i[0], x[0]])     
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                            await self.cm.send(f"{setprefix}pray <@{i[0]}")
+                                            #await self.cm.send(f"{setprefix}pray <@{i[0]}>")
+                                            await self.sendCommands(channel=self.cm, message=f"{setprefix}pray <@{i[0]}>", typing=typingIndicator)
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
-                                            if questsList[y][3][o][1]:
+                                            if questsList[y][3][o][1] == 0:
                                                 questsList[y][3].pop(o)
                                                 self.prayBy = False
                                 elif x[0] == "curse":
@@ -757,17 +801,18 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], i[3][1] ])
+                                                self.tempPrayOrCurse.append([i[0], x[0] ])
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                            await self.cm.send(f'''{setprefix}curse <@{i[0]}>''')
+                                            #await self.cm.send(f'''{setprefix}curse <@{i[0]}>''')
+                                            await self.sendCommands(channel=self.cm, message=f"{setprefix}curse <@{i[0]}>", typing=typingIndicator)
                                             print("lsss goooo!")
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
-                                            if questsList[y][3][o][1]:
+                                            if questsList[y][3][o][1] == 0:
                                                 questsList[y][3].pop(o)
                                                 self.curseBy = False
                                 elif x[0] == "cookie":
@@ -778,10 +823,11 @@ class MyClient(discord.Client):
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     self.tempCookie = i[0]
                                     if not cookie:
-                                        await self.cm.send(f"{setprefix}rep <@{self.tempCookie}>")
+                                        #await self.cm.send(f"{setprefix}rep <@{self.tempCookie}>")
+                                        await self.sendCommands(channel=self.cm, message=f"{setprefix}rep <@{self.tempCookie}>", typing=typingIndicator)
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
-                                    if questsList[y][3][o][1]:
+                                    if questsList[y][3][o][1] == 0:
                                         questsList[y][3].pop(o)
                                         self.repBy = False
                                 elif x[0] == "action":
@@ -790,11 +836,11 @@ class MyClient(discord.Client):
                                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                    await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
-                                    print("lsss goooo!")
+                                    #await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
+                                    await self.sendCommands(channel=self.cm, message=f"""{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>""", typing=typingIndicator)
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
-                                    if questsList[y][3][o][1]:
+                                    if questsList[y][3][o][1] == 0:
                                         questsList[y][3].pop(o)
                                         self.emoteby = False
                 await asyncio.sleep(random.uniform(300.12667373732, 360.9439393929))
@@ -802,7 +848,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(3.12667373732, 6.9439393929))
         except Exception as e:
             print(e, "quest handler")
-            run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+            #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
   # Lottery
     @tasks.loop()
     async def send_lottery(self):
@@ -812,7 +858,8 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.5 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.last_cmd_time = time.time()
-            await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
+            #await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}lottery {lotteryAmt}", typing=typingIndicator)
             self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
             self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
@@ -840,19 +887,22 @@ class MyClient(discord.Client):
                                 data = await response.json()
                                 #print(data)
                                 self.quote = data[0]["quote"]
-                                await self.cm.send(self.quote)
+                                #await self.cm.send(self.quote)
+                                await self.sendCommands(channel=self.cm, message=self.quote, typing=typingIndicator)
                                 console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                                 if webhookEnabled:
-                                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")                                
+                                    webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind")                                
                             else:
-                                await self.cm.send(generate_random_string())
+                                #await self.cm.send(generate_random_string())
+                                await self.sendCommands(channel=self.cm, message=generate_random_string(), typing=typingIndicator)
                                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                                 if webhookEnabled:
                                     webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")                                
                 except Exception as e:
                     print(e)
             else:
-                await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+                #await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+                await self.sendCommands(channel=self.cm, message=generate_random_string(), typing=typingIndicator)
                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
@@ -863,13 +913,20 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_cookie(self):
         if self.f != True:
+            if self.tempCookie != None:
+                for o,i in enumerate(questsList):
+                    if i[0] == self.tempCookie: #userid
+                        for z,x in questsList[o][3]: #[questType,questsProgress]]
+                            if x[0] == "cookie": #questType                                    
+                                questsList[o][3][x][1]+=1
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             if self.tempCookie != None:
-                await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
+                #await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {self.tempCookie}", typing=typingIndicator)
             else:
-                await self.cm.send(f'{setprefix}cookie {cookieUserId}')
-            
+                #await self.cm.send(f'{setprefix}cookie {cookieUserId}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {cookieUserId}", typing=typingIndicator)
             self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -898,7 +955,8 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>')
+            #await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>')
+            await self.sendCommands(channel=self.cm, message=f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>', typing=typingIndicator)
             self.emoteCount+=1
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] Send random emotes(quest)".center(console_width - 2 ), style = "purple3 on black")
@@ -918,7 +976,8 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-                await self.cm.send(f"{setprefix}cf 1")
+                #await self.cm.send(f"{setprefix}cf 1")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf 1", typing=typingIndicator)
                 self.last_cmd_time = time.time()
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(0.83727372,2.73891948))
@@ -926,7 +985,8 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-                await self.cm.send(f"{setprefix}slots 1")
+                #await self.cm.send(f"{setprefix}slots 1")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}slots 1", typing=typingIndicator)
                 self.last_cmd_time = time.time()
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(17.83727372,20.73891948))
@@ -1137,8 +1197,9 @@ class MyClient(discord.Client):
             try:
                 self.f = True
                 if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c 'Captcha Detected! {self.user.name} in {message.channel.name}'", timeout=5, retry=True)
-                    run_system_command(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'", timeout=5, retry=True)
+                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+                if termuxToastEnabled:
+                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {message.channel.name} waiting...".center(console_width - 2), style="deep_pink2 on black")
                 embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
@@ -1197,9 +1258,10 @@ class MyClient(discord.Client):
                 print(e)
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.f = True
-            if termuxNotificationEnabled:
-                run_system_command(f"termux-notification -c 'BAN DETECTED! {self.user.name}'", timeout=5, retry=True)
-                run_system_command(f"termux-toast -c red -b black 'BAN DETECTED:- {self.user.name}'", timeout=5, retry=True) 
+            if termuxNotificationEnabled: #8ln from here
+                run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+            if termuxToastEnabled:
+                run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
@@ -1238,7 +1300,8 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}inventory")
+                #await self.cm.send(f"{setprefix}inventory")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}inventory", typing=typingIndicator)
                 console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
@@ -1260,7 +1323,8 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}lb all")
+                #await self.cm.send(f"{setprefix}lb all")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all", typing=typingIndicator)
                 console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] used lootbox")
@@ -1271,7 +1335,8 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}crate all")
+                #await self.cm.send(f"{setprefix}crate all")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all", typing=typingIndicator)
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] used crates")
                 console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
@@ -1283,51 +1348,35 @@ class MyClient(discord.Client):
                 self.tempHuntDisable = True
                 self.tempForCheck = False
                 self.sendingGemsIds = ""
-                if autoHuntGem:
-                    for i in huntGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
-                            break                            
-                self.tempForCheck = False
-                if autoEmpoweredGem:
-                    for i in empGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
-                            break
-                self.tempForCheck = False
-                if autoLuckyGem:
-                    for i in luckGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
-                            break
-                self.tempForCheck = False
-                if autoSpecialGem:
-                    for i in specialGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
+                self.gem_intent_mapping = {
+                    0: (huntGems, autoHuntGem),
+                    1: (empGems, autoEmpoweredGem),
+                    2: (luckGems, autoLuckyGem),
+                    3: (specialGems, autoSpecialGem)
+                    }
+                self.gem_match_count = {}
+                for gem_list, gem_enabled in self.gem_intent_mapping.values():
+                    if gem_enabled:
+                        for gem in gem_list:
+                            if gem in self.invNumbers:
+                                self.gem_match_count[gem] = self.gem_match_count.get(gem, 0) + 1
+                self.sorted_gems = sorted(self.gem_match_count.keys(), key=lambda x: self.gem_match_count[x], reverse=True)
+                #self.added_gems = set()
+                self.added_intents = set()
+                for gem in self.sorted_gems:
+                    for intent, (gem_list, gem_enabled) in self.gem_intent_mapping.items():
+                        if gem_enabled and gem in gem_list and intent not in self.added_intents:
+                            self.sendingGemsIds+=f"{gem} "
+                            #self.added_gems.add(gem)
+                            self.added_intents.add(intent)
                             break
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
-               # print(self.sendingGemsIds)
+                print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
-                    await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds}", typing=typingIndicator)
+                    #await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     if webhookUselessLog:
                         webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})")
@@ -1348,10 +1397,6 @@ class MyClient(discord.Client):
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if not autoQuest:
                         return
-                    print("somewhat works")
-                    #print()
-                    #print(embed.description)
-                    #print()
                     try:
                         self.questToDo = []
                         self.questProgress = []
@@ -1406,7 +1451,7 @@ class MyClient(discord.Client):
                         print("f quests", e)
                     for o,i in enumerate(self.questToDo):  # o = int, i = item     
                     #---------------------Temp Border---------------------#
-                        print(i,o)                    
+                        #print(i,o)                    
                         if "Manually hunt" in i or "Hunt 3 animals that are " in i:
                             try:
                                 if not autoHunt and doEvenIfDisabled:
@@ -1426,10 +1471,10 @@ class MyClient(discord.Client):
                                         self.hb = 0
                                         if not self.send_hunt_or_battle.is_running():
                                             self.send_hunt_or_battle.start()
-                                print("man h", self.user)
+                                #print("man h", self.user)
                             except Exception as e:
                                 print(e, "man h")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Battle with a friend " in i:
                             print("battle with a friend detected, but disabled")
                         elif "Battle " in i:
@@ -1446,10 +1491,10 @@ class MyClient(discord.Client):
                                     self.hb = 1
                                     if not self.send_hunt_or_battle.is_running():
                                         self.send_hunt_or_battle.start()          
-                                print("battle", self.user)
+                                #print("battle", self.user)
                             except Exception as e:
                                 print(e, "battle")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Gamble " in i:
                             try:
                                 self.gambleCount = 0
@@ -1457,10 +1502,10 @@ class MyClient(discord.Client):
                                 #self.gambleQuest = True
                                 if self.send_gamble.is_running() == False and (autoCf == False and autoSlots == False): # add bj later
                                     self.send_gamble.start()
-                                print("gamble", self.user)
+                                #print("gamble", self.user)
                             except Exception as e:
                                 print(e, "gamble")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Say 'owo' " in i:
                             try:
                                 self.owoCount = 0
@@ -1468,27 +1513,27 @@ class MyClient(discord.Client):
                                 #self.owoQuest = True
                                 if not self.send_owo.is_running():
                                     self.send_owo.start()
-                                print("say owo",self.user)
+                                #print("say owo",self.user)
                             except Exception as e:
                                 print(e,"owo q")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Use an action command on someone " in i:
                             try:
                                 self.emoteCount = 0
                                 self.emoteCountGoal = int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])
                                 if not self.emoteTo.is_running():
                                     self.emoteTo.start()
-                                print("action", self.user)
+                                #print("action", self.user)
                             except Exception as e:
                                 print(e, "action0")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Have a friend use an action command on you " in i:
                             try:
                                 if token_len != 1:
                                     if self.emoteby == False:
                                         self.questsList.append(["action", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
                                         self.emoteby = True
-                                print("emoteBy", self.user)
+                                #print("emoteBy", self.user)
                                 if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     #self.list_channel.append(self.owoSupportChannel.channel.id)
                                     self.current_time = time.time()
@@ -1496,15 +1541,16 @@ class MyClient(discord.Client):
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
+                                    #await self.questChannel.send("owo quest")
+                                    await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "action")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Receive a cookie from " in i:
                             try:
                             # repBy
-                                print(token_len)
+                                #print(token_len)
                                 if token_len != 1:
                                     if self.repBy == False:
                                         self.questsList.append(["cookie", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
@@ -1515,11 +1561,12 @@ class MyClient(discord.Client):
                                         if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                         console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                        await self.questChannel.send("owo quest")
+                                        #await self.questChannel.send("owo quest")
+                                        await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                         self.owoChnl = True
                             except Exception as e:
                                 print(e, "cookie")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Have a friend pray to you " in i:
                             try:
                             # prayBy
@@ -1527,7 +1574,7 @@ class MyClient(discord.Client):
                                     if self.prayBy == False:
                                         self.questsList.append(["pray", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
                                         self.prayBy = True
-                                print("prayBy", self.user)
+                                #print("prayBy", self.user)
                                 if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     #self.list_channel.append(self.owoSupportChannel.channel.id)
                                     self.current_time = time.time()
@@ -1535,11 +1582,12 @@ class MyClient(discord.Client):
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
+                                    #await self.questChannel.send("owo quest")
+                                    await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "prayer")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         #print("proceedings 9")
                         elif "Have a friend curse you" in i:
                             # CurseBy
@@ -1548,7 +1596,7 @@ class MyClient(discord.Client):
                                     if self.curseBy == False:
                                         self.questsList.append(["curse", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
                                         self.curseBy = True
-                                print("enabled curseBy", self.user)
+                                #print("enabled curseBy", self.user)
                                 if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     #self.list_channel.append(self.owoSupportChannel.channel.id)
                                     self.current_time = time.time()
@@ -1556,11 +1604,12 @@ class MyClient(discord.Client):
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
+                                    #await self.questChannel.send("owo quest")
+                                    await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "curse")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "xp from hunting and battling " in i:
                             try:
                                 if autoHunt == False or autoBattle == False and doEvenIfDisabled:
@@ -1582,7 +1631,7 @@ class MyClient(discord.Client):
                                     print("enabled Earn xp quest", self.user)
                             except Exception as e:
                                 print(e, "xp")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         try:
                             #print(self.questsList)
                             if self.questsListInt != None:
@@ -1598,7 +1647,7 @@ class MyClient(discord.Client):
                             #print(questsList)
                         except Exception as e:
                             print(e, "last part of quest logs")
-                            run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                            #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                     if giveawayEnabled and embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in giveawayChannels:
                         try:
                             await asyncio.sleep(random.uniform(gawMinCd,gawMaxCd))
@@ -1691,5 +1740,6 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
             )
     if termuxNotificationEnabled:
         run_system_command(f"termux-notification -c '{token_len} Tokens Recieved! Thanks for putting your trust on OwO-Dusk :>'", timeout=5, retry=True)
+    if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
     run_bots(tokens_and_channels)
