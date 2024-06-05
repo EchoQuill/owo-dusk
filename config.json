@@ -1,5 +1,4 @@
 {
-  "desktopNotificationEnabled": false,
   "setprefix": "owo ",
   "website": {
     "enabled": false,
@@ -38,8 +37,8 @@
       "coinflip": false,
       "cooldown": 15,
       "doubleOnLose": false,
-      "allottedAmount": 30000,
-      "startValue": 200
+      "allottedAmount": 10,
+      "startValue": 1
     },
     {
       "quest": false,
@@ -108,12 +107,31 @@
     },
     "playAudio": {
       "enabled": false,
-      "path": "path/filename.extention, for example 'audiofile.mp3', if audiofile.mp3 is in owo-cusk folder.. (if its in someother folder like downloads, then the path could be 'storage/downloads/audiofile.mp3'   "
+      "path": "path/filename.extention, for example 'audiofile.mp3', audiofile.mp3 should be in owo-cusk folder.. "
     },
-    "notifications": false,
+    "notifications": {
+      "enabled": false,
+      "captchaContent": "Captcha Detected:- {username} in {channelname}",
+      "bannedContent": "{usernane} Banned from OwO!"
+    },
+    "toastOnCaptcha": {
+      "enabled": false,
+      "backgroundColour": "black",
+      "textColour": "red",
+      "captchaContent": "Captcha Detected! {username}",
+      "bannedContent": "{usernane} Banned from OwO!"
+    },
     "batteryCheck": {
       "enabled": false,
-      "minPercentage": 15
+      "minPercentage": 15,
+      "refreshInterval": 120
+    }
+  },
+  "desktop": {
+    "notifications": false,
+    "playAudio": {
+      "enabled": false,
+      "path": "path/filename.extention, for example 'audiofile.mp3', audiofile.mp3 should be in owo-cusk folder.. "
     }
   }
 }
