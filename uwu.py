@@ -208,6 +208,11 @@ huntGems = ["057","056","055","054","053","052","051"]
 empGems = ["071","070","069","068","067","066","065"]
 luckGems = ["078","077","076","075","074","073","072"]
 specialGems = ["085","084","083","082","081","080","079"]
+if config["autoUse"]["autoGem"]["order"]["lowestToHighest"]:
+    huntGems.reverse()
+    empGems.reverse()
+    luckGems.reverse()
+    specialGems.reverse()
 questsList = []
 
 # Cooldowns
@@ -1343,49 +1348,32 @@ class MyClient(discord.Client):
                 self.tempHuntDisable = True
                 self.tempForCheck = False
                 self.sendingGemsIds = ""
-                if autoHuntGem:
-                    for i in huntGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
-                            break                            
-                self.tempForCheck = False
-                if autoEmpoweredGem:
-                    for i in empGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
-                            break
-                self.tempForCheck = False
-                if autoLuckyGem:
-                    for i in luckGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
-                            break
-                self.tempForCheck = False
-                if autoSpecialGem:
-                    for i in specialGems:
-                        for o in self.invNumbers:
-                            if i == o:
-                                self.sendingGemsIds = self.sendingGemsIds + str(i) + " "
-                                self.tempForCheck = True
-                                break
-                        if self.tempForCheck == True:
+                self.gem_intent_mapping = {
+                    0: (huntGems, autoHuntGem),
+                    1: (empGems, autoEmpoweredGem),
+                    2: (luckGems, autoLuckyGem),
+                    3: (specialGems, autoSpecialGem)
+                    }
+                self.gem_match_count = {}
+                for gem_list, gem_enabled in self.gem_intent_mapping.values():
+                    if gem_enabled:
+                        for gem in gem_list:
+                            if gem in self.invNumbers:
+                                self.gem_match_count[gem] = self.gem_match_count.get(gem, 0) + 1
+                self.sorted_gems = sorted(self.gem_match_count.keys(), key=lambda x: self.gem_match_count[x], reverse=True)
+                self.added_gems = set()
+                self.added_intents = set()
+                for gem in self.sorted_gems:
+                    for intent, (gem_list, gem_enabled) in self.gem_intent_mapping.items():
+                        if gem_enabled and gem in gem_list and intent not in self.added_intents:
+                            self.sendingGemsIds+=f"{gem} "
+                            self.added_gems.add(gem)
+                            self.added_intents.add(intent)
                             break
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
-               # print(self.sendingGemsIds)
+                print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds}", typing=typingIndicator)
                     #await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
