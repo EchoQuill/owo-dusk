@@ -1,5 +1,6 @@
 {
   "setprefix": "owo ",
+  "typingIndicator": true,
   "website": {
     "enabled": false,
     "port": 1232
