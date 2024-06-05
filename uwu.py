@@ -5,13 +5,6 @@
 # Sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
 
-
-# Task Add print
-#dble check hb spam check plus broke system
-
-
-# finally remove bug detected part
-# add warnings
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -572,13 +565,12 @@ class MyClient(discord.Client):
                 else:
                     #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
-                    self.tempPrayOrCurse[1]-=1
-                    #if self.tempPrayOrCurse[2] >= questsList[self.questsListInt][3][1]:
-                        #pass
+                    self.tempPrayOrCurse[1]-=1                    
                     for o,i in enumerate(questsList):
-                        if i[0] == self.tempPrayOrCurse[0]:
-                           # if self.
-                            questsList[self.questsListInt].pop(3)
+                        if i[0] == self.tempPrayOrCurse[0]: #userid
+                            for z,x in questsList[o][3]: #[questType,questsProgress]]
+                                if x[0] == self.tempPrayOrCurse[1]: #questType                                    
+                                    questsList[o][3].pop(z)                                  
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             else:
@@ -589,11 +581,12 @@ class MyClient(discord.Client):
                 else:
                     #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
-                    self.tempPrayOrCurse[2]-=1
-                    if self.tempPrayOrCurse[2] >= self.questsList[self.questsListInt][3][1]:
-                        for o,i in enumerate(self.questsList[self.questsListInt]):
-                            if i[3][1] == self.tempPrayOrCurse[0]:
-                                self.questsList[self.questsListInt].pop(3)
+                    self.tempPrayOrCurse[1]-=1                    
+                    for o,i in enumerate(questsList):
+                        if i[0] == self.tempPrayOrCurse[0]: #userid
+                            for z,x in questsList[o][3]: #[questType,questsProgress]]
+                                if x[0] == self.tempPrayOrCurse[1]: #questType                                    
+                                    questsList[o][3].pop(z)
                 self.lastcmd = self.prayOrCurse
                 self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
@@ -785,7 +778,7 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], i[3][1] ])     
+                                                self.tempPrayOrCurse.append([i[0], x[0]])     
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -795,7 +788,7 @@ class MyClient(discord.Client):
                                             await self.sendCommands(channel=self.cm, message=f"{setprefix}pray <@{i[0]}>", typing=typingIndicator)
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
-                                            if questsList[y][3][o][1]:
+                                            if questsList[y][3][o][1] == 0:
                                                 questsList[y][3].pop(o)
                                                 self.prayBy = False
                                 elif x[0] == "curse":
@@ -803,7 +796,7 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], i[3][1] ])
+                                                self.tempPrayOrCurse.append([i[0], x[0] ])
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -814,7 +807,7 @@ class MyClient(discord.Client):
                                             print("lsss goooo!")
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
-                                            if questsList[y][3][o][1]:
+                                            if questsList[y][3][o][1] == 0:
                                                 questsList[y][3].pop(o)
                                                 self.curseBy = False
                                 elif x[0] == "cookie":
@@ -829,7 +822,7 @@ class MyClient(discord.Client):
                                         await self.sendCommands(channel=self.cm, message=f"{setprefix}rep <@{self.tempCookie}>", typing=typingIndicator)
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
-                                    if questsList[y][3][o][1]:
+                                    if questsList[y][3][o][1] == 0:
                                         questsList[y][3].pop(o)
                                         self.repBy = False
                                 elif x[0] == "action":
@@ -840,10 +833,9 @@ class MyClient(discord.Client):
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     #await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
                                     await self.sendCommands(channel=self.cm, message=f"""{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>""", typing=typingIndicator)
-                                    print("lsss goooo!")
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
-                                    if questsList[y][3][o][1]:
+                                    if questsList[y][3][o][1] == 0:
                                         questsList[y][3].pop(o)
                                         self.emoteby = False
                 await asyncio.sleep(random.uniform(300.12667373732, 360.9439393929))
@@ -851,7 +843,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(3.12667373732, 6.9439393929))
         except Exception as e:
             print(e, "quest handler")
-            run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+            #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
   # Lottery
     @tasks.loop()
     async def send_lottery(self):
@@ -916,6 +908,12 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_cookie(self):
         if self.f != True:
+            if self.tempCookie != None:
+                for o,i in enumerate(questsList):
+                    if i[0] == self.tempCookie: #userid
+                        for z,x in questsList[o][3]: #[questType,questsProgress]]
+                            if x[0] == "cookie": #questType                                    
+                                questsList[o][3][x][1]+=1
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             if self.tempCookie != None:
@@ -1411,10 +1409,6 @@ class MyClient(discord.Client):
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if not autoQuest:
                         return
-                    print("somewhat works")
-                    #print()
-                    #print(embed.description)
-                    #print()
                     try:
                         self.questToDo = []
                         self.questProgress = []
@@ -1469,7 +1463,7 @@ class MyClient(discord.Client):
                         print("f quests", e)
                     for o,i in enumerate(self.questToDo):  # o = int, i = item     
                     #---------------------Temp Border---------------------#
-                        print(i,o)                    
+                        #print(i,o)                    
                         if "Manually hunt" in i or "Hunt 3 animals that are " in i:
                             try:
                                 if not autoHunt and doEvenIfDisabled:
@@ -1489,10 +1483,10 @@ class MyClient(discord.Client):
                                         self.hb = 0
                                         if not self.send_hunt_or_battle.is_running():
                                             self.send_hunt_or_battle.start()
-                                print("man h", self.user)
+                                #print("man h", self.user)
                             except Exception as e:
                                 print(e, "man h")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Battle with a friend " in i:
                             print("battle with a friend detected, but disabled")
                         elif "Battle " in i:
@@ -1509,10 +1503,10 @@ class MyClient(discord.Client):
                                     self.hb = 1
                                     if not self.send_hunt_or_battle.is_running():
                                         self.send_hunt_or_battle.start()          
-                                print("battle", self.user)
+                                #print("battle", self.user)
                             except Exception as e:
                                 print(e, "battle")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Gamble " in i:
                             try:
                                 self.gambleCount = 0
@@ -1520,10 +1514,10 @@ class MyClient(discord.Client):
                                 #self.gambleQuest = True
                                 if self.send_gamble.is_running() == False and (autoCf == False and autoSlots == False): # add bj later
                                     self.send_gamble.start()
-                                print("gamble", self.user)
+                                #print("gamble", self.user)
                             except Exception as e:
                                 print(e, "gamble")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Say 'owo' " in i:
                             try:
                                 self.owoCount = 0
@@ -1531,27 +1525,27 @@ class MyClient(discord.Client):
                                 #self.owoQuest = True
                                 if not self.send_owo.is_running():
                                     self.send_owo.start()
-                                print("say owo",self.user)
+                                #print("say owo",self.user)
                             except Exception as e:
                                 print(e,"owo q")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Use an action command on someone " in i:
                             try:
                                 self.emoteCount = 0
                                 self.emoteCountGoal = int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])
                                 if not self.emoteTo.is_running():
                                     self.emoteTo.start()
-                                print("action", self.user)
+                                #print("action", self.user)
                             except Exception as e:
                                 print(e, "action0")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Have a friend use an action command on you " in i:
                             try:
                                 if token_len != 1:
                                     if self.emoteby == False:
                                         self.questsList.append(["action", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
                                         self.emoteby = True
-                                print("emoteBy", self.user)
+                                #print("emoteBy", self.user)
                                 if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     #self.list_channel.append(self.owoSupportChannel.channel.id)
                                     self.current_time = time.time()
@@ -1564,11 +1558,11 @@ class MyClient(discord.Client):
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "action")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Receive a cookie from " in i:
                             try:
                             # repBy
-                                print(token_len)
+                                #print(token_len)
                                 if token_len != 1:
                                     if self.repBy == False:
                                         self.questsList.append(["cookie", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
@@ -1584,7 +1578,7 @@ class MyClient(discord.Client):
                                         self.owoChnl = True
                             except Exception as e:
                                 print(e, "cookie")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "Have a friend pray to you " in i:
                             try:
                             # prayBy
@@ -1592,7 +1586,7 @@ class MyClient(discord.Client):
                                     if self.prayBy == False:
                                         self.questsList.append(["pray", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
                                         self.prayBy = True
-                                print("prayBy", self.user)
+                                #print("prayBy", self.user)
                                 if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     #self.list_channel.append(self.owoSupportChannel.channel.id)
                                     self.current_time = time.time()
@@ -1605,7 +1599,7 @@ class MyClient(discord.Client):
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "prayer")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         #print("proceedings 9")
                         elif "Have a friend curse you" in i:
                             # CurseBy
@@ -1614,7 +1608,7 @@ class MyClient(discord.Client):
                                     if self.curseBy == False:
                                         self.questsList.append(["curse", int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])])
                                         self.curseBy = True
-                                print("enabled curseBy", self.user)
+                                #print("enabled curseBy", self.user)
                                 if askForHelp and self.owoChnl == False and self.questChannel != None:
                                     #self.list_channel.append(self.owoSupportChannel.channel.id)
                                     self.current_time = time.time()
@@ -1627,7 +1621,7 @@ class MyClient(discord.Client):
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "curse")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         elif "xp from hunting and battling " in i:
                             try:
                                 if autoHunt == False or autoBattle == False and doEvenIfDisabled:
@@ -1649,7 +1643,7 @@ class MyClient(discord.Client):
                                     print("enabled Earn xp quest", self.user)
                             except Exception as e:
                                 print(e, "xp")
-                                run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                                #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                         try:
                             #print(self.questsList)
                             if self.questsListInt != None:
@@ -1665,7 +1659,7 @@ class MyClient(discord.Client):
                             #print(questsList)
                         except Exception as e:
                             print(e, "last part of quest logs")
-                            run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
+                            #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
                     if giveawayEnabled and embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in giveawayChannels:
                         try:
                             await asyncio.sleep(random.uniform(gawMinCd,gawMaxCd))
