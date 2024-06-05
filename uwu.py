@@ -11,7 +11,7 @@
 
 
 # finally remove bug detected part
-# fix print on lvl grind
+# add warnings
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -77,6 +77,7 @@ version = "1.1.0"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
+typingIndicator = config["typingIndicator"]
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
@@ -378,6 +379,14 @@ class MyClient(discord.Client):
         self.token = token
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
+    #send messages
+    async def sendCommands(self, channel, message, typing=False):
+        # await sendCommands(channel=channel, message="", typing=typingIndicator)
+        if typing:
+            async with channel.typing():
+                await channel.send(message)
+        else:
+            await channel.send(message)
 #----------SENDING COMMANDS----------#
     #Solve Captchas
     @tasks.loop()
@@ -389,7 +398,7 @@ class MyClient(discord.Client):
                 if i == self.tempJsonData:
                     if captchaAnswers[self.tempListCount] != None:
                         console.print(f"-{self.user}[0] Attempting to solve image captcha with {captchaAnswers[self.tempListCount]}".center(console_width - 2 ), style = "blue on black")
-                        await self.dm.send(captchaAnswers[self.tempListCount])
+                        await self.sendCommands(channel=self.dm, message=captchaAnswers[self.tempListCount], typing=typingIndicator)
                         await asyncio.sleep(random.uniform(5.5,9.7))
                         captchaAnswers[self.tempListCount] = None #To prevent spamming wrong ans.
                 self.tempListCount+=1    
@@ -421,7 +430,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-            await self.cm.send(f"{setprefix}daily")
+            #await self.cm.send(f"{setprefix}daily")
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}daily", typing=typingIndicator)
             self.last_cmd_time = time.time()
             self.lastcmd = "daily"
             self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
@@ -490,9 +500,10 @@ class MyClient(discord.Client):
                         self.spams[self.hb]+=1
                     #print(self.hb, self.huntOrBattle, self.user, "2")
                     if useShortForm:
-                        await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle[0]}", typing=typingIndicator)
+                        #await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
                     else:
-                        await self.cm.send(f'{setprefix}{self.huntOrBattle}')                
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle}", typing=typingIndicator)
                     self.lastHb = self.hb
                     console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                     if webhookUselessLog:
@@ -555,10 +566,12 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.tempPrayOrCurse == []:
-                    await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
+                    #await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>", typing=typingIndicator)
                     #print("acc2")
                 else:
-                    await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                    #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
                     self.tempPrayOrCurse[1]-=1
                     #if self.tempPrayOrCurse[2] >= questsList[self.questsListInt][3][1]:
                         #pass
@@ -570,10 +583,12 @@ class MyClient(discord.Client):
                 self.last_cmd_time = time.time()
             else:
                 if self.tempPrayOrCurse == []:
-                    await self.cm.send(f'{setprefix}{self.prayOrCurse}')
+                    #await self.cm.send(f'{setprefix}{self.prayOrCurse}')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}", typing=typingIndicator)
                     #print("acc")
                 else:
-                    await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                    #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
                     self.tempPrayOrCurse[2]-=1
                     if self.tempPrayOrCurse[2] >= self.questsList[self.questsListInt][3][1]:
                         for o,i in enumerate(self.questsList[self.questsListInt]):
@@ -610,7 +625,8 @@ class MyClient(discord.Client):
                     self.send_cf.stop()
                     return
                     #add bj here...
-                await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
+                #await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt}", typing=typingIndicator)
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[-] ran Coinflip")
                 console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
@@ -639,7 +655,8 @@ class MyClient(discord.Client):
                 self.send_cf.stop()
                 return
                 #add bj here...
-            await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
+            #await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}", typing=typingIndicator)
             if webhookUselessLog:
                 webhookSender(f"-{self.user}[-] ran Slots")
             console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "cyan on black")
@@ -654,7 +671,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send('owo')
+            #await self.cm.send('owo')
+            await self.sendCommands(channel=self.cm, message="owo", typing=typingIndicator)
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
             if webhookUselessLog:
@@ -684,7 +702,8 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+            #await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}", typing=typingIndicator)
             self.last_cmd_time = time.time()
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] ran {self.sellOrSac}")
@@ -728,7 +747,8 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send(f'{setprefix}quest')
+            #await self.cm.send(f'{setprefix}quest')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}quest", typing=typingIndicator)
             console.print(f"-{self.user}[+] checking quest status...".center(console_width - 2 ), style = "green on black")
             self.last_cmd_time = time.time()
             await asyncio.sleep(random.uniform(300.28288282, 351.928292929))
@@ -771,7 +791,8 @@ class MyClient(discord.Client):
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                            await self.cm.send(f"{setprefix}pray <@{i[0]}")
+                                            #await self.cm.send(f"{setprefix}pray <@{i[0]}>")
+                                            await self.sendCommands(channel=self.cm, message=f"{setprefix}pray <@{i[0]}>", typing=typingIndicator)
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
                                             if questsList[y][3][o][1]:
@@ -788,7 +809,8 @@ class MyClient(discord.Client):
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                            await self.cm.send(f'''{setprefix}curse <@{i[0]}>''')
+                                            #await self.cm.send(f'''{setprefix}curse <@{i[0]}>''')
+                                            await self.sendCommands(channel=self.cm, message=f"{setprefix}curse <@{i[0]}>", typing=typingIndicator)
                                             print("lsss goooo!")
                                             self.last_cmd_time = time.time()
                                             questsList[y][3][o][1]-=1
@@ -803,7 +825,8 @@ class MyClient(discord.Client):
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     self.tempCookie = i[0]
                                     if not cookie:
-                                        await self.cm.send(f"{setprefix}rep <@{self.tempCookie}>")
+                                        #await self.cm.send(f"{setprefix}rep <@{self.tempCookie}>")
+                                        await self.sendCommands(channel=self.cm, message=f"{setprefix}rep <@{self.tempCookie}>", typing=typingIndicator)
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
                                     if questsList[y][3][o][1]:
@@ -815,7 +838,8 @@ class MyClient(discord.Client):
                                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                                    await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
+                                    #await self.cm.send(f'''{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>''')
+                                    await self.sendCommands(channel=self.cm, message=f"""{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@{i[0]}>""", typing=typingIndicator)
                                     print("lsss goooo!")
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
@@ -837,7 +861,8 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.5 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.last_cmd_time = time.time()
-            await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
+            #await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}lottery {lotteryAmt}", typing=typingIndicator)
             self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
             self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
@@ -865,19 +890,22 @@ class MyClient(discord.Client):
                                 data = await response.json()
                                 #print(data)
                                 self.quote = data[0]["quote"]
-                                await self.cm.send(self.quote)
+                                #await self.cm.send(self.quote)
+                                await self.sendCommands(channel=self.cm, message=self.quote, typing=typingIndicator)
                                 console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                                 if webhookEnabled:
-                                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")                                
+                                    webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind")                                
                             else:
-                                await self.cm.send(generate_random_string())
+                                #await self.cm.send(generate_random_string())
+                                await self.sendCommands(channel=self.cm, message=generate_random_string(), typing=typingIndicator)
                                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                                 if webhookEnabled:
                                     webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")                                
                 except Exception as e:
                     print(e)
             else:
-                await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+                #await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
+                await self.sendCommands(channel=self.cm, message=generate_random_string(), typing=typingIndicator)
                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
@@ -891,10 +919,11 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             if self.tempCookie != None:
-                await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
+                #await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {self.tempCookie}", typing=typingIndicator)
             else:
-                await self.cm.send(f'{setprefix}cookie {cookieUserId}')
-            
+                #await self.cm.send(f'{setprefix}cookie {cookieUserId}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {cookieUserId}", typing=typingIndicator)
             self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -923,7 +952,8 @@ class MyClient(discord.Client):
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>')
+            #await self.cm.send(f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>')
+            await self.sendCommands(channel=self.cm, message=f'{setprefix}{random.choice(["wave","pet","nom","poke","greet","kill","handholding","punch"])} <@408785106942164992>', typing=typingIndicator)
             self.emoteCount+=1
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] Send random emotes(quest)".center(console_width - 2 ), style = "purple3 on black")
@@ -943,7 +973,8 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-                await self.cm.send(f"{setprefix}cf 1")
+                #await self.cm.send(f"{setprefix}cf 1")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf 1", typing=typingIndicator)
                 self.last_cmd_time = time.time()
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(0.83727372,2.73891948))
@@ -951,7 +982,8 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-                await self.cm.send(f"{setprefix}slots 1")
+                #await self.cm.send(f"{setprefix}slots 1")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}slots 1", typing=typingIndicator)
                 self.last_cmd_time = time.time()
                 self.gambleCount+=1
                 await asyncio.sleep(random.uniform(17.83727372,20.73891948))
@@ -1265,7 +1297,8 @@ class MyClient(discord.Client):
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}inventory")
+                #await self.cm.send(f"{setprefix}inventory")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}inventory", typing=typingIndicator)
                 console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
@@ -1287,7 +1320,8 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}lb all")
+                #await self.cm.send(f"{setprefix}lb all")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all", typing=typingIndicator)
                 console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] used lootbox")
@@ -1298,7 +1332,8 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                await self.cm.send(f"{setprefix}crate all")
+                #await self.cm.send(f"{setprefix}crate all")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all", typing=typingIndicator)
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[+] used crates")
                 console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
@@ -1354,7 +1389,8 @@ class MyClient(discord.Client):
                 self.tempForCheck = False
                # print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
-                    await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds}", typing=typingIndicator)
+                    #await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     if webhookUselessLog:
                         webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})")
@@ -1523,7 +1559,8 @@ class MyClient(discord.Client):
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
+                                    #await self.questChannel.send("owo quest")
+                                    await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "action")
@@ -1542,7 +1579,8 @@ class MyClient(discord.Client):
                                         if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                         console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                        await self.questChannel.send("owo quest")
+                                        #await self.questChannel.send("owo quest")
+                                        await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                         self.owoChnl = True
                             except Exception as e:
                                 print(e, "cookie")
@@ -1562,7 +1600,8 @@ class MyClient(discord.Client):
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
+                                    #await self.questChannel.send("owo quest")
+                                    await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "prayer")
@@ -1583,7 +1622,8 @@ class MyClient(discord.Client):
                                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                                     console.print(f"-{self.user}[~] Asking for help in {self.questChannel.name}".center(console_width - 2 ), style = "medium_purple3 on black")
-                                    await self.questChannel.send("owo quest")
+                                    #await self.questChannel.send("owo quest")
+                                    await self.sendCommands(channel=self.questChannel, message="owo quest", typing=typingIndicator)
                                     self.owoChnl = True
                             except Exception as e:
                                 print(e, "curse")
@@ -1718,5 +1758,6 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
             )
     if termuxNotificationEnabled:
         run_system_command(f"termux-notification -c '{token_len} Tokens Recieved! Thanks for putting your trust on OwO-Dusk :>'", timeout=5, retry=True)
+    if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
     run_bots(tokens_and_channels)
