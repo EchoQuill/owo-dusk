@@ -20,6 +20,7 @@ from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 import discord.errors
+import subprocess
 import threading
 import requests
 import random
@@ -100,26 +101,38 @@ desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
 websitePort = config["website"]["port"]
 
-# Install plyer
+
+# ___Dble check these___
+def install_package(package_name):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+
+def try_import_or_install(package_name, import_name=None):
+    try:
+        if import_name:
+            globals()[import_name] = __import__(package_name)
+        else:
+            globals()[package_name] = __import__(package_name)
+    except ImportError:
+        print(f"-System[0] {package_name} is not installed, attempting to install automatically...")
+        try:
+            install_package(package_name)
+            if import_name:
+                globals()[import_name] = __import__(package_name)
+            else:
+                globals()[package_name] = __import__(package_name)
+            print(f"{package_name} installed successfully.")
+            clear()
+        except Exception as e:
+            print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
+
+# Check and install plyer
 if desktopNotificationEnabled:
-    try:
-        from plyer import notification
-    except:
-        clear()
-        console.print(f"-System[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
-        os.system("pip install plyer")
-        from plyer import notification
-        
-# Install playsound
+    try_import_or_install("plyer", "notification")
+
+# Check and install playsound3
 if desktopAudioPlayer:
-    try:
-        from playsound import playsound
-    except:
-        clear()
-        console.print(f"-System[0] Playsound is not installed, attempting to install automatically.. if this doesn't work please run 'pip install playsound' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
-        os.system("pip install playsound3")
-        from playsound import playsound
-        
+    try_import_or_install("playsound3", "playsound")
+#_________
         
 #if termuxTtsEnabled:
 #    clear()
@@ -1149,7 +1162,7 @@ class MyClient(discord.Client):
             try:
                 self.f = True
                 if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=message.channel.name}'", timeout=5, retry=True)
+                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
                 if termuxToastEnabled:
                     run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {message.channel.name} waiting...".center(console_width - 2), style="deep_pink2 on black")
@@ -1211,9 +1224,9 @@ class MyClient(discord.Client):
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.f = True
             if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=message.channel.name}'", timeout=5, retry=True)
-                if termuxToastEnabled:
-                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+                run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+            if termuxToastEnabled:
+                run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
