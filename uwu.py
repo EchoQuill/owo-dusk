@@ -1361,13 +1361,13 @@ class MyClient(discord.Client):
                             if gem in self.invNumbers:
                                 self.gem_match_count[gem] = self.gem_match_count.get(gem, 0) + 1
                 self.sorted_gems = sorted(self.gem_match_count.keys(), key=lambda x: self.gem_match_count[x], reverse=True)
-                self.added_gems = set()
+                #self.added_gems = set()
                 self.added_intents = set()
                 for gem in self.sorted_gems:
                     for intent, (gem_list, gem_enabled) in self.gem_intent_mapping.items():
                         if gem_enabled and gem in gem_list and intent not in self.added_intents:
                             self.sendingGemsIds+=f"{gem} "
-                            self.added_gems.add(gem)
+                            #self.added_gems.add(gem)
                             self.added_intents.add(intent)
                             break
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
