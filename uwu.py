@@ -11,6 +11,7 @@
 
 
 # finally remove bug detected part
+# fix print on lvl grind
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -78,17 +79,28 @@ ver_check = requests.get(ver_check_url).text.strip()
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
-termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]
+batteryCheckSleepTime = config["termuxAntiCaptchaSupport"]["batteryCheck"]["refreshInterval"]
+termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]["enabled"]
+notificationCaptchaContent = config["termuxAntiCaptchaSupport"]["notifications"]["captchaContent"]
+notificationBannedContent = config["termuxAntiCaptchaSupport"]["notifications"]["bannedContent"]
+termuxToastEnabled = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["enabled"]
+toastBgColor = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["backgroundColour"]
+toastTextColor = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["textColour"]
+toastCaptchaContent = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["captchaContent"]
+toastBannedContent = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["bannedContent"]
 termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
 termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
 termuxAudioPlayer = config["termuxAntiCaptchaSupport"]["playAudio"]["enabled"]
 termuxAudioPlayerPath = config["termuxAntiCaptchaSupport"]["playAudio"]["path"]
 termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
-desktopNotificationEnabled = config["desktopNotificationEnabled"]
+desktopNotificationEnabled = config["desktop"]["notifications"]
+desktopAudioPlayer = config["desktop"]["playAudio"]["enabled"]
+desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
 websitePort = config["website"]["port"]
 
+# Install plyer
 if desktopNotificationEnabled:
     try:
         from plyer import notification
@@ -96,6 +108,19 @@ if desktopNotificationEnabled:
         clear()
         console.print(f"-System[0] Plyer is not installed, attempting to install automatically.. if this doesn't work please run 'pip install plyer' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
         os.system("pip install plyer")
+        from plyer import notification
+        
+# Install playsound
+if desktopAudioPlayer:
+    try:
+        from playsound import playsound
+    except:
+        clear()
+        console.print(f"-System[0] Playsound is not installed, attempting to install automatically.. if this doesn't work please run 'pip install playsound' In your console and run the script again...".center(console_width - 2 ), style = "red on black")
+        os.system("pip install playsound3")
+        from playsound import playsound
+        
+        
 #if termuxTtsEnabled:
 #    clear()
 #    os.system("mkfifo ~/.tts")
@@ -198,20 +223,23 @@ def generate_random_string():
     return random_string
 # For battery check
 def batteryCheckFunc():
-    while True:
-        time.sleep(120)
-        try:
-            battery_status = os.popen("termux-battery-status").read()
-        except Exception as e:
-            console.print(f"""-system[0] Battery check failed!!
+    try:
+        while True:
+            time.sleep(batteryCheckSleepTime)
+            try:
+                battery_status = os.popen("termux-battery-status").read()
+            except Exception as e:
+                console.print(f"""-system[0] Battery check failed!!
 Keep in mind that Battery check is only available for Termux users.
 also termuxAntiCaptchaSupport is also only for android/termux users. disable those if your not on Termux/Android...
 try using desktopNotificationEnabled instead if your not on termux.""".center(console_width - 2 ), style = "red on black")
-        battery_data = json.loads(battery_status)
-        percentage = battery_data['percentage']
-        console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
-        if percentage < mobileBatteryStopLimit:
-            break
+            battery_data = json.loads(battery_status)
+            percentage = battery_data['percentage']
+            console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
+            if percentage < mobileBatteryStopLimit:
+                break
+    except Exception as e:
+        print("battery check", e)
     os._exit(0)
 if mobileBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
@@ -1121,8 +1149,9 @@ class MyClient(discord.Client):
             try:
                 self.f = True
                 if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c 'Captcha Detected! {self.user.name} in {message.channel.name}'", timeout=5, retry=True)
-                    run_system_command(f"termux-toast -c red -b black 'Captcha Detected:- {self.user.name}'", timeout=5, retry=True)
+                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=message.channel.name}'", timeout=5, retry=True)
+                if termuxToastEnabled:
+                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {message.channel.name} waiting...".center(console_width - 2), style="deep_pink2 on black")
                 embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
@@ -1181,9 +1210,10 @@ class MyClient(discord.Client):
                 print(e)
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.f = True
-            if termuxNotificationEnabled:
-                run_system_command(f"termux-notification -c 'BAN DETECTED! {self.user.name}'", timeout=5, retry=True)
-                run_system_command(f"termux-toast -c red -b black 'BAN DETECTED:- {self.user.name}'", timeout=5, retry=True) 
+            if termuxNotificationEnabled: #8ln from here
+                    run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=message.channel.name}'", timeout=5, retry=True)
+                if termuxToastEnabled:
+                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
@@ -1196,6 +1226,8 @@ class MyClient(discord.Client):
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
             if termuxAudioPlayer:
                 run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
+            if desktopAudioPlayer:
+                playsound(desktopAudioPlayerPath)
             if termuxTtsEnabled:
                 run_system_command(f"termux-tts-speak A user got banned", timeout=7, retry=False)
             # temp disabled tts
