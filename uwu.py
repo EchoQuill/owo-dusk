@@ -66,7 +66,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.1.0"
+version = "1.1.1"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
@@ -279,6 +279,12 @@ def count_line_breaks(text):
     line_breaks = text.count('\n')
     return line_breaks
    
+# Get dm or channel name
+def get_channel_name(channel):
+    if isinstance(channel, discord.DMChannel):
+        return "owo DMs"
+    return channel.name
+    
 # CAPTCHA NOTIFIER {TERMUX}
 
 def run_system_command(command, timeout, retry=False, delay=5):
@@ -379,12 +385,17 @@ class MyClient(discord.Client):
         self.list_channel = [self.channel_id]
     #send messages
     async def sendCommands(self, channel, message, typing=False):
+        try:
         # await sendCommands(channel=channel, message="", typing=typingIndicator)
-        if typing:
-            async with channel.typing():
+            if typing:
+                async with channel.typing():
+                    await channel.send(message)
+            else:
                 await channel.send(message)
-        else:
-            await channel.send(message)
+        except Exception as e:
+            print("typing", e)
+            print(channel, message, typing)
+            print(f"are you sure your using correct channel id for {self.user}?")
 #----------SENDING COMMANDS----------#
     #Solve Captchas
     @tasks.loop()
@@ -1158,10 +1169,12 @@ class MyClient(discord.Client):
         self.justStarted = False
 #----------ON MESSAGE----------#
     async def on_message(self, message):
+        
         if not self.on_ready_dn:
             return
         if message.author.id != 408785106942164992:
             return
+        #print(message.channel, message.channel.name)
         if "I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
             console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
             await asyncio.sleep(random.uniform(0.69,1.69))
@@ -1196,11 +1209,12 @@ class MyClient(discord.Client):
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             try:
                 self.f = True
+                self.captcha_channel_name = get_channel_name(message.channel)
                 if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
                 if termuxToastEnabled:
-                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
-                console.print(f"-{self.user}[!] CAPTCHA DETECTED in {message.channel.name} waiting...".center(console_width - 2), style="deep_pink2 on black")
+                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
+                console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
                 embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
                     description=f"user got captcha :- {self.user} ;<",
@@ -1258,10 +1272,11 @@ class MyClient(discord.Client):
                 print(e)
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.f = True
+            self.captcha_channel_name = get_channel_name(message.channel)
             if termuxNotificationEnabled: #8ln from here
-                run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+                run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
             if termuxToastEnabled:
-                run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=message.channel.name)}'", timeout=5, retry=True)
+                run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
