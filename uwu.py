@@ -66,7 +66,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.1.1"
+version = "1.1.2"
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
@@ -100,32 +100,38 @@ websitePort = config["website"]["port"]
 def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
 
-def try_import_or_install(package_name, import_name=None):
+def try_import_or_install(package_name):
     try:
-        if import_name:
-            globals()[import_name] = __import__(package_name)
-        else:
-            globals()[package_name] = __import__(package_name)
+        __import__(package_name)
+        print(f"Module {package_name} imported successfully.")
     except ImportError:
         print(f"-System[0] {package_name} is not installed, attempting to install automatically...")
         try:
             install_package(package_name)
-            if import_name:
-                globals()[import_name] = __import__(package_name)
-            else:
-                globals()[package_name] = __import__(package_name)
-            print(f"{package_name} installed successfully.")
-            clear()
+            __import__(package_name)
+            print(f"{package_name} installed and imported successfully.")
         except Exception as e:
             print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
-
-# Check and install plyer
 if desktopNotificationEnabled:
-    try_import_or_install("plyer", "notification")
+    try_import_or_install("plyer")
 
-# Check and install playsound3
+    # Import notification from plyer
+    try:
+        from plyer import notification
+        print("Notification module in plyer imported successfully.")
+    except ImportError as e:
+        print(f"ImportError: {e}")
+        
 if desktopAudioPlayer:
-    try_import_or_install("playsound3", "playsound")
+    try_import_or_install("playsound3")
+
+    # Import playsound from playsound3
+    try:
+        from playsound3 import playsound
+        print("Playsound module in playsound3 imported successfully.")
+    except ImportError as e:
+        print(f"ImportError: {e}")
+        
 #_________
         
 #if termuxTtsEnabled:
