@@ -115,7 +115,6 @@ def try_import_or_install(package_name):
             print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
 if desktopNotificationEnabled:
     try_import_or_install("plyer")
-
     # Import notification from plyer
     try:
         from plyer import notification
@@ -125,7 +124,6 @@ if desktopNotificationEnabled:
         
 if desktopAudioPlayer:
     try_import_or_install("playsound3")
-
     # Import playsound from playsound3
     try:
         from playsound3 import playsound
@@ -419,19 +417,36 @@ class MyClient(discord.Client):
                         captchaAnswers[self.tempListCount] = None #To prevent spamming wrong ans.
                 self.tempListCount+=1    
             await asyncio.sleep(random.uniform(1.5,2.7))
+    # OwO delay check
+    @tasks.loop()
+    async def delayCheck(self):
+        self.lastMsg = None
+        async for message in self.cm.history(limit=10):
+            if message.author.id == 408785106942164992:
+                self.lastMsg = 408785106942164992
+                break
+        if self.lastMsg is None:
+            self.sleep = True
+            self.sleepTime = random.uniform(499.8372728, 600.8382828)
+            console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《No Msg from owo last 10 msgs.》".center(console_width - 2 ), style = "plum4 on black")
+            await asyncio.sleep(self.sleepTime)
+            console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+            self.sleep = False
+            await asyncio.sleep(random.uniform(40,70)) # Give enough time for next messages to be send by selfbot
+        await asyncio.sleep(random.uniform(50,100))
     #Sleep
     @tasks.loop()
     async def random_account_sleeper(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             self.randSleepInt = random.randint(1,100)
             print(self.randSleepInt)
             if self.randSleepInt > (100 - sleepRandomness):
-                self.f = True
+                self.sleep = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
                 console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
                 await asyncio.sleep(self.sleepTime)
                 console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
-                self.f = False
+                self.sleep = False
             else:
                 console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "plum4 on black")
                 await asyncio.sleep(random.uniform(60,120))
@@ -440,7 +455,7 @@ class MyClient(discord.Client):
     #daily
     @tasks.loop()
     async def send_daily(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             await asyncio.sleep(random.uniform(21,67))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -485,7 +500,7 @@ class MyClient(discord.Client):
             else:
                 await asyncio.sleep(random.uniform(2.5,3.5))
         #print(self.hb, self.huntOrBattle, self.user, "1")
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             try:
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -495,13 +510,13 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if not self.tempHuntDisable:
                     if (self.spams[0] >= 3 and self.spams[1] >= 3) or (self.spams[0] >= 3 and autoBattle == False) or (self.spams[1] >= 3 and autoHunt == False):
-                        self.f = True
+                        self.sleep = True
                         self.sleepTime = random.uniform(549.377384, 610.38838393)
                         console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds 《Lag detected》".center(console_width - 2 ), style = "plum4 on black")
                         await asyncio.sleep(self.sleepTime)
                         console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
                         self.spams = [0,0]
-                        self.f = False
+                        self.sleep = False
                     elif self.spams[self.hb] == 3 and self.huntOrBattleSelected == False:
                         if self.hb != 1:
                             self.hb = 1
@@ -577,7 +592,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(0.93535353, 1.726364646))
         if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
             await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))        
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -622,7 +637,7 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_cf(self):
         try:
-            if self.f != True:
+            if self.f != True and self.sleep != True:
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 self.current_time = time.time()
@@ -652,7 +667,7 @@ class MyClient(discord.Client):
 # Slots    
     @tasks.loop()
     async def send_slots(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
@@ -682,7 +697,7 @@ class MyClient(discord.Client):
      # Owo top
     @tasks.loop()
     async def send_owo(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -713,7 +728,7 @@ class MyClient(discord.Client):
                 self.sellOrSac = "sell"
                 self.ss = 1
                 self.broke = False
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             self.current_time = time.time()
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
@@ -732,7 +747,7 @@ class MyClient(discord.Client):
     async def send_custom(self):
         async def send_command(command, cooldown):
             try:
-                if self.f != True:
+                if self.f != True and self.sleep != True:
                     self.current_time = time.time()
                     await asyncio.sleep(random.uniform(0.2,0.5) + cooldown)
                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -758,7 +773,7 @@ class MyClient(discord.Client):
     # Quests
     @tasks.loop()
     async def check_quests(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -787,7 +802,7 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def questHandler(self):
         try:
-            if self.f != True:
+            if self.f != True and self.sleep != True:
                 print("questHandler started", self.user)
                 await asyncio.sleep(random.uniform(0.3389,2.399))
                 #print("questHandler running", self.user)
@@ -870,7 +885,7 @@ class MyClient(discord.Client):
   # Lottery
     @tasks.loop()
     async def send_lottery(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.5 seconds wait
@@ -895,7 +910,7 @@ class MyClient(discord.Client):
      # Lvl grind
     @tasks.loop()
     async def lvlGrind(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             if useQuoteInstead:
                 #print("somewhat working")
                 try:
@@ -930,7 +945,7 @@ class MyClient(discord.Client):
     # cookie
     @tasks.loop()
     async def send_cookie(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             if self.tempCookie != None:
                 for o,i in enumerate(questsList):
                     if i[0] == self.tempCookie: #userid
@@ -966,7 +981,7 @@ class MyClient(discord.Client):
      # emoteTo {Quest}
     @tasks.loop()
     async def emoteTo(self):
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             if self.emoteCount >= self.emoteCountGoal:
                 self.emoteTo.stop()
             self.last_cmd_time = time.time()
@@ -988,7 +1003,7 @@ class MyClient(discord.Client):
     async def send_gamble(self):
         if self.gambleCount >= self.gambleCountGoal:
             self.send_gamble.stop()
-        if self.f != True:
+        if self.f != True and self.sleep != True:
             while self.gambleCount != self.gambleCountGoal:
                 self.last_cmd_time = time.time()
                 self.current_time = time.time()
@@ -1192,7 +1207,8 @@ class MyClient(discord.Client):
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
-        
+        await asyncio.sleep(random.uniform(50, 70)) 
+        self.delayCheck.start()
              
 #----------ON MESSAGE----------#
     async def on_message(self, message):
