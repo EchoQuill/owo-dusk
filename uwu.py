@@ -67,6 +67,7 @@ with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
 version = "1.1.2"
+offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
@@ -1009,7 +1010,24 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(17.83727372,20.73891948))
         else:
             await asyncio.sleep(random.uniform(3.83727372,5.73891948))
+    @tasks.loop(seconds=30)
+    async def presence(self):
+        if offline and self.status != discord.Status.invisible:
+            try:
+                #print(self.user)
+                await self.change_presence(
+                status=discord.Status.invisible, activity=self.activity
+            )
+                self.presence.stop()
+            except:
+                pass
+        else:
+            #print(self.user, "off", self.status)
+            self.presence.stop()
 
+    @presence.before_loop
+    async def before_presence(self):
+        await self.wait_until_ready()
 #----------ON READY----------#
     async def on_ready(self):
         self.on_ready_dn = False
@@ -1029,6 +1047,7 @@ class MyClient(discord.Client):
             print(e)
         if self.dm == None:
             print("channel disabled")
+        self.presence.start()
         self.list_channel.append(self.dm.dm_channel.id)
         self.broke = False        
         # AUTO QUEST
@@ -1173,6 +1192,8 @@ class MyClient(discord.Client):
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
+        
+             
 #----------ON MESSAGE----------#
     async def on_message(self, message):
         
@@ -1183,7 +1204,7 @@ class MyClient(discord.Client):
         #print(message.channel, message.channel.name)
         if "I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
             console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
-            await asyncio.sleep(random.uniform(0.69,1.69))
+            await asyncio.sleep(random.uniform(0.69, 2.69))
             self.f = False
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] Captcha solved. restarting...")
@@ -1703,16 +1724,23 @@ class MyClient(discord.Client):
                         self.slotsLastAmt = gambleStartValue
         #coinflip
         if "chose" in after.content.lower():
-            if "and you lost it all... :c" in after.content.lower():
-                console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal-=self.cfLastAmt
-                if doubleOnLose:
-                    self.cfLastAmt = self.cfLastAmt*2
-            else:
-                console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
-                self.gambleTotal+=self.cfLastAmt
-                if doubleOnLose:
-                    self.cfLastAmt = gambleStartValue
+            try:
+                if "and you lost it all... :c" in after.content.lower():
+                    console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                    self.gambleTotal-=self.cfLastAmt
+                    if doubleOnLose:
+                        print("cdble")
+                        self.cfLastAmt = self.cfLastAmt*2
+                        print(self.cfLastAmt)
+                else:
+                    console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
+                    self.gambleTotal+=self.cfLastAmt
+                    if doubleOnLose:
+                        print("c")
+                        self.cfLastAmt = gambleStartValue
+                        print(self.cfLastAmt)
+            except Exception as e:
+                print(e)
 #----------STARTING BOT----------#                 
 def run_bots(tokens_and_channels):
     threads = []
