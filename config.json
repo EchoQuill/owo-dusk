@@ -117,14 +117,14 @@
     "notifications": {
       "enabled": false,
       "captchaContent": "Captcha Detected:- {username} in {channelname}",
-      "bannedContent": "{usernane} Banned from OwO!"
+      "bannedContent": "{username} Banned from OwO!"
     },
     "toastOnCaptcha": {
       "enabled": false,
       "backgroundColour": "black",
       "textColour": "red",
       "captchaContent": "Captcha Detected! {username}",
-      "bannedContent": "{usernane} Banned from OwO!"
+      "bannedContent": "{username} Banned from OwO!"
     },
     "batteryCheck": {
       "enabled": false,
