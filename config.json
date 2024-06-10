@@ -55,7 +55,9 @@
     {
       "lvlGrind": false,
       "cooldown": 20,
-      "useQuoteInstead": false
+      "useQuoteInstead": false,
+      "minLengthForRandomString": 5,
+      "maxLengthForRandomString": 20
     },
     {
       "cookie": false,

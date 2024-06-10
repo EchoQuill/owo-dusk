@@ -5,7 +5,6 @@
 # Sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
 
-
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -190,6 +189,8 @@ lottery = config["commands"][5]["lottery"]
 lotteryAmt = config["commands"][5]["amount"]
 lvlGrind = config["commands"][6]["lvlGrind"]
 useQuoteInstead = config["commands"][6]["useQuoteInstead"]
+lvlMinLength = config["commands"][6]["minLengthForRandomString"]
+lvlMaxLength = config["commands"][6]["maxLengthForRandomString"]
 cookie = config["commands"][7]["cookie"]
 cookieUserId = config["commands"][7]["userid"]
 sleepEnabled = config["commands"][8]["sleep"]
@@ -236,7 +237,7 @@ def printBox(text, color):
 # For lvl grind
 def generate_random_string():
     characters = string.ascii_lowercase + ' '
-    length = random.randint(5, 20)
+    length = random.randint(lvlMinLength, lvlMaxLength)
     random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
 # For battery check
@@ -1782,7 +1783,7 @@ if __name__ == "__main__":
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold cyan on black' )
     if websiteEnabled:
-        printBox(f'-Website captcha logger:- https://localhost:{websitePort}/'.center(console_width - 2 ),'bold plum4 on black' )
+        printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold plum4 on black' )
     if int(ver_check.replace(".","")) > int(version.replace(".","")):
         console.print(f"""new update detected (v {ver_check}) (current version:- v {version})...
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
