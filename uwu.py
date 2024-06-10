@@ -5,6 +5,7 @@
 # Sorry for bad variable namings. Its hard for me to read them myself as well lol.
 # I'll take my time to re-name all of those later
 
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -73,23 +74,23 @@ quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
 typingIndicator = config["typingIndicator"]
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
-mobileBatteryCheckEnabled = config["termuxAntiCaptchaSupport"]["batteryCheck"]["enabled"]
-mobileBatteryStopLimit = config["termuxAntiCaptchaSupport"]["batteryCheck"]["minPercentage"]
-batteryCheckSleepTime = config["termuxAntiCaptchaSupport"]["batteryCheck"]["refreshInterval"]
-termuxNotificationEnabled = config["termuxAntiCaptchaSupport"]["notifications"]["enabled"]
-notificationCaptchaContent = config["termuxAntiCaptchaSupport"]["notifications"]["captchaContent"]
-notificationBannedContent = config["termuxAntiCaptchaSupport"]["notifications"]["bannedContent"]
-termuxToastEnabled = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["enabled"]
-toastBgColor = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["backgroundColour"]
-toastTextColor = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["textColour"]
-toastCaptchaContent = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["captchaContent"]
-toastBannedContent = config["termuxAntiCaptchaSupport"]["toastOnCaptcha"]["bannedContent"]
-termuxTtsEnabled = config["termuxAntiCaptchaSupport"]["texttospeech"]["enabled"]
-termuxTtsContent = config["termuxAntiCaptchaSupport"]["texttospeech"]["content"]
-termuxAudioPlayer = config["termuxAntiCaptchaSupport"]["playAudio"]["enabled"]
-termuxAudioPlayerPath = config["termuxAntiCaptchaSupport"]["playAudio"]["path"]
-termuxVibrationEnabled = config["termuxAntiCaptchaSupport"]["vibrate"]["enabled"]
-termuxVibrationTime = config["termuxAntiCaptchaSupport"]["vibrate"]["time"] * 1000
+mobileBatteryCheckEnabled = config["termux"]["batteryCheck"]["enabled"]
+mobileBatteryStopLimit = config["termux"]["batteryCheck"]["minPercentage"]
+batteryCheckSleepTime = config["termux"]["batteryCheck"]["refreshInterval"]
+termuxNotificationEnabled = config["termux"]["notifications"]["enabled"]
+notificationCaptchaContent = config["termux"]["notifications"]["captchaContent"]
+notificationBannedContent = config["termux"]["notifications"]["bannedContent"]
+termuxToastEnabled = config["termux"]["toastOnCaptcha"]["enabled"]
+toastBgColor = config["termux"]["toastOnCaptcha"]["backgroundColour"]
+toastTextColor = config["termux"]["toastOnCaptcha"]["textColour"]
+toastCaptchaContent = config["termux"]["toastOnCaptcha"]["captchaContent"]
+toastBannedContent = config["termux"]["toastOnCaptcha"]["bannedContent"]
+termuxTtsEnabled = config["termux"]["texttospeech"]["enabled"]
+termuxTtsContent = config["termux"]["texttospeech"]["content"]
+termuxAudioPlayer = config["termux"]["playAudio"]["enabled"]
+termuxAudioPlayerPath = config["termux"]["playAudio"]["path"]
+termuxVibrationEnabled = config["termux"]["vibrate"]["enabled"]
+termuxVibrationTime = config["termux"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktop"]["notifications"]
 desktopAudioPlayer = config["desktop"]["playAudio"]["enabled"]
 desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
@@ -248,7 +249,7 @@ def batteryCheckFunc():
             except Exception as e:
                 console.print(f"""-system[0] Battery check failed!!
 Keep in mind that Battery check is only available for Termux users.
-also termuxAntiCaptchaSupport is also only for android/termux users. disable those if your not on Termux/Android...
+also termux is also only for android/termux users. disable those if your not on Termux/Android...
 try using desktopNotificationEnabled instead if your not on termux.""".center(console_width - 2 ), style = "red on black")
             battery_data = json.loads(battery_status)
             percentage = battery_data['percentage']
@@ -376,10 +377,16 @@ def web_start():
     flaskLog.disabled = True
     cli = sys.modules['flask.cli']
     cli.show_server_banner = lambda *x: None
-    app.run(debug=False, use_reloader=False, port=websitePort)
+    try:
+        app.run(debug=False, use_reloader=False, port=websitePort)
+    except Exception as e:
+        print(e)
 if websiteEnabled:
-    web_thread = threading.Thread(target=web_start)
-    web_thread.start()
+    try:
+        web_thread = threading.Thread(target=web_start)
+        web_thread.start()
+    except Exception as e:
+        print(e)
 
 #-------------
 class MyClient(discord.Client):
@@ -394,14 +401,30 @@ class MyClient(discord.Client):
         # await sendCommands(channel=channel, message="", typing=typingIndicator)
             if typing:
                 async with channel.typing():
-                    await channel.send(message)
-            else:
+                    if self.f != True:
+                        await channel.send(message)
+            elif self.f != True:
                 await channel.send(message)
         except Exception as e:
             print("typing", e)
             print(channel, message, typing)
             print(f"are you sure your using correct channel id for {self.user}?")
 #----------SENDING COMMANDS----------#
+    #custom commands func
+    async def send_command_custom(self, command, cooldown):
+        try:
+            while not self.f and not self.sleep:
+                self.current_time = time.time()
+                await asyncio.sleep(random.uniform(0.2, 0.5) + cooldown)
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                if self.f != True and self.sleep != True:
+                    await self.cm.send(command)
+                self.last_cmd_time = time.time()
+                print(self.user, command)
+        except Exception as e:
+            print("send_command error", e)
     #Solve Captchas
     @tasks.loop()
     async def captchaSolver(self):
@@ -439,7 +462,6 @@ class MyClient(discord.Client):
     async def random_account_sleeper(self):
         if self.f != True and self.sleep != True:
             self.randSleepInt = random.randint(1,100)
-            print(self.randSleepInt)
             if self.randSleepInt > (100 - sleepRandomness):
                 self.sleep = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
@@ -745,30 +767,12 @@ class MyClient(discord.Client):
      # Custom commands
     @tasks.loop(seconds=1)
     async def send_custom(self):
-        async def send_command(command, cooldown):
-            try:
-                if self.f != True and self.sleep != True:
-                    self.current_time = time.time()
-                    await asyncio.sleep(random.uniform(0.2,0.5) + cooldown)
-                    if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                        await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                    self.time_since_last_cmd = self.current_time - self.last_cmd_time      
-                    await self.cm.send(command)
-                    self.last_cmd_time = time.time()
-                    print(self.user, command)
-            except Exception as e:
-                print("send_custon p1", e)
         try:
-            self.tasks = []
-            for i in range(customCommandCnt):
-                self.ccommand = sorted_list1[i]
-                self.ccooldown = sorted_list2[i]
-                print(self.ccommand, self.ccooldown)
-                self.tasks.append(send_command(self.ccommand, self.ccooldown))
+            self.tasks = [self.send_command_custom(cmd, cd) for cmd, cd in zip(sorted_list1, sorted_list2)]
             await asyncio.gather(*self.tasks)
         except Exception as e:
-            print("send_custom p2", e)
-        while self.f == True:
+            print("send_custom error", e)
+        while self.f or self.sleep:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Quests
     @tasks.loop()
@@ -1106,6 +1110,7 @@ class MyClient(discord.Client):
         self.time_since_last_cmd = 0
         self.tempForCheck = False
         self.f = False
+        self.sleep = False
         # AutoGems
         self.gemHuntCnt = None
         self.gemEmpCnt = None
@@ -1207,8 +1212,10 @@ class MyClient(discord.Client):
         if desktopNotificationEnabled:
             pass
         self.justStarted = False
-        await asyncio.sleep(random.uniform(50, 70)) 
+        await asyncio.sleep(random.uniform(10, 30)) 
         self.delayCheck.start()
+        #self.sleep = True
+        #print("rr")
              
 #----------ON MESSAGE----------#
     async def on_message(self, message):
@@ -1240,7 +1247,7 @@ class MyClient(discord.Client):
                         self.tempListCount+=1
                     if self.popped:
                         break
-                    print("looping while")
+                    #print("looping while")
                 print(captchas , captchaAnswers)
                 self.webInt = None
                     
@@ -1431,7 +1438,7 @@ class MyClient(discord.Client):
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
-                print(self.sendingGemsIds)
+                #print(self.sendingGemsIds)
                 if self.sendingGemsIds != "":
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds}", typing=typingIndicator)
                     #await self.cm.send(f'{setprefix}use {self.sendingGemsIds}')
@@ -1463,7 +1470,7 @@ class MyClient(discord.Client):
                             #print(f'Progress: {x}/{y}')
                             self.questProgress.append(x)
                             self.questProgress.append(y)
-                        print(self.questProgress , self.user)
+                        #print(self.questProgress , self.user)
                         for match in re.findall(r'\*\*(.*?)\*\*', embed.description):
                             x = match
                             print(x)
