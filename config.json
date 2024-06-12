@@ -37,6 +37,7 @@
     {
       "slots": false,
       "coinflip": false,
+      "cfOptions": ["heads", "tails"],
       "cooldown": 15,
       "doubleOnLose": false,
       "allottedAmount": 40000,

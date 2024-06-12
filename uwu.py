@@ -91,8 +91,8 @@ termuxAudioPlayerPath = config["termux"]["playAudio"]["path"]
 termuxVibrationEnabled = config["termux"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termux"]["vibrate"]["time"] * 1000
 desktopNotificationEnabled = config["desktop"]["notifications"]["enabled"]
-desktopNotificationCaptchaContent = config["desktop"]["notifications"]["content"]
-desktopNotificationBannedContent = config["desktop"]["notifications"]["content"]
+desktopNotificationCaptchaContent = config["desktop"]["notifications"]["captchaContent"]
+desktopNotificationBannedContent = config["desktop"]["notifications"]["bannedContent"]
 desktopAudioPlayer = config["desktop"]["playAudio"]["enabled"]
 desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
@@ -141,7 +141,7 @@ if desktopAudioPlayer:
  #   console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling Termux TTs...", style = "cyan on black")
 #    os.system("cat ~/.tts | termux-tts-speak")
 #    clear()
-webhookEnabled = config["webhookEnabled"]["enabled"]
+webhookEnabled = config["webhook"]["enabled"]
 if webhookEnabled:
     webhook_url = config["webhook"]["webhookUrl"]
     webhookUselessLog = config["webhook"]["webhookUselessLog"]
@@ -181,6 +181,7 @@ rarity = ""
 for i in config["commands"][2]["rarity"]:
     rarity = rarity + i + " "
 autoCf = config["commands"][3]["coinflip"]
+cfOptions = config["commands"][3]["cfOptions"]
 autoSlots = config["commands"][3]["slots"]
 #GAMBLE
 doubleOnLose = config["commands"][3]["doubleOnLose"]
@@ -697,7 +698,7 @@ class MyClient(discord.Client):
                     return
                     #add bj here...
                 #await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt}", typing=typingIndicator)
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.uniform(cfOptions)[0]}", typing=typingIndicator)
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[-] ran Coinflip")
                 console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
