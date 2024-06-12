@@ -116,6 +116,12 @@
     "webhookCaptchaChannelId": null,
     "webhookUserIdToPingOnCaptcha": 28828292
   },
+  "console": {
+    "runConsoleCommandOnCaptcha": false,
+    "commandToRunOnCaptcha": "command to run goes here",
+    "runConsoleCommandOnBan": false,
+    "commandToRunOnBan": "command to run goes here"
+    },
   "termux": {
     "vibrate": {
       "enabled": false,

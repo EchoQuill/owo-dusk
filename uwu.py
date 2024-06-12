@@ -97,7 +97,12 @@ desktopAudioPlayer = config["desktop"]["playAudio"]["enabled"]
 desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
 websitePort = config["website"]["port"]
-
+captchaConsoleEnabled = config["console"]["runConsoleCommandOnCaptcha"]
+banConsoleEnabled = config["console"]["runConsoleCommandOnBan"]
+if captchaConsoleEnabled:
+    captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
+if banConsoleEnabled:
+    banConsoleContent = config["console"]["commandToRunOnBan"]
 
 # ___Dble check these___
 def install_package(package_name):
@@ -1319,6 +1324,8 @@ class MyClient(discord.Client):
                         app_icon=None,
                         timeout=15,
                     )
+                if captchaConsoleEnabled:
+                    run_system_command(captchaConsoleContent, timeout=7, retry=False)
                 if self.webSend == False and websiteEnabled:
                     try:
                         if list_captcha[1] in message.content:
@@ -1387,6 +1394,8 @@ class MyClient(discord.Client):
                 playsound(desktopAudioPlayerPath)
             if termuxTtsEnabled:
                 run_system_command(f"termux-tts-speak A user got banned", timeout=7, retry=False)
+            if banConsoleEnabled:
+                run_system_command(banConsoleContent, timeout=7, retry=False)
             # temp disabled tts
             if desktopNotificationEnabled:
                 notification.notify(
