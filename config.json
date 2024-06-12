@@ -1,5 +1,5 @@
 {
-  "setprefix": "w",
+  "setprefix": "owo ",
   "typingIndicator": false,
   "offlineStatus": false,
   "website": {
@@ -97,13 +97,25 @@
   },
   "customCommands": {
     "enabled": false,
-    "commands": [],
-    "cooldowns": []
+    "commands": [
+      "t1",
+      "t2",
+      "t3"
+    ],
+    "cooldowns": [
+      1,
+      2,
+      7
+    ]
   },
-  "webhookEnabled": false,
-  "webhookUselessLog": false,
-  "webhook": "webhook url here",
-  "termuxAntiCaptchaSupport": {
+  "webhook": {
+    "enabled": false,
+    "webhookUselessLog": false,
+    "webhookUrl": "webhook url here",
+    "webhookCaptchaChannelId": null,
+    "webhookUserIdToPingOnCaptcha": 28828292
+  },
+  "termux": {
     "vibrate": {
       "enabled": false,
       "time": 5
@@ -118,15 +130,15 @@
     },
     "notifications": {
       "enabled": false,
-      "captchaContent": "Captcha Detected:- {username} in {channelname}",
-      "bannedContent": "{username} Banned from OwO!"
+      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- ",
+      "bannedContent": "{usernane} Banned from OwO!"
     },
     "toastOnCaptcha": {
       "enabled": false,
       "backgroundColour": "black",
       "textColour": "red",
       "captchaContent": "Captcha Detected! {username}",
-      "bannedContent": "{username} Banned from OwO!"
+      "bannedContent": "{usernane} Banned from OwO!"
     },
     "batteryCheck": {
       "enabled": false,
@@ -135,10 +147,18 @@
     }
   },
   "desktop": {
-    "notifications": false,
+    "notifications": {
+      "enabled": false,
+      "content": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}"
+    },
     "playAudio": {
       "enabled": false,
       "path": "path/filename.extention, for example 'audiofile.mp3', audiofile.mp3 should be in owo-cusk folder.. "
+    },
+    "batteryCheck": {
+      "enabled": false,
+      "minPercentage": 15,
+      "refreshInterval": 120
     }
   }
 }

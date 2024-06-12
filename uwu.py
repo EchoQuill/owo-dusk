@@ -90,7 +90,9 @@ termuxAudioPlayer = config["termux"]["playAudio"]["enabled"]
 termuxAudioPlayerPath = config["termux"]["playAudio"]["path"]
 termuxVibrationEnabled = config["termux"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termux"]["vibrate"]["time"] * 1000
-desktopNotificationEnabled = config["desktop"]["notifications"]
+desktopNotificationEnabled = config["desktop"]["notifications"]["enabled"]
+desktopNotificationCaptchaContent = config["desktop"]["notifications"]["content"]
+desktopNotificationBannedContent = config["desktop"]["notifications"]["content"]
 desktopAudioPlayer = config["desktop"]["playAudio"]["enabled"]
 desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
@@ -139,14 +141,15 @@ if desktopAudioPlayer:
  #   console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling Termux TTs...", style = "cyan on black")
 #    os.system("cat ~/.tts | termux-tts-speak")
 #    clear()
-webhookEnabled = config["webhookEnabled"]
+webhookEnabled = config["webhookEnabled"]["enabled"]
 if webhookEnabled:
-    webhook_url = config["webhook"]
-    webhookUselessLog = config["webhookUselessLog"]
+    webhook_url = config["webhook"]["webhookUrl"]
+    webhookUselessLog = config["webhook"]["webhookUselessLog"]
     dwebhook = SyncWebhook.from_url(webhook_url)
+    webhookPingId = config["webhook"]["webhookCaptchaChannelId"]
+    webhookChannel = config["webhook"]["webhookUserIdToPingOnCaptcha"]
 else:
     webhookUselessLog = False
-webhook_url = config["webhook"]
 setprefix = config["setprefix"]
 #----------MAIN VARIABLES----------#
 listUserIds = []
@@ -265,15 +268,29 @@ if mobileBatteryCheckEnabled:
     loop_thread.start()
 # Webhook Logging
 
-def webhookSender(msg, desc=None):
+def webhookSender(msg, desc=None, channel_id=None, plain_text_msg=None):
     try:
         emb = discord.Embed(
-        title=msg,
-        description=desc,
-        color=discord.Color.purple() # Double check
+            title=msg,
+            description=desc,
+            color=discord.Color.purple()  # Double check
         )
-    
-        dwebhook.send(embed=emb, username='uwu bot warnings')
+
+        if channel_id:
+            # Create a new webhook instance for the specific channel ID
+            channel_webhook_url = f"https://discord.com/api/webhooks/{channel_id}/{webhook_url.split('/')[-1]}"
+            channel_webhook = SyncWebhook.from_url(channel_webhook_url)
+            # Send both the embed and plain text message if provided
+            if plain_text_msg:
+                channel_webhook.send(content=plain_text_msg, embed=emb, username='uwu bot warnings')
+            else:
+                channel_webhook.send(embed=emb, username='uwu bot warnings')
+        else:
+            # Send both the embed and plain text message if provided
+            if plain_text_msg:
+                dwebhook.send(content=plain_text_msg, embed=emb, username='uwu bot warnings')
+            else:
+                dwebhook.send(embed=emb, username='uwu bot warnings')
     except discord.Forbidden as e:
         print("Bot does not have permission to execute this command:", e)
     except discord.NotFound as e:
@@ -1111,6 +1128,7 @@ class MyClient(discord.Client):
         self.time_since_last_cmd = 0
         self.tempForCheck = False
         self.f = False
+        self.captchaType = None
         self.sleep = False
         # AutoGems
         self.gemHuntCnt = None
@@ -1259,12 +1277,16 @@ class MyClient(discord.Client):
             return
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             try:
+                if list_captcha[1] in message.content:
+                    self.captchaType = "link"
+                else:
+                    self.captchaType = "image"
                 self.f = True
                 self.captcha_channel_name = get_channel_name(message.channel)
                 if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
+                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
                 if termuxToastEnabled:
-                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
+                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
                 embed2 = discord.Embed(
                     title=f'CAPTCHA :- {self.user} ;<',
@@ -1272,7 +1294,17 @@ class MyClient(discord.Client):
                     color=discord.Color.red()
                 )
                 if webhookEnabled:
-                    dwebhook.send(embed=embed2, username='uwu bot warnings')
+                    if webhookChannel:
+                        self.webhook = SyncWebhook.from_url(f"https://discord.com/api/webhooks/{channel_id}/{webhook_url.split('/')[-1]}")
+                        if webhookPingId:
+                            self.webhook.send(content=f"<@webhookPingId>",embed=embed2, username='uwu bot warnings')
+                        else:
+                            self.webhook.send(embed=embed2, username='uwu bot warnings')
+                    else:
+                        if webhookPingId:
+                            dwebhook.send(content=f"<@webhookPingId>",embed=embed2, username='uwu bot warnings')
+                        else:
+                            dwebhook.send(embed=embed2, username='uwu bot warnings')
                 if termuxVibrationEnabled:
                     run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
                 if termuxAudioPlayer:
@@ -1282,7 +1314,7 @@ class MyClient(discord.Client):
                 if desktopNotificationEnabled:
                     notification.notify(
                         title=f'{self.user}  DETECTED CAPTCHA',
-                        message="Pls solve it within 10min to prevent ban",
+                        message=desktopNotificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType),
                         app_icon=None,
                         timeout=15,
                     )
@@ -1325,9 +1357,9 @@ class MyClient(discord.Client):
             self.f = True
             self.captcha_channel_name = get_channel_name(message.channel)
             if termuxNotificationEnabled: #8ln from here
-                run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
+                run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype='Banned')}'", timeout=5, retry=True)
             if termuxToastEnabled:
-                run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name)}'", timeout=5, retry=True)
+                run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype='Banned')}'", timeout=5, retry=True)
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
@@ -1335,7 +1367,17 @@ class MyClient(discord.Client):
                     color=discord.Color.red()
                                 )
             if webhookEnabled:
-                dwebhook.send(embed=embed2, username='uwu bot warnings')
+                if webhookChannel:
+                    self.webhook = SyncWebhook.from_url(f"https://discord.com/api/webhooks/{channel_id}/{webhook_url.split('/')[-1]}")
+                    if webhookPingId:
+                        self.webhook.send(content=f"<@webhookPingId> , :(",embed=embed2, username='uwu bot warnings')
+                    else:
+                        self.webhook.send(embed=embed2, username='uwu bot warnings')
+                else:
+                    if webhookPingId:
+                        dwebhook.send(content=f"<@webhookPingId> , :(",embed=embed2, username='uwu bot warnings')
+                    else:
+                        dwebhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
             if termuxAudioPlayer:
@@ -1348,14 +1390,15 @@ class MyClient(discord.Client):
             if desktopNotificationEnabled:
                 notification.notify(
                     title = f'{self.user}[!] User BANNED in OwO!!',
-                    message = "Sad...",
+                    message = desktopNotificationBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype="Banned"),
                     app_icon = None,
                     timeout = 15,
                     )
             console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
             return
-        if message.channel.id == self.channel_id and "please slow down~ you're a little **too fast** for me :c" in message.content.lower():
-            pass
+        if message.channel.id == self.channel_id and "**You must accept these rules to use the bot!**" in message.content.lower():
+            await asyncio.sleep(random.uniform(0.6,1.7))
+            await message.components[0].children[0].click()
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
             self.hb = 1
             self.last_cmd_time = time.time()
