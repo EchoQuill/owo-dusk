@@ -1,9 +1,6 @@
 # Iam obsessed with imports being in descending order.
 # Written by EchoQuill, on a laggy mobile.
 # Make sure to star the github page.
-#
-# Sorry for bad variable namings. Its hard for me to read them myself as well lol.
-# I'll take my time to re-name all of those later
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
@@ -232,11 +229,11 @@ if config["autoUse"]["autoGem"]["order"]["lowestToHighest"]:
 questsList = []
 
 # Cooldowns
-huntOrBattleCooldown = config["commands"][0]["cooldown"]
-prayOrCurseCooldown = config["commands"][1]["cooldown"]
-sellOrSacCooldown = config["commands"][2]["cooldown"]
-gambleCd = config["commands"][3]["cooldown"]
-lvlGrindCooldown = config["commands"][6]["cooldown"]
+huntOrBattleCooldown = [config["commands"][0]["minCooldown"], config["commands"][0]["maxCooldown"]]
+prayOrCurseCooldown = [config["commands"][1]["minCooldown"], config["commands"][1]["maxCooldown"]]
+sellOrSacCooldown = [config["commands"][2]["minCooldown"], config["commands"][2]["maxCooldown"]]
+gambleCd = [config["commands"][3]["minCooldown"], config["commands"][3]["maxCooldown"]]
+lvlGrindCooldown = [config["commands"][6]["minCooldown"], config["commands"][6]["maxCooldown"]]
 gawMaxCd = config["commands"][9]["maxCooldown"]
 gawMinCd = config["commands"][9]["minCooldown"]
 # Box print
@@ -542,7 +539,7 @@ class MyClient(discord.Client):
             if self.broke:
                 self.hb = 1
                 self.huntOrBattle = "battle"
-                await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
+                await asyncio.sleep(random.uniform(huntOrBattleCooldown[0], huntOrBattleCooldown[1]))
             else:
                 await asyncio.sleep(random.uniform(2.5,3.5))
         #print(self.hb, self.huntOrBattle, self.user, "1")
@@ -622,7 +619,7 @@ class MyClient(discord.Client):
                                 self.battleQuestValue = None
                                 self.tempBattleQuestValue = None
                     if self.hb == 1 or self.huntOrBattleSelected:
-                        await asyncio.sleep(huntOrBattleCooldown + random.uniform(0.99, 1.10))
+                        await asyncio.sleep(random.uniform(huntOrBattleCooldown[0], huntOrBattleCooldown[1]))
                     else:
                         await asyncio.sleep(random.uniform(0.72667373732, 1.9439393929))
             except Exception as e:
@@ -676,7 +673,7 @@ class MyClient(discord.Client):
             console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
             if webhookUselessLog:
                 webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.")
-            await asyncio.sleep(prayOrCurseCooldown + random.uniform(0.99, 1.10))
+            await asyncio.sleep(random.uniform(prayOrCurseCooldown[0], prayOrCurseCooldown[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Coinflip
@@ -707,10 +704,10 @@ class MyClient(discord.Client):
                 if webhookUselessLog:
                     webhookSender(f"-{self.user}[-] ran Coinflip")
                 console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
-                await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
+                await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
         except Exception as e:
             print(e)
-# Slots    
+    # Slots    
     @tasks.loop()
     async def send_slots(self):
         if self.f != True and self.sleep != True:
@@ -737,7 +734,7 @@ class MyClient(discord.Client):
             if webhookUselessLog:
                 webhookSender(f"-{self.user}[-] ran Slots")
             console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(gambleCd + random.uniform(0.28288282, 0.928292929))
+            await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Owo top
@@ -759,7 +756,7 @@ class MyClient(discord.Client):
                 if self.owoCount >= self.owoCountGoal:
                     #self.owoQuest = False
                     self.send_owo.stop()
-            await asyncio.sleep(random.uniform(19.28288282, 21.928292929))
+            await asyncio.sleep(random.uniform(11.28288282, 19.928292929))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # auto sell / auto sac.
@@ -785,7 +782,7 @@ class MyClient(discord.Client):
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] ran {self.sellOrSac}")
             console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
-            await asyncio.sleep(sellOrSacCooldown + random.uniform(0.377373, 1.7373828))
+            await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Custom commands
@@ -967,7 +964,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                 if webhookEnabled:
                     webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind")
-            await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
+            await asyncio.sleep(random.uniform(lvlGrindCooldown[0], lvlGrindCooldown[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # cookie
@@ -1023,7 +1020,7 @@ class MyClient(discord.Client):
             console.print(f"-{self.user}[+] Send random emotes(quest)".center(console_width - 2 ), style = "purple3 on black")
             if webhookEnabled:
                 webhookSender(f"-{self.user}[+] send emotes.", "This is for auto quest")
-            await asyncio.sleep(random.uniform(lvlGrindCooldown + 0.1, lvlGrindCooldown + 0.4))
+            await asyncio.sleep(random.uniform(17.83727372,20.73891948))
         else:
             await asyncio.sleep(random.uniform(14.3838383, 20.9439393929))
      # gamble {Quest}
@@ -1136,6 +1133,7 @@ class MyClient(discord.Client):
         self.f = False
         self.captchaType = None
         self.sleep = False
+        self.changedPrefix = False
         # AutoGems
         self.gemHuntCnt = None
         self.gemEmpCnt = None

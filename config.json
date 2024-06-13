@@ -1,5 +1,5 @@
 {
-  "setprefix": "owo ",
+  "setprefix": "w",
   "typingIndicator": false,
   "offlineStatus": false,
   "website": {
@@ -10,19 +10,22 @@
     {
       "hunt": false,
       "battle": false,
-      "cooldown": 15,
+      "minCooldown": 15,
+      "maxCooldown": 17,
       "useShortForm": false
     },
     {
       "pray": false,
       "curse": false,
-      "cooldown": 300,
+      "minCooldown": 300,
+      "maxCooldown": 350,
       "userToPrayOrCurse": null
     },
     {
       "sell": false,
       "sacrifice": false,
-      "cooldown": 200,
+      "minCooldown": 200,
+      "maxCooldown": 250,
       "rarity": [
         "c",
         "u",
@@ -37,8 +40,12 @@
     {
       "slots": false,
       "coinflip": false,
-      "cfOptions": ["heads", "tails"],
-      "cooldown": 15,
+      "cfOptions": [
+        "heads",
+        "tails"
+      ],
+      "minCooldown": 15,
+      "maxCooldown": 20,
       "doubleOnLose": false,
       "allottedAmount": 40000,
       "startValue": 200
@@ -55,7 +62,8 @@
     },
     {
       "lvlGrind": false,
-      "cooldown": 20,
+      "minCooldown": 20,
+      "maxCooldown": 30,
       "useQuoteInstead": false,
       "minLengthForRandomString": 5,
       "maxLengthForRandomString": 20
@@ -99,14 +107,14 @@
   "customCommands": {
     "enabled": false,
     "commands": [
-      "t1",
-      "t2",
-      "t3"
+      "command1",
+      "command2",
+      "command3"
     ],
     "cooldowns": [
       1,
       2,
-      7
+      3
     ]
   },
   "webhook": {
@@ -121,7 +129,7 @@
     "commandToRunOnCaptcha": "command to run goes here",
     "runConsoleCommandOnBan": false,
     "commandToRunOnBan": "command to run goes here"
-    },
+  },
   "termux": {
     "vibrate": {
       "enabled": false,
@@ -156,7 +164,8 @@
   "desktop": {
     "notifications": {
       "enabled": false,
-      "content": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}"
+      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
+      "bannedContent": "{usernane} Banned from OwO!"
     },
     "playAudio": {
       "enabled": false,
