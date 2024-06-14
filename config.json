@@ -1,5 +1,5 @@
 {
-  "setprefix": "w",
+  "setprefix": "owo ",
   "typingIndicator": false,
   "offlineStatus": false,
   "website": {
@@ -33,8 +33,7 @@
         "e",
         "m",
         "l",
-        "g",
-        "s"
+        "g"
       ]
     },
     {
@@ -47,8 +46,8 @@
       "minCooldown": 15,
       "maxCooldown": 20,
       "doubleOnLose": false,
-      "allottedAmount": 40000,
-      "startValue": 200
+      "allottedAmount": 4000,
+      "startValue": 1
     },
     {
       "quest": false,
@@ -120,8 +119,8 @@
   "webhook": {
     "enabled": false,
     "webhookUselessLog": false,
-    "webhookUrl": "webhook url here",
-    "webhookCaptchaChannelId": null,
+    "webhookUrl": "webhook url here, btw no need to edit webhookCaptchaUrl if your okay with captcha messages being send in same channel",
+    "webhookCaptchaUrl": null,
     "webhookUserIdToPingOnCaptcha": 28828292
   },
   "console": {
@@ -145,7 +144,7 @@
     },
     "notifications": {
       "enabled": false,
-      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- ",
+      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
       "bannedContent": "{usernane} Banned from OwO!"
     },
     "toastOnCaptcha": {
