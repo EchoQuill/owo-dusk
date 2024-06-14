@@ -149,7 +149,7 @@ if webhookEnabled:
     webhookUselessLog = config["webhook"]["webhookUselessLog"]
     dwebhook = SyncWebhook.from_url(webhook_url)
     webhookPingId = config["webhook"]["webhookUserIdToPingOnCaptcha"]
-    webhookCaptchaChnl = config["webhook"]["webhookCaptchaChannelId"]
+    webhookCaptchaChnl = config["webhook"]["webhookCaptchaUrl"]
 else:
     webhookUselessLog = False
 setprefix = config["setprefix"]
@@ -681,7 +681,7 @@ class MyClient(discord.Client):
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.gambleCashCheck[0] == self.cfLastAmt:
+                if self.gambleCashCheck[0] == self.cfLastAmt and self.cfLastAmt != gambleStartValue:
                     self.gambleCashCheck2[0]+=1
                     if self.gambleCashCheck2[0] == 2:
                         console.print(f"-{self.user}[–] Stopping coinflip ‐ No Cash".center(console_width - 2 ), style = "red on black")
@@ -720,7 +720,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.gambleCashCheck[1] == self.slotsLastAmt:
+            if self.gambleCashCheck[1] == self.slotsLastAmt and self.slotsLastAmt != gambleStartValue:
                 self.gambleCashCheck2[1]+=1
                 if self.gambleCashCheck2[1] == 2:
                     console.print(f"-{self.user}[–] Stopping slots ‐ No Cash".center(console_width - 2 ), style = "red on black")
@@ -1147,6 +1147,7 @@ class MyClient(discord.Client):
         self.time_since_last_cmd = 0
         self.tempForCheck = False
         self.f = False
+        self.zooCheckRecieved = False
         self.captchaType = None
         self.sleep = False
         self.changedPrefix = False
@@ -1477,7 +1478,27 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and "Create a team with the command `owo team add {animal}`" in message.content:
-            console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
+            try:
+                console.print(f"-{self.user}[–] Missing team for battle... attempting to create one.".center(console_width - 2 ), style = "magenta on black")
+                self.sleep = True
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}zoo", typing=typingIndicator)
+                await asyncio.sleep(random.uniform(1,2))
+                if self.zooCheckRecieved:
+                    self.zooCheckRecieved = False
+                else:
+                    self.sleep = False # To trigger command again, lazy to add better ways for now haha. This is temporary. – 14th Jun 2024
+            except Exception as e:
+                print(e)
+        if message.channel.id == self.channel_id and "s zoo! **" in message.content:
+            self.zooCheckRecieved = True
+            self.animals = get_emoji_names(message.content)
+            self.animals.reverse()
+            print(self.animals)
+            self.threeAnimals = min(len(self.animals), 3) #int
+            for i in range(self.threeAnimals):
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}team add {self.animals[i]}", typing=typingIndicator)
+                await asyncio.sleep(random.uniform(1.5,2.3))
+            self.sleep = False 
         if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
