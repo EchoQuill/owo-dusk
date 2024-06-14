@@ -34,7 +34,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * auto lottery
 * automate shop buying
 * automatically join OwO giveaways
-* captcha detection(not solver)
+* captcha detection (not solver!!)
 * ban detection
 * auto cookie
 * auto slots
@@ -44,6 +44,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * battery check
 * auto quest
 * auto sell/sacrifice
+* auto buy items (rings etc, from `owo shop`)
 * auto use crate
 * auto use lootbox
 * auto use Gems (hunt gem, empowered gem, lucky gem and special gem)
@@ -52,6 +53,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both.
 * Mobile texttospeech captcha alert
 * Sends toasts when captcha {Mobile only}
 * level grind.
+* automatically accept rules, create battle teams if user doesn't have one.
 
 ---
 # Screenshots 📸 
