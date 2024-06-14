@@ -646,12 +646,15 @@ class MyClient(discord.Client):
                     else:
                         #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                         await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
-                        self.tempPrayOrCurse[1]-=1                    
+                        #self.tempPrayOrCurse[1]-=1                    
                         for o,i in enumerate(questsList):
                             if i[0] == self.tempPrayOrCurse[0]: #userid
                                 for z,x in questsList[o][3]: #[questType,questsProgress]]
-                                    if x[0] == self.tempPrayOrCurse[1]: #questType                                    
-                                        questsList[o][3].pop(z)                                  
+                                    if x[0] == self.tempPrayOrCurse[1]: #questType
+                                        questsList[o][3][z][1] -= 1
+                                        if questsList[o][3][z][1] == 0:
+                                            questsList[o][3].pop(z)
+                                            break                   
                     self.lastcmd = self.prayOrCurse
                     self.last_cmd_time = time.time()
                 else:
@@ -662,12 +665,15 @@ class MyClient(discord.Client):
                     else:
                         #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
                         await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
-                        self.tempPrayOrCurse[1]-=1                    
+                        #self.tempPrayOrCurse[1]-=1                    
                         for o,i in enumerate(questsList):
                             if i[0] == self.tempPrayOrCurse[0]: #userid
                                 for z,x in questsList[o][3]: #[questType,questsProgress]]
-                                    if x[0] == self.tempPrayOrCurse[1]: #questType                                    
-                                        questsList[o][3].pop(z)
+                                    if x[0] == self.tempPrayOrCurse[1]: #questType
+                                        questsList[o][3][z][1] -= 1
+                                        if questsList[o][3][z][1] == 0:
+                                            questsList[o][3].pop(z)
+                                            break  
                     self.lastcmd = self.prayOrCurse
                     self.last_cmd_time = time.time()
                 console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
@@ -677,7 +683,7 @@ class MyClient(discord.Client):
             else:
                 await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
         except Exception as e:
-            print(e)
+            print(e, "pray")
      # Coinflip
     @tasks.loop()
     async def send_cf(self):
@@ -887,7 +893,8 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], x[0]])     
+                                                self.tempPrayOrCurse = [i[0], x[0]]
+                                                print(self.tempPrayOrCurse)
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -905,7 +912,7 @@ class MyClient(discord.Client):
                                     if self.send_curse_and_prayer.is_running():
                                         if autoPray or autoCurse:
                                             if self.tempPrayOrCurse == []:
-                                                self.tempPrayOrCurse.append([i[0], x[0] ])
+                                                self.tempPrayOrCurse = [i[0], x[0]]
                                         else:
                                             self.current_time = time.time()
                                             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -1022,7 +1029,9 @@ class MyClient(discord.Client):
                     if i[0] == self.tempCookie: #userid
                         for z,x in questsList[o][3]: #[questType,questsProgress]]
                             if x[0] == "cookie": #questType                                    
-                                questsList[o][3][x][1]+=1
+                                questsList[o][3][x][1]-=1
+                                if questsList[o][3][x][1]:
+                                    questsList[o][3].pop(x)
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             if self.tempCookie != None:
