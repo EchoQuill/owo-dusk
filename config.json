@@ -89,7 +89,7 @@
       "maxCooldown": 100
     },
     {
-      "shop": true,
+      "shop": false,
       "itemsToBuy": [
         1,
         2,
