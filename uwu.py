@@ -205,6 +205,8 @@ maxSleepTime = config["commands"][8]["maxTime"]
 sleepRandomness = config["commands"][8]["randomness"]
 giveawayEnabled = config["commands"][9]["giveawayJoiner"]
 giveawayChannels = config["commands"][9]["channelsToJoin"]
+shopEnabled = config["commands"][10]["shop"]
+shopItemsToBuy = config["commands"][10]["itemsToBuy"]
 customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
     sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
@@ -234,6 +236,7 @@ prayOrCurseCooldown = [config["commands"][1]["minCooldown"], config["commands"][
 sellOrSacCooldown = [config["commands"][2]["minCooldown"], config["commands"][2]["maxCooldown"]]
 gambleCd = [config["commands"][3]["minCooldown"], config["commands"][3]["maxCooldown"]]
 lvlGrindCooldown = [config["commands"][6]["minCooldown"], config["commands"][6]["maxCooldown"]]
+shopCd = [config["commands"][10]["minCooldown"], config["commands"][10]["maxCooldown"]]
 gawMaxCd = config["commands"][9]["maxCooldown"]
 gawMinCd = config["commands"][9]["minCooldown"]
 # Box print
@@ -627,51 +630,54 @@ class MyClient(discord.Client):
     # QuestsList = [userid,messageChannel,guildId, [questType,questsProgress]]
     @tasks.loop()
     async def send_curse_and_prayer(self):
-        if self.justStarted:
-            await asyncio.sleep(random.uniform(0.93535353, 1.726364646))
-        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))        
-        if self.f != True and self.sleep != True:
-            if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.tempPrayOrCurse == []:
-                    #await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>", typing=typingIndicator)
-                    #print("acc2")
+        try:
+            if self.justStarted:
+                await asyncio.sleep(random.uniform(0.93535353, 1.726364646))
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))        
+            if self.f != True and self.sleep != True:
+                if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
+                    self.current_time = time.time()
+                    self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                    if self.tempPrayOrCurse == []:
+                        #await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>", typing=typingIndicator)
+                        #print("acc2")
+                    else:
+                        #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
+                        self.tempPrayOrCurse[1]-=1                    
+                        for o,i in enumerate(questsList):
+                            if i[0] == self.tempPrayOrCurse[0]: #userid
+                                for z,x in questsList[o][3]: #[questType,questsProgress]]
+                                    if x[0] == self.tempPrayOrCurse[1]: #questType                                    
+                                        questsList[o][3].pop(z)                                  
+                    self.lastcmd = self.prayOrCurse
+                    self.last_cmd_time = time.time()
                 else:
-                    #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
-                    self.tempPrayOrCurse[1]-=1                    
-                    for o,i in enumerate(questsList):
-                        if i[0] == self.tempPrayOrCurse[0]: #userid
-                            for z,x in questsList[o][3]: #[questType,questsProgress]]
-                                if x[0] == self.tempPrayOrCurse[1]: #questType                                    
-                                    questsList[o][3].pop(z)                                  
-                self.lastcmd = self.prayOrCurse
-                self.last_cmd_time = time.time()
+                    if self.tempPrayOrCurse == []:
+                        #await self.cm.send(f'{setprefix}{self.prayOrCurse}')
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}", typing=typingIndicator)
+                        #print("acc")
+                    else:
+                        #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
+                        self.tempPrayOrCurse[1]-=1                    
+                        for o,i in enumerate(questsList):
+                            if i[0] == self.tempPrayOrCurse[0]: #userid
+                                for z,x in questsList[o][3]: #[questType,questsProgress]]
+                                    if x[0] == self.tempPrayOrCurse[1]: #questType                                    
+                                        questsList[o][3].pop(z)
+                    self.lastcmd = self.prayOrCurse
+                    self.last_cmd_time = time.time()
+                console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
+                if webhookUselessLog:
+                    webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.")
+                await asyncio.sleep(random.uniform(prayOrCurseCooldown[0], prayOrCurseCooldown[1]))
             else:
-                if self.tempPrayOrCurse == []:
-                    #await self.cm.send(f'{setprefix}{self.prayOrCurse}')
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}", typing=typingIndicator)
-                    #print("acc")
-                else:
-                    #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>", typing=typingIndicator)
-                    self.tempPrayOrCurse[1]-=1                    
-                    for o,i in enumerate(questsList):
-                        if i[0] == self.tempPrayOrCurse[0]: #userid
-                            for z,x in questsList[o][3]: #[questType,questsProgress]]
-                                if x[0] == self.tempPrayOrCurse[1]: #questType                                    
-                                    questsList[o][3].pop(z)
-                self.lastcmd = self.prayOrCurse
-                self.last_cmd_time = time.time()
-            console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
-            if webhookUselessLog:
-                webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.")
-            await asyncio.sleep(random.uniform(prayOrCurseCooldown[0], prayOrCurseCooldown[1]))
-        else:
-            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+                await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+        except Exception as e:
+            print(e)
      # Coinflip
     @tasks.loop()
     async def send_cf(self):
@@ -773,6 +779,32 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(11.28288282, 19.928292929))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+    #shop
+    @tasks.loop()
+    async def buyItems(self):
+        if self.f != True and self.sleep != True:
+            self.current_time = time.time()
+            self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            #await self.cm.send('owo')
+            if self.shopCheck[0] != True:
+                if self.shopCheck[2]:
+                    console.print(f"-{self.user}[–] disabling shop as user doesn't have enough cash".center(console_width - 2 ), style = "red on black")
+                    self.buyItems.stop()
+                    self.shopCheck = [True, None, False]
+                else:
+                    self.shopCheck[2] = True
+            self.shopCheck[0] = False
+            self.shopCheck[1] = random.choice(shopItemsToBuy) # This will be made use of later for improved shop buy
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}buy {self.shopCheck[1]}", typing=typingIndicator)
+            self.last_cmd_time = time.time()
+            console.print(f"-{self.user}[+] brought item(s) from shop".center(console_width - 2 ), style = "Cyan on black")
+            if webhookUselessLog:
+                webhookSender(f"-{self.user}[–] brought item(s) from shop")
+            await asyncio.sleep(random.uniform(shopCd[0], shopCd[1]))
+        else:
+            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # auto sell / auto sac.
     @tasks.loop()
     async def send_sell_or_sac(self):
@@ -843,7 +875,7 @@ class MyClient(discord.Client):
         try:
             if self.f != True and self.sleep != True:
                 print("questHandler started", self.user)
-                await asyncio.sleep(random.uniform(0.3389,2.399))
+                await asyncio.sleep(random.uniform(10.3389,20.399))
                 #print("questHandler running", self.user)
                 # QuestsList = [userid,messageChannel,guildId, [questType,questsProgress]]
                 if questsList != []:
@@ -915,7 +947,7 @@ class MyClient(discord.Client):
                                     if questsList[y][3][o][1] == 0:
                                         questsList[y][3].pop(o)
                                         self.emoteby = False
-                await asyncio.sleep(random.uniform(300.12667373732, 360.9439393929))
+                await asyncio.sleep(random.uniform(150.12667373732, 360.9439393929))
             else:        
                 await asyncio.sleep(random.uniform(3.12667373732, 6.9439393929))
         except Exception as e:
@@ -1138,6 +1170,7 @@ class MyClient(discord.Client):
         self.gambleCashCheck = [0,0]
         self.gambleCashCheck2 = [0,0]
         #---
+        self.shopCheck = [True, None, False]
         self.last_cmd_time = 0
         self.lastcmd = None
         self.busy = False
@@ -1187,6 +1220,9 @@ class MyClient(discord.Client):
         # Starting Daily loop
         if autoDaily:
             self.task_methods.append(self.send_daily.start)
+        # start shop
+        if shopEnabled:
+            self.task_methods.append(self.buyItems.start)
         # Starting Auto Owo
         if autoOwo:
             self.task_methods.append(self.send_owo.start)
@@ -1499,6 +1535,8 @@ class MyClient(discord.Client):
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}team add {self.animals[i]}", typing=typingIndicator)
                 await asyncio.sleep(random.uniform(1.5,2.3))
             self.sleep = False 
+        if shopEnabled and message.channel.id == self.channel_id and ", you bought a" in message.content:
+            self.shopCheck[0] = True
         if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
