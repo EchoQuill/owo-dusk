@@ -63,7 +63,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.2.0"
+version = "1.2.1"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
@@ -274,7 +274,7 @@ if mobileBatteryCheckEnabled:
     loop_thread.start()
 #For emoji names
 try:
-    with open("emojis.json", 'r') as file:
+    with open("emojis.json", 'r', encoding="utf-8") as file:
         emoji_dict = json.load(file)
 except FileNotFoundError:
     print("The file emojis.json was not found.")
