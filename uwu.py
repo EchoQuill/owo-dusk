@@ -63,7 +63,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.2.1"
+version = "1.2.2"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
@@ -569,6 +569,7 @@ class MyClient(discord.Client):
                             await asyncio.sleep(random.uniform(huntOrBattleCooldown[0], huntOrBattleCooldown[1]))
                         elif self.lastHb == self.hb == 0 and self.broke[0]:
                             self.broke[1] = True
+                            self.broke[0] = False
                         else:
                             #self.broke[False,False]
                             await asyncio.sleep(random.uniform(1.9,3.7))
@@ -1152,6 +1153,7 @@ class MyClient(discord.Client):
         self.prayBy = False
         self.curseBy = False
         self.owoChnl = False
+        self.zooCheckReq = False
         self.questProgress= []
         self.questToDo = []
         self.tempPrayOrCurse = []
@@ -1470,22 +1472,26 @@ class MyClient(discord.Client):
             except:
                 pass
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
-            self.hb = 1
-            self.last_cmd_time = time.time()
-            self.lastcmd = "hunt"
-            self.broke[False,False]
-            if "caught" in message.content.lower() and self.gems:
-                if self.f:
-                    return
-                self.current_time = time.time()
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                #await self.cm.send(f"{setprefix}inventory")
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}inventory", typing=typingIndicator)
-                console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
-                if webhookUselessLog:
-                    webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
-                self.invCheck = True
+            try:
+                self.hb = 1
+                self.last_cmd_time = time.time()
+                self.lastcmd = "hunt"
+                self.broke = [False,False]
+                if "caught" in message.content.lower() and self.gems:
+                    if self.f:
+                        return
+                    print("test")
+                    self.current_time = time.time()
+                    if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                        await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                    #await self.cm.send(f"{setprefix}inventory")
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}inventory", typing=typingIndicator)
+                    console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
+                    if webhookUselessLog:
+                        webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
+                    self.invCheck = True
+            except Exception as e:
+                print(e)
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
             if huntOrBattleCooldown < 20:
                 huntOrBattleCooldown+=10
@@ -1494,7 +1500,7 @@ class MyClient(discord.Client):
                     webhookSender(f"-{self.user}[~] Cooldown for hunt and battle increased.", "OwO seems to have enabled cooldowns for hunt and battle due to ratelimits. Increasing sleep time to prevent spam...")
         if message.channel.id == self.channel_id and "You don't have enough cowoncy!" in message.content:
             self.broke[0] = True
-            console.print(f"-{self.user}[–] disabling hunt since not enough cash...".center(console_width - 2 ), style = "red on black")
+            console.print(f"-{self.user}[–] may disable hunt since not enough cash... checking..".center(console_width - 2 ), style = "red on black")
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
             if self.f:
                 return
@@ -1526,6 +1532,7 @@ class MyClient(discord.Client):
             try:
                 console.print(f"-{self.user}[–] Missing team for battle... attempting to create one.".center(console_width - 2 ), style = "magenta on black")
                 self.sleep = True
+                self.zooCheckReq = True
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}zoo", typing=typingIndicator)
                 await asyncio.sleep(random.uniform(1,2))
                 if self.zooCheckRecieved:
@@ -1534,8 +1541,9 @@ class MyClient(discord.Client):
                     self.sleep = False # To trigger command again, lazy to add better ways for now haha. This is temporary. – 14th Jun 2024
             except Exception as e:
                 print(e)
-        if message.channel.id == self.channel_id and "s zoo! **" in message.content:
+        if self.zooCheckReq and  message.channel.id == self.channel_id and "s zoo! **" in message.content:
             self.zooCheckRecieved = True
+            self.zooCheckReq = False
             self.animals = get_emoji_names(message.content)
             self.animals.reverse()
             print(self.animals)
@@ -1549,7 +1557,8 @@ class MyClient(discord.Client):
         if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
-                self.tempHuntDisable = True
+                #self.tempHuntDisable = True
+                self.sleep = True
                 self.tempForCheck = False
                 self.sendingGemsIds = ""
                 self.gem_intent_mapping = {
@@ -1589,7 +1598,9 @@ class MyClient(discord.Client):
                     self.gems = False
                     console.print(f"-{self.user}[!] No gems to use... disabling...".center(console_width - 2 ), style = "deep_pink2 on black")
                 self.invCheck = False
-                self.tempHuntDisable = False
+                #self.tempHuntDisable = False
+                await asyncio.sleep(random.uniform(0.3,0.7))
+                self.sleep = False
                 self.sendingGemsIds = ""
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
