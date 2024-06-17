@@ -4,7 +4,7 @@
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from discord import SyncWebhook
 from rich.console import Console
 from threading import Thread
@@ -232,6 +232,7 @@ questsList = []
 
 # Cooldowns
 huntOrBattleCooldown = [config["commands"][0]["minCooldown"], config["commands"][0]["maxCooldown"]]
+huntBattleDelay = config["commands"][0]["delayBetweenCommands"]
 prayOrCurseCooldown = [config["commands"][1]["minCooldown"], config["commands"][1]["maxCooldown"]]
 sellOrSacCooldown = [config["commands"][2]["minCooldown"], config["commands"][2]["maxCooldown"]]
 gambleCd = [config["commands"][3]["minCooldown"], config["commands"][3]["maxCooldown"]]
@@ -529,7 +530,7 @@ class MyClient(discord.Client):
             await self.sendCommands(channel=self.cm, message=f"{setprefix}daily", typing=typingIndicator)
             self.last_cmd_time = time.time()
             self.lastcmd = "daily"
-            self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+            self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
             self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
         
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
@@ -629,7 +630,7 @@ class MyClient(discord.Client):
             except Exception as e:
                 print(e)
         else:
-            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+            await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
             
     #pray/curse
     # QuestsList = [userid,messageChannel,guildId, [questType,questsProgress]]
@@ -700,7 +701,7 @@ class MyClient(discord.Client):
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 if self.gambleCashCheck[0] == self.cfLastAmt and self.cfLastAmt != gambleStartValue:
                     self.gambleCashCheck2[0]+=1
-                    if self.gambleCashCheck2[0] == 2:
+                    if self.gambleCashCheck2[0] == 4:
                         console.print(f"-{self.user}[–] Stopping coinflip ‐ No Cash".center(console_width - 2 ), style = "red on black")
                         if webhookEnabled:
                             webhookSender(f"-{self.user}[–] Stopping coinflip ‐ No Cash.")
@@ -739,7 +740,7 @@ class MyClient(discord.Client):
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.gambleCashCheck[1] == self.slotsLastAmt and self.slotsLastAmt != gambleStartValue:
                 self.gambleCashCheck2[1]+=1
-                if self.gambleCashCheck2[1] == 2:
+                if self.gambleCashCheck2[1] == 4:
                     console.print(f"-{self.user}[–] Stopping slots ‐ No Cash".center(console_width - 2 ), style = "red on black")
                     if webhookEnabled:
                         webhookSender(f"-{self.user}[–] Stopping slots ‐ No Cash.")
@@ -868,7 +869,7 @@ class MyClient(discord.Client):
             if self.questsDone:
                 #self.current_time = time.time()
                 #self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+                self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
                 self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
                 self.formatted_time = "{:02}h {:02}m {:02}s".format(
                     int(self.time_until_12am_pst.total_seconds() // 3600),
@@ -976,7 +977,7 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             #await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
             await self.sendCommands(channel=self.cm, message=f"{setprefix}lottery {lotteryAmt}", typing=typingIndicator)
-            self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+            self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
             self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
                 int(self.time_until_12am_pst.total_seconds() // 3600),
@@ -1048,7 +1049,7 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            self.current_time_pst = datetime.utcnow() - timedelta(hours=8)
+            self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
             self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
                 int(self.time_until_12am_pst.total_seconds() // 3600),
