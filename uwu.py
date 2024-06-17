@@ -63,7 +63,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.2.2"
+version = "1.2.3"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
@@ -439,9 +439,13 @@ class MyClient(discord.Client):
         # await sendCommands(channel=channel, message="", typing=typingIndicator)
             if typing:
                 async with channel.typing():
-                    if self.f != True:
+                    if self.f != True and self.sleep != True:
                         await channel.send(message)
-            elif self.f != True:
+                    elif self.sleep and 'use' in message:
+                        await channel.send(message)
+            elif self.f != True and self.sleep != True:
+                await channel.send(message)
+            elif self.sleep and 'use' in message:
                 await channel.send(message)
         except Exception as e:
             print("typing", e)
@@ -1414,6 +1418,8 @@ class MyClient(discord.Client):
                             self.tempJsonData = captchas[self.webInt]
                             print(self.webInt, "from curl post section")
                             print("captcha solver started")
+                    except json.JSONDecodeError as json_err:
+                        print(f"Error decoding JSON response: {json_err}")
                     except Exception as e:
                         print(f'Error when trying to get status :-> {e} Error for {self.user}')
                 console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2), style="deep_pink2 on black")
@@ -1579,7 +1585,7 @@ class MyClient(discord.Client):
                 for gem in self.sorted_gems:
                     for intent, (gem_list, gem_enabled) in self.gem_intent_mapping.items():
                         if gem_enabled and gem in gem_list and intent not in self.added_intents:
-                            self.sendingGemsIds+=f"{gem} "
+                            self.sendingGemsIds+=f"{gem[1:]} "
                             #self.added_gems.add(gem)
                             self.added_intents.add(intent)
                             break
@@ -1644,10 +1650,10 @@ class MyClient(discord.Client):
                                 self.emoteTo.stop()
                             if doEvenIfDisabled:
                                 if autoHunt == False and autoBattle == False:
-                                    if send_hunt_or_battle.is_running():
+                                    if self.send_hunt_or_battle.is_running():
                                         self.huntQuestValue = None
                                         self.battleQuestValue = None
-                                        send_hunt_or_battle.stop()
+                                        self.send_hunt_or_battle.stop()
                                 elif autoHunt == False:
                                     self.huntOrBattleSelected = False
                                     self.huntOrBattle = "battle"
@@ -1938,7 +1944,7 @@ if __name__ == "__main__":
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
         if desktopNotificationEnabled:
             notification.notify(
-                title = f'New Update!!, v{version_check}',
+                title = f'New Update!!, v{ver_check}',
                 message = "Update from v{version} to v{version_check} from our github page :>",
                 app_icon = None,
                 timeout = 15,
