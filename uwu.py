@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.2.4"
+version = "1.2.5"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
@@ -411,9 +411,10 @@ def show_popup_thread():
         # Run the main loop for the popup window
         popup.mainloop()
 
-# Start the tkinter popup thread
-popup_thread = threading.Thread(target=show_popup_thread)
-popup_thread.start()
+if desktopPopup:
+    # Start the tkinter popup thread
+    popup_thread = threading.Thread(target=show_popup_thread)
+    popup_thread.start()
 
 # CAPTCHA NOTIFIER {TERMUX}
 
