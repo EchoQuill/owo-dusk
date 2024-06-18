@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.2.3"
+version = "1.2.4"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
@@ -363,7 +363,8 @@ def get_channel_name(channel):
     if isinstance(channel, discord.DMChannel):
         return "owo DMs"
     return channel.name
-popup_queue = Queue()
+if desktopPopup:
+    popup_queue = Queue()
 #captcha popup desktop    
 def show_popup_thread():
     while True:
