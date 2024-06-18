@@ -1,15 +1,16 @@
 {
-  "setprefix": "owo ",
+  "setprefix": "w",
   "typingIndicator": false,
   "offlineStatus": false,
   "website": {
     "enabled": false,
-    "port": 1232
+    "port": 6969
   },
   "commands": [
     {
       "hunt": false,
       "battle": false,
+      "delayBetweenCommands": [0.7266, 1.9439],
       "minCooldown": 15,
       "maxCooldown": 17,
       "useShortForm": false
@@ -26,24 +27,12 @@
       "sacrifice": false,
       "minCooldown": 200,
       "maxCooldown": 250,
-      "rarity": [
-        "c",
-        "u",
-        "r",
-        "e",
-        "m",
-        "l",
-        "g",
-        "s"
-      ]
+      "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
     {
       "slots": false,
       "coinflip": false,
-      "cfOptions": [
-        "heads",
-        "tails"
-      ],
+      "cfOptions": ["heads", "tails"],
       "minCooldown": 15,
       "maxCooldown": 20,
       "doubleOnLose": false,
@@ -80,21 +69,13 @@
     },
     {
       "giveawayJoiner": false,
-      "channelsToJoin": [
-        1,
-        2,
-        3
-      ],
+      "channelsToJoin": [1, 2, 3],
       "minCooldown": 40,
       "maxCooldown": 100
     },
     {
       "shop": false,
-      "itemsToBuy": [
-        1,
-        2,
-        3
-      ],
+      "itemsToBuy": [1, 2, 3],
       "minCooldown": 10,
       "maxCooldown": 16
     }
@@ -116,16 +97,8 @@
   },
   "customCommands": {
     "enabled": false,
-    "commands": [
-      "command1",
-      "command2",
-      "command3"
-    ],
-    "cooldowns": [
-      1,
-      2,
-      3
-    ]
+    "commands": ["command1", "command2", "command3"],
+    "cooldowns": [1, 2, 3]
   },
   "webhook": {
     "enabled": false,
@@ -156,14 +129,14 @@
     "notifications": {
       "enabled": false,
       "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
-      "bannedContent": "{usernane} Banned from OwO!"
+      "bannedContent": "{username} Banned from OwO!"
     },
     "toastOnCaptcha": {
       "enabled": false,
       "backgroundColour": "black",
       "textColour": "red",
       "captchaContent": "Captcha Detected! {username}",
-      "bannedContent": "{usernane} Banned from OwO!"
+      "bannedContent": "{username} Banned from OwO!"
     },
     "batteryCheck": {
       "enabled": false,
@@ -175,7 +148,7 @@
     "notifications": {
       "enabled": false,
       "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
-      "bannedContent": "{usernane} Banned from OwO!"
+      "bannedContent": "{username} Banned from OwO!"
     },
     "playAudio": {
       "enabled": false,
@@ -185,6 +158,11 @@
       "enabled": false,
       "minPercentage": 15,
       "refreshInterval": 120
+    },
+    "popup": {
+      "enabled": false,
+      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
+      "bannedContent": "{username} Banned from OwO!"
     }
   }
 }

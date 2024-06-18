@@ -18,10 +18,10 @@ import asyncio
 import logging
 import discord
 import aiohttp
-import secrets
 import ctypes
 import string
 import shutil
+import psutil
 import time
 import json
 import sys
@@ -73,6 +73,11 @@ list_captcha = ["to check that you are a human!","https://owobot.com/captcha","p
 mobileBatteryCheckEnabled = config["termux"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termux"]["batteryCheck"]["minPercentage"]
 batteryCheckSleepTime = config["termux"]["batteryCheck"]["refreshInterval"]
+
+desktopBatteryCheckEnabled = config["desktop"]["batteryCheck"]["enabled"]
+desktopBatteryStopLimit = config["desktop"]["batteryCheck"]["minPercentage"]
+desktopBatteryCheckSleepTime = config["desktop"]["batteryCheck"]["refreshInterval"]
+
 termuxNotificationEnabled = config["termux"]["notifications"]["enabled"]
 notificationCaptchaContent = config["termux"]["notifications"]["captchaContent"]
 notificationBannedContent = config["termux"]["notifications"]["bannedContent"]
@@ -96,6 +101,9 @@ websiteEnabled = config["website"]["enabled"]
 websitePort = config["website"]["port"]
 captchaConsoleEnabled = config["console"]["runConsoleCommandOnCaptcha"]
 banConsoleEnabled = config["console"]["runConsoleCommandOnBan"]
+desktopPopup = config["desktop"]["popup"]["enabled"]
+captchaPopupMsg = config["desktop"]["popup"]["captchaContent"]
+bannedPopupMsg = config["desktop"]["popup"]["bannedContent"]
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
 if banConsoleEnabled:
@@ -134,15 +142,16 @@ if desktopAudioPlayer:
         print("Playsound module in playsound3 imported successfully.")
     except ImportError as e:
         print(f"ImportError: {e}")
+
+if desktopPopup:
+    try_import_or_install("tkinter")
+    try:
+        import tkinter as tk
+        from tkinter import PhotoImage
+        print("messagebox module in tkinter imported successfully.")
+    except ImportError as e:
+        print(f"ImportError: {e}")
         
-#_________
-        
-#if termuxTtsEnabled:
-#    clear()
-#    os.system("mkfifo ~/.tts")
- #   console.print(f"-System[0] setting up Text To Speech for faster usage... if this takes way too long then you should consider disabling Termux TTs...", style = "cyan on black")
-#    os.system("cat ~/.tts | termux-tts-speak")
-#    clear()
 webhookEnabled = config["webhook"]["enabled"]
 if webhookEnabled:
     webhook_url = config["webhook"]["webhookUrl"]
@@ -207,6 +216,10 @@ giveawayEnabled = config["commands"][9]["giveawayJoiner"]
 giveawayChannels = config["commands"][9]["channelsToJoin"]
 shopEnabled = config["commands"][10]["shop"]
 shopItemsToBuy = config["commands"][10]["itemsToBuy"]
+if shopEnabled == cookie == autoSlots == autoCf == autoSac == autoSell == autoDaily == autoPray == autoCurse == autoBattle == autoHunt == False:
+    skipSpamCheck = True
+else:
+    skipSpamCheck = False
 customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
     sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
@@ -253,24 +266,35 @@ def generate_random_string():
 # For battery check
 def batteryCheckFunc():
     try:
-        while True:
-            time.sleep(batteryCheckSleepTime)
-            try:
-                battery_status = os.popen("termux-battery-status").read()
-            except Exception as e:
-                console.print(f"""-system[0] Battery check failed!!
-Keep in mind that Battery check is only available for Termux users.
-also termux is also only for android/termux users. disable those if your not on Termux/Android...
-try using desktopNotificationEnabled instead if your not on termux.""".center(console_width - 2 ), style = "red on black")
-            battery_data = json.loads(battery_status)
-            percentage = battery_data['percentage']
-            console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
-            if percentage < mobileBatteryStopLimit:
-                break
+        if mobileBatteryCheckEnabled:
+            while True:
+                time.sleep(batteryCheckSleepTime)
+                try:
+                    battery_status = os.popen("termux-battery-status").read()
+                except Exception as e:
+                    console.print(f"""-system[0] Battery check failed!!""".center(console_width - 2 ), style = "red on black")
+                battery_data = json.loads(battery_status)
+                percentage = battery_data['percentage']
+                console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
+                if percentage < int(mobileBatteryStopLimit):
+                    break
+        else:
+            while True:
+                time.sleep(desktopBatteryCheckSleepTime)
+                try:
+                    battery = psutil.sensors_battery()
+                    if battery is not None:
+                        print(percentage)
+                        percentage = int(battery.percent)
+                        console.print(f"-system[0] Current battery •> {percentage}".center(console_width - 2 ), style = "blue on black")
+                        if percentage < int(mobileBatteryStopLimit):
+                            break
+                except Exception as e:
+                    console.print(f"""-system[0] Battery check failed!!.""".center(console_width - 2 ), style = "red on black")
     except Exception as e:
         print("battery check", e)
     os._exit(0)
-if mobileBatteryCheckEnabled:
+if mobileBatteryCheckEnabled or desktopBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 #For emoji names
@@ -329,7 +353,42 @@ def get_channel_name(channel):
     if isinstance(channel, discord.DMChannel):
         return "owo DMs"
     return channel.name
-    
+
+#captcha popup desktop    
+def show_popup(msg, username, channelname, captchatype):
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    # Calculate popup window position
+    popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
+    popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
+    x_position = (screen_width - popup_width) // 2
+    y_position = (screen_height - popup_height) // 2
+    # Create popup window
+    popup = tk.Toplevel(root)
+    popup.title("OwO-dusk notifier")
+    popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
+    # Set custom icon
+    icon_path = "imgs/logo.png"  # Path to your icon image file
+    icon = PhotoImage(file=icon_path)
+    popup.iconphoto(True, icon)  # True indicates the icon is for the entire window
+    # Dark mode style
+    popup.configure(bg="#2B2B2B")  # Set background color to dark gray
+    popup.option_add("*TLabel*foreground", "white")  # Set text color to white
+    # Message label
+    label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+    label = tk.Label(popup, text=label_text, wraplength=popup_width - 40, justify="left", padx=20, pady=20, bg="#2B2B2B", fg="white")
+    label.pack(fill="both", expand=True)
+    button = tk.Button(popup, text="OK", command=popup.destroy)
+    button.pack(pady=10)
+    # Make the popup window appear on top and grab focus
+    popup.grab_set()
+    popup.focus_set()
+    popup.lift()
+    # Run the popup window
+    popup.wait_window()
+
 # CAPTCHA NOTIFIER {TERMUX}
 
 def run_system_command(command, timeout, retry=False, delay=5):
@@ -1302,8 +1361,9 @@ class MyClient(discord.Client):
             dwebhook.send(embed=embed1, username='uwu bot') 
         await asyncio.sleep(random.uniform(2.69,3.69))
         self.justStarted = False
-        await asyncio.sleep(random.uniform(10, 30)) 
-        self.delayCheck.start()
+        await asyncio.sleep(random.uniform(10, 30))
+        if not skipSpamCheck:
+            self.delayCheck.start()
         #self.sleep = True
         #print("rr")
              
@@ -1390,6 +1450,8 @@ class MyClient(discord.Client):
                     )
                 if captchaConsoleEnabled:
                     run_system_command(captchaConsoleContent, timeout=7, retry=False)
+                if desktopPopup:
+                    show_popup(captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType)
                 if self.webSend == False and websiteEnabled:
                     try:
                         if list_captcha[1] in message.content:
@@ -1470,6 +1532,8 @@ class MyClient(discord.Client):
                     app_icon = None,
                     timeout = 15,
                     )
+            if desktopPopup:
+                show_popup(bannedPopupMsg,self.user.name,self.captcha_channel_name,"banned")
             console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
             return
         if message.channel.id == self.channel_id and "**You must accept these rules to use the bot!**" in message.content.lower():
@@ -1492,7 +1556,7 @@ class MyClient(discord.Client):
                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                     #await self.cm.send(f"{setprefix}inventory")
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}inventory", typing=typingIndicator)
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}inv", typing=typingIndicator)
                     console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "Cyan on black")
                     if webhookUselessLog:
                         webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..")
@@ -1971,5 +2035,4 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
         run_system_command(f"termux-notification -c '{token_len} Tokens Recieved! Thanks for putting your trust on OwO-Dusk :>'", timeout=5, retry=True)
     if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
-    #print(f"https://discord.com/api/webhooks/{webhookChannel}/{webhook_url.split('/')[-1]}")
     run_bots(tokens_and_channels)
