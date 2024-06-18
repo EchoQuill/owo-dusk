@@ -21,7 +21,6 @@ import aiohttp
 import ctypes
 import string
 import shutil
-import psutil
 import time
 import json
 import sys
@@ -136,7 +135,7 @@ if desktopNotificationEnabled:
         print("Queue module in queue imported successfully.")
     except ImportError as e:
         print(f"ImportError: {e}")
-        
+
 if desktopAudioPlayer:
     try_import_or_install("playsound3")
     # Import playsound from playsound3
@@ -154,7 +153,15 @@ if desktopPopup:
         print("messagebox module in tkinter imported successfully.")
     except ImportError as e:
         print(f"ImportError: {e}")
-        
+
+if desktopBatteryCheckEnabled:
+    try_import_or_install("psutil")
+    try:
+        import psutil
+        print("psutil imported successfully")
+    except Exception as e:
+        print(f"ImportError: {e}")
+    
 webhookEnabled = config["webhook"]["enabled"]
 if webhookEnabled:
     webhook_url = config["webhook"]["webhookUrl"]
@@ -350,7 +357,7 @@ def webhookSender(msg, desc=None, channel_id=None, plain_text_msg=None):
 def count_line_breaks(text):
     line_breaks = text.count('\n')
     return line_breaks
-   
+
 # Get dm or channel name
 def get_channel_name(channel):
     if isinstance(channel, discord.DMChannel):
@@ -361,7 +368,7 @@ popup_queue = Queue()
 def show_popup_thread():
     while True:
         msg, username, channelname, captchatype = popup_queue.get()
-        
+
         popup = tk.Toplevel()
 
         # Set custom icon
@@ -419,10 +426,10 @@ def run_system_command(command, timeout, retry=False, delay=5):
     # Create and start a thread to execute the command
     thread = threading.Thread(target=target)
     thread.start()
-    
+
     # Wait for the thread to finish, with a timeout
     thread.join(timeout)
-    
+
     # If the thread is still alive after the timeout, terminate it
     if thread.is_alive():
         console.print(f"-error[0] {command} command failed!".center(console_width - 2 ), style = "red on black")
@@ -430,7 +437,7 @@ def run_system_command(command, timeout, retry=False, delay=5):
             console.print(f"-system[0] Retrying '{command}' after {delay}s".center(console_width - 2 ), style = "blue on black")
             time.sleep(delay)
             run_system_command(command, timeout, retry=False)
-        
+
 #-------------
 
 
@@ -609,7 +616,7 @@ class MyClient(discord.Client):
             self.lastcmd = "daily"
             self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
             self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
-        
+
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
                 int(self.time_until_12am_pst.total_seconds() // 3600),
                 int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
@@ -708,7 +715,7 @@ class MyClient(discord.Client):
                 print(e)
         else:
             await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
-            
+
     #pray/curse
     # QuestsList = [userid,messageChannel,guildId, [questType,questsProgress]]
     @tasks.loop()
@@ -1140,7 +1147,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
-            
+
      # emoteTo {Quest}
     @tasks.loop()
     async def emoteTo(self):
@@ -1286,7 +1293,7 @@ class MyClient(discord.Client):
         self.invCheck = False
         #-------
         self.gambleTotal = gambleAllottedAmount
-        
+
         # List for running loops randomly
         self.task_methods = []
         # Starting hunt/battle loop
@@ -1384,7 +1391,7 @@ class MyClient(discord.Client):
             self.delayCheck.start()
         #self.sleep = True
         #print("rr")
-             
+
 #----------ON MESSAGE----------#
     async def on_message(self, message):
         if not self.on_ready_dn:
@@ -1417,7 +1424,7 @@ class MyClient(discord.Client):
                     #print("looping while")
                 print(captchas , captchaAnswers)
                 self.webInt = None
-                    
+
                 self.captchaSolver.stop()
                 self.webSend = False
                 print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
@@ -2041,7 +2048,7 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta on black' )
-    
+
     if desktopNotificationEnabled:
         notification.notify(
             title = f'{token_len} Tokens recieved!',
