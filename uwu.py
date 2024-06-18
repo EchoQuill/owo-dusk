@@ -127,10 +127,13 @@ def try_import_or_install(package_name):
             print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
 if desktopNotificationEnabled:
     try_import_or_install("plyer")
+    try_import_or_install("queue")
     # Import notification from plyer
     try:
         from plyer import notification
         print("Notification module in plyer imported successfully.")
+        from queue import Queue
+        print("Queue module in queue imported successfully.")
     except ImportError as e:
         print(f"ImportError: {e}")
         
@@ -353,41 +356,56 @@ def get_channel_name(channel):
     if isinstance(channel, discord.DMChannel):
         return "owo DMs"
     return channel.name
-
+popup_queue = Queue()
 #captcha popup desktop    
-def show_popup(msg, username, channelname, captchatype):
-    root = tk.Tk()
-    root.withdraw()  # Hide the main window
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    # Calculate popup window position
-    popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
-    popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
-    x_position = (screen_width - popup_width) // 2
-    y_position = (screen_height - popup_height) // 2
-    # Create popup window
-    popup = tk.Toplevel(root)
-    popup.title("OwO-dusk notifier")
-    popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
-    # Set custom icon
-    icon_path = "imgs/logo.png"  # Path to your icon image file
-    icon = PhotoImage(file=icon_path)
-    popup.iconphoto(True, icon)  # True indicates the icon is for the entire window
-    # Dark mode style
-    popup.configure(bg="#2B2B2B")  # Set background color to dark gray
-    popup.option_add("*TLabel*foreground", "white")  # Set text color to white
-    # Message label
-    label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
-    label = tk.Label(popup, text=label_text, wraplength=popup_width - 40, justify="left", padx=20, pady=20, bg="#2B2B2B", fg="white")
-    label.pack(fill="both", expand=True)
-    button = tk.Button(popup, text="OK", command=popup.destroy)
-    button.pack(pady=10)
-    # Make the popup window appear on top and grab focus
-    popup.grab_set()
-    popup.focus_set()
-    popup.lift()
-    # Run the popup window
-    popup.wait_window()
+def show_popup_thread():
+    while True:
+        msg, username, channelname, captchatype = popup_queue.get()
+        
+        popup = tk.Toplevel()
+
+        # Set custom icon
+        icon_path = "imgs/logo.png"  # Path to your icon image file
+        icon = PhotoImage(file=icon_path)
+        popup.iconphoto(True, icon)  # True indicates the icon is for the entire window
+
+        # Dark mode style
+        popup.configure(bg="#2B2B2B")  # Set background color to dark gray
+
+        # Determine screen dimensions
+        screen_width = popup.winfo_screenwidth()
+        screen_height = popup.winfo_screenheight()
+
+        # Calculate popup window position
+        popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
+        popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
+        x_position = (screen_width - popup_width) // 2
+        y_position = (screen_height - popup_height) // 2
+
+        # Set geometry and position
+        popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
+        popup.title("Popup Title")
+
+        # Message label
+        label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+        label = tk.Label(popup, text=label_text, wraplength=popup_width - 40, justify="left", padx=20, pady=20, bg="#2B2B2B", fg="white")
+        label.pack(fill="both", expand=True)
+
+        # OK button
+        button = tk.Button(popup, text="OK", command=popup.destroy)
+        button.pack(pady=10)
+
+        # Make the popup window appear on top and grab focus
+        popup.grab_set()
+        popup.focus_set()
+        popup.lift()
+
+        # Run the main loop for the popup window
+        popup.mainloop()
+
+# Start the tkinter popup thread
+popup_thread = threading.Thread(target=show_popup_thread)
+popup_thread.start()
 
 # CAPTCHA NOTIFIER {TERMUX}
 
@@ -1451,7 +1469,7 @@ class MyClient(discord.Client):
                 if captchaConsoleEnabled:
                     run_system_command(captchaConsoleContent, timeout=7, retry=False)
                 if desktopPopup:
-                    show_popup(captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType)
+                     popup_queue.put((captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType))
                 if self.webSend == False and websiteEnabled:
                     try:
                         if list_captcha[1] in message.content:
@@ -1533,7 +1551,7 @@ class MyClient(discord.Client):
                     timeout = 15,
                     )
             if desktopPopup:
-                show_popup(bannedPopupMsg,self.user.name,self.captcha_channel_name,"banned")
+                popup_queue.put((bannedPopupMsg,self.user.name,self.captcha_channel_name,"banned"))
             console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
             return
         if message.channel.id == self.channel_id and "**You must accept these rules to use the bot!**" in message.content.lower():
