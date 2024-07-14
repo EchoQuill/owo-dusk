@@ -1,6 +1,5 @@
 # Written by EchoQuill
 # Make sure to star the github page.
-
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta, timezone
@@ -638,41 +637,49 @@ class MyClient(discord.Client):
         # self.rPrevTime - prev command time - [time.time()]
         # self.rTime - convert to float
         # order = 0=hb,1=pc,2=owo
-        self.rCurrentTime = time.time()
-        self.rTime[0],self.rTime[1],self.rTime[2] = self.rCurrentTime - self.rPrevTime[0], self.rCurrentTime - self.rPrevTime[1], self.rCurrentTime - self.rPrevTime[2]
-        if self.rTime[0] >= 20 and huntBattleR:
-            if autoHunt:
+        try:
+            self.rCurrentTime = time.time()
+            try:
+                self.rTime[0] = self.rCurrentTime - self.rPrevTime[0]
+                self.rTime[1] = self.rCurrentTime - self.rPrevTime[1]
+                self.rTime[2] = self.rCurrentTime - self.rPrevTime[2]
+            except:
+                pass
+            if (autoBattle or autoHunt) and huntBattleR and self.rTime[0] >= 20:
+                if autoHunt:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    if useShortForm:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                    self.rPrevTime[0] = time.time()
+                if autoBattle:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    if useShortForm:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
+                    console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
+                    self.rPrevTime[0] = time.time()
+            if prayCurseR and (autoPray or autoCurse) and self.rTime[1] >= 305:
                 await asyncio.sleep(random.uniform(0.4,0.8))
-                if useShortForm:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
+                    self.rPrevTime[1] = time.time()
+                    console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                self.rPrevTime[0] = time.time()
-            if autoBattle:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                if useShortForm:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
-                else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
-                console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
-                self.rPrevTime[0] = time.time()
-        if self.rTime[1] >= 305 and prayCurseR:
-            await asyncio.sleep(random.uniform(0.4,0.8))
-            if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
-                self.rPrevTime[1] = time.time()
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}")
+                    self.rPrevTime[1] = time.time()
                 console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
-            else:
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}")
-                self.rPrevTime[1] = time.time()
-            console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
-        if self.rTime[2] >= 15 and owoR:
-            await asyncio.sleep(random.uniform(0.4,0.8))
-            await self.sendCommands(channel=self.cm, message="owo")
-            console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
-            self.rPrevTime[2] = time.time()
-        pass
+            if owoR and autoOwo and self.rTime[2] >= 15:
+                await asyncio.sleep(random.uniform(0.4,0.8))
+                await self.sendCommands(channel=self.cm, message="owo")
+                console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
+                self.rPrevTime[2] = time.time()
+        except Exception as e:
+            print(e)
+        
     #daily
     @tasks.loop()
     async def send_daily(self):
@@ -1474,10 +1481,10 @@ class MyClient(discord.Client):
             return
         # Start Stop
         if message.author.id == self.user.id and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
-            print(f'stopping {self.user}')
+            console.print(f"-{self.user}[+] Stopping...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = True
         if message.author.id == self.user.id and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
-            print(f'starting {self.user}')
+            console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = False
         # Reaction bot
         if owoR and message.author.id == 519287796549156864 and "**OwO**" in message.content and message.channel.id == self.channel_id:
