@@ -645,38 +645,41 @@ class MyClient(discord.Client):
                 self.rTime[2] = self.rCurrentTime - self.rPrevTime[2]
             except:
                 pass
-            if (autoBattle or autoHunt) and huntBattleR and self.rTime[0] >= 20:
-                if autoHunt:
+            if (autoBattle or autoHunt) and huntBattleR and self.rTime[0] != None:
+                if self.rTime[0] >= 20:
+                    if autoHunt:
+                        await asyncio.sleep(random.uniform(0.4,0.8))
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                        console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                        self.rPrevTime[0] = time.time()
+                    if autoBattle:
+                        await asyncio.sleep(random.uniform(0.4,0.8))
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
+                        console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
+                        self.rPrevTime[0] = time.time()
+            if prayCurseR and (autoPray or autoCurse) and self.rTime[1] != None:
+                if self.rTime[1] >= 305:
                     await asyncio.sleep(random.uniform(0.4,0.8))
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                    if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
+                        self.rPrevTime[1] = time.time()
+                        console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                     else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                    console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                    self.rPrevTime[0] = time.time()
-                if autoBattle:
-                    await asyncio.sleep(random.uniform(0.4,0.8))
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
-                    else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
-                    console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
-                    self.rPrevTime[0] = time.time()
-            if prayCurseR and (autoPray or autoCurse) and self.rTime[1] >= 305:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
-                    self.rPrevTime[1] = time.time()
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}")
+                        self.rPrevTime[1] = time.time()
                     console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
-                else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse}")
-                    self.rPrevTime[1] = time.time()
-                console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
-            if owoR and autoOwo and self.rTime[2] >= 15:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                await self.sendCommands(channel=self.cm, message="owo")
-                console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
-                self.rPrevTime[2] = time.time()
+            if owoR and autoOwo and self.rTime[2] != None:
+                if self.rTime[2] >= 15:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    await self.sendCommands(channel=self.cm, message="owo")
+                    console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
+                    self.rPrevTime[2] = time.time()
         except Exception as e:
             print(e)
         
