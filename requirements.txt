@@ -18,9 +18,9 @@ mdurl==0.1.2
 multidict==6.0.5
 protobuf==5.26.1
 Pygments==2.18.0
-requests==2.31.0
+requests==2.32.0
 rich==13.7.1
 tzlocal==5.2
-urllib3==2.2.1
+urllib3==2.2.2
 Werkzeug==3.0.3
 yarl==1.9.4
