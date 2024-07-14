@@ -97,6 +97,10 @@ banConsoleEnabled = config["console"]["runConsoleCommandOnBan"]
 desktopPopup = config["desktop"]["popup"]["enabled"]
 captchaPopupMsg = config["desktop"]["popup"]["captchaContent"]
 bannedPopupMsg = config["desktop"]["popup"]["bannedContent"]
+# Chat commands
+chatPrefix = config["textCommands"]["prefix"]
+chatCommandToStop = config["textCommands"]["commandToStopUser"]
+chatCommandToStart = config["textCommands"]["commandToStartUser"]
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
 if banConsoleEnabled:
@@ -511,15 +515,15 @@ class MyClient(discord.Client):
         # await sendCommands(channel=channel, message="")
             if typingIndicator:
                 async with channel.typing():
-                    if self.f != True and self.sleep != True:
+                    if self.f != True and self.sleep != True and self.sleep2 != True:
                         await channel.send(message)
                     elif bypass and self.f != True:
                         await channel.send(message)
                     elif captcha:
                         await channel.send(message)
-            elif self.f != True and self.sleep != True:
+            elif self.f != True and self.sleep != True and self.sleep2 != True:
                 await channel.send(message)
-            elif bypass and self.f != True:
+            elif bypass and self.f != True and self.sleep2 != True:
                 await channel.send(message)
             elif captcha:
                 await channel.send(message)
@@ -1338,6 +1342,7 @@ class MyClient(discord.Client):
         self.zooCheckRecieved = False
         self.captchaType = None
         self.sleep = False
+        self.sleep2 = False
         self.changedPrefix = False
         # AutoGems
         self.gemHuntCnt = None
@@ -1468,12 +1473,12 @@ class MyClient(discord.Client):
         if message.author.id not in [408785106942164992, 519287796549156864, self.user.id]:
             return
         # Start Stop
-        if message.author.id == self.user.id and ".stop" in message.content.lower():
+        if message.author.id == self.user.id and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
             print(f'stopping {self.user}')
-            self.sleep = True
-        if message.author.id == self.user.id and ".start" in message.content.lower():
+            self.sleep2 = True
+        if message.author.id == self.user.id and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
             print(f'starting {self.user}')
-            self.sleep = False
+            self.sleep2 = False
         # Reaction bot
         if owoR and message.author.id == 519287796549156864 and "**OwO**" in message.content and message.channel.id == self.channel_id:
             if self.user.name in message.content or f"<@{self.user.id}>" in message.content:

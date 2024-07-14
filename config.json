@@ -4,20 +4,22 @@
   "offlineStatus": false,
   "website": {
     "enabled": false,
-    "port": 6969
+    "port": 1200
   },
   "commands": [
     {
       "hunt": false,
       "battle": false,
+      "useReactionBotCooldowns": false,
       "delayBetweenCommands": [0.7266, 1.9439],
-      "minCooldown": 15,
-      "maxCooldown": 17,
+      "minCooldown": 12,
+      "maxCooldown": 16,
       "useShortForm": false
     },
     {
       "pray": false,
       "curse": false,
+      "useReactionBotCooldowns": false,
       "minCooldown": 300,
       "maxCooldown": 350,
       "userToPrayOrCurse": null
@@ -26,24 +28,24 @@
       "sell": false,
       "sacrifice": false,
       "minCooldown": 200,
-      "maxCooldown": 250,
+      "maxCooldown": 500,
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
     {
       "slots": false,
       "coinflip": false,
-      "cfOptions": ["heads", "tails"],
+      "cfOptions": ["tails"],
       "minCooldown": 15,
       "maxCooldown": 20,
       "doubleOnLose": false,
-      "allottedAmount": 4000,
-      "startValue": 1
+      "allottedAmount": 40000,
+      "startValue": 200
     },
     {
       "quest": false,
       "doEvenIfDisabled": false,
       "askForHelp": false,
-      "askForHelpChannel": 10029829291
+      "askForHelpChannel": 465978474163601436
     },
     {
       "lottery": false,
@@ -59,7 +61,7 @@
     },
     {
       "cookie": false,
-      "userid": 408785106942165000
+      "userid": 408785106942164992
     },
     {
       "sleep": false,
@@ -78,10 +80,20 @@
       "itemsToBuy": [1, 2, 3],
       "minCooldown": 10,
       "maxCooldown": 16
+    },
+    {
+      "sendOwo": false,
+      "useReactionBotCooldowns": false,
+      "minCooldown": 10,
+      "maxCooldown": 13
     }
   ],
+  "textCommands": {
+    "prefix": ".",
+    "commandToStopUser": "stop",
+    "commandToStartUser": "start"
+  },
   "autoDaily": false,
-  "sendOwo": false,
   "autoUse": {
     "autoGem": {
       "order": {
@@ -152,7 +164,7 @@
     },
     "playAudio": {
       "enabled": false,
-      "path": "path/filename.extention, for example 'audiofile.mp3', audiofile.mp3 should be in owo-cusk folder.. "
+      "path": "example path:- C:\\Users\\Admin\\Music\\music.mp3"
     },
     "batteryCheck": {
       "enabled": false,
