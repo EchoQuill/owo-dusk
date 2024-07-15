@@ -65,7 +65,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifs for both. And we also suppo
   <br>
   <p>Mobile CLI screenshot</p>
   <br>
-  <center><img src="imgs/desktop_cli.png" width="500" height="300"></center>
+  <center><img src="imgs/desktop_cli.png" width="800" height="500"></center>
   <br>
   <p>Desktop CLI screenshot</p>
   <br>
