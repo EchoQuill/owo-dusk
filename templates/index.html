@@ -11,7 +11,13 @@
             background-color: black; /* Change the background color to black */
             text-align: center; /* Center-align content */
             font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
+
         p {
             color: rgb(220, 150, 253);
         }
@@ -25,15 +31,27 @@
             font-family: Arial, Helvetica, sans-serif;
             margin-bottom: 12px;
         }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #000000; /* Background color of the navbar */
+            padding: 10px 20px;
+            border-bottom: 2px solid rgb(156, 69, 255); /* Border color */
+        }
 
         /* Style for captcha boxes */
         .box {
-            border: 2px solid #1e0025; /* Blue border */
-            width: 300px; /* Width of the box */
+            border: 1px solid #e384f8; /* Border color */
+            display: inline-block; /* Allow the box to expand with content */
+            max-width: 90%; /* Set a max width for the box */
+            min-width: 200px;
             padding: 8px; /* Padding inside the box */
             text-align: center; /* Center-align content */
-            margin: 15px auto; /* Center the box on the page */
+            margin: 7px auto; /* Center the box on the page and reduce margin */
             border-radius: 4px;
+            word-wrap: break-word; /* Allow text to wrap within the box */
+            color: rgb(220, 150, 253);
         }
 
         /* Style for the image */
@@ -71,22 +89,66 @@
         }
 
         /* Style for the green text */
-        .red-text {
-            color: #d60000; /* Green color for "no captchas to solve" text */
+        .no-captcha-text {
+            color: #d48ec3; /* Green color for "no captchas to solve" text */
             font-family: Arial, Helvetica, sans-serif;
             margin-top: 2px;
             margin-bottom: 2px;
         }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .icon {
+            height: 40px; /* Adjust the height of the logo */
+            margin-right: 10px;
+        }
+        .lt {
+            color: rgb(219, 140, 255);
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .ltm {
+            color: rgb(150, 150, 150);
+        }
+        .support {
+            margin-left: auto;
+        }
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            color: rgb(211, 115, 255);
+            padding: 10px 0; /* Add some padding to the footer */
+            background-color: black; /* Ensure the footer background matches the page */
+        }
+        @media (max-width: 600px) {
+            .box {
+               width: 90%; /* Width of the box on mobile devices */
+                max-width: 100%; /* Maximum width of the box */
+            }
+        }
     </style>
 </head>
 <body>
+    <nav>
+        <div class="logo">
+            <img class="icon" src="../imgs/logo.png" alt="OwO-Dusk Logo">
+            <span class="lt">OwO-Dusk</span>
+            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: not-allowed;">
+                <span class="ltm">A grinder for owo.</span>
+            </a>
+        </div>
+        <div class="support">
+            <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+                <img src="../imgs/github.png" alt="GitHub Repo" class="icon">
+            </a>
+        </div>
+    </nav>
     <!-- Page Title -->
-    <h2>OwO Dusk</h2>
-    <h3>Captcha Logger</h3>
-    <hr color= "purple"/>
     {% if no_captchas %}
         <!-- Display green text if no captchas are present -->
-        <p class="red-text">No captchas to solve</p>
+        <p class="no-captcha-text">No captchas to solve</p>
     {% else %}
         <!-- Loop through captcha data and render boxes -->
         {% for captcha in captchas %}
@@ -111,6 +173,10 @@
             </div>
         {% endfor %}
     {% endif %}
+    <div class="footer">
+        <hr color= "#750090"/>
+        <p>All captchas should show up here, make sure to solve them!</p>
+    </div>
     <!-- Add the auto-refresh script just before the closing body tag -->
     <script>
         // Set an interval to refresh the page every 15 seconds
@@ -120,5 +186,3 @@
     </script>
 </body>
 </html>
-
-<!--Edited by Maksotm, Made by EchoQuill.-->
