@@ -442,7 +442,7 @@ def run_system_command(command, timeout, retry=False, delay=5):
 
 
 #APP
-app = Flask(__name__)
+app = Flask(__name__, static_folder="imgs")
 
 # List to store captcha data
 captchas = []
@@ -455,11 +455,12 @@ def add_captcha():
     captcha_type = data.get('type')
     url = data.get('url')
     username = data.get('username')
+    timestamp = data.get('timestamp')
 
     # Add captcha to the list
     temp_index = len(captchas)
     captchaAnswers.append(None)
-    captchas.append({'type': captcha_type, 'url': url, 'username': username})
+    captchas.append({'type': captcha_type, 'url': url, 'username': username, 'timestamp': timestamp})
     print(captchas)
     print(captchaAnswers)    
     # Return a response
@@ -471,10 +472,10 @@ def index():
     try:
         if not captchas:
             # Render the green text if there are no captchas
-            return render_template('index.html', no_captchas=True)
+            return render_template('index.html', no_captchas=True, version=ver_check)
         else:
             # Render the page with captcha boxes
-            return render_template('index.html', captchas=captchas)
+            return render_template('index.html', captchas=captchas, version=ver_check)
     except Exception as e:
         print(f"error in index(): <index.html> :-> {e}")
 
@@ -1651,14 +1652,16 @@ class MyClient(discord.Client):
                             self.dataToSend = {
                                 "type": "link",
                                 "url": "https://owobot.com/captcha",
-                                "username": self.user.name
+                                "username": self.user.name,
+                                "timestamp": datetime.now().isoformat(timespec='seconds')
                             }
                         elif message.attachments:
                             if message.attachments[0].url is not None:
                                 self.dataToSend = {
                                     "type": "image",
                                     "url": str(message.attachments[0].url),
-                                    "username": self.user.name
+                                    "username": self.user.name,
+                                    "timestamp": datetime.now().isoformat(timespec='seconds')
                                 }
                                 self.captchaSolver.start()
                                 self.webSend = True

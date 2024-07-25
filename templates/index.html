@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OwO Dusk</title>
+    <title>OwO Dusk - v{{ version }}</title>
     <style>
         /* Style for the page */
         body {
@@ -16,21 +16,25 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden; /* Hide horizontal overflow */
         }
 
         p {
             color: rgb(220, 150, 253);
         }
+
         h2 {
             color: rgb(181, 117, 255); /* Change the title color to purple */
             font-family: Arial, Helvetica, sans-serif;
         }
+
         /* Style for title and subheading */
         h3 {
             color: rgb(212, 212, 212); /* Purple color for subheading */
             font-family: Arial, Helvetica, sans-serif;
             margin-bottom: 12px;
         }
+
         nav {
             display: flex;
             justify-content: space-between;
@@ -38,9 +42,9 @@
             background-color: #000000; /* Background color of the navbar */
             padding: 10px 20px;
             border-bottom: 2px solid rgb(156, 69, 255); /* Border color */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
         }
 
-        /* Style for captcha boxes */
         .box {
             border: 1px solid #e384f8; /* Border color */
             display: inline-block; /* Allow the box to expand with content */
@@ -52,20 +56,24 @@
             border-radius: 4px;
             word-wrap: break-word; /* Allow text to wrap within the box */
             color: rgb(220, 150, 253);
+            overflow: hidden; /* Hide any overflowing content */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
         }
 
-        /* Style for the image */
         .box img {
-            width: 100px; /* Set width of the image */
-            height: 100px; /* Set height of the image */
+            max-width: 100%; /* Ensure the image scales down with its container */
+            max-height: 300px; /* Set a maximum height for the image */
+            height: auto; /* Maintain the aspect ratio */
             display: block;
             margin: 0 auto; /* Center the image */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
         }
 
         /* Style for input and button */
         .input-container {
             display: flex; /* Use flexbox for side-by-side layout */
             margin-top: 9px; /* Margin above the container */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
         }
 
         /* Style for the input bar */
@@ -76,6 +84,7 @@
             background-color: black;
             border-radius: 5px;
             color: #5B2681;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
         }
 
         /* Style for the send button */
@@ -92,17 +101,26 @@
         .no-captcha-text {
             color: #d48ec3; /* Green color for "no captchas to solve" text */
             font-family: Arial, Helvetica, sans-serif;
-            margin-top: 2px;
+            margin-top: 50px;
             margin-bottom: 2px;
+            font-size: 20px;
         }
+
         .logo {
             display: flex;
             align-items: center;
         }
+
         .icon {
             height: 40px; /* Adjust the height of the logo */
             margin-right: 10px;
         }
+
+        .discord-icon {
+            height: 30px; /* Adjust the height of the Discord logo */
+            margin-right: 10px;
+        }
+
         .lt {
             color: rgb(219, 140, 255);
             font-size: 24px;
@@ -112,9 +130,13 @@
         .ltm {
             color: rgb(150, 150, 150);
         }
+
         .support {
             margin-left: auto;
+            display: flex; /* Use flexbox to align logos side by side */
+            align-items: center;
         }
+
         .footer {
             margin-top: auto;
             text-align: center;
@@ -122,9 +144,10 @@
             padding: 10px 0; /* Add some padding to the footer */
             background-color: black; /* Ensure the footer background matches the page */
         }
+
         @media (max-width: 600px) {
             .box {
-               width: 90%; /* Width of the box on mobile devices */
+                width: 90%; /* Width of the box on mobile devices */
                 max-width: 100%; /* Maximum width of the box */
             }
         }
@@ -133,15 +156,18 @@
 <body>
     <nav>
         <div class="logo">
-            <img class="icon" src="../imgs/logo.png" alt="OwO-Dusk Logo">
+            <img class="icon" src="{{ url_for('static', filename='logo.png') }}" alt="OwO-Dusk Logo">
             <span class="lt">OwO-Dusk</span>
-            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: not-allowed;">
-                <span class="ltm">A grinder for owo.</span>
+            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: help;">
+                <span class="ltm">A grinder for owo. v{{ version }}</span>
             </a>
         </div>
         <div class="support">
-            <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
-                <img src="../imgs/github.png" alt="GitHub Repo" class="icon">
+            <a href="https://github.com/EchoQuill" target="_blank" rel="noopener noreferrer">
+                <img src="{{ url_for('static', filename='github.png') }}" alt="GitHub Repo" class="icon">
+            </a>
+            <a href="https://discord.gg/pyvKUh5mMU" target="_blank" rel="noopener noreferrer">
+                <img src="{{ url_for('static', filename='discord.png') }}" alt="Discord" class="discord-icon">
             </a>
         </div>
     </nav>
@@ -149,15 +175,18 @@
     {% if no_captchas %}
         <!-- Display green text if no captchas are present -->
         <p class="no-captcha-text">No captchas to solve</p>
+        <p>Captchas will show up here when owo gives out one to any of the grinder accounts.<br>Make sure to solve them!</p>
     {% else %}
         <!-- Loop through captcha data and render boxes -->
         {% for captcha in captchas %}
+            <br>
             <div class="box">
                 {% if captcha.type == 'image' %}
                     <!-- Display image captcha -->
                     <img src="{{ captcha.url }}" alt="Captcha Image">
                     <!-- Username (placed before the form) -->
                     <p>User: {{ captcha.username }}</p>
+                    <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
                     <!-- Form to submit the captcha -->
                     <form action="/submit" method="POST" class="input-container">
                         <input type="text" name="text" placeholder="Type here...">
@@ -169,13 +198,55 @@
                     <p>Captcha Link: <a href="{{ captcha.url }}">{{ captcha.url }}</a></p>
                     <!-- Username -->
                     <p>User: {{ captcha.username }}</p>
+                    <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
                 {% endif %}
             </div>
+            <script>
+                // Retrieve timestamp from server (passed as a variable)
+                var timestamp2 = "{{ captcha.timestamp }}"; // Ensure this is in the correct ISO format
+
+                // Debugging: Log the timestamp to the console
+                console.log("Timestamp from server:", timestamp2);
+
+                function startCountdown(elementId, startTime) {
+                    // Validate and parse startTime
+                    var startTimestamp = new Date(startTime).getTime();
+                    if (isNaN(startTimestamp)) {
+                        console.error("Invalid countdown date:", startTime);
+                        document.getElementById(elementId).innerHTML = "Invalid " + startTime;
+                        return;
+                    }
+
+                    var countDownDate = startTimestamp + 10 * 60 * 1000; // 10 minutes from startTime
+
+                    // Update the count down every 1 second
+                    var x = setInterval(function() {
+                        var now = new Date().getTime();
+                        var distance = countDownDate - now;
+
+                        // Time calculations for minutes and seconds
+                        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        // Output the result in an element with id="time-left-{{ loop.index0 }}"
+                        document.getElementById(elementId).innerHTML = "Time left until cross: " + minutes + "m " + seconds + "s ";
+
+                        // If the count down is over, write some text 
+                        if (distance < 0) {
+                            clearInterval(x);
+                            document.getElementById(elementId).innerHTML = "Time left until cross: EXPIRED";
+                        }
+                    }, 1000);
+                }
+
+                // Start the countdown for this captcha
+                startCountdown("time-left-{{ loop.index0 }}", timestamp2);
+            </script>
         {% endfor %}
     {% endif %}
     <div class="footer">
-        <hr color= "#750090"/>
-        <p>All captchas should show up here, make sure to solve them!</p>
+        <hr color="#750090"/>
+        <p>Grinder made by EchoQuill. Do star our repo on GitHub!</p>
     </div>
     <!-- Add the auto-refresh script just before the closing body tag -->
     <script>
