@@ -1,6 +1,11 @@
 # Written by EchoQuill
 # Make sure to star the github page.
 
+# add quest support to all of these
+# dble check stop at quest
+# don't forget hunt and battle cooldowns!!!
+# rough:-
+# 4) check quest part
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta, timezone
@@ -63,6 +68,7 @@ offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
 ver_check = requests.get(ver_check_url).text.strip()
+lock = threading.Lock()
 typingIndicator = config["typingIndicator"]
 list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termux"]["batteryCheck"]["enabled"]
@@ -444,51 +450,44 @@ def run_system_command(command, timeout, retry=False, delay=5):
 #APP
 app = Flask(__name__, static_folder="imgs")
 
-# List to store captcha data
 captchas = []
 captchaAnswers = []
-# API endpoint to add captchas
+
 @app.route('/add_captcha', methods=['POST'])
 def add_captcha():
-    # Get data from API request
     data = request.get_json()
     captcha_type = data.get('type')
     url = data.get('url')
     username = data.get('username')
     timestamp = data.get('timestamp')
 
-    # Add captcha to the list
-    temp_index = len(captchas)
-    captchaAnswers.append(None)
-    captchas.append({'type': captcha_type, 'url': url, 'username': username, 'timestamp': timestamp})
+    with lock:
+        temp_index = len(captchas)
+        captchaAnswers.append(None)
+        captchas.append({'type': captcha_type, 'url': url, 'username': username, 'timestamp': timestamp})
     print(captchas)
     print(captchaAnswers)    
-    # Return a response
     return jsonify({'status': temp_index})
 
-# Render the main page
 @app.route('/', methods=['GET'])
 def index():
     try:
-        if not captchas:
-            # Render the green text if there are no captchas
-            return render_template('index.html', no_captchas=True, version=ver_check)
-        else:
-            # Render the page with captcha boxes
-            return render_template('index.html', captchas=captchas, version=ver_check)
+        with lock:
+            if not captchas:
+                return render_template('index.html', no_captchas=True, version=ver_check)
+            else:
+                return render_template('index.html', captchas=captchas, version=ver_check)
     except Exception as e:
         print(f"error in index(): <index.html> :-> {e}")
 
-# Handle form submission
 @app.route('/submit', methods=['POST'])
 def submit():
-    # Get the text from the input bar
     captcha_ans = request.form.get('text')
     captcha_index = request.form.get('captcha_index', type=int) 
-    captchaAnswers[captcha_index] = captcha_ans
+    with lock:
+        captchaAnswers[captcha_index] = captcha_ans
     print(captcha_ans)
     print(captchaAnswers[captcha_index])
-    # Redirect back to the index page
     return redirect(url_for('index'))
 
 def web_start():
@@ -500,6 +499,7 @@ def web_start():
         app.run(debug=False, use_reloader=False, port=websitePort)
     except Exception as e:
         print(e)
+
 if websiteEnabled:
     try:
         web_thread = threading.Thread(target=web_start)
@@ -1579,18 +1579,19 @@ class MyClient(discord.Client):
             if websiteEnabled and self.webInt != None:
                 print("attempting to pop captcha indirectly")
                 while True:
-                    self.tempListCount = 0
-                    self.popped = False
-                    for i in captchas:
-                        if i == self.tempJsonData:
-                            captchas.pop(self.tempListCount)
-                            captchaAnswers.pop(self.tempListCount)
-                            print("popped captcha indirectly")
-                            self.popped = True
+                    with lock:
+                        self.tempListCount = 0
+                        self.popped = False
+                        for i in captchas:
+                            if i == self.tempJsonData:
+                                captchas.pop(self.tempListCount)
+                                captchaAnswers.pop(self.tempListCount)
+                                print("popped captcha indirectly")
+                                self.popped = True
+                                break
+                            self.tempListCount+=1
+                        if self.popped:
                             break
-                        self.tempListCount+=1
-                    if self.popped:
-                        break
                 print(captchas , captchaAnswers)
                 self.webInt = None
 
