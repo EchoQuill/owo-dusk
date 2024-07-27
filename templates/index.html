@@ -158,7 +158,7 @@
         <div class="logo">
             <img class="icon" src="{{ url_for('static', filename='logo.png') }}" alt="OwO-Dusk Logo">
             <span class="lt">OwO-Dusk</span>
-            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: help;">
+            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: help;" target="_blank">
                 <span class="ltm">A grinder for owo. v{{ version }}</span>
             </a>
         </div>
@@ -195,7 +195,7 @@
                     </form>
                 {% else %}
                     <!-- Display link captcha -->
-                    <p>Captcha Link: <a href="{{ captcha.url }}">{{ captcha.url }}</a></p>
+                    <p>Captcha Link: <a href="{{ captcha.url }}" target="_blank">{{ captcha.url }}</a></p>
                     <!-- Username -->
                     <p>User: {{ captcha.username }}</p>
                     <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
