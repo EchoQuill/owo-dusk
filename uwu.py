@@ -1,16 +1,11 @@
 # Written by EchoQuill
 # Make sure to star the github page.
 
-# add quest support to all of these
-# dble check stop at quest
-# don't forget hunt and battle cooldowns!!!
-# rough:-
-# 4) check quest part
 from flask import Flask, request, render_template, jsonify, redirect, url_for
-from discord.ext import commands, tasks
 from datetime import datetime, timedelta, timezone
-from discord import SyncWebhook
+from discord.ext import commands, tasks
 from rich.console import Console
+from discord import SyncWebhook
 from threading import Thread
 from rich.panel import Panel
 from rich.align import Align
@@ -18,12 +13,12 @@ import discord.errors
 import subprocess
 import threading
 import requests
-import random
 import asyncio
 import logging
 import discord
 import aiohttp
 import ctypes
+import random
 import string
 import shutil
 import time
@@ -130,7 +125,6 @@ def try_import_or_install(package_name):
             print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
 if desktopNotificationEnabled:
     try_import_or_install("plyer")
-    try_import_or_install("queue")
     # Import notification from plyer
     try:
         from plyer import notification
@@ -151,6 +145,7 @@ if desktopAudioPlayer:
 
 if desktopPopup:
     try_import_or_install("tkinter")
+    try_import_or_install("queue")
     try:
         import tkinter as tk
         from tkinter import PhotoImage
@@ -170,7 +165,6 @@ webhookEnabled = config["webhook"]["enabled"]
 if webhookEnabled:
     webhook_url = config["webhook"]["webhookUrl"]
     webhookUselessLog = config["webhook"]["webhookUselessLog"]
-    dwebhook = SyncWebhook.from_url(webhook_url)
     webhookPingId = config["webhook"]["webhookUserIdToPingOnCaptcha"]
     webhookCaptchaChnl = config["webhook"]["webhookCaptchaUrl"]
 else:
@@ -323,40 +317,33 @@ def get_emoji_names(text, emoji_dict=emoji_dict):
     # Get names of the extracted emojis
     emoji_names = [emoji_dict[char] for char in emojis if char in emoji_dict]
     return emoji_names
-# Webhook Logging
-def webhookSender(msg, desc=None, channel_id=None, plain_text_msg=None, colors=None):
-    try:
-        if colors:
-            color = discord.Color(colors)
-        else:
-            color = discord.Color(0x412280)
-        emb = discord.Embed(
-            title=msg,
-            description=desc,
-            color=color
-        )
+#webhook
+async def webhookSender(msg, desc=None, plain_text_msg=None, colors=None):
+    async with aiohttp.ClientSession() as session:
+        try:
+            if colors:
+                color = discord.Color(colors)
+            else:
+                color = discord.Color(0x412280)
+                
+            emb = discord.Embed(
+                title=msg,
+                description=desc,
+                color=color
+            )
+            channel_webhook = discord.Webhook.from_url(webhook_url, session=session)
+                # Send both the embed and plain text message if provided
+            if plain_text_msg:
+                await channel_webhook.send(content=plain_text_msg, embed=emb, username='uwu bot warnings')
+            else:
+                await channel_webhook.send(embed=emb, username='uwu bot warnings')
+        except discord.Forbidden as e:
+            print("Bot does not have permission to execute this command:", e)
+        except discord.NotFound as e:
+            print("The specified command was not found:", e)
+        except Exception as e:
+            print(e)
 
-        if channel_id:
-            # Create a new webhook instance for the specific channel ID
-            channel_webhook_url = f"https://discord.com/api/webhooks/{channel_id}/{webhook_url.split('/')[-1]}"
-            channel_webhook = SyncWebhook.from_url(channel_webhook_url)
-            # Send both the embed and plain text message if provided
-            if plain_text_msg:
-                channel_webhook.send(content=plain_text_msg, embed=emb, username='uwu bot warnings')
-            else:
-                channel_webhook.send(embed=emb, username='uwu bot warnings')
-        else:
-            # Send both the embed and plain text message if provided
-            if plain_text_msg:
-                dwebhook.send(content=plain_text_msg, embed=emb, username='uwu bot warnings')
-            else:
-                dwebhook.send(embed=emb, username='uwu bot warnings')
-    except discord.Forbidden as e:
-        print("Bot does not have permission to execute this command:", e)
-    except discord.NotFound as e:
-        print("The specified command was not found:", e)
-    except Exception as e:
-        print(e)
 
  # Count the number of '\n' characters in the text
 #def count_line_breaks(text):
@@ -546,7 +533,7 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                 console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                    await webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoBattle and huntBattleR:
                 await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
@@ -556,14 +543,14 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                 console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
+                    await webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoOwo and owoR:
                 await asyncio.sleep(random.uniform(0.4,0.8))
                 await self.sendCommands(channel=channel, message="owo")
-                console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
+                console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran OwO.", colors=0x00FFFF)
+                    await webhookSender(f"-{self.user}[+] ran OwO.", colors=0xd7d7ff)
                 self.rPrevTime[2] = time.time()
             if (autoPray or autoCurse) and prayCurseR:
                 await asyncio.sleep(random.uniform(0.4,0.8))
@@ -575,7 +562,7 @@ class MyClient(discord.Client):
                     self.rPrevTime[1] = time.time()
                 console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
+                    await webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
         except Exception as e:
             print(e)
 #----------SENDING COMMANDS----------#
@@ -636,12 +623,12 @@ class MyClient(discord.Client):
             if self.randSleepInt > (100 - sleepRandomness):
                 self.sleep = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
-                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "pale_violet_red1 on black")
                 await asyncio.sleep(self.sleepTime)
-                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "pale_violet_red1 on black")
                 self.sleep = False
             else:
-                console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "plum4 on black")
+                console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "pale_violet_red1 on black")
                 await asyncio.sleep(random.uniform(60,120))
         else:
             await asyncio.sleep(random.uniform(20,40))
@@ -676,7 +663,7 @@ class MyClient(discord.Client):
                             await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                         console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                         if webhookUselessLog:
-                            webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                            await webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
                         self.rPrevTime[0] = time.time()
                     if autoBattle:
                         await asyncio.sleep(random.uniform(0.4,0.8))
@@ -686,7 +673,7 @@ class MyClient(discord.Client):
                             await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                         console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                         if webhookUselessLog:
-                            webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
+                            await webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
                         self.rPrevTime[0] = time.time()
             if prayCurseR and (autoPray or autoCurse) and self.rTime[1] != None:
                 if self.rTime[1] >= 305 and self.f != True and self.sleep != True and self.sleep2 != True:
@@ -700,14 +687,14 @@ class MyClient(discord.Client):
                         self.rPrevTime[1] = time.time()
                     console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                     if webhookUselessLog:
-                        webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
+                        await webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
             if owoR and autoOwo and self.rTime[2] != None:
                 if self.rTime[2] >= 15 and self.f != True and self.sleep != True and self.sleep2 != True:
                     await asyncio.sleep(random.uniform(0.4,0.8))
                     await self.sendCommands(channel=self.cm, message="owo")
-                    console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
+                    console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
                     if webhookUselessLog:
-                        webhookSender(f"-{self.user}[+] ran OwO.", colors=0x00FFFF)
+                        await webhookSender(f"-{self.user}[–] ran OwO", colors=0xd7d7ff)
                     self.rPrevTime[2] = time.time()
         except Exception as e:
             print(e)
@@ -736,7 +723,7 @@ class MyClient(discord.Client):
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
             if webhookUselessLog:
-                webhookSender(f"-{self.user}[+] ran daily", f"next daily in {self.formatted_time}", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[+] ran daily", f"next daily in {self.formatted_time}", colors=0x00FFFF)
             self.lastcmd = "daily"
             await asyncio.sleep(self.total_seconds+random.uniform(30,90))            
         else:
@@ -780,7 +767,7 @@ class MyClient(discord.Client):
                     self.lastHb = self.hb
                     console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                     if webhookUselessLog:
-                        webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.", colors=0xaf00ff)
+                        await webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.", colors=0xaf00ff)
                     if (autoBattle == False or autoHunt == False) and (self.huntQuestValue != None or self.battleQuestValue != None):
                         if autoHunt == False and autoBattle == False:
                             self.tempBattleQuestValue+=1
@@ -874,7 +861,7 @@ class MyClient(discord.Client):
                     self.last_cmd_time = time.time()
                 console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
+                    await webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
                 await asyncio.sleep(random.uniform(prayOrCurseCooldown[0], prayOrCurseCooldown[1]))
             else:
                 await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -894,19 +881,19 @@ class MyClient(discord.Client):
                     if self.gambleCashCheck2[0] == 4:
                         console.print(f"-{self.user}[–] Stopping coinflip ‐ No Cash".center(console_width - 2 ), style = "red on black")
                         if webhookEnabled:
-                            webhookSender(f"-{self.user}[–] Stopping coinflip ‐ No Cash.", colors=0xff0037)
+                            await webhookSender(f"-{self.user}[–] Stopping coinflip ‐ No Cash.", colors=0xff0037)
                         self.send_cf.stop()
                 else:
                     self.gambleCashCheck[0] = self.cfLastAmt
                 if self.cfLastAmt >= 250000:
                     console.print(f"-{self.user}[–] Stopping coinflip ‐ 250k exceeded".center(console_width - 2 ), style = "red on black")
                     if webhookEnabled:
-                        webhookSender(f"-{self.user}[–] Stopping coinflip ‐ 250k exceeded.", colors=0xff0037)
+                        await webhookSender(f"-{self.user}[–] Stopping coinflip ‐ 250k exceeded.", colors=0xff0037)
                     self.send_cf.stop()
                     return
                 elif 0 >= self.gambleTotal:
                     if webhookEnabled:
-                        webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ allotted value exceeded.", colors=0xff0037)
+                        await webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ allotted value exceeded.", colors=0xff0037)
                     console.print(f"-{self.user}[–] Stopping coinflip ‐ allotted value exceeded".center(console_width - 2 ), style = "red on black")
                     self.send_slots.stop()
                     self.send_cf.stop()
@@ -915,7 +902,7 @@ class MyClient(discord.Client):
                 #await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.choice(cfOptions)[0]}")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
+                    await webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
                 console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
                 await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
         except Exception as e:
@@ -933,19 +920,19 @@ class MyClient(discord.Client):
                 if self.gambleCashCheck2[1] == 4:
                     console.print(f"-{self.user}[–] Stopping slots ‐ No Cash".center(console_width - 2 ), style = "red on black")
                     if webhookEnabled:
-                        webhookSender(f"-{self.user}[–] Stopping slots ‐ No Cash.", colors=0xff0037)
+                        await webhookSender(f"-{self.user}[–] Stopping slots ‐ No Cash.", colors=0xff0037)
                     self.send_slots.stop()
             else:
                 self.gambleCashCheck[0] = self.slotsLastAmt
             if self.slotsLastAmt >= 250000:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[–] Stopping slots ‐ 250k exceeded.", colors=0xff0037)
+                    await webhookSender(f"-{self.user}[–] Stopping slots ‐ 250k exceeded.", colors=0xff0037)
                 console.print(f"-{self.user}[–] Stopping slots ‐ 250k exceeded".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 return
             elif 0 >= self.gambleTotal:
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[–] Stopping all Gambling. ‐ allotted value exceeded.", colors=0xff0037)
+                    await webhookSender(f"-{self.user}[–] Stopping all Gambling. ‐ allotted value exceeded.", colors=0xff0037)
                 console.print(f"-{self.user}[–] Stopping all Gambling. ‐ allotted value exceeded".center(console_width - 2 ), style = "red on black")
                 self.send_slots.stop()
                 self.send_cf.stop()
@@ -954,7 +941,7 @@ class MyClient(discord.Client):
             #await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
             await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}")
             if webhookUselessLog:
-                webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
             console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
         else:
@@ -970,9 +957,9 @@ class MyClient(discord.Client):
             #await self.cm.send('owo')
             await self.sendCommands(channel=self.cm, message="owo")
             self.last_cmd_time = time.time()
-            console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
+            console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
             if webhookUselessLog:
-                webhookSender(f"-{self.user}[–] ran OwO", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[+] ran OwO.", colors=0xd7d7ff)
             if autoOwo == False:
                 self.owoCount+=1 
                 if self.owoCount >= self.owoCountGoal:
@@ -1003,7 +990,7 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] brought item(s) from shop".center(console_width - 2 ), style = "Cyan on black")
             if webhookUselessLog:
-                webhookSender(f"-{self.user}[–] brought item(s) from shop", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[–] brought item(s) from shop", colors=0x00FFFF)
             await asyncio.sleep(random.uniform(shopCd[0], shopCd[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -1027,7 +1014,7 @@ class MyClient(discord.Client):
             await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}")
             self.last_cmd_time = time.time()
             if webhookEnabled:
-                webhookSender(f"-{self.user}[+] ran {self.sellOrSac}", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[+] ran {self.sellOrSac}", colors=0x00FFFF)
             console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
             await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
         else:
@@ -1174,7 +1161,7 @@ class MyClient(discord.Client):
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
             if webhookEnabled:
-                webhookSender(f"-{self.user}[+] ran lottery.", f"Running Lottery again in {self.total_seconds}", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[+] ran lottery.", f"Running Lottery again in {self.total_seconds}", colors=0x00FFFF)
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -1193,13 +1180,13 @@ class MyClient(discord.Client):
                                 await self.sendCommands(channel=self.cm, message=self.quote)
                                 console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                                 if webhookEnabled:
-                                    webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind", colors=0x5f00d7)
+                                    await webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind", colors=0x5f00d7)
                             else:
                                 #await self.cm.send(generate_random_string())
                                 await self.sendCommands(channel=self.cm, message=generate_random_string())
                                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                                 if webhookEnabled:
-                                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
+                                    await webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
                 except Exception as e:
                     print(e)
             else:
@@ -1207,7 +1194,7 @@ class MyClient(discord.Client):
                 await self.sendCommands(channel=self.cm, message=generate_random_string())
                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
+                    await webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
             await asyncio.sleep(random.uniform(lvlGrindCooldown[0], lvlGrindCooldown[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -1243,7 +1230,7 @@ class MyClient(discord.Client):
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             if webhookEnabled:
-                webhookSender(f"-{self.user}[+] send cookie.", f"Trying cookie again in {self.total_seconds}", colors=0x00FFFF)
+                await webhookSender(f"-{self.user}[+] send cookie.", f"Trying cookie again in {self.total_seconds}", colors=0x00FFFF)
             console.print(f"-{self.user}[+] send cookie. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
@@ -1265,7 +1252,7 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] Send random emotes(quest)".center(console_width - 2 ), style = "purple3 on black")
             if webhookEnabled:
-                webhookSender(f"-{self.user}[+] send emotes.", "This is for auto quest", colors=0x5f00d7)
+                await webhookSender(f"-{self.user}[+] send emotes.", "This is for auto quest", colors=0x5f00d7)
             await asyncio.sleep(random.uniform(17.83727372,20.73891948))
         else:
             await asyncio.sleep(random.uniform(14.3838383, 20.9439393929))
@@ -1316,15 +1303,17 @@ class MyClient(discord.Client):
     async def on_ready(self):
         self.on_ready_dn = False
         self.cmds = 1
-        self.cmds_cooldown = 0
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )
         embed1 = discord.Embed(
             title='logging in',
             description=f'logged in as {self.user.name}',
             color=discord.Color.dark_green()
-        )
+        ) 
         if webhookEnabled:
-            dwebhook.send(embed=embed1, username='uwu bot') 
+            async with aiohttp.ClientSession() as session:
+                self.dwebhook = discord.Webhook.from_url(webhook_url, session=session)
+                await self.dwebhook.send(embed=embed1, username='uwu bot')
+        self.cmds_cooldown = 0
+        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )  
         listUserIds.append(self.user.id)
         await asyncio.sleep(0.12)
         try:
@@ -1355,6 +1344,7 @@ class MyClient(discord.Client):
         self.questsListInt = None
         self.battleQuestValue = None
         self.huntQuestValue = None
+        
         #-------
         self.hunt = None
         self.webInt = None
@@ -1525,9 +1515,9 @@ class MyClient(discord.Client):
             if self.user.name in message.content or f"<@{self.user.id}>" in message.content:
                 await asyncio.sleep(random.uniform(0.5643523,1.333455435))
                 await self.sendCommands(channel=self.cm, message="owo")
-                console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "Cyan on black")
+                console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[+] ran OwO", colors=0x00FFFF)
+                    await webhookSender(f"-{self.user}[+] ran OwO", colors=0xd7d7ff)
                 self.rPrevTime[2] = time.time()
         if prayCurseR and message.author.id == 519287796549156864 and "**pray/curse**" in message.content and message.channel.id == self.channel_id:
             if self.user.name in message.content or f"<@{self.user.id}>" in message.content:
@@ -1540,7 +1530,7 @@ class MyClient(discord.Client):
                     self.rPrevTime[1] = time.time()
                 console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
+                    await webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
         if huntBattleR and message.author.id == 519287796549156864 and "**hunt/battle**" in message.content and message.channel.id == self.channel_id:
             #print(message.content)
             if autoHunt:
@@ -1551,7 +1541,7 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                 console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
+                    await webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoBattle:
                 await asyncio.sleep(huntBattleDelay[0], huntBattleDelay[1])
@@ -1561,7 +1551,7 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                 console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                 if webhookEnabled:
-                    webhookSender(f"-{self.user}[+] ran battle", colors=0xaf00ff)
+                    await webhookSender(f"-{self.user}[+] ran battle", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
         # OwO bot
         if "I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
@@ -1574,7 +1564,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(0.69, 2.69))
             self.f = False
             if webhookEnabled:
-                webhookSender(f"-{self.user}[+] Captcha solved. restarting...", colors=0x00ffaf)
+                await webhookSender(f"-{self.user}[+] Captcha solved. restarting...", colors=0x00ffaf)
             print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
                 print("attempting to pop captcha indirectly")
@@ -1619,17 +1609,15 @@ class MyClient(discord.Client):
                     color=discord.Color.red()
                 )
                 if webhookEnabled:
-                    if webhookCaptchaChnl:
-                        self.webhook = SyncWebhook.from_url(webhookCaptchaChnl)
-                        if webhookPingId:
-                            self.webhook.send(content=f"<@{webhookPingId}>",embed=embed2, username='uwu bot warnings')
+                    async with aiohttp.ClientSession() as session:
+                        if webhookCaptchaChnl:
+                            self.webhook = discord.Webhook.from_url(webhookCaptchaChnl, session=session)
                         else:
-                            self.webhook.send(embed=embed2, username='uwu bot warnings')
-                    else:
+                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
                         if webhookPingId:
-                            dwebhook.send(content=f"<@{webhookPingId}>",embed=embed2, username='uwu bot warnings')
+                            await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='uwu bot warnings')
                         else:
-                            dwebhook.send(embed=embed2, username='uwu bot warnings')
+                            await self.webhook.send(embed=embed2, username='uwu bot warnings')
                 if termuxVibrationEnabled:
                     run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
                 if termuxAudioPlayer:
@@ -1718,17 +1706,15 @@ class MyClient(discord.Client):
                     color=discord.Color.red()
                                 )
             if webhookEnabled:
-                if webhookCaptchaChnl:
-                    self.webhook = SyncWebhook.from_url(webhookCaptchaChnl)
-                    if webhookPingId:
-                        self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='uwu bot warnings')
+                async with aiohttp.ClientSession() as session:
+                    if webhookCaptchaChnl:
+                        self.webhook = discord.Webhook.from_url(webhookCaptchaChnl, session=session)
                     else:
-                        self.webhook.send(embed=embed2, username='uwu bot warnings')
-                else:
+                        self.webhook = discord.Webhook.from_url(webhook_url, session=session)
                     if webhookPingId:
-                        dwebhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='uwu bot warnings')
+                        await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='uwu bot warnings')
                     else:
-                        dwebhook.send(embed=embed2, username='uwu bot warnings')
+                        await self.webhook.send(embed=embed2, username='uwu bot warnings')
             if termuxVibrationEnabled:
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
             if termuxAudioPlayer:
@@ -1775,7 +1761,7 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}inv")
                     console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "orchid on black")
                     if webhookUselessLog:
-                        webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
+                        await webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
                     self.invCheck = True
             except Exception as e:
                 print(e)
@@ -1784,7 +1770,7 @@ class MyClient(discord.Client):
                 huntOrBattleCooldown+=10
                 console.print(f"-{self.user}[–] Increasing hunt and battle cooldowns since owo is having ratelimits...".center(console_width - 2 ), style = "red on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[~] Cooldown for hunt and battle increased.", "OwO seems to have enabled cooldowns for hunt and battle due to ratelimits. Increasing sleep time to prevent spam...", colors=0xff0037)
+                    await webhookSender(f"-{self.user}[~] Cooldown for hunt and battle increased.", "OwO seems to have enabled cooldowns for hunt and battle due to ratelimits. Increasing sleep time to prevent spam...", colors=0xff0037)
         if message.channel.id == self.channel_id and "You don't have enough cowoncy!" in message.content:
             self.broke[0] = True
             console.print(f"-{self.user}[–] may disable hunt since not enough cash... checking..".center(console_width - 2 ), style = "red on black")
@@ -1800,7 +1786,7 @@ class MyClient(discord.Client):
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all")
                 console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] used lootbox", colors=0xFF00FF)
+                    await webhookSender(f"-{self.user}[+] used lootbox", colors=0xFF00FF)
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
             elif "**weapon crate**" in message.content.lower() and autoCrate:
@@ -1811,7 +1797,7 @@ class MyClient(discord.Client):
                 #await self.cm.send(f"{setprefix}crate all")
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
                 if webhookUselessLog:
-                    webhookSender(f"-{self.user}[+] used crates", colors=0xFF00FF)
+                    await webhookSender(f"-{self.user}[+] used crates", colors=0xFF00FF)
                 console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(0.3,0.5))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -1880,7 +1866,7 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds}", bypass=True)
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     if webhookUselessLog:
-                        webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})", colors=0x00FFFF)
+                        await webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})", colors=0x00FFFF)
                     self.last_cmd_time = time.time()
                 else:
                     self.gems = False
