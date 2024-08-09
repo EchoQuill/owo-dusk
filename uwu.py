@@ -1650,6 +1650,8 @@ class MyClient(discord.Client):
                     run_system_command(captchaConsoleContent, timeout=7, retry=False)
                 if desktopPopup:
                      popup_queue.put((captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType))
+                if desktopAudioPlayer:
+                    playsound(desktopAudioPlayerPath, block=False)
                 if self.webSend == False and websiteEnabled:
                     try:
                         if list_captcha[1] in message.content:
@@ -1737,7 +1739,7 @@ class MyClient(discord.Client):
             if termuxAudioPlayer:
                 run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
             if desktopAudioPlayer:
-                playsound(desktopAudioPlayerPath)
+                playsound(desktopAudioPlayerPath, block=False)
             if termuxTtsEnabled:
                 run_system_command(f"termux-tts-speak A user got banned", timeout=7, retry=False)
             if banConsoleEnabled:
