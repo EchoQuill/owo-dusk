@@ -61,7 +61,7 @@ with open(resource_path("config.json")) as file:
 version = "1.4.0"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
-quotesUrl = "https://thesimpsonsquoteapi.glitch.me/quotes"
+quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
 ver_check = requests.get(ver_check_url).text.strip()
 lock = threading.Lock()
 typingIndicator = config["typingIndicator"]
@@ -461,9 +461,9 @@ def index():
     try:
         with lock:
             if not captchas:
-                return render_template('index.html', no_captchas=True, version=ver_check)
+                return render_template('index.html', no_captchas=True, version=version)
             else:
-                return render_template('index.html', captchas=captchas, version=ver_check)
+                return render_template('index.html', captchas=captchas, version=version)
     except Exception as e:
         print(f"error in index(): <index.html> :-> {e}")
 
@@ -1175,7 +1175,7 @@ class MyClient(discord.Client):
                         async with session.get(quotesUrl) as response:
                             if response.status == 200:
                                 data = await response.json()
-                                self.quote = data[0]["quote"]
+                                self.quote = data["quote"]["body"] #data[0]["quote"]
                                 #await self.cm.send(self.quote)
                                 await self.sendCommands(channel=self.cm, message=self.quote)
                                 console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
@@ -1603,11 +1603,26 @@ class MyClient(discord.Client):
                 if termuxToastEnabled:
                     run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
-                embed2 = discord.Embed(
-                    title=f'CAPTCHA :- {self.user} ;<',
-                    description=f"user got captcha :- {self.user} ;<",
-                    color=discord.Color.red()
-                )
+                if self.captchaType == "link":
+                    embed2 = discord.Embed(
+                        title=f'CAPTCHA :- {self.user} ;<',
+                        description=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
+                        color=discord.Color.red()
+                    )
+                else:
+                    if message.guild:
+                        embed2 = discord.Embed(
+                            title=f'CAPTCHA :- {self.user} ;<',
+                            description=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
+                            color=discord.Color.red()
+                        )
+                    else:
+                        embed2 = discord.Embed(
+                            title=f'CAPTCHA :- {self.user} ;<',
+                            description=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
+                            color=discord.Color.red()
+                        )
+                embed2.set_author(name=self.user, icon_url="https://i.imgur.com/6zeCgXo.png")
                 if webhookEnabled:
                     async with aiohttp.ClientSession() as session:
                         if webhookCaptchaChnl:
@@ -1702,9 +1717,11 @@ class MyClient(discord.Client):
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
             embed2 = discord.Embed(
                     title=f'BANNED IN OWO :- {self.user} ;<',
-                    description=f"user got banned :- {self.user} ;<",
-                    color=discord.Color.red()
+                    description=f"**User** : <@{self.user.id}>",
+                    color=discord.Color.red(),
                                 )
+            embed2.set_author(name=self.user, icon_url="https://i.imgur.com/6zeCgXo.png")
+            embed2.set_footer(text=":(")
             if webhookEnabled:
                 async with aiohttp.ClientSession() as session:
                     if webhookCaptchaChnl:
@@ -2162,10 +2179,10 @@ def run_bot(token, channel_id):
 if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
-    printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold green on black' )
-    printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold cyan on black' )
+    printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30 on black' )
+    printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
     if websiteEnabled:
-        printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold plum4 on black' )
+        printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold blue_violet on black' )
     if int(ver_check.replace(".","")) > int(version.replace(".","")):
         console.print(f"""new update detected (v {ver_check}) (current version:- v {version})...
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
