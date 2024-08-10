@@ -1,6 +1,9 @@
 # Written by EchoQuill
 # Make sure to star the github page.
 
+# I feel sorry for the one reading this code lol
+#                 - EchoQuill
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from datetime import datetime, timedelta, timezone
 from discord.ext import commands, tasks
@@ -172,6 +175,7 @@ else:
 setprefix = config["setprefix"]
 #----------MAIN VARIABLES----------#
 listUserIds = []
+gem_map = {}
 autoHunt = config["commands"][0]["hunt"]
 autoBattle = config["commands"][0]["battle"]
 useShortForm = config["commands"][0]["useShortForm"]
@@ -241,6 +245,15 @@ if config["autoUse"]["autoGem"]["order"]["lowestToHighest"]:
     empGems.reverse()
     luckGems.reverse()
     specialGems.reverse()
+if autoHuntGem:
+    gem_map["gem1"] = "autoHuntGem"
+if autoLuckyGem:
+    gem_map["gem4"] = "autoLuckyGem"
+if autoEmpoweredGem:
+    gem_map["gem3"] = "autoEmpoweredGem"
+if autoSpecialGem:
+    gem_map["star"] = "autoSpecialGem"
+print(gem_map)
 questsList = []
 
 # Cooldowns
@@ -1367,6 +1380,10 @@ class MyClient(discord.Client):
         #---
         self.shopCheck = [True, None, False]
         self.last_cmd_time = 0
+        self.autoHuntGem = True
+        self.autoEmpoweredGem = True
+        self.autoLuckyGem = True
+        self.autoSpecialGem = True
         self.lastcmd = None
         self.busy = False
         self.hb = 0
@@ -1769,7 +1786,31 @@ class MyClient(discord.Client):
                 self.last_cmd_time = time.time()
                 self.lastcmd = "hunt"
                 self.broke = [False,False]
-                if "caught" in message.content.lower() and self.gems:
+                if "you found" in message.content.lower() and self.gems:
+                    # gem1 = diamond
+                    # gem4 = heart
+                    # gem3 = circle
+                    # star = star
+                    # Ignore^, like I mean.. I am skilled at naming these right?
+                    #for gem, attr in gem_map.items():
+                    #    setattr(self, attr, gem in message.content)
+                    #for attr in gem_map.values():
+                    #    setattr(self, attr, False)
+                    for gem, attr in gem_map.items():
+                        if gem in message.content:
+                            setattr(self, attr, False)
+                    if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
+                        if self.f:
+                            return
+                        self.current_time = time.time()
+                        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                        console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "orchid on black")
+                        if webhookUselessLog:
+                            await webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}inv")
+                        self.invCheck = True
+                elif "caught" in message.content.lower() and self.gems:
                     if self.f:
                         return
                     #print("test")
@@ -1787,7 +1828,7 @@ class MyClient(discord.Client):
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
             if huntOrBattleCooldown < 20:
                 huntOrBattleCooldown+=10
-                console.print(f"-{self.user}[–] Increasing hunt and battle cooldowns since owo is having ratelimits...".center(console_width - 2 ), style = "red on black")
+                console.print(f"-{self.user}[–] Increasing hunt and battle cooldowns since owo is having ratelimits... [test]".center(console_width - 2 ), style = "red on black")
                 if webhookUselessLog:
                     await webhookSender(f"-{self.user}[~] Cooldown for hunt and battle increased.", "OwO seems to have enabled cooldowns for hunt and battle due to ratelimits. Increasing sleep time to prevent spam...", colors=0xff0037)
         if message.channel.id == self.channel_id and "You don't have enough cowoncy!" in message.content:
@@ -1852,18 +1893,21 @@ class MyClient(discord.Client):
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
                 #self.tempHuntDisable = True
+                print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                 self.sleep = True
                 self.tempForCheck = False
                 self.sendingGemsIds = ""
                 self.gem_intent_mapping = {
-                    0: (huntGems, autoHuntGem),
-                    1: (empGems, autoEmpoweredGem),
-                    2: (luckGems, autoLuckyGem),
-                    3: (specialGems, autoSpecialGem)
+                    0: (huntGems, autoHuntGem, self.autoHuntGem),
+                    1: (empGems, autoEmpoweredGem, self.autoEmpoweredGem),
+                    2: (luckGems, autoLuckyGem, self.autoLuckyGem),
+                    3: (specialGems, autoSpecialGem, self.autoSpecialGem)
                     }
                 self.gem_match_count = {}
-                for gem_list, gem_enabled in self.gem_intent_mapping.values():
-                    if gem_enabled:
+                print(self.gem_intent_mapping)
+                print()
+                for gem_list, gem_enabled, gem_enabled2 in self.gem_intent_mapping.values():
+                    if gem_enabled and gem_enabled2:
                         for gem in gem_list:
                             if gem in self.invNumbers:
                                 self.gem_match_count[gem] = self.gem_match_count.get(gem, 0) + 1
@@ -1871,13 +1915,17 @@ class MyClient(discord.Client):
                 #self.added_gems = set()
                 self.added_intents = set()
                 for gem in self.sorted_gems:
-                    for intent, (gem_list, gem_enabled) in self.gem_intent_mapping.items():
-                        if gem_enabled and gem in gem_list and intent not in self.added_intents:
+                    for intent, (gem_list, gem_enabled, gem_enabled2) in self.gem_intent_mapping.items():
+                        if gem_enabled and gem_enabled2 and gem in gem_list and intent not in self.added_intents:
+                            #if not self.tempGemUsage:
                             self.sendingGemsIds+=f"{gem[1:]} "
                             #self.added_gems.add(gem)
                             self.added_intents.add(intent)
                             break
-                await asyncio.sleep(random.uniform(0.3,0.5))
+                print(self.gem_match_count,"\n\n", self.sorted_gems)
+                print()
+                print(self.sendingGemsIds)
+                await asyncio.sleep(random.uniform(0.9,1.2))
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
@@ -1891,9 +1939,14 @@ class MyClient(discord.Client):
                     self.gems = False
                     console.print(f"-{self.user}[!] No gems to use... disabling...".center(console_width - 2 ), style = "deep_pink2 on black")
                 self.invCheck = False
-                await asyncio.sleep(random.uniform(0.3,0.7))
+                await asyncio.sleep(random.uniform(0.5,0.9))
                 self.sleep = False
+                self.autoHuntGem = True
+                self.autoEmpoweredGem = True
+                self.autoLuckyGem = True
+                self.autoSpecialGem = True
                 self.sendingGemsIds = ""
+                print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
@@ -2207,6 +2260,8 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
         console.print("Auto quest is still in testing and is not fully tested yet. so expect bugs. (report all bugs in our discord server to make fixing them easier! :>)", style="orchid on black")
     if desktopAudioPlayer:
         console.print("Desktop audio player is having issues for 'some' users. so please don't completely depend on it, for captcha alerts!", style="orchid on black")
+    if lvlGrind and useQuoteInstead:
+        console.print("Qoutes are not reccomended as thats an easy way to get banned (basically asking for ban...)", style="orchid on black")
 
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
