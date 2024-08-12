@@ -518,7 +518,10 @@ class MyClient(discord.Client):
     async def sendCommands(self, channel, message, bypass=False, captcha=False):
         try:
         # await sendCommands(channel=channel, message="")
-            if typingIndicator:
+            if typingIndicator and (
+                (self.f != True and self.sleep != True and self.sleep2 != True) or
+                (bypass and self.f != True and self.sleep2 != True)
+            ):
                 async with channel.typing():
                     if self.f != True and self.sleep != True and self.sleep2 != True:
                         await channel.send(message)
@@ -636,12 +639,17 @@ class MyClient(discord.Client):
             if self.randSleepInt > (100 - sleepRandomness):
                 self.sleep = True
                 self.sleepTime = random.uniform(minSleepTime, maxSleepTime)
-                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "pale_violet_red1 on black")
+                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds".center(console_width - 2 ), style = "medium_turquoise on black")
+                if webhookUselessLog:
+                    await webhookSender(f"-{self.user}[~] sleeping for.", colors=0x5fd7d7)
                 await asyncio.sleep(self.sleepTime)
-                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "pale_violet_red1 on black")
+                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "medium_turquoise on black")
+                if webhookUselessLog:
+                    await webhookSender(f"-{self.user}[!] Finished sleeping", colors=0x5fd7d7)
                 self.sleep = False
+                await asyncio.sleep(random.uniform(60,120))
             else:
-                console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "pale_violet_red1 on black")
+                console.print(f"-{self.user}[~] skipped sleep".center(console_width - 2 ), style = "medium_turquoise on black")
                 await asyncio.sleep(random.uniform(60,120))
         else:
             await asyncio.sleep(random.uniform(20,40))
@@ -916,7 +924,7 @@ class MyClient(discord.Client):
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.choice(cfOptions)[0]}")
                 if webhookUselessLog:
                     await webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
-                console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "cyan on black")
+                console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "magenta on black")
                 await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
         except Exception as e:
             print(e)
@@ -955,7 +963,7 @@ class MyClient(discord.Client):
             await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}")
             if webhookUselessLog:
                 await webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
-            console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "cyan on black")
+            console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "magenta on black")
             await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -1026,7 +1034,7 @@ class MyClient(discord.Client):
             #await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
             await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}")
             self.last_cmd_time = time.time()
-            if webhookEnabled:
+            if webhookUselessLog:
                 await webhookSender(f"-{self.user}[+] ran {self.sellOrSac}", colors=0x00FFFF)
             console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
             await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
@@ -1173,7 +1181,7 @@ class MyClient(discord.Client):
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
-            if webhookEnabled:
+            if webhookUselessLog:
                 await webhookSender(f"-{self.user}[+] ran lottery.", f"Running Lottery again in {self.total_seconds}", colors=0x00FFFF)
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
         else:
@@ -1192,13 +1200,13 @@ class MyClient(discord.Client):
                                 #await self.cm.send(self.quote)
                                 await self.sendCommands(channel=self.cm, message=self.quote)
                                 console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
-                                if webhookEnabled:
+                                if webhookUselessLog:
                                     await webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind", colors=0x5f00d7)
                             else:
                                 #await self.cm.send(generate_random_string())
                                 await self.sendCommands(channel=self.cm, message=generate_random_string())
                                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
-                                if webhookEnabled:
+                                if webhookUselessLog:
                                     await webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
                 except Exception as e:
                     print(e)
@@ -1206,7 +1214,7 @@ class MyClient(discord.Client):
                 #await self.cm.send(generate_random_string()) # Better than sending quotes(In my opinion).
                 await self.sendCommands(channel=self.cm, message=generate_random_string())
                 console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
-                if webhookEnabled:
+                if webhookUselessLog:
                     await webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
             await asyncio.sleep(random.uniform(lvlGrindCooldown[0], lvlGrindCooldown[1]))
         else:
@@ -1242,7 +1250,7 @@ class MyClient(discord.Client):
                 int(self.time_until_12am_pst.total_seconds() % 60)
         )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
-            if webhookEnabled:
+            if webhookUselessLog:
                 await webhookSender(f"-{self.user}[+] send cookie.", f"Trying cookie again in {self.total_seconds}", colors=0x00FFFF)
             console.print(f"-{self.user}[+] send cookie. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
             await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
@@ -1264,7 +1272,7 @@ class MyClient(discord.Client):
             self.emoteCount+=1
             self.last_cmd_time = time.time()
             console.print(f"-{self.user}[+] Send random emotes(quest)".center(console_width - 2 ), style = "purple3 on black")
-            if webhookEnabled:
+            if webhookUselessLog:
                 await webhookSender(f"-{self.user}[+] send emotes.", "This is for auto quest", colors=0x5f00d7)
             await asyncio.sleep(random.uniform(17.83727372,20.73891948))
         else:
@@ -1533,7 +1541,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(0.5643523,1.333455435))
                 await self.sendCommands(channel=self.cm, message="owo")
                 console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
-                if webhookEnabled:
+                if webhookUselessLog:
                     await webhookSender(f"-{self.user}[+] ran OwO", colors=0xd7d7ff)
                 self.rPrevTime[2] = time.time()
         if prayCurseR and message.author.id == 519287796549156864 and "**pray/curse**" in message.content and message.channel.id == self.channel_id:
@@ -1557,7 +1565,7 @@ class MyClient(discord.Client):
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                 console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                if webhookEnabled:
+                if webhookUselessLog:
                     await webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoBattle:
@@ -1567,7 +1575,7 @@ class MyClient(discord.Client):
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                 console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
-                if webhookEnabled:
+                if webhookUselessLog:
                     await webhookSender(f"-{self.user}[+] ran battle", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
         # OwO bot
@@ -1796,9 +1804,14 @@ class MyClient(discord.Client):
                     #    setattr(self, attr, gem in message.content)
                     #for attr in gem_map.values():
                     #    setattr(self, attr, False)
+                    self.autoHuntGem = True
+                    self.autoEmpoweredGem = True
+                    self.autoLuckyGem = True
+                    self.autoSpecialGem = True
                     for gem, attr in gem_map.items():
                         if gem in message.content:
                             setattr(self, attr, False)
+                    print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                     if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
                         if self.f:
                             return
@@ -1893,7 +1906,7 @@ class MyClient(discord.Client):
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
                 #self.tempHuntDisable = True
-                print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
+                #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                 self.sleep = True
                 self.tempForCheck = False
                 self.sendingGemsIds = ""
@@ -1904,8 +1917,8 @@ class MyClient(discord.Client):
                     3: (specialGems, autoSpecialGem, self.autoSpecialGem)
                     }
                 self.gem_match_count = {}
-                print(self.gem_intent_mapping)
-                print()
+                #print(self.gem_intent_mapping)
+                #print()
                 for gem_list, gem_enabled, gem_enabled2 in self.gem_intent_mapping.values():
                     if gem_enabled and gem_enabled2:
                         for gem in gem_list:
@@ -1922,9 +1935,9 @@ class MyClient(discord.Client):
                             #self.added_gems.add(gem)
                             self.added_intents.add(intent)
                             break
-                print(self.gem_match_count,"\n\n", self.sorted_gems)
-                print()
-                print(self.sendingGemsIds)
+                #print(self.gem_match_count,"\n\n", self.sorted_gems)
+                #print()
+                #print(self.sendingGemsIds)
                 await asyncio.sleep(random.uniform(0.9,1.2))
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
@@ -1946,7 +1959,7 @@ class MyClient(discord.Client):
                 self.autoLuckyGem = True
                 self.autoSpecialGem = True
                 self.sendingGemsIds = ""
-                print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
+                #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
