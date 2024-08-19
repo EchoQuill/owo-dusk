@@ -183,6 +183,7 @@ useShortForm = config["commands"][0]["useShortForm"]
 autoPray = config["commands"][1]["pray"]
 autoCurse = config["commands"][1]["curse"]
 userToPrayOrCurse = config["commands"][1]["userToPrayOrCurse"]
+pingUserOnPrayOrCurse = config["commands"][1]["pingUser"]
 autoDaily = config["autoDaily"]
 autoOwo = config["commands"][11]["sendOwo"]
 autoCrate = config["autoUse"]["autoUseCrate"]
@@ -216,6 +217,7 @@ lvlMinLength = config["commands"][6]["minLengthForRandomString"]
 lvlMaxLength = config["commands"][6]["maxLengthForRandomString"]
 cookie = config["commands"][7]["cookie"]
 cookieUserId = config["commands"][7]["userid"]
+pingUserOnCookie = config["commands"][7]["pingUser"]
 sleepEnabled = config["commands"][8]["sleep"]
 minSleepTime = config["commands"][8]["minTime"]
 maxSleepTime = config["commands"][8]["maxTime"]
@@ -601,7 +603,10 @@ class MyClient(discord.Client):
             if (autoPray or autoCurse) and prayCurseR:
                 await asyncio.sleep(random.uniform(0.4,0.8))
                 if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
-                    await self.sendCommands(channel=channel, message=f"{setprefix}{prayOrCurse} <@{userToPrayOrCurse}>")
+                    if pingUserOnPrayOrCurse:
+                        await self.sendCommands(channel=channel, message=f"{setprefix}{prayOrCurse} <@{userToPrayOrCurse}>")
+                    else:
+                        await self.sendCommands(channel=channel, message=f"{setprefix}{prayOrCurse} {userToPrayOrCurse}")
                     self.rPrevTime[1] = time.time()
                 else:
                     await self.sendCommands(channel=channel, message=f"{setprefix}{prayOrCurse}")
@@ -730,7 +735,10 @@ class MyClient(discord.Client):
                 if self.rTime[1] >= 305 and self.f != True and self.sleep != True and self.sleep2 != True:
                     await asyncio.sleep(random.uniform(0.4,0.8))
                     if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
+                        if pingUserOnPrayOrCurse:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} {userToPrayOrCurse}")
                         self.rPrevTime[1] = time.time()
                         console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                     else:
@@ -886,11 +894,17 @@ class MyClient(discord.Client):
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                     if self.tempPrayOrCurse == []:
                         #await self.cm.send(f'{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>')
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
+                        if pingUserOnPrayOrCurse:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} <@{userToPrayOrCurse}>")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.prayOrCurse} {userToPrayOrCurse}")
                         #print("acc2")
                     else:
                         #await self.cm.send(f'{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>')
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>")
+                        if pingUserOnPrayOrCurse:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} <@{self.tempPrayOrCurse[0]}>")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.tempPrayOrCurse[1]} {self.tempPrayOrCurse[0]}")
                         #self.tempPrayOrCurse[1]-=1                    
                         for o,i in enumerate(questsList):
                             if i[0] == self.tempPrayOrCurse[0]: #userid
@@ -1173,7 +1187,10 @@ class MyClient(discord.Client):
                                     self.tempCookie = i[0]
                                     if not cookie:
                                         #await self.cm.send(f"{setprefix}rep <@{self.tempCookie}>")
-                                        await self.sendCommands(channel=self.cm, message=f"{setprefix}rep <@{self.tempCookie}>")
+                                        if pingUserOnCookie:
+                                            await self.sendCommands(channel=self.cm, message=f"{setprefix}rep <@{self.tempCookie}>")
+                                        else:
+                                            await self.sendCommands(channel=self.cm, message=f"{setprefix}rep {self.tempCookie}")
                                     self.last_cmd_time = time.time()
                                     questsList[y][3][o][1]-=1
                                     if questsList[y][3][o][1] == 0:
@@ -1278,10 +1295,16 @@ class MyClient(discord.Client):
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             if self.tempCookie is not None:
                 # await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {self.tempCookie}")
+                if pingUserOnCookie:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie <@{self.tempCookie}>")
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {self.tempCookie}")
             else:
                 # await self.cm.send(f'{setprefix}cookie {cookieUserId}')
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {cookieUserId}")
+                if pingUserOnCookie:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie <@{cookieUserId}>")
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {cookieUserId}")
             self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
