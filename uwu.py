@@ -25,6 +25,7 @@ import random
 import string
 import shutil
 import time
+import pytz
 import json
 import sys
 import os
@@ -753,29 +754,36 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_daily(self):
         if self.f != True and self.sleep != True and self.sleep2 != True:
-            await asyncio.sleep(random.uniform(21,67))
+            await asyncio.sleep(random.uniform(21, 67))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-            #await self.cm.send(f"{setprefix}daily")
+                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
+            # await self.cm.send(f"{setprefix}daily")
             await self.sendCommands(channel=self.cm, message=f"{setprefix}daily")
             self.last_cmd_time = time.time()
             self.lastcmd = "daily"
-            self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
-            self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst
+            # Make the current time in PST timezone-aware
+            pst_timezone = pytz.timezone('US/Pacific')
+            self.current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone)
 
+            # Create a timezone-aware datetime for 12 AM PST
+            midnight_pst = pst_timezone.localize(datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0))
+        
+            # Calculate the time until 12 AM the next day
+            self.time_until_12am_pst = midnight_pst + timedelta(days=1) - self.current_time_pst
+        
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
                 int(self.time_until_12am_pst.total_seconds() // 3600),
                 int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
                 int(self.time_until_12am_pst.total_seconds() % 60)
-)
+            )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
-            console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2 ), style = "Cyan on black")
+            console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2), style="Cyan on black")
             if webhookUselessLog:
                 await webhookSender(f"-{self.user}[+] ran daily", f"next daily in {self.formatted_time}", colors=0x00FFFF)
             self.lastcmd = "daily"
-            await asyncio.sleep(self.total_seconds+random.uniform(30,90))            
+            await asyncio.sleep(self.total_seconds + random.uniform(30, 90))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     #hunt/battle
@@ -1190,7 +1198,7 @@ class MyClient(discord.Client):
         except Exception as e:
             print(e, "quest handler")
             #run_system_command(f"termux-toast -c green -b black 'bug Detected:- {self.user.name}'", timeout=5, retry=True)
-  # Lottery
+    # Lottery
     @tasks.loop()
     async def send_lottery(self):
         if self.f != True and self.sleep != True and self.sleep2 != True:
@@ -1199,20 +1207,25 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.5 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.last_cmd_time = time.time()
-            #await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
+            # await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
             await self.sendCommands(channel=self.cm, message=f"{setprefix}lottery {lotteryAmt}")
-            self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
-            self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
+            # Make the current time in PST timezone-aware
+            pst_timezone = pytz.timezone('US/Pacific')
+            self.current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone)
+            # Create a timezone-aware datetime for 12 AM PST
+            midnight_pst = pst_timezone.localize(datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0))
+            # Calculate the time until 12 AM the next day
+            self.time_until_12am_pst = midnight_pst + timedelta(days=1) - self.current_time_pst
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
                 int(self.time_until_12am_pst.total_seconds() // 3600),
                 int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
                 int(self.time_until_12am_pst.total_seconds() % 60)
-        )
+            )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
-            console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
+            console.print(f"-{self.user}[+] ran lottery. {self.total_seconds}".center(console_width - 2), style="cyan on black")
             if webhookUselessLog:
                 await webhookSender(f"-{self.user}[+] ran lottery.", f"Running Lottery again in {self.total_seconds}", colors=0x00FFFF)
-            await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
+            await asyncio.sleep(self.total_seconds + random.uniform(34.377337, 93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Lvl grind
@@ -1252,41 +1265,43 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_cookie(self):
         if self.f != True and self.sleep != True and self.sleep2 != True:
-            if self.tempCookie != None:
-                for o,i in enumerate(questsList):
-                    if i[0] == self.tempCookie: #userid
-                        for z,x in questsList[o][3]: #[questType,questsProgress]]
-                            if x[0] == "cookie": #questType                                    
-                                questsList[o][3][x][1]-=1
-                                if questsList[o][3][x][1]:
-                                    questsList[o][3].pop(x)
-                                    self.tempCookie = None #DOUBLE CHECK THIS!!!!! - EchoQuill!
+            if self.tempCookie is not None:
+                for o, i in enumerate(questsList):
+                    if i[0] == self.tempCookie:  # userid
+                        for z, x in enumerate(questsList[o][3]):  # [questType, questsProgress]]
+                            if x[0] == "cookie":  # questType
+                                questsList[o][3][z][1] -= 1
+                                if questsList[o][3][z][1] == 0:
+                                    questsList[o][3].pop(z)
+                                    self.tempCookie = None  # DOUBLE CHECK THIS!!!!! - EchoQuill!
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
-            if self.tempCookie != None:
-                #await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
+            if self.tempCookie is not None:
+                # await self.cm.send(f'{setprefix}cookie {self.tempCookie}')
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {self.tempCookie}")
             else:
-                #await self.cm.send(f'{setprefix}cookie {cookieUserId}')
+                # await self.cm.send(f'{setprefix}cookie {cookieUserId}')
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}cookie {cookieUserId}")
             self.last_cmd_time = time.time()
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            self.current_time_pst = datetime.now(timezone.utc) - timedelta(hours=8)
-            self.time_until_12am_pst = datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0) + timedelta(days=1) - self.current_time_pst       
+            pst_timezone = pytz.timezone('US/Pacific')
+            self.current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone)
+            midnight_pst = pst_timezone.localize(datetime(self.current_time_pst.year, self.current_time_pst.month, self.current_time_pst.day, 0, 0, 0))
+            self.time_until_12am_pst = midnight_pst + timedelta(days=1) - self.current_time_pst
+
             self.formatted_time = "{:02}h {:02}m {:02}s".format(
                 int(self.time_until_12am_pst.total_seconds() // 3600),
                 int((self.time_until_12am_pst.total_seconds() % 3600) // 60),
                 int(self.time_until_12am_pst.total_seconds() % 60)
-        )
+            )
             self.total_seconds = self.time_until_12am_pst.total_seconds()
             if webhookUselessLog:
-                await webhookSender(f"-{self.user}[+] send cookie.", f"Trying cookie again in {self.total_seconds}", colors=0x00FFFF)
-            console.print(f"-{self.user}[+] send cookie. {self.total_seconds}".center(console_width - 2 ), style = "cyan on black")
-            await asyncio.sleep(self.total_seconds + random.uniform(34.377337,93.7473737))
+                await webhookSender(f"-{self.user}[+] sent cookie.", f"Trying cookie again in {self.total_seconds}", colors=0x00FFFF)
+            console.print(f"-{self.user}[+] sent cookie. {self.total_seconds}".center(console_width - 2), style="cyan on black")
+            await asyncio.sleep(self.total_seconds + random.uniform(34.377337, 93.7473737))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
-
      # emoteTo {Quest}
     @tasks.loop()
     async def emoteTo(self):
