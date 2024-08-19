@@ -330,6 +330,35 @@ def get_emoji_names(text, emoji_dict=emoji_dict):
     # Get names of the extracted emojis
     emoji_names = [emoji_dict[char] for char in emojis if char in emoji_dict]
     return emoji_names
+
+def get_emoji_numbers(text, emoji_dict):
+    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
+    emojis = pattern.findall(text)
+    ranges = [
+        (39, 44, 1, False, "common"),
+        (34, 38, 3, False, "uncommon"),
+        (29, 33, 10, False, "rare"),
+        (24, 28, 250, False, "epic"),
+        (19, 23, 5000, True, "mythical"),
+        (14, 18, 30000, True, "gem"),
+        (9, 13, 15000, True, "legendary"),
+        (4, 8, 250000, True, "frozen"),
+        (0, 3, 1000000, True, "hidden")
+    ]
+    cash = 0
+    rare = []
+    emoji_numbers = [list(emoji_dict.keys()).index(emoji) for emoji in emojis if emoji in emoji_dict]
+    
+    for i in emoji_numbers:
+        for start, end, value, rank, rankid in ranges:
+            if start <= i <= end:
+                cash += value
+                if rank:
+                    rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid])
+    
+    return cash, rare
+
+
 #webhook
 async def webhookSender(msg, desc=None, plain_text_msg=None, colors=None):
     async with aiohttp.ClientSession() as session:
@@ -1231,6 +1260,7 @@ class MyClient(discord.Client):
                                 questsList[o][3][x][1]-=1
                                 if questsList[o][3][x][1]:
                                     questsList[o][3].pop(x)
+                                    self.tempCookie = None #DOUBLE CHECK THIS!!!!! - EchoQuill!
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             if self.tempCookie != None:
@@ -1334,7 +1364,7 @@ class MyClient(discord.Client):
                 self.dwebhook = discord.Webhook.from_url(webhook_url, session=session)
                 await self.dwebhook.send(embed=embed1, username='uwu bot')
         self.cmds_cooldown = 0
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )  
+        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )
         listUserIds.append(self.user.id)
         await asyncio.sleep(0.12)
         try:
@@ -1395,6 +1425,7 @@ class MyClient(discord.Client):
         self.lastcmd = None
         self.busy = False
         self.hb = 0
+        self.profit = 0
         self.lastHb = None
         self.ss = 0
         self.time_since_last_cmd = 0
@@ -1402,6 +1433,7 @@ class MyClient(discord.Client):
         self.f = False
         self.zooCheckRecieved = False
         self.captchaType = None
+        self.tempCookie = None
         self.sleep = False
         self.sleep2 = False
         self.changedPrefix = False
@@ -2220,16 +2252,16 @@ class MyClient(discord.Client):
                     console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                     self.gambleTotal-=self.cfLastAmt
                     if doubleOnLose:
-                        print("cdble")
+                        #print("cdble")
                         self.cfLastAmt = self.cfLastAmt*2
-                        print(self.cfLastAmt)
+                        #print(self.cfLastAmt)
                 else:
                     console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                     self.gambleTotal+=self.cfLastAmt
                     if doubleOnLose:
-                        print("c")
+                        #print("c")
                         self.cfLastAmt = gambleStartValue
-                        print(self.cfLastAmt)
+                        #print(self.cfLastAmt)
             except Exception as e:
                 print(e)
 #----------STARTING BOT----------#                 
