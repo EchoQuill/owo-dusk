@@ -106,6 +106,7 @@ bannedPopupMsg = config["desktop"]["popup"]["bannedContent"]
 chatPrefix = config["textCommands"]["prefix"]
 chatCommandToStop = config["textCommands"]["commandToStopUser"]
 chatCommandToStart = config["textCommands"]["commandToStartUser"]
+
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
 if banConsoleEnabled:
@@ -227,6 +228,10 @@ giveawayChannels = config["commands"][9]["channelsToJoin"]
 shopEnabled = config["commands"][10]["shop"]
 shopItemsToBuy = config["commands"][10]["itemsToBuy"]
 skipSpamCheck = (shopEnabled == autoSlots == autoCf == autoBattle == autoHunt == False)
+# Logs
+logRareHunts = config["logs"]["rareHuntAnimalCatches"]
+logLootboxes = config["logs"]["gettingOrOpeningLootboxs"]
+logCrates = config["logs"]["gettingOrOpeningCrates"]
 customCommandCnt = len(config["customCommands"]["commands"])
 if customCommandCnt >= 1:
     sorted_zipped_lists = sorted(zip(config["customCommands"]["commands"], config["customCommands"]["cooldowns"]), key=lambda x: x[1])
@@ -334,7 +339,7 @@ def get_emoji_names(text, emoji_dict=emoji_dict):
     emoji_names = [emoji_dict[char] for char in emojis if char in emoji_dict]
     return emoji_names
 
-def get_emoji_numbers(text, emoji_dict):
+def get_emoji_numbers(text, emoji_dict=emoji_dict):
     pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
     emojis = pattern.findall(text)
     ranges = [
@@ -379,9 +384,9 @@ async def webhookSender(msg, desc=None, plain_text_msg=None, colors=None):
             channel_webhook = discord.Webhook.from_url(webhook_url, session=session)
                 # Send both the embed and plain text message if provided
             if plain_text_msg:
-                await channel_webhook.send(content=plain_text_msg, embed=emb, username='uwu bot warnings')
+                await channel_webhook.send(content=plain_text_msg, embed=emb, username='OwO-Dusk - Notifs')
             else:
-                await channel_webhook.send(embed=emb, username='uwu bot warnings')
+                await channel_webhook.send(embed=emb, username='OwO-Dusk - Notifs')
         except discord.Forbidden as e:
             print("Bot does not have permission to execute this command:", e)
         except discord.NotFound as e:
@@ -1708,7 +1713,7 @@ class MyClient(discord.Client):
                     if message.guild:
                         embed2 = discord.Embed(
                             title=f'CAPTCHA :- {self.user} ;<',
-                            description=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
+                            description=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
                             color=discord.Color.red()
                         )
                     else:
@@ -1725,9 +1730,9 @@ class MyClient(discord.Client):
                         else:
                             self.webhook = discord.Webhook.from_url(webhook_url, session=session)
                         if webhookPingId:
-                            await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='uwu bot warnings')
+                            await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='OwO-Dusk - Notifs')
                         else:
-                            await self.webhook.send(embed=embed2, username='uwu bot warnings')
+                            await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
                 if termuxVibrationEnabled:
                     run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
                 if termuxAudioPlayer:
@@ -1826,9 +1831,9 @@ class MyClient(discord.Client):
                     else:
                         self.webhook = discord.Webhook.from_url(webhook_url, session=session)
                     if webhookPingId:
-                        await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='uwu bot warnings')
+                        await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='OwO-Dusk - Notifs')
                     else:
-                        await self.webhook.send(embed=embed2, username='uwu bot warnings')
+                        await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
             if termuxVibrationEnabled:
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
             if termuxAudioPlayer:
@@ -1864,16 +1869,31 @@ class MyClient(discord.Client):
                 self.last_cmd_time = time.time()
                 self.lastcmd = "hunt"
                 self.broke = [False,False]
+                if logRareHunts:
+                    self.cash,self.rareHunt = get_emoji_numbers(message.content)
+                    for i in self.rareHunt:
+                        #rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid])
+                        embed = discord.Embed(
+                            title=f'{self.user} caught a {i[1]} animal!',
+                            description=f"**User** : <@{self.user.id}>\n**rank** : {i[1]}\n**message link** : {message.jump_url}",
+                            color=0xffafd7,#pink1
+                        )
+                        try:
+                            tempVar = int(i[0][2:-1])
+                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{tempVar}.gif")
+                        except:
+                            pass
+                        if webhookEnabled:
+                            async with aiohttp.ClientSession() as session:
+                                self.webhook = discord.Webhook.from_url(webhook_url, session=session)
+                                await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                        console.print(f"-{self.user}[+] caught a {i[1]} animal! Yay.".center(console_width - 2 ), style = "pink1 on black")
                 if "you found" in message.content.lower() and self.gems:
                     # gem1 = diamond
                     # gem4 = heart
                     # gem3 = circle
                     # star = star
                     # Ignore^, like I mean.. I am skilled at naming these right?
-                    #for gem, attr in gem_map.items():
-                    #    setattr(self, attr, gem in message.content)
-                    #for attr in gem_map.values():
-                    #    setattr(self, attr, False)
                     self.autoHuntGem = True
                     self.autoEmpoweredGem = True
                     self.autoLuckyGem = True
@@ -1920,30 +1940,73 @@ class MyClient(discord.Client):
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
             if self.f:
                 return
-            if "**lootbox**" in message.content.lower() and autoLootbox:
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                #await self.cm.send(f"{setprefix}lb all")
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all")
-                console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
-                if webhookUselessLog:
-                    await webhookSender(f"-{self.user}[+] used lootbox", colors=0xFF00FF)
-                await asyncio.sleep(random.uniform(0.3,0.5))
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            elif "**weapon crate**" in message.content.lower() and autoCrate:
-                self.current_time = time.time()
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                #await self.cm.send(f"{setprefix}crate all")
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
-                if webhookUselessLog:
-                    await webhookSender(f"-{self.user}[+] used crates", colors=0xFF00FF)
-                console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
-                await asyncio.sleep(random.uniform(0.3,0.5))
-                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+            if "**lootbox**" in message.content.lower() and (autoLootbox or logLootboxes):
+                if logLootboxes:
+                    console.print(f"-{self.user}[+] Found a lootbox!".center(console_width - 2 ), style = "pink1 on black")
+                    if webhookEnabled and logLootboxes:
+                        async with aiohttp.ClientSession() as session:
+                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
+                            embed = discord.Embed(
+                                title=f'{self.user} Found a lootbox!',
+                                description=f"**User** : <@{self.user.id}>\n**message link** : [click here]({message.jump_url})",
+                                color=0xffafd7,#pink1
+                            )
+                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427004983460888588.gif")
+                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                            #await webhookSender(f"-{self.user}[+] found a lootbox", colors=0xFF00FF)
+                if autoLootbox:
+                    self.current_time = time.time()
+                    self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                    if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                        await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                    #await self.cm.send(f"{setprefix}lb all")
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all")
+                    console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
+                    if webhookEnabled and logLootboxes:
+                        async with aiohttp.ClientSession() as session:
+                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
+                            embed = discord.Embed(
+                                title=f'{self.user} used a lootbox!',
+                                description=f"**User** : <@{self.user.id}>\n**message link** : [click here]({message.jump_url})",
+                                color=0xffafd7,#pink1
+                            )
+                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427019823747301377.gif")
+                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                    await asyncio.sleep(random.uniform(0.3,0.5))
+                    self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                
+            elif "**weapon crate**" in message.content.lower() and (autoCrate or logCrates):
+                if logCrates:
+                    console.print(f"-{self.user}[+] Found a crate!".center(console_width - 2 ), style = "pink1 on black")
+                    if webhookEnabled and logCrates:
+                        async with aiohttp.ClientSession() as session:
+                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
+                            embed = discord.Embed(
+                                title=f'{self.user} Found a crate!',
+                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
+                                color=0xffafd7,#pink1
+                            )
+                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/523771259172028420.gif")
+                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                if autoCrate:
+                    self.current_time = time.time()
+                    self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                    if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                        await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                    #await self.cm.send(f"{setprefix}crate all")
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
+                    if webhookEnabled and logCrates:
+                        async with aiohttp.ClientSession() as session:
+                            embed = discord.Embed(
+                                title=f'{self.user} used crates!',
+                                description=f"**User** : <@{self.user.id}>\n**message link** : [click here]({message.jump_url})",
+                                color=0xffafd7,#pink1
+                            )
+                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/523771437408845852.gif")
+                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                    console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
+                    await asyncio.sleep(random.uniform(0.3,0.5))
+                    self.time_since_last_cmd = self.current_time - self.last_cmd_time
         if message.channel.id == self.channel_id and "Create a team with the command `owo team add {animal}`" in message.content:
             try:
                 console.print(f"-{self.user}[–] Missing team for battle... attempting to create one.".center(console_width - 2 ), style = "orchid1 on black")

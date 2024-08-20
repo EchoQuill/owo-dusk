@@ -1,5 +1,5 @@
 {
-  "setprefix": "owo ",
+  "setprefix": "owo w",
   "typingIndicator": false,
   "offlineStatus": false,
   "website": {
@@ -98,8 +98,8 @@
   },
   "logs": {
     "rareHuntAnimalCatches": false,
-    "gettingLootboxs": false,
-    "gettingCrates": false
+    "gettingOrOpeningLootboxs": false,
+    "gettingOrOpeningCrates": false
   },
   "autoUse": {
     "autoGem": {
@@ -171,7 +171,7 @@
     },
     "playAudio": {
       "enabled": false,
-      "path": "path to audio file here"
+      "path": "PATH to audio file here"
     },
     "batteryCheck": {
       "enabled": false,
