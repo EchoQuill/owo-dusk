@@ -362,8 +362,7 @@ def get_emoji_numbers(text, emoji_dict=emoji_dict):
             if start <= i <= end:
                 cash += value
                 if rank:
-                    rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid])
-    
+                    rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid, list(emoji_dict.keys())[i]])
     return cash, rare
 
 
@@ -1860,6 +1859,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(0.6,1.7))
             try:
                 await message.components[0].children[0].click()
+
             except:
                 pass
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
@@ -1874,15 +1874,16 @@ class MyClient(discord.Client):
                     for i in self.rareHunt:
                         #rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid])
                         embed = discord.Embed(
-                            title=f'{self.user} caught a {i[1]} animal!',
+                            title=f'{self.user} caught a {i[1]} animal, {i[0]}!',
                             description=f"**User** : <@{self.user.id}>\n**rank** : {i[1]}\n**message link** : {message.jump_url}",
                             color=0xffafd7,#pink1
                         )
+                        print(i)
                         try:
-                            tempVar = int(i[0][2:-1])
+                            tempVar = int(i[2][:-1].replace(f"<a:{i[0]}:", ""))
                             embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{tempVar}.gif")
-                        except:
-                            pass
+                        except Exception as e:
+                            print(e)
                         if webhookEnabled:
                             async with aiohttp.ClientSession() as session:
                                 self.webhook = discord.Webhook.from_url(webhook_url, session=session)
