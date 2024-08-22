@@ -1855,11 +1855,11 @@ class MyClient(discord.Client):
                 popup_queue.put((bannedPopupMsg,self.user.name,self.captcha_channel_name,"banned"))
             console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2 ), style = "deep_pink2 on black")
             return
-        if message.channel.id == self.channel_id and "**You must accept these rules to use the bot!**" in message.content.lower():
+        if message.channel.id == self.channel_id and "**you must accept these rules to use the bot!**" in message.content.lower():
             await asyncio.sleep(random.uniform(0.6,1.7))
             try:
                 await message.components[0].children[0].click()
-
+                console.print(f"-{self.user}[+] Accepted OwO bot rules".center(console_width - 2 ), style = "spring_green1 on black")
             except:
                 pass
         if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
