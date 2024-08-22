@@ -1870,7 +1870,16 @@ class MyClient(discord.Client):
                 self.lastcmd = "hunt"
                 self.broke = [False,False]
                 if logRareHunts:
-                    self.cash,self.rareHunt = get_emoji_numbers(message.content)
+                    if "xp" not in message.content:
+                        self.cash,self.rareHunt = get_emoji_numbers(message.content)
+                    else:
+                        self.huntTxt = message.content.splitlines()
+                        for i,o in enumerate(self.huntTxt):
+                            if "xp" in o:
+                                self.huntTxt[i] = ""
+                                break
+                        self.huntTxt = "\n".join(self.huntTxt)
+                        self.cash,self.rareHunt = get_emoji_numbers(self.huntTxt)
                     for i in self.rareHunt:
                         #rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid])
                         embed = discord.Embed(
@@ -1878,7 +1887,7 @@ class MyClient(discord.Client):
                             description=f"**User** : <@{self.user.id}>\n**rank** : {i[1]}\n**message link** : {message.jump_url}",
                             color=0xffafd7,#pink1
                         )
-                        print(i)
+                        #print(i)
                         try:
                             tempVar = int(i[2][:-1].replace(f"<a:{i[0]}:", ""))
                             embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{tempVar}.gif")
@@ -1949,7 +1958,7 @@ class MyClient(discord.Client):
                             self.webhook = discord.Webhook.from_url(webhook_url, session=session)
                             embed = discord.Embed(
                                 title=f'{self.user} Found a lootbox!',
-                                description=f"**User** : <@{self.user.id}>\n**message link** : [click here]({message.jump_url})",
+                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
                                 color=0xffafd7,#pink1
                             )
                             embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427004983460888588.gif")
@@ -1968,7 +1977,7 @@ class MyClient(discord.Client):
                             self.webhook = discord.Webhook.from_url(webhook_url, session=session)
                             embed = discord.Embed(
                                 title=f'{self.user} used a lootbox!',
-                                description=f"**User** : <@{self.user.id}>\n**message link** : [click here]({message.jump_url})",
+                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
                                 color=0xffafd7,#pink1
                             )
                             embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427019823747301377.gif")
@@ -2000,7 +2009,7 @@ class MyClient(discord.Client):
                         async with aiohttp.ClientSession() as session:
                             embed = discord.Embed(
                                 title=f'{self.user} used crates!',
-                                description=f"**User** : <@{self.user.id}>\n**message link** : [click here]({message.jump_url})",
+                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
                                 color=0xffafd7,#pink1
                             )
                             embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/523771437408845852.gif")
