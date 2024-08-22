@@ -343,11 +343,11 @@ def get_emoji_numbers(text, emoji_dict=emoji_dict):
     pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
     emojis = pattern.findall(text)
     ranges = [
-        (39, 44, 1, False, "common"),
-        (34, 38, 3, False, "uncommon"),
-        (29, 33, 10, False, "rare"),
-        (24, 28, 250, False, "epic"),
-        (19, 23, 5000, True, "mythical"),
+        (40, 44, 1, False, "common"),
+        (35, 39, 3, False, "uncommon"),
+        (30, 34, 10, False, "rare"),
+        (25, 29, 250, False, "epic"),
+        (19, 24, 5000, True, "mythical"),
         (14, 18, 30000, True, "gem"),
         (9, 13, 15000, True, "legendary"),
         (4, 8, 250000, True, "frozen"),
