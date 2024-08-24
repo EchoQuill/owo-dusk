@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.4.1"
+version = "1.4.2"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -583,7 +583,7 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                 console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
-                    await webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                    await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoBattle and huntBattleR:
                 await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
@@ -593,14 +593,14 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                 console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
-                    await webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
+                    await self.webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoOwo and owoR:
                 await asyncio.sleep(random.uniform(0.4,0.8))
                 await self.sendCommands(channel=channel, message="owo")
                 console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
                 if webhookUselessLog:
-                    await webhookSender(f"-{self.user}[+] ran OwO.", colors=0xd7d7ff)
+                    await self.webhookSender(f"-{self.user}[+] ran OwO.", colors=0xd7d7ff)
                 self.rPrevTime[2] = time.time()
             if (autoPray or autoCurse) and prayCurseR:
                 await asyncio.sleep(random.uniform(0.4,0.8))
