@@ -1,5 +1,5 @@
 {
-  "setprefix": "owo ",
+  "setprefix": "owo w",
   "typingIndicator": false,
   "offlineStatus": false,
   "website": {
@@ -22,7 +22,8 @@
       "useReactionBotCooldowns": false,
       "minCooldown": 300,
       "maxCooldown": 350,
-      "userToPrayOrCurse": null
+      "userToPrayOrCurse": null,
+      "pingUser": false
     },
     {
       "sell": false,
@@ -38,8 +39,8 @@
       "minCooldown": 15,
       "maxCooldown": 20,
       "doubleOnLose": false,
-      "allottedAmount": 40000,
-      "startValue": 200
+      "allottedAmount": 200000,
+      "startValue": 1000
     },
     {
       "quest": false,
@@ -61,7 +62,8 @@
     },
     {
       "cookie": false,
-      "userid": 408785106942164992
+      "userid": 408785106942164992,
+      "pingUser": false
     },
     {
       "sleep": false,
@@ -88,12 +90,17 @@
       "maxCooldown": 13
     }
   ],
+  "autoDaily": false,
   "textCommands": {
     "prefix": ".",
     "commandToStopUser": "stop",
     "commandToStartUser": "start"
   },
-  "autoDaily": false,
+  "logs": {
+    "rareHuntAnimalCatches": false,
+    "gettingOrOpeningLootboxs": false,
+    "gettingOrOpeningCrates": false
+  },
   "autoUse": {
     "autoGem": {
       "order": {
@@ -115,7 +122,7 @@
   "webhook": {
     "enabled": false,
     "webhookUselessLog": false,
-    "webhookUrl": "webhook url here, btw no need to edit webhookCaptchaUrl if your okay with captcha messages being send in same channel",
+    "webhookUrl": "webhook url here",
     "webhookCaptchaUrl": null,
     "webhookUserIdToPingOnCaptcha": 1
   },
@@ -164,7 +171,7 @@
     },
     "playAudio": {
       "enabled": false,
-      "path": "example path:- C:\\Users\\Admin\\Music\\music.mp3"
+      "path": "PATH to audio file here"
     },
     "batteryCheck": {
       "enabled": false,
