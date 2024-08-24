@@ -261,7 +261,7 @@ if autoEmpoweredGem:
     gem_map["gem3"] = "autoEmpoweredGem"
 if autoSpecialGem:
     gem_map["star"] = "autoSpecialGem"
-print(gem_map)
+#print(gem_map)
 questsList = []
 
 # Cooldowns
@@ -1486,6 +1486,7 @@ class MyClient(discord.Client):
         self.gemSpecialCnt = None
         self.gems = autoGem
         self.invCheck = False
+        self.tempGem = False
         #-------
         self.gambleTotal = gambleAllottedAmount
         if rCheck:
@@ -1664,9 +1665,9 @@ class MyClient(discord.Client):
             self.f = False
             if webhookEnabled:
                 await webhookSender(f"-{self.user}[+] Captcha solved. restarting...", colors=0x00ffaf)
-            print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
+            #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
-                print("attempting to pop captcha indirectly")
+                #print("attempting to pop captcha indirectly")
                 while True:
                     with lock:
                         self.tempListCount = 0
@@ -1675,19 +1676,19 @@ class MyClient(discord.Client):
                             if i == self.tempJsonData:
                                 captchas.pop(self.tempListCount)
                                 captchaAnswers.pop(self.tempListCount)
-                                print("popped captcha indirectly")
+                                #print("popped captcha indirectly")
                                 self.popped = True
                                 break
                             self.tempListCount+=1
                         if self.popped:
                             break
-                print(captchas , captchaAnswers)
+                #print(captchas , captchaAnswers)
                 self.webInt = None
 
                 self.captchaSolver.stop()
                 self.webSend = False
-                print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
-                print(f"{self.user} stopped captcha solver")
+                #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
+                #print(f"{self.user} stopped captcha solver")
             return
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             try:
@@ -1776,7 +1777,7 @@ class MyClient(discord.Client):
                         if self.webInt is None:
                             self.data_json = json.dumps(self.dataToSend)
                             #self.data_json = self.data_json.replace('"', '\\"').replace('&', '\\&')
-                            print(self.data_json)
+                            #print(self.data_json)
                             self.curl_command = [
                                 'curl',
                                 '-X', 'POST',
@@ -1785,7 +1786,7 @@ class MyClient(discord.Client):
                                 '-d', self.data_json
                             ]
                             #self.curl_command = f"""curl -X POST http://localhost:{websitePort}/add_captcha -H "Content-Type: application/json" -d '{self.data_json}'"""
-                            print(self.curl_command)
+                            #print(self.curl_command)
                             self.result = subprocess.run(self.curl_command, capture_output=True, text=True)
                             #self.response_json = os.popen(self.curl_command).read()
                             #self.response_dict = json.loads(self.response_json)
@@ -1798,8 +1799,8 @@ class MyClient(discord.Client):
                                 self.tempJsonData = captchas[self.webInt]
                             else:
                                 print("Error:", self.result.stderr)
-                            print(self.webInt, "from curl post section")
-                            print("captcha solver started")
+                            #print(self.webInt, "from curl post section")
+                            #print("captcha solver started")
                     except json.JSONDecodeError as json_err:
                         print(f"Error decoding JSON response: {json_err}")
                     except Exception as e:
@@ -1908,26 +1909,34 @@ class MyClient(discord.Client):
                     self.autoEmpoweredGem = True
                     self.autoLuckyGem = True
                     self.autoSpecialGem = True
-                    for gem, attr in gem_map.items():
-                        if gem in message.content:
-                            setattr(self, attr, False)
-                    print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
-                    if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
-                        if self.f:
-                            return
-                        self.current_time = time.time()
-                        if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                            await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-                        console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "orchid on black")
-                        if webhookUselessLog:
-                            await webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}inv")
-                        self.invCheck = True
+                    #[tempcheck,check repeat]
+                    if not self.tempGem:
+                        self.tempGem = True
+                        for gem, attr in gem_map.items():
+                            if gem in message.content:
+                                setattr(self, attr, False)
+                        #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
+                        if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
+                            if self.f:
+                                return
+                            self.current_time = time.time()
+                            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                            console.print(f"-{self.user}[~] checking Inventory....".center(console_width - 2 ), style = "orchid on black")
+                            if webhookUselessLog:
+                                await webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}inv")
+                            self.invCheck = True
                 elif "caught" in message.content.lower() and self.gems:
                     if self.f:
                         return
                     #print("test")
+                    self.autoHuntGem = True
+                    self.autoEmpoweredGem = True
+                    self.autoLuckyGem = True
+                    self.autoSpecialGem = True
                     self.current_time = time.time()
+                    self.tempGem = False
                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                     #await self.cm.send(f"{setprefix}inventory")
@@ -2036,7 +2045,7 @@ class MyClient(discord.Client):
             self.animals = get_emoji_names(message.content)
             self.animals.reverse()
             await asyncio.sleep(random.uniform(1.5,2.3))
-            print(self.animals)
+            #print(self.animals)
             self.threeAnimals = min(len(self.animals), 3) #int
             for i in range(self.threeAnimals):
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}team add {self.animals[i]}")
@@ -2073,7 +2082,7 @@ class MyClient(discord.Client):
                 for gem in self.sorted_gems:
                     for intent, (gem_list, gem_enabled, gem_enabled2) in self.gem_intent_mapping.items():
                         if gem_enabled and gem_enabled2 and gem in gem_list and intent not in self.added_intents:
-                            #if not self.tempGemUsage:
+                            #if not self.tempGem Usage:
                             self.sendingGemsIds+=f"{gem[1:]} "
                             #self.added_gems.add(gem)
                             self.added_intents.add(intent)
@@ -2086,12 +2095,13 @@ class MyClient(discord.Client):
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
                 if self.sendingGemsIds != "":
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds}", bypass=True)
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds[:-1]}", bypass=True)
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
+                    self.tempGem = False
                     if webhookUselessLog:
                         await webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})", colors=0x00FFFF)
                     self.last_cmd_time = time.time()
-                else:
+                elif self.tempGem == False:
                     self.gems = False
                     console.print(f"-{self.user}[!] No gems to use... disabling...".center(console_width - 2 ), style = "deep_pink2 on black")
                 self.invCheck = False
