@@ -23,5 +23,5 @@ requests==2.32.3
 rich==13.8.0
 tzlocal==5.2
 urllib3==2.2.2
-Werkzeug==3.0.3
+Werkzeug==3.0.4
 yarl==1.9.6
