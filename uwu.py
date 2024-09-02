@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.4.2"
+version = "1.4.3"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -1071,28 +1071,31 @@ class MyClient(discord.Client):
     # auto sell / auto sac.
     @tasks.loop()
     async def send_sell_or_sac(self):
-        if not self.sellOrSacSelected:
-            if self.ss == 1:
-                self.sellOrSac = "sac"
-                self.ss = 0
-            elif self.ss == 0:
-                self.sellOrSac = "sell"
-                self.ss = 1
-                self.broke[1] = False
-        if self.f != True and self.sleep != True and self.sleep2 != True:
-            self.current_time = time.time()
-            if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
-                await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
-            self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            #await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}")
-            self.last_cmd_time = time.time()
-            if webhookUselessLog:
-                await self.webhookSender(f"-{self.user}[+] ran {self.sellOrSac}", colors=0x00FFFF)
-            console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
-            await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
-        else:
-            await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+        try:
+            if not self.sellOrSacSelected:
+                if self.ss == 1:
+                    self.sellOrSac = "sac"
+                    self.ss = 0
+                elif self.ss == 0:
+                    self.sellOrSac = "sell"
+                    self.ss = 1
+                    self.broke[1] = False
+            if self.f != True and self.sleep != True and self.sleep2 != True:
+                self.current_time = time.time()
+                if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
+                    await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
+                self.time_since_last_cmd = self.current_time - self.last_cmd_time
+                #await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}")
+                self.last_cmd_time = time.time()
+                if webhookUselessLog:
+                    await self.webhookSender(f"-{self.user}[+] {self.sellOrSac} animals ({rarity})", colors=0xff875f)
+                console.print(f"-{self.user}[+] {self.sellOrSac} animals ({rarity})".center(console_width - 2 ), style = "salmon1 on black")
+                await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
+            else:
+                await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+        except Exception as e:
+            print(e, "\nsell sac")
      # Custom commands
     @tasks.loop(seconds=1)
     async def send_custom(self):
@@ -1586,7 +1589,8 @@ class MyClient(discord.Client):
             else:
                 self.sellOrSac = "sac"
                 self.sellOrSacSelected = True
-            self.task_methods.append(self.send_sell_or_sac.start)
+            await asyncio.sleep(random.uniform(10, 30))
+            self.send_sell_or_sac.start()
         
         #self.sleep = True
         #print("rr")
