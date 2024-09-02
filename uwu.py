@@ -3,6 +3,7 @@
 
 # I feel sorry for the one reading this code lol
 #                 - EchoQuill
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from datetime import datetime, timedelta, timezone
 from discord.ext import commands, tasks
@@ -61,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.4.2"
+version = "1.4.3"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -1088,8 +1089,8 @@ class MyClient(discord.Client):
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}")
                 self.last_cmd_time = time.time()
                 if webhookUselessLog:
-                    await self.webhookSender(f"-{self.user}[+] ran {self.sellOrSac}", colors=0x00FFFF)
-                console.print(f"-{self.user}[+] ran {self.sellOrSac}".center(console_width - 2 ), style = "Cyan on black")
+                    await self.webhookSender(f"-{self.user}[+] {self.sellOrSac} animals ({rarity})", colors=0xff875f)
+                console.print(f"-{self.user}[+] {self.sellOrSac} animals ({rarity})".center(console_width - 2 ), style = "salmon1 on black")
                 await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
             else:
                 await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
