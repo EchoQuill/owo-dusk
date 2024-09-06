@@ -1461,10 +1461,6 @@ class MyClient(discord.Client):
         #---
         self.shopCheck = [True, None, False]
         self.last_cmd_time = 0
-        self.autoHuntGem = True
-        self.autoEmpoweredGem = True
-        self.autoLuckyGem = True
-        self.autoSpecialGem = True
         self.lastcmd = None
         self.busy = False
         self.hb = 0
@@ -1481,6 +1477,11 @@ class MyClient(discord.Client):
         self.sleep2 = False
         self.changedPrefix = False
         # AutoGems
+        self.autoHuntGem = True
+        self.autoEmpoweredGem = True
+        self.autoLuckyGem = True
+        self.autoSpecialGem = True
+
         self.gemHuntCnt = None
         self.gemEmpCnt = None
         self.gemLuckCnt = None
@@ -1863,7 +1864,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[+] Accepted OwO bot rules".center(console_width - 2 ), style = "spring_green1 on black")
             except:
                 pass
-        if message.channel.id == self.channel_id and ('you found' in message.content.lower() or "caught" in message.content.lower()):
+        if message.channel.id == self.channel_id and ('you found:' in message.content.lower() or "caught" in message.content.lower()):
             try:
                 if not huntBattleR:
                     self.hb = 1
@@ -1914,7 +1915,7 @@ class MyClient(discord.Client):
                         for gem, attr in gem_map.items():
                             if gem in message.content:
                                 setattr(self, attr, False)
-                        #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
+                        print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                         if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
                             if self.f:
                                 return
@@ -1926,6 +1927,9 @@ class MyClient(discord.Client):
                                 await self.webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
                             await self.sendCommands(channel=self.cm, message=f"{setprefix}inv")
                             self.invCheck = True
+                        else:
+                            await asyncio.sleep(random.uniform(0.5,0.9))
+                            self.tempGem = False
                 elif "caught" in message.content.lower() and self.gems:
                     if self.f:
                         return
@@ -2085,7 +2089,7 @@ class MyClient(discord.Client):
                 #print(self.gem_match_count,"\n\n", self.sorted_gems)
                 #print()
                 #print(self.sendingGemsIds)
-                await asyncio.sleep(random.uniform(0.9,1.2))
+                await asyncio.sleep(random.uniform(1.5,1.9))
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.tempForCheck = False
