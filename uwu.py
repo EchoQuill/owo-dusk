@@ -1935,6 +1935,7 @@ class MyClient(discord.Client):
                     #[tempcheck,check repeat]
                     if not self.tempGem:
                         self.tempGem = True
+                        self.tempGemCheckRecieved = False
                         for gem, attr in gem_map.items():
                             if gem in message.content:
                                 setattr(self, attr, False)
@@ -1950,6 +1951,9 @@ class MyClient(discord.Client):
                                 await self.webhookSender(f"-{self.user}[~] checking Inventory.", "For autoGem..", colors=0xd75fd7)
                             await self.sendCommands(channel=self.cm, message=f"{setprefix}inv")
                             self.invCheck = True
+                            await asyncio.sleep(random.uniform(0.9,0.13))
+                            if not self.tempGemCheckRecieved:
+                                self.tempGem = False
                         else:
                             await asyncio.sleep(random.uniform(0.5,0.9))
                             self.tempGem = False
@@ -2086,6 +2090,8 @@ class MyClient(discord.Client):
                 #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                 self.sleep = True
                 self.tempForCheck = False
+                if self.tempGem:
+                    self.tempGemCheckRecieved = True
                 self.sendingGemsIds = ""
                 self.gem_intent_mapping = {
                     0: (huntGems, autoHuntGem, self.autoHuntGem),
@@ -2420,9 +2426,9 @@ def run_bots(tokens_and_channels):
     for thread in threads:
         thread.join()
 def run_bot(token, channel_id):
-    logging.getLogger("discord.client").setLevel(logging.INFO) #remove that useless voice chat thingy warn
+    logging.getLogger("discord.client").setLevel(logging.ERROR) #remove that useless voice chat thingy warn
     client = MyClient(token, channel_id)
-    client.run(token, log_level=logging.INFO)
+    client.run(token, log_level=logging.ERROR)
 if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
