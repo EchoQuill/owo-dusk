@@ -2411,8 +2411,9 @@ def run_bots(tokens_and_channels):
     for thread in threads:
         thread.join()
 def run_bot(token, channel_id):
+    logging.getLogger("discord.client").setLevel(logging.ERROR) #remove that useless voice chat thingy warn
     client = MyClient(token, channel_id)
-    client.run(token, log_handler=None)
+    client.run(token, log_level=logging.ERROR)
 if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
