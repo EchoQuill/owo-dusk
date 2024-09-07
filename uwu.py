@@ -1935,11 +1935,14 @@ class MyClient(discord.Client):
                     #[tempcheck,check repeat]
                     if not self.tempGem:
                         self.tempGem = True
-                        self.tempGemCheckRecieved = False
+                        if self.tempGemCheckRecieved:
+                            if random.randint(1,3) == 3: # Ik , iam an absolute genious!
+                                self.tempGemCheckRecieved = False
+                            return
                         for gem, attr in gem_map.items():
                             if gem in message.content:
                                 setattr(self, attr, False)
-                        print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
+                        #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                         if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
                             if self.f:
                                 return
