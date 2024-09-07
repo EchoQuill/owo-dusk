@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.4.3"
+version = "1.4.4"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -1665,9 +1665,23 @@ class MyClient(discord.Client):
                 #else:
                     #await self.rSend(channel=self.cm)
             await asyncio.sleep(random.uniform(0.69, 2.69))
+            embed2 = discord.Embed(
+                title=f'-{self.user}[+] Captcha solved. restarting...',
+                description=f"**User** : <@{self.user.id}>",
+                color=discord.Color(0x00ffaf)
+                )
+            embed2.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/672273475846668309.gif")
+            #<a:hnspepohappyOwO:672273475846668309>
             self.f = False
             if webhookEnabled:
-                await self.webhookSender(f"-{self.user}[+] Captcha solved. restarting...", colors=0x00ffaf)
+                if webhookCaptchaChnl:
+                    self.webhook = discord.Webhook.from_url(webhookCaptchaChnl, session=self.session)
+                else:
+                    self.webhook = discord.Webhook.from_url(webhook_url, session=self.session)
+                if webhookPingId:
+                    await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
+                else:
+                    await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
             #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
                 #print("attempting to pop captcha indirectly")
@@ -1726,6 +1740,8 @@ class MyClient(discord.Client):
                             color=discord.Color.red()
                         )
                 embed2.set_author(name=self.user, icon_url="https://i.imgur.com/6zeCgXo.png")
+                embed2.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/1171297031772438618.png")
+                #<:owo_scared:1171297031772438618>
                 if webhookEnabled:
                     if webhookCaptchaChnl:
                         self.webhook = discord.Webhook.from_url(webhookCaptchaChnl, session=self.session)
@@ -1825,7 +1841,8 @@ class MyClient(discord.Client):
                     color=discord.Color.red(),
                                 )
             embed2.set_author(name=self.user, icon_url="https://i.imgur.com/6zeCgXo.png")
-            embed2.set_footer(text=":(")
+            embed2.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/1213902052879503480.gif")
+            #<a:dead_cat:1213902052879503480>
             if webhookEnabled:
                 if webhookCaptchaChnl:
                     self.webhook = discord.Webhook.from_url(webhookCaptchaChnl, session=self.session)
