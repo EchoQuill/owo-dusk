@@ -134,8 +134,6 @@ if desktopNotificationEnabled:
     try:
         from plyer import notification
         print("Notification module in plyer imported successfully.")
-        from queue import Queue
-        print("Queue module in queue imported successfully.")
     except ImportError as e:
         print(f"ImportError: {e}")
 
@@ -154,6 +152,9 @@ if desktopPopup:
     try:
         import tkinter as tk
         from tkinter import PhotoImage
+        from queue import Queue
+        print("Queue module in queue imported successfully.")
+
         print("messagebox module in tkinter imported successfully.")
     except ImportError as e:
         print(f"ImportError: {e}")
