@@ -251,10 +251,12 @@
     </div>
     <!-- Add the auto-refresh script just before the closing body tag -->
     <script>
-        // Set an interval to refresh the page every 15 seconds
+        // Set an interval to refresh the page
+        var refresh_interval = "{{ refresh_interval | int }}" // this should have been converted to int had it not been for the commas, but if i remove that it gives error...
+        var refresh_interval_int = parseInt(refresh_interval, 10) * 1000;
         setInterval(function() {
             location.reload();
-        }, 15000); // 15000 milliseconds = 15 seconds
+        }, refresh_interval_int); // 15000 milliseconds = 15 seconds
     </script>
 </body>
 </html>

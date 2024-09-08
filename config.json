@@ -5,7 +5,8 @@
   "useSlashCommands": false,
   "website": {
     "enabled": false,
-    "port": 1200
+    "port": 1200,
+    "refreshInterval": 15
   },
   "commands": [
     {

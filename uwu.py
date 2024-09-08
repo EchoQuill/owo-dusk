@@ -97,6 +97,7 @@ desktopAudioPlayer = config["desktop"]["playAudio"]["enabled"]
 desktopAudioPlayerPath = config["desktop"]["playAudio"]["path"]
 websiteEnabled = config["website"]["enabled"]
 websitePort = config["website"]["port"]
+refresh_interval = config["website"]["refreshInterval"]
 captchaConsoleEnabled = config["console"]["runConsoleCommandOnCaptcha"]
 banConsoleEnabled = config["console"]["runConsoleCommandOnBan"]
 desktopPopup = config["desktop"]["popup"]["enabled"]
@@ -482,9 +483,9 @@ def index():
     try:
         with lock:
             if not captchas:
-                return render_template('index.html', no_captchas=True, version=version)
+                return render_template('index.html', no_captchas=True, version=version, refresh_interval=refresh_interval)
             else:
-                return render_template('index.html', captchas=captchas, version=version)
+                return render_template('index.html', captchas=captchas, version=version, refresh_interval=refresh_interval)
     except Exception as e:
         print(f"error in index(): <index.html> :-> {e}")
 
