@@ -90,6 +90,7 @@ termuxAudioPlayer = config["termux"]["playAudio"]["enabled"]
 termuxAudioPlayerPath = config["termux"]["playAudio"]["path"]
 termuxVibrationEnabled = config["termux"]["vibrate"]["enabled"]
 termuxVibrationTime = config["termux"]["vibrate"]["time"] * 1000
+openCaptchaWebsite = config["termux"]["openCaptchaWebsite"]
 desktopNotificationEnabled = config["desktop"]["notifications"]["enabled"]
 desktopNotificationCaptchaContent = config["desktop"]["notifications"]["captchaContent"]
 desktopNotificationBannedContent = config["desktop"]["notifications"]["bannedContent"]
@@ -536,6 +537,10 @@ class MyClient(discord.Client):
                             await command()
             except Exception as e:
                 print(e)
+                if e == "Did not receive a response from Discord":
+                    print('retrying')
+                    await command()
+
     # log webhooks
     async def webhookSender(self, msg, desc=None, plain_text_msg=None, colors=None):
         async with aiohttp.ClientSession() as session:
@@ -1817,6 +1822,8 @@ class MyClient(discord.Client):
                      popup_queue.put((captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType))
                 if desktopAudioPlayer:
                     playsound(desktopAudioPlayerPath, block=False)
+                if openCaptchaWebsite:
+                    run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
                 if self.webSend == False and websiteEnabled:
                     try:
                         if list_captcha[1] in message.content:
@@ -2495,10 +2502,10 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
     if autoPray == True and autoCurse == True:
         console.print("Both autoPray and autoCurse enabled. Only enable one!", style = "red on black")
         os._exit(0)
-    if (termuxNotificationEnabled or termuxAudioPlayer or termuxToastEnabled or termuxTtsEnabled or mobileBatteryCheckEnabled) and (desktopNotificationEnabled or desktopAudioPlayer or desktopBatteryCheckEnabled or desktopPopup):
+    if (termuxNotificationEnabled or termuxAudioPlayer or termuxToastEnabled or termuxTtsEnabled or mobileBatteryCheckEnabled or openCaptchaWebsite) and (desktopNotificationEnabled or desktopAudioPlayer or desktopBatteryCheckEnabled or desktopPopup):
         console.print("Only enable either termux category or desktop (termux is for mobile, while desktop for laptop,pc etc)(console is for all.)", style = "red on black")
         os._exit(0)
-    if not (termuxNotificationEnabled or termuxAudioPlayer or termuxToastEnabled or termuxTtsEnabled or mobileBatteryCheckEnabled or desktopNotificationEnabled or desktopAudioPlayer or desktopBatteryCheckEnabled or desktopPopup):
+    if not (termuxNotificationEnabled or openCaptchaWebsite or termuxAudioPlayer or termuxToastEnabled or termuxTtsEnabled or mobileBatteryCheckEnabled or desktopNotificationEnabled or desktopAudioPlayer or desktopBatteryCheckEnabled or desktopPopup):
         console.print("No captcha alert systems have been enabled. Please enable any if this wasn't done intentionally.", style="red on black")
     if autoQuest:
         console.print("Auto quest is still in testing and is not fully tested yet. so expect bugs. (report all bugs in our discord server to make fixing them easier! :>)", style="orchid on black")
@@ -2506,6 +2513,11 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
         console.print("Desktop audio player is having issues for 'some' users. so please don't completely depend on it, for captcha alerts!", style="orchid on black")
     if lvlGrind and useQuoteInstead:
         console.print("Qoutes are not reccomended as thats an easy way to get banned (basically asking for ban...)", style="orchid on black")
+    if openCaptchaWebsite:
+        console.print("openCaptchaWebsite :- These are not well tested, and only works if the phone your using is ON.", style="orchid on black")
+    if termuxTtsEnabled:
+        console.print("termuxTtsEnabled :- These sometimes do not work, so don't rely on it fully!", style="orchid on black")
+
 
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
