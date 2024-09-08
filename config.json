@@ -2,6 +2,7 @@
   "setprefix": "owo ",
   "typingIndicator": false,
   "offlineStatus": false,
+  "useSlashCommands": false,
   "website": {
     "enabled": false,
     "port": 1200

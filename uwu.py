@@ -230,6 +230,7 @@ giveawayChannels = config["commands"][9]["channelsToJoin"]
 shopEnabled = config["commands"][10]["shop"]
 shopItemsToBuy = config["commands"][10]["itemsToBuy"]
 skipSpamCheck = (shopEnabled == autoSlots == autoCf == autoBattle == autoHunt == False)
+slashCommandsEnabled = config["useSlashCommands"]
 # Logs
 logRareHunts = config["logs"]["rareHuntAnimalCatches"]
 logLootboxes = config["logs"]["gettingOrOpeningLootboxs"]
@@ -522,6 +523,18 @@ class MyClient(discord.Client):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
+    # send slash commands
+    async def slashCommandSender(self, msg):
+        if self.f != True and self.sleep != True and self.sleep2 != True:
+            try:
+                for i, command in enumerate(self.slashCommands):
+                    if command.application.id == 408785106942164992:
+                        #print(command.name)
+                        if command.name == msg:
+                            print(f"Command found at index {i}: {command.name}")
+                            await command()
+            except Exception as e:
+                print(e)
     # log webhooks
     async def webhookSender(self, msg, desc=None, plain_text_msg=None, colors=None):
         async with aiohttp.ClientSession() as session:
@@ -579,20 +592,26 @@ class MyClient(discord.Client):
         try:
             if autoHunt and huntBattleR:
                 await asyncio.sleep(random.uniform(0.4,0.8))
-                if useShortForm:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if slashCommandsEnabled:
+                    await self.slashCommandSender("hunt")
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    if useShortForm:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                 console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoBattle and huntBattleR:
                 await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
-                if useShortForm:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                if slashCommandsEnabled:
+                    await self.slashCommandSender("battle")
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
+                    if useShortForm:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                 console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     await self.webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
@@ -829,11 +848,14 @@ class MyClient(discord.Client):
                         else:
                             #self.broke[False,False]
                             await asyncio.sleep(random.uniform(1.9,3.7))
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle[0]}")
-                        #await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender(self.huntOrBattle)
                     else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle}")
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle[0]}")
+                            #await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle}")
                     self.lastHb = self.hb
                     console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
                     if webhookUselessLog:
@@ -1495,6 +1517,12 @@ class MyClient(discord.Client):
         self.invCheck = False
         self.tempGem = False
         #-------
+        # Slash Commands
+        if slashCommandsEnabled:
+            self.slashCommands = await self.cm.application_commands()
+            print(self.slashCommands)
+
+        #-------
         self.gambleTotal = gambleAllottedAmount
         if rCheck:
             self.rTime = [None, None, None]
@@ -1643,20 +1671,26 @@ class MyClient(discord.Client):
             #print(message.content)
             if autoHunt:
                 await asyncio.sleep(random.uniform(0.4,0.8))
-                if useShortForm:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if slashCommandsEnabled:
+                    await self.slashCommandSender("hunt")
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    if useShortForm:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                 console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     await self.webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
             if autoBattle:
                 await asyncio.sleep(huntBattleDelay[0], huntBattleDelay[1])
-                if useShortForm:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                if slashCommandsEnabled:
+                    await self.slashCommandSender("battle")
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
+                    if useShortForm:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                 console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                 if webhookUselessLog:
                     await self.webhookSender(f"-{self.user}[+] ran battle", colors=0xaf00ff)
