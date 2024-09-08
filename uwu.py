@@ -662,6 +662,12 @@ class MyClient(discord.Client):
                 print(self.user, command)
         except Exception as e:
             print("send_command error", e)
+    
+    # Auto gems check
+    #@tasks.loop()
+    #async def gemUsageChecker(self):
+        
+        #self.invCheck
 
 
 #----------SENDING COMMANDS----------#
@@ -1662,11 +1668,6 @@ class MyClient(discord.Client):
         if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
             console.print(f"-{self.user}[+] Stopping...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = True
-        elif message.content == ".stop":
-            print(f"Message Author ID: {message.author.id}")
-            print(f"Chat Allowed Users: {chatAllowedUsers}")
-            print(f"Command to Stop: {f'{chatPrefix}{chatCommandToStop}'}")
-            print(f"Command Content: {message.content.lower()}")
         #chatCommandToStart
         if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
             console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
@@ -2000,8 +2001,12 @@ class MyClient(discord.Client):
                     if not self.tempGem:
                         self.tempGem = True
                         if self.tempGemCheckRecieved:
-                            if random.randint(1,3) == 3: # Ik , iam an absolute genious!
+                            if self.invCheck:
                                 self.tempGemCheckRecieved = False
+                                self.tempGem = False
+                                self.invCheck = False
+                            #if random.randint(1,3) == 3: # Ik , iam an absolute genious!
+                                #self.tempGemCheckRecieved = False
                             return
                         for gem, attr in gem_map.items():
                             if gem in message.content:
@@ -2088,6 +2093,9 @@ class MyClient(discord.Client):
                             )
                             embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427019823747301377.gif")
                             await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                            if autoGem:
+                                self.gems = True
+                                console.print(f"-{self.user}[+] renabling auto gems".center(console_width - 2 ), style = "pink1 on black")
                     await asyncio.sleep(random.uniform(0.3,0.5))
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 
@@ -2196,12 +2204,15 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}use {self.sendingGemsIds[:-1]}", bypass=True)
                     console.print(f"-{self.user}[+] used gems({self.sendingGemsIds})".center(console_width - 2 ), style = "Cyan on black")
                     self.tempGem = False
+                    self.tempGemCheckRecieved = False
                     if webhookUselessLog:
                         await self.webhookSender(f"-{self.user}[+] used Gems({self.sendingGemsIds})", colors=0x00FFFF)
                     self.last_cmd_time = time.time()
                 elif self.tempGem == False:
                     self.gems = False
                     console.print(f"-{self.user}[!] No gems to use... disabling...".center(console_width - 2 ), style = "deep_pink2 on black")
+                else:
+                    self.tempGemCheckRecieved = True
                 self.invCheck = False
                 await asyncio.sleep(random.uniform(0.5,0.9))
                 self.sleep = False
