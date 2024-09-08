@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.4.4"
+version = "1.5.0"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -106,6 +106,7 @@ bannedPopupMsg = config["desktop"]["popup"]["bannedContent"]
 chatPrefix = config["textCommands"]["prefix"]
 chatCommandToStop = config["textCommands"]["commandToStopUser"]
 chatCommandToStart = config["textCommands"]["commandToStartUser"]
+chatAllowedUsers = config["textCommands"]["allowedUsers"]
 
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
@@ -1610,10 +1611,10 @@ class MyClient(discord.Client):
         if message.author.id not in [408785106942164992, 519287796549156864, self.user.id]:
             return
         # Start Stop
-        if message.author.id == self.user.id and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
+        if (message.author.id == self.user.id or any(b in message.author.id for b in chatAllowedUsers)) and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
             console.print(f"-{self.user}[+] Stopping...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = True
-        if message.author.id == self.user.id and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
+        if (message.author.id == self.user.id or any(b in message.author.id for b in chatAllowedUsers)) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
             console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
             
             self.sleep2 = False

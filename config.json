@@ -94,7 +94,8 @@
   "textCommands": {
     "prefix": ".",
     "commandToStopUser": "stop",
-    "commandToStartUser": "start"
+    "commandToStartUser": "start",
+    "allowedUsers": []
   },
   "logs": {
     "rareHuntAnimalCatches": false,
