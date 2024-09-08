@@ -1485,7 +1485,7 @@ class MyClient(discord.Client):
         self.autoEmpoweredGem = True
         self.autoLuckyGem = True
         self.autoSpecialGem = True
-
+        self.tempGemCheckRecieved = False
         self.gemHuntCnt = None
         self.gemEmpCnt = None
         self.gemLuckCnt = None
