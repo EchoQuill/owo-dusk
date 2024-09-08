@@ -529,7 +529,7 @@ class MyClient(discord.Client):
     async def slashCommandSender(self, msg):
         if self.f != True and self.sleep != True and self.sleep2 != True:
             try:
-                for i, command in enumerate(self.slashCommands):
+                for i, command in enumerate(await self.cm.application_commands()):
                     if command.application.id == 408785106942164992:
                         #print(command.name)
                         if command.name == msg:
@@ -645,7 +645,6 @@ class MyClient(discord.Client):
                     await self.webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
         except Exception as e:
             print(e)
-#----------SENDING COMMANDS----------#
     #custom commands func
     async def send_command_custom(self, command, cooldown):
         try:
@@ -662,6 +661,9 @@ class MyClient(discord.Client):
                 print(self.user, command)
         except Exception as e:
             print("send_command error", e)
+
+
+#----------SENDING COMMANDS----------#
     #Solve Captchas
     @tasks.loop()
     async def captchaSolver(self):
@@ -1135,12 +1137,15 @@ class MyClient(discord.Client):
      # Custom commands
     @tasks.loop(seconds=1)
     async def send_custom(self):
-        try:
-            self.tasks = [self.send_command_custom(cmd, cd) for cmd, cd in zip(sorted_list1, sorted_list2)]
-            await asyncio.gather(*self.tasks)
-        except Exception as e:
-            print("send_custom error", e)
-        while self.f or self.sleep:
+        if self.f != True and self.sleep != True and self.sleep2 != True:
+            try:
+                self.tasks = [self.send_command_custom(cmd, cd) for cmd, cd in zip(sorted_list1, sorted_list2)]
+                await asyncio.gather(*self.tasks)
+            except Exception as e:
+                print("send_custom error", e)
+        #while self.f or self.sleep:
+            #await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
+        else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Quests
     @tasks.loop()
@@ -1530,9 +1535,9 @@ class MyClient(discord.Client):
         self.tempGem = False
         #-------
         # Slash Commands
-        if slashCommandsEnabled:
-            self.slashCommands = await self.cm.application_commands()
-            print(self.slashCommands)
+        #if slashCommandsEnabled:
+            #self.slashCommands = await self.cm.application_commands()
+            #print(self.slashCommands)
 
         #-------
         self.gambleTotal = gambleAllottedAmount

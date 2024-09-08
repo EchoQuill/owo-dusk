@@ -165,7 +165,7 @@
       "minPercentage": 15,
       "refreshInterval": 120
     },
-    "openCaptchaWebsite": true
+    "openCaptchaWebsite": false
   },
   "desktop": {
     "notifications": {
