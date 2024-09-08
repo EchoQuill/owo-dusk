@@ -108,7 +108,8 @@ bannedPopupMsg = config["desktop"]["popup"]["bannedContent"]
 chatPrefix = config["textCommands"]["prefix"]
 chatCommandToStop = config["textCommands"]["commandToStopUser"]
 chatCommandToStart = config["textCommands"]["commandToStartUser"]
-chatAllowedUsers = config["textCommands"]["allowedUsers"]
+chatAllowedUsers = [int(user_id) for user_id in config["textCommands"]["allowedUsers"]]
+print(chatAllowedUsers)
 
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
@@ -1643,6 +1644,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(10, 30))
             self.send_sell_or_sac.start()
         
+        
         #self.sleep = True
         #print("rr")
 
@@ -1653,16 +1655,23 @@ class MyClient(discord.Client):
                 return
         except:
             return
-        if message.author.id not in [408785106942164992, 519287796549156864, self.user.id]:
+        if message.author.id not in [408785106942164992, 519287796549156864, self.user.id] + chatAllowedUsers:
             return
+
         # Start Stop
-        if (message.author.id == self.user.id or any(b in message.author.id for b in chatAllowedUsers)) and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
+        if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
             console.print(f"-{self.user}[+] Stopping...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = True
-        if (message.author.id == self.user.id or any(b in message.author.id for b in chatAllowedUsers)) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
+        elif message.content == ".stop":
+            print(f"Message Author ID: {message.author.id}")
+            print(f"Chat Allowed Users: {chatAllowedUsers}")
+            print(f"Command to Stop: {f'{chatPrefix}{chatCommandToStop}'}")
+            print(f"Command Content: {message.content.lower()}")
+        #chatCommandToStart
+        if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
             console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
-            
             self.sleep2 = False
+        
         # Reaction bot
         if owoR and message.author.id == 519287796549156864 and "**OwO**" in message.content and message.channel.id == self.channel_id:
             if self.user.name in message.content or f"<@{self.user.id}>" in message.content:
