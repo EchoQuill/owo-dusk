@@ -737,20 +737,26 @@ class MyClient(discord.Client):
                 if self.rTime[0] >= 20 and self.f != True and self.sleep != True and self.sleep2 != True:
                     if autoHunt:
                         await asyncio.sleep(random.uniform(0.4,0.8))
-                        if useShortForm:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        if slashCommandsEnabled:
+                            await self.slashCommandSender("hunt")
                         else:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                            if useShortForm:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                            else:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
                         console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
                         if webhookUselessLog:
                             await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
                         self.rPrevTime[0] = time.time()
                     if autoBattle:
                         await asyncio.sleep(random.uniform(0.4,0.8))
-                        if useShortForm:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                        if slashCommandsEnabled:
+                            await self.slashCommandSender("battle")
                         else:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
+                            if useShortForm:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}b")
+                            else:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}battle")
                         console.print(f"-{self.user}[+] ran battle.".center(console_width - 2 ), style = "purple on black")
                         if webhookUselessLog:
                             await self.webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
