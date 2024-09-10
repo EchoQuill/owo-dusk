@@ -543,33 +543,35 @@ class MyClient(discord.Client):
                     await command()
 
     # log webhooks
-    async def webhookSender(self, msg, desc=None, plain_text_msg=None, colors=None):
-        async with aiohttp.ClientSession() as session:
+    async def webhookSender(self, msg, desc=None, plain_text_msg=None, colors=None, webhook_url=webhook_url, img_url=None, author_img_url=None):
+        try:
+            if colors:
+                color = discord.Color(colors)
+            else:
+                color = discord.Color(0x412280)
 
-            try:
-                if colors:
-                    color = discord.Color(colors)
-                else:
-                    color = discord.Color(0x412280)
-
-                emb = discord.Embed(
-                    title=msg,
-                    description=desc,
-                    color=color
-                )
-                # Use the existing session
-                channel_webhook = discord.Webhook.from_url(webhook_url, session=session)
-                # Send both the embed and plain text message if provided
-                if plain_text_msg:
-                    await channel_webhook.send(content=plain_text_msg, embed=emb, username='OwO-Dusk - Notifs')
-                else:
-                    await channel_webhook.send(embed=emb, username='OwO-Dusk - Notifs')
-            except discord.Forbidden as e:
-                print("Bot does not have permission to execute this command:", e)
-            except discord.NotFound as e:
-                print("The specified command was not found:", e)
-            except Exception as e:
-                print(e)
+            emb = discord.Embed(
+                title=msg,
+                description=desc,
+                color=color
+            )
+            if img_url:
+                emb.set_thumbnail(url=img_url)
+            if author_img_url:
+                emb.set_author(name=self.user, icon_url=author_img_url)
+            # Use the existing session
+            channel_webhook = discord.Webhook.from_url(webhook_url, session=self.session)
+            # Send both the embed and plain text message if provided
+            if plain_text_msg:
+                await channel_webhook.send(content=plain_text_msg, embed=emb, username='OwO-Dusk - Notifs')
+            else:
+                await channel_webhook.send(embed=emb, username='OwO-Dusk - Notifs')
+        except discord.Forbidden as e:
+            print("Bot does not have permission to execute this command:", e)
+        except discord.NotFound as e:
+            print("The specified command was not found:", e)
+        except Exception as e:
+            print(e)
     #send messages
     async def sendCommands(self, channel, message, bypass=False, captcha=False):
         try:
@@ -1304,22 +1306,21 @@ class MyClient(discord.Client):
         if self.f != True and self.sleep != True and self.sleep2 != True:
             if useQuoteInstead:
                 try:
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(quotesUrl) as response:
-                            if response.status == 200:
-                                data = await response.json()
-                                self.quote = data["quote"]["body"] #data[0]["quote"]
-                                #await self.cm.send(self.quote)
-                                await self.sendCommands(channel=self.cm, message=self.quote)
-                                console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
-                                if webhookUselessLog:
-                                    await self.webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind", colors=0x5f00d7)
-                            else:
-                                #await self.cm.send(generate_random_string())
-                                await self.sendCommands(channel=self.cm, message=generate_random_string())
-                                console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
-                                if webhookUselessLog:
-                                    await self.webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
+                    async with self.session.get(quotesUrl) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            self.quote = data["quote"]["body"] #data[0]["quote"]
+                            #await self.cm.send(self.quote)
+                            await self.sendCommands(channel=self.cm, message=self.quote)
+                            console.print(f"-{self.user}[+] Send random quote(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
+                            if webhookUselessLog:
+                                await self.webhookSender(f"-{self.user}[+] send random quote.", "This is for level grind", colors=0x5f00d7)
+                        else:
+                            #await self.cm.send(generate_random_string())
+                            await self.sendCommands(channel=self.cm, message=generate_random_string())
+                            console.print(f"-{self.user}[+] Send random strings(lvl grind)".center(console_width - 2 ), style = "purple3 on black")
+                            if webhookUselessLog:
+                                await self.webhookSender(f"-{self.user}[+] send random strings.", "This is for level grind", colors=0x5f00d7)
                 except Exception as e:
                     print(e)
             else:
@@ -1448,15 +1449,8 @@ class MyClient(discord.Client):
         if self.session is None:
             self.session = aiohttp.ClientSession()
         await asyncio.sleep(0.1)
-        embed1 = discord.Embed(
-            title='logging in',
-            description=f'logged in as {self.user.name}',
-            color=discord.Color.dark_green()
-        ) 
         if webhookEnabled:
-            async with aiohttp.ClientSession() as session:
-                self.dwebhook = discord.Webhook.from_url(webhook_url, session=session)
-                await self.dwebhook.send(embed=embed1, username='uwu bot')
+            await self.webhookSender("logging in", desc=f"logged in as {self.user.name}", colors=0x8334eb, img_url=self.user.avatar)
         self.cmds_cooldown = 0
         printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold purple on black' )
         listUserIds.append(self.user.id)
@@ -1731,24 +1725,8 @@ class MyClient(discord.Client):
                 #else:
                     #await self.rSend(channel=self.cm)
             await asyncio.sleep(random.uniform(0.69, 2.69))
-            embed2 = discord.Embed(
-                title=f'-{self.user}[+] Captcha solved. restarting...',
-                description=f"**User** : <@{self.user.id}>",
-                color=discord.Color(0x00ffaf)
-                )
-            embed2.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/672273475846668309.gif")
-            #<a:hnspepohappyOwO:672273475846668309>
-            self.f = False
             if webhookEnabled:
-                async with aiohttp.ClientSession() as session:
-                    self.webhook = discord.Webhook.from_url(
-                        webhookCaptchaChnl if webhookCaptchaChnl else webhook_url, 
-                        session=session
-                        )
-                    if webhookPingId:
-                        await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
-                    else:
-                        await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
+                await self.webhookSender(f'-{self.user}[+] Captcha solved. restarting...', desc=f"**User** : <@{self.user.id}>", colors=0x00ffaf, img_url="https://cdn.discordapp.com/emojis/672273475846668309.gif")
             #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
                 #print("attempting to pop captcha indirectly")
@@ -1787,37 +1765,38 @@ class MyClient(discord.Client):
                     run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
                 if self.captchaType == "link":
-                    embed2 = discord.Embed(
-                        title=f'CAPTCHA :- {self.user} ;<',
-                        description=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
-                        color=discord.Color.red()
+                    await self.webhookSender(
+                        msg=f'-{self.user} [+] CAPTCHA Detected',
+                        desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
+                        colors=0x00ffaf,  # Custom color
+                        img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                        plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
+                        webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
                     )
                 else:
                     if message.guild:
-                        embed2 = discord.Embed(
-                            title=f'CAPTCHA :- {self.user} ;<',
-                            description=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
-                            color=discord.Color.red()
+                        await self.webhookSender(
+                            msg=f'-{self.user} [+] CAPTCHA Detected',
+                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                            colors=0x00ffaf,  # Custom color
+                            img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                            author_img_url="https://i.imgur.com/6zeCgXo.png",
+                            plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
+                            webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
                         )
                     else:
-                        embed2 = discord.Embed(
-                            title=f'CAPTCHA :- {self.user} ;<',
-                            description=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
-                            color=discord.Color.red()
+                        await self.webhookSender(
+                            msg=f'-{self.user} [+] CAPTCHA Detected',
+                            desc=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
+                            colors=0x00ffaf,  # Custom color
+                            img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                            author_img_url="https://i.imgur.com/6zeCgXo.png",
+                            webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url,
+                            plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None
                         )
-                embed2.set_author(name=self.user, icon_url="https://i.imgur.com/6zeCgXo.png")
-                embed2.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/1171297031772438618.png")
+
                 #<:owo_scared:1171297031772438618>
-                if webhookEnabled:
-                    async with aiohttp.ClientSession() as session:
-                        self.webhook = discord.Webhook.from_url(
-                            webhookCaptchaChnl if webhookCaptchaChnl else webhook_url, 
-                           session=session
-                           )
-                        if webhookPingId:
-                            await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='OwO-Dusk - Notifs')
-                        else:
-                            await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
                 if termuxVibrationEnabled:
                     run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
                 if termuxAudioPlayer:
@@ -1904,24 +1883,17 @@ class MyClient(discord.Client):
             if termuxToastEnabled:
                 run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype='Banned')}'", timeout=5, retry=True)
             console.print(f"-{self.user}[!] BAN DETECTED.".center(console_width - 2 ), style = "deep_pink2 on black")
-            embed2 = discord.Embed(
-                    title=f'BANNED IN OWO :- {self.user} ;<',
-                    description=f"**User** : <@{self.user.id}>",
-                    color=discord.Color.red(),
-                                )
-            embed2.set_author(name=self.user, icon_url="https://i.imgur.com/6zeCgXo.png")
-            embed2.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/1213902052879503480.gif")
             #<a:dead_cat:1213902052879503480>
             if webhookEnabled:
-                async with aiohttp.ClientSession() as session:
-                    self.webhook = discord.Webhook.from_url(
-                        webhookCaptchaChnl if webhookCaptchaChnl else webhook_url, 
-                        session=session
-                        )
-                    if webhookPingId:
-                        await self.webhook.send(content=f"<@{webhookPingId}> , ",embed=embed2, username='OwO-Dusk - Notifs')
-                    else:
-                        await self.webhook.send(embed=embed2, username='OwO-Dusk - Notifs')
+                await self.webhookSender(
+                    msg=f'-{self.user} [+] CAPTCHA Detected',
+                    desc=f"**User** : <@{self.user.id}>\n**Channel** : {self.captcha_channel_name}\n**CAPTCHA Type** : {self.captchaType}",
+                    colors=0x00ffaf,  # Custom color
+                    img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
+                    author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
+                    webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
+                )
             if termuxVibrationEnabled:
                 run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True)
             if termuxAudioPlayer:
@@ -1971,21 +1943,19 @@ class MyClient(discord.Client):
                         self.cash,self.rareHunt = get_emoji_numbers(self.huntTxt)
                     for i in self.rareHunt:
                         #rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid])
-                        embed = discord.Embed(
-                            title=f'{self.user} caught a {i[1]} animal, {i[0]}!',
-                            description=f"**User** : <@{self.user.id}>\n**rank** : {i[1]}\n**message link** : {message.jump_url}",
-                            color=0xffafd7,#pink1
-                        )
                         #print(i)
                         try:
                             tempVar = int(i[2][:-1].replace(f"<a:{i[0]}:", ""))
-                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{tempVar}.gif")
                         except Exception as e:
+                            tempVar = None
                             print(e)
                         if webhookEnabled:
-                            async with aiohttp.ClientSession() as session:
-                                self.webhook = discord.Webhook.from_url(webhook_url, session=session)
-                                await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                            await self.webhookSender(
+                                msg=f'{self.user} caught a {i[1]} animal, {i[0]}!',
+                                desc=f"**User** : <@{self.user.id}>\n**rank** : {i[1]}\n**message link** : {message.jump_url}",
+                                colors=0xffafd7,  # Custom color
+                                img_url=f"https://cdn.discordapp.com/emojis/{tempVar}.gif" if tempVar else None
+                            )
                         console.print(f"-{self.user}[+] caught a {i[1]} animal! Yay.".center(console_width - 2 ), style = "pink1 on black")
                 if "you found" in message.content.lower() and self.gems:
                     # gem1 = diamond
@@ -2065,15 +2035,12 @@ class MyClient(discord.Client):
                 if logLootboxes:
                     console.print(f"-{self.user}[+] Found a lootbox!".center(console_width - 2 ), style = "pink1 on black")
                     if webhookEnabled and logLootboxes:
-                        async with aiohttp.ClientSession() as session:
-                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
-                            embed = discord.Embed(
-                                title=f'{self.user} Found a lootbox!',
-                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
-                                color=0xffafd7,#pink1
-                            )
-                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427004983460888588.gif")
-                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                        await self.webhookSender(
+                            msg=f'{self.user} Found a lootbox!',
+                            desc=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
+                            colors=0xffafd7,
+                            img_url="https://cdn.discordapp.com/emojis/427004983460888588.gif"
+                        )
                         #await self.webhookSender(f"-{self.user}[+] found a lootbox", colors=0xFF00FF)
                 if autoLootbox:
                     self.current_time = time.time()
@@ -2084,18 +2051,15 @@ class MyClient(discord.Client):
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all")
                     console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                     if webhookEnabled and logLootboxes:
-                        async with aiohttp.ClientSession() as session:
-                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
-                            embed = discord.Embed(
-                                title=f'{self.user} used a lootbox!',
-                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
-                                color=0xffafd7,#pink1
-                            )
-                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/427019823747301377.gif")
-                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
-                            if autoGem:
-                                self.gems = True
-                                console.print(f"-{self.user}[+] renabling auto gems".center(console_width - 2 ), style = "pink1 on black")
+                        await self.webhookSender(
+                            msg=f'{self.user} used a lootbox!',
+                            desc=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
+                            colors=0xffafd7,
+                            img_url="https://cdn.discordapp.com/emojis/427019823747301377.gif"
+                        )
+                    if autoGem:
+                        self.gems = True
+                        console.print(f"-{self.user}[+] renabling auto gems".center(console_width - 2 ), style = "pink1 on black")
                     await asyncio.sleep(random.uniform(0.3,0.5))
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
                 
@@ -2103,15 +2067,12 @@ class MyClient(discord.Client):
                 if logCrates:
                     console.print(f"-{self.user}[+] Found a crate!".center(console_width - 2 ), style = "pink1 on black")
                     if webhookEnabled and logCrates:
-                        async with aiohttp.ClientSession() as session:
-                            self.webhook = discord.Webhook.from_url(webhook_url, session=session)
-                            embed = discord.Embed(
-                                title=f'{self.user} Found a crate!',
-                                description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
-                                color=0xffafd7,#pink1
-                            )
-                            embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/523771259172028420.gif")
-                            await self.webhook.send(embed=embed, username='owo-dusk - logs')
+                        await self.webhookSender(
+                            msg=f'{self.user} Found a crate!',
+                            desc=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
+                            colors=0xffafd7,
+                            img_url="https://cdn.discordapp.com/emojis/523771259172028420.gif"
+                        )
                 if autoCrate:
                     self.current_time = time.time()
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -2120,13 +2081,12 @@ class MyClient(discord.Client):
                     #await self.cm.send(f"{setprefix}crate all")
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
                     if webhookEnabled and logCrates:
-                        embed = discord.Embed(
-                            title=f'{self.user} used crates!',
-                            description=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
-                            color=0xffafd7,#pink1
+                        await self.webhookSender(
+                            msg=f'{self.user} used crates!',
+                            desc=f"**User** : <@{self.user.id}>\n**message link** : {message.jump_url}",
+                            colors=0xffafd7,
+                            img_url="https://cdn.discordapp.com/emojis/523771437408845852.gif"
                         )
-                        embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/523771437408845852.gif")
-                        await self.webhook.send(embed=embed, username='owo-dusk - logs')
                     console.print(f"-{self.user}[+] used all crates".center(console_width - 2 ), style = "magenta on black")
                     await asyncio.sleep(random.uniform(0.3,0.5))
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
