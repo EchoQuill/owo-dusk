@@ -16,7 +16,7 @@ markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 mdurl==0.1.2
 pytz==2024.1
-multidict==6.0.5
+multidict==6.1.0
 protobuf==5.28.0
 Pygments==2.18.0
 requests==2.32.3
