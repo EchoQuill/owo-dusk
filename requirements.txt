@@ -20,7 +20,7 @@ multidict==6.1.0
 protobuf==5.28.0
 Pygments==2.18.0
 requests==2.32.3
-rich==13.8.0
+rich==13.8.1
 tzlocal==5.2
 urllib3==2.2.2
 Werkzeug==3.0.4
