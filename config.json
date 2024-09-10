@@ -69,7 +69,7 @@
     },
     {
       "sleep": false,
-      "randomness": 12,
+      "frequencyPercentage": 12,
       "minTime": 1,
       "maxTime": 10
     },
