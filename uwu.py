@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.5.1"
+version = "1.5.2"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -172,14 +172,10 @@ if desktopBatteryCheckEnabled:
         print(f"ImportError: {e}")
     
 webhookEnabled = config["webhook"]["enabled"]
-webhook_url = None
-if webhookEnabled:
-    webhook_url = config["webhook"]["webhookUrl"]
-    webhookUselessLog = config["webhook"]["webhookUselessLog"]
-    webhookPingId = config["webhook"]["webhookUserIdToPingOnCaptcha"]
-    webhookCaptchaChnl = config["webhook"]["webhookCaptchaUrl"]
-else:
-    webhookUselessLog = False
+webhook_url = config["webhook"]["webhookUrl"]
+webhookUselessLog = config["webhook"]["webhookUselessLog"]
+webhookPingId = config["webhook"]["webhookUserIdToPingOnCaptcha"]
+webhookCaptchaChnl = config["webhook"]["webhookCaptchaUrl"]
 setprefix = config["setprefix"]
 #----------MAIN VARIABLES----------#
 listUserIds = []
@@ -1767,21 +1763,11 @@ class MyClient(discord.Client):
                 if termuxToastEnabled:
                     run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
                 console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
-                if self.captchaType == "link":
-                    await self.webhookSender(
-                        msg=f'-{self.user} [+] CAPTCHA Detected',
-                        desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
-                        colors=0x00ffaf,  # Custom color
-                        img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
-                        author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
-                        webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
-                    )
-                else:
-                    if message.guild:
+                if webhookEnabled:
+                    if self.captchaType == "link":
                         await self.webhookSender(
                             msg=f'-{self.user} [+] CAPTCHA Detected',
-                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
                             colors=0x00ffaf,  # Custom color
                             img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
                             author_img_url="https://i.imgur.com/6zeCgXo.png",
@@ -1789,15 +1775,26 @@ class MyClient(discord.Client):
                             webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
                         )
                     else:
-                        await self.webhookSender(
-                            msg=f'-{self.user} [+] CAPTCHA Detected',
-                            desc=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
-                            colors=0x00ffaf,  # Custom color
-                            img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
-                            author_img_url="https://i.imgur.com/6zeCgXo.png",
-                            webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url,
-                            plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None
-                        )
+                        if message.guild:
+                            await self.webhookSender(
+                                msg=f'-{self.user} [+] CAPTCHA Detected',
+                                desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                                colors=0x00ffaf,  # Custom color
+                                img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                                author_img_url="https://i.imgur.com/6zeCgXo.png",
+                                plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
+                                webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
+                            )
+                        else:
+                            await self.webhookSender(
+                                msg=f'-{self.user} [+] CAPTCHA Detected',
+                                desc=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
+                                colors=0x00ffaf,  # Custom color
+                                img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                                author_img_url="https://i.imgur.com/6zeCgXo.png",
+                                webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url,
+                                plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None
+                            )
 
                 #<:owo_scared:1171297031772438618>
                 if termuxVibrationEnabled:
