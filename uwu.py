@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.5.2"
+version = "1.5.3"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -1742,13 +1742,14 @@ class MyClient(discord.Client):
                     if self.popped:
                         break
                 #print(captchas , captchaAnswers)
-                self.f = False
+                
                 self.webInt = None
 
                 self.captchaSolver.stop()
                 self.webSend = False
                 #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
                 #print(f"{self.user} stopped captcha solver")
+            self.f = False
             return
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             try:
