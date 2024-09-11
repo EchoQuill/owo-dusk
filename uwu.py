@@ -1725,6 +1725,7 @@ class MyClient(discord.Client):
                     #await self.rSend(channel=self.cm, prayOrCurse=self.prayOrCurse)
                 #else:
                     #await self.rSend(channel=self.cm)
+            
             await asyncio.sleep(random.uniform(0.69, 2.69))
             if webhookEnabled:
                 await self.webhookSender(f'-{self.user}[+] Captcha solved. restarting...', desc=f"**User** : <@{self.user.id}>", colors=0x00ffaf, img_url="https://cdn.discordapp.com/emojis/672273475846668309.gif", webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url)
@@ -1745,6 +1746,7 @@ class MyClient(discord.Client):
                     if self.popped:
                         break
                 #print(captchas , captchaAnswers)
+                self.f = False
                 self.webInt = None
 
                 self.captchaSolver.stop()
