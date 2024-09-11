@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.5.0"
+version = "1.5.1"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -172,6 +172,7 @@ if desktopBatteryCheckEnabled:
         print(f"ImportError: {e}")
     
 webhookEnabled = config["webhook"]["enabled"]
+webhook_url = None
 if webhookEnabled:
     webhook_url = config["webhook"]["webhookUrl"]
     webhookUselessLog = config["webhook"]["webhookUselessLog"]
@@ -530,11 +531,11 @@ class MyClient(discord.Client):
     async def slashCommandSender(self, msg):
         if self.f != True and self.sleep != True and self.sleep2 != True:
             try:
-                for i, command in enumerate(await self.cm.application_commands()):
+                for command in await self.cm.application_commands():
                     if command.application.id == 408785106942164992:
                         #print(command.name)
                         if command.name == msg:
-                            print(f"Command found at index {i}: {command.name}")
+                            #print(f"Command found at index {i}: {command.name}")
                             await command()
             except Exception as e:
                 print(e)
@@ -1724,9 +1725,10 @@ class MyClient(discord.Client):
                     #await self.rSend(channel=self.cm, prayOrCurse=self.prayOrCurse)
                 #else:
                     #await self.rSend(channel=self.cm)
+            
             await asyncio.sleep(random.uniform(0.69, 2.69))
             if webhookEnabled:
-                await self.webhookSender(f'-{self.user}[+] Captcha solved. restarting...', desc=f"**User** : <@{self.user.id}>", colors=0x00ffaf, img_url="https://cdn.discordapp.com/emojis/672273475846668309.gif")
+                await self.webhookSender(f'-{self.user}[+] Captcha solved. restarting...', desc=f"**User** : <@{self.user.id}>", colors=0x00ffaf, img_url="https://cdn.discordapp.com/emojis/672273475846668309.gif", webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url)
             #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
             if websiteEnabled and self.webInt != None:
                 #print("attempting to pop captcha indirectly")
@@ -1744,6 +1746,7 @@ class MyClient(discord.Client):
                     if self.popped:
                         break
                 #print(captchas , captchaAnswers)
+                self.f = False
                 self.webInt = None
 
                 self.captchaSolver.stop()
