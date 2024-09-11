@@ -531,11 +531,11 @@ class MyClient(discord.Client):
     async def slashCommandSender(self, msg):
         if self.f != True and self.sleep != True and self.sleep2 != True:
             try:
-                for i, command in enumerate(await self.cm.application_commands()):
+                for command in await self.cm.application_commands():
                     if command.application.id == 408785106942164992:
                         #print(command.name)
                         if command.name == msg:
-                            print(f"Command found at index {i}: {command.name}")
+                            #print(f"Command found at index {i}: {command.name}")
                             await command()
             except Exception as e:
                 print(e)
