@@ -172,6 +172,7 @@ if desktopBatteryCheckEnabled:
         print(f"ImportError: {e}")
     
 webhookEnabled = config["webhook"]["enabled"]
+webhook_url = None
 if webhookEnabled:
     webhook_url = config["webhook"]["webhookUrl"]
     webhookUselessLog = config["webhook"]["webhookUselessLog"]
