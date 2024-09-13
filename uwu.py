@@ -366,10 +366,6 @@ def get_emoji_numbers(text, emoji_dict=emoji_dict):
                 if rank:
                     rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid, list(emoji_dict.keys())[i]])
     return cash, rare
- # Count the number of '\n' characters in the text
-#def count_line_breaks(text):
-#    line_breaks = text.count('\n')
-#    return line_breaks
 
 # Get dm or channel name
 def get_channel_name(channel):
@@ -523,6 +519,7 @@ class MyClient(discord.Client):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
+
     # send slash commands
     async def slashCommandSender(self, msg):
         if self.f != True and self.sleep != True and self.sleep2 != True:
@@ -535,9 +532,6 @@ class MyClient(discord.Client):
                             await command()
             except Exception as e:
                 print(e)
-                if e == "Did not receive a response from Discord":
-                    print('retrying')
-                    await command()
 
     # log webhooks
     async def webhookSender(self, msg, desc=None, plain_text_msg=None, colors=None, webhook_url=webhook_url, img_url=None, author_img_url=None):
@@ -1457,7 +1451,8 @@ class MyClient(discord.Client):
         except Exception as e:
             print(e)
         try:
-            self.dm = await self.fetch_user(408785106942164992) #owo bot's id
+            #self.dm = await self.fetch_user(408785106942164992) #owo bot's id
+            self.dm = await (await self.fetch_user(408785106942164992)).create_dm() #fixes dm closed issue
         except Exception as e:
             print(e)
         if self.dm == None:
