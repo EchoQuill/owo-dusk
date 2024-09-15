@@ -62,7 +62,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.5.3"
+version = "1.5.4"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -366,10 +366,6 @@ def get_emoji_numbers(text, emoji_dict=emoji_dict):
                 if rank:
                     rare.append([emoji_dict[list(emoji_dict.keys())[i]], rankid, list(emoji_dict.keys())[i]])
     return cash, rare
- # Count the number of '\n' characters in the text
-#def count_line_breaks(text):
-#    line_breaks = text.count('\n')
-#    return line_breaks
 
 # Get dm or channel name
 def get_channel_name(channel):
@@ -523,6 +519,7 @@ class MyClient(discord.Client):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
+
     # send slash commands
     async def slashCommandSender(self, msg):
         if self.f != True and self.sleep != True and self.sleep2 != True:
@@ -535,9 +532,6 @@ class MyClient(discord.Client):
                             await command()
             except Exception as e:
                 print(e)
-                if e == "Did not receive a response from Discord":
-                    print('retrying')
-                    await command()
 
     # log webhooks
     async def webhookSender(self, msg, desc=None, plain_text_msg=None, colors=None, webhook_url=webhook_url, img_url=None, author_img_url=None):
@@ -1457,13 +1451,14 @@ class MyClient(discord.Client):
         except Exception as e:
             print(e)
         try:
-            self.dm = await self.fetch_user(408785106942164992) #owo bot's id
+            #self.dm = await self.fetch_user(408785106942164992) #owo bot's id
+            self.dm = await (await self.fetch_user(408785106942164992)).create_dm() #fixes dm closed issue
         except Exception as e:
             print(e)
         if self.dm == None:
             print("channel disabled")
         self.presence.start()
-        self.list_channel.append(self.dm.dm_channel.id)
+        #self.list_channel.append(self.dm.id)
         self.broke = [False, False] #check, confirmed
         # AUTO QUEST
         self.questsDone = False
@@ -1488,7 +1483,7 @@ class MyClient(discord.Client):
         self.tempHuntDisable = False
         self.battle = None
         self.justStarted = True
-        self.list_channel = [self.channel_id, self.dm.dm_channel.id]
+        self.list_channel = [self.channel_id, self.dm.id]
         if askForHelp:
             try:
                 self.questChannel = self.get_channel(askForHelpChannel)
