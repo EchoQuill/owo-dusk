@@ -61,10 +61,6 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 ---
 
 <div align="center">
-  <center><img src="imgs/mobile_cli.jpg" width="300" height="600"></center>
-  <br>
-  <p>Mobile CLI screenshot</p>
-  <br>
   <center><img src="imgs/desktop_cli.png" width="800" height="500"></center>
   <br>
   <p>Desktop CLI screenshot</p>
@@ -75,4 +71,13 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 </div>
 
 ---
+# development 🖥️
+---
+
+<div>
+    <center><img src="https://repobeats.axiom.co/api/embed/0a1054d566f34198e5adb680c8c95884f514b0bc.svg" alt="Alt" title="Repobeats analytics image"></div></center>
+</div>
+
+---
+
 thanks for reading :>, I hope this tool could help you even if a little ❤ .
