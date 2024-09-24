@@ -52,7 +52,7 @@ async def delaycheck(session, server_id):
     try:
         async with session.get(url) as response:
             response.raise_for_status() #raises an HTTPError for bad responses (4xx, 5xx)
-            json_data = response.json()
+            json_data = await response.json()
     except aiohttp.ClientError as e:
         print(f"An error occurred: {e}")
 
@@ -69,6 +69,7 @@ async def delaycheck(session, server_id):
             for i in shard_data:
                 if i["shard"] == shard_id:
                     return i
+    return None
 #delaycheck(None, server_id)
 
 

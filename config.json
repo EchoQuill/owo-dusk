@@ -90,6 +90,10 @@
       "useReactionBotCooldowns": false,
       "minCooldown": 10,
       "maxCooldown": 13
+    },
+    {
+      "autoHuntBot": false,
+      "cashToSpend": 10000
     }
   ],
   "autoDaily": false,

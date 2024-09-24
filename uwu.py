@@ -108,15 +108,17 @@ chatCommandToStart = config["textCommands"]["commandToStartUser"]
 chatAllowedUsers = [int(user_id) for user_id in config["textCommands"]["allowedUsers"]]
 #print(chatAllowedUsers)
 
-delayCheckApi = config["delayCheck"]["useOwobotApi"]["enabled"]
-minPing = config["delayCheck"]["useOwobotApi"]["minPing"]
-delayCheckMinSleep = config["delayCheck"]["useOwobotApi"]["minSleepTime"]
-delayCheckMaxSleep = config["delayCheck"]["useOwobotApi"]["maxSleepTime"]
-delayCheckMinRecheck = config["delayCheck"]["useOwobotApi"]["minDelayBetweenRecheck"]
-delayCheckMaxRecheck = config["delayCheck"]["useOwobotApi"]["maxDelayBetweenRecheck"]
+delayCheckApi = config["delayCheck"]["useOwobotApi"]
+minPing = config["delayCheck"]["minPing"]
+delayCheckMinSleep = config["delayCheck"]["minSleepTime"]
+delayCheckMaxSleep = config["delayCheck"]["maxSleepTime"]
+delayCheckMinRecheck = config["delayCheck"]["minDelayBetweenRecheck"]
+delayCheckMaxRecheck = config["delayCheck"]["maxDelayBetweenRecheck"]
 
 if delayCheckApi:
     from utils.delaycheck import delaycheck
+if config["commands"][12]["autoHuntBot"]:
+    from utils.huntBotSolver import solveHbCaptcha
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
 if banConsoleEnabled:
@@ -235,6 +237,8 @@ giveawayEnabled = config["commands"][9]["giveawayJoiner"]
 giveawayChannels = config["commands"][9]["channelsToJoin"]
 shopEnabled = config["commands"][10]["shop"]
 shopItemsToBuy = config["commands"][10]["itemsToBuy"]
+autoHuntBot = config["commands"][12]["autoHuntBot"]
+hbCashToSpend = config["commands"][12]["cashToSpend"]
 skipSpamCheck = (shopEnabled == autoSlots == autoCf == autoBattle == autoHunt == False)
 slashCommandsEnabled = config["useSlashCommands"]
 # Logs
@@ -288,6 +292,7 @@ shopCd = [config["commands"][10]["minCooldown"], config["commands"][10]["maxCool
 owoCd = [config["commands"][11]["minCooldown"], config["commands"][11]["maxCooldown"]]
 gawMaxCd = config["commands"][9]["maxCooldown"]
 gawMinCd = config["commands"][9]["minCooldown"]
+
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -710,7 +715,7 @@ class MyClient(discord.Client):
             else:
                 #may come in use later, thats why iam collecting whole data instead of just ping..,
                 self.delayData = await delaycheck(self.session, self.cm.guild.id)
-
+                print(self.delayData)
                 while self.delayData["ping"] >= minPing:
                     self.sleep = True
                     self.sleepTime = random.uniform(delayCheckMinSleep,delayCheckMaxSleep)
@@ -745,6 +750,16 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(60,120))
         else:
             await asyncio.sleep(random.uniform(20,40))
+    #hunt bot handler
+    @tasks.loop(seconds=1)
+    async def huntbotHandler(self):
+        if self.f != True and self.sleep != True and self.sleep2 != True:
+            self.hbRecieved = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
+            await asyncio.sleep(random.uniform(10,20))
+            if self.hbRecieved:
+                self.hbRecieved = False
+                self.huntbotHandler.stop()
     #reaction bot command handler
     @tasks.loop(seconds=1)
     async def rCommandHandler(self):
@@ -1487,7 +1502,7 @@ class MyClient(discord.Client):
         #if await delaycheck()["ping"] >= minPing:
             
         #    pass
-        print(await self.delayCheck(self.session, 420104212895105044))
+        print(await delaycheck(self.session, 420104212895105044))
         self.presence.start()
         #self.list_channel.append(self.dm.id)
         self.broke = [False, False] #check, confirmed
@@ -1543,6 +1558,7 @@ class MyClient(discord.Client):
         self.tempCookie = None
         self.sleep = False
         self.sleep2 = False
+        self.hbRecieved = False
         self.changedPrefix = False
         # AutoGems
         self.autoHuntGem = True
@@ -1557,6 +1573,7 @@ class MyClient(discord.Client):
         self.gems = autoGem
         self.invCheck = False
         self.tempGem = False
+        
         #-------
         # Slash Commands
         #if slashCommandsEnabled:
@@ -1643,11 +1660,18 @@ class MyClient(discord.Client):
             await self.rSend(channel=self.cm)
         random.shuffle(self.task_methods)
         for task_method in self.task_methods:
-            task_method()
+            try:
+                task_method()
+            except Exception as e:
+                print(f"error on task_method() :-\n{e}")
+                print()
+                print(task_method)
             await asyncio.sleep(random.uniform(0.4,0.8))
         
         await asyncio.sleep(random.uniform(2.69,3.69))
         self.justStarted = False
+        if autoHuntBot:
+            self.huntbotHandler.start()
         await asyncio.sleep(random.uniform(10, 30))
         if not skipSpamCheck:
             self.delayCheck.start()
@@ -2046,6 +2070,30 @@ class MyClient(discord.Client):
                     self.invCheck = True
             except Exception as e:
                 print(e)
+        #<---Auto Hunt Bot
+        if autoHuntBot and message.channel.id == self.channel_id and ", Here is your password!" in message.content:
+            self.hbRecieved = True
+            try:
+                self.ans = await solveHbCaptcha(message.attachments[0].url, self.session)
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend} {self.ans}")
+                console.print(f"-{self.user}[+] solved hb captcha - {self.ans}".center(console_width - 2 ), style = "pale_green3 on black")
+            except Exception as e:
+                print(f"error when handling huntbot:\n{e}")
+            self.sleep = False
+            
+        if autoHuntBot and message.channel.id == self.channel_id and "`BEEP BOOP. I AM BACK WITH 10 ANIMALS,`" in message.content:
+            self.sleep = True
+            self.hbRecieved = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
+            while True:
+                await asyncio.sleep(random.uniform(0.6,0.9))
+                if self.hbRecieved:
+                    break
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
+
+
+        #End--->
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
             if huntOrBattleCooldown < 20:
                 huntOrBattleCooldown+=10
@@ -2068,7 +2116,6 @@ class MyClient(discord.Client):
                             colors=0xffafd7,
                             img_url="https://cdn.discordapp.com/emojis/427004983460888588.gif"
                         )
-                        #await self.webhookSender(f"-{self.user}[+] found a lootbox", colors=0xFF00FF)
                 if autoLootbox:
                     self.current_time = time.time()
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
