@@ -114,7 +114,7 @@ delayCheckMinSleep = config["delayCheck"]["minSleepTime"]
 delayCheckMaxSleep = config["delayCheck"]["maxSleepTime"]
 delayCheckMinRecheck = config["delayCheck"]["minDelayBetweenRecheck"]
 delayCheckMaxRecheck = config["delayCheck"]["maxDelayBetweenRecheck"]
-
+total_seconds_hb = 0 
 if delayCheckApi:
     from utils.delaycheck import delaycheck
 if config["commands"][12]["autoHuntBot"]:
@@ -1559,6 +1559,8 @@ class MyClient(discord.Client):
         self.sleep = False
         self.sleep2 = False
         self.hbRecieved = False
+        self.hbRecieved2 = False
+        self.hbWait = True
         self.changedPrefix = False
         # AutoGems
         self.autoHuntGem = True
@@ -2072,26 +2074,68 @@ class MyClient(discord.Client):
                 print(e)
         #<---Auto Hunt Bot
         if autoHuntBot and message.channel.id == self.channel_id and ", Here is your password!" in message.content:
+            self.sleep = True
             self.hbRecieved = True
+            self.hbRecieved2 = False
             try:
                 self.ans = await solveHbCaptcha(message.attachments[0].url, self.session)
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend} {self.ans}")
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend} {self.ans}", bypass=True)
                 console.print(f"-{self.user}[+] solved hb captcha - {self.ans}".center(console_width - 2 ), style = "pale_green3 on black")
             except Exception as e:
                 print(f"error when handling huntbot:\n{e}")
             self.sleep = False
             
-        if autoHuntBot and message.channel.id == self.channel_id and "`BEEP BOOP. I AM BACK WITH 10 ANIMALS,`" in message.content:
+        if autoHuntBot and message.channel.id == self.channel_id and "`BEEP BOOP. I AM BACK" in message.content:
             self.sleep = True
             self.hbRecieved = False
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
+            self.hbRecieved2 = True
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}", bypass=True)
             while True:
+                if self.hbWait:
+                    break
                 await asyncio.sleep(random.uniform(0.6,0.9))
                 if self.hbRecieved:
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
+        
+        if autoHuntBot and message.channel.id == self.channel_id and "`I WILL BE BACK IN " in message.content:
+            self.sleep = False
+            self.hbRecieved2 = False
+            self.hbRecieved = False
+            for amount, unit in re.findall(r'(\d+)([DHM])', message.content):
+                if unit == 'M':
+                    total_seconds_hb += int(amount) * 60
+                elif unit == 'H':
+                    total_seconds_hb += int(amount) * 3600
+                elif unit == 'D':
+                    total_seconds_hb += int(amount) * 86400
+            await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
+            while True:
+                if self.hbWait:
+                    break
+                await asyncio.sleep(random.uniform(0.6,0.9))
+                if self.hbRecieved2:
+                    self.hbRecieved2 = False
+                    break
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
 
+        if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
+            self.sleep = False
+            self.hbRecieved2 = False
+            self.hbRecieved = False
+            self.hbWait = True
+            await asyncio.sleep(random.uniform(603,641))
+            self.hbWait = False
+            while True:
+                await asyncio.sleep(random.uniform(0.6,0.9))
+                if self.hbRecieved2:
+                    self.hbRecieved2 = False
+                    break
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
 
         #End--->
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
@@ -2595,4 +2639,3 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
     if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
     run_bots(tokens_and_channels)
-
