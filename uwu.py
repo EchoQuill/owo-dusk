@@ -2073,6 +2073,12 @@ class MyClient(discord.Client):
             except Exception as e:
                 print(e)
         #<---Auto Hunt Bot
+
+        """
+        Wanted to try not depend on loops too much,
+        so i only used loop to send first command, resnt handled on on_message()
+        """
+
         if autoHuntBot and message.channel.id == self.channel_id and ", Here is your password!" in message.content:
             self.sleep = True
             self.hbRecieved = True
@@ -2099,17 +2105,20 @@ class MyClient(discord.Client):
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
         
-        if autoHuntBot and message.channel.id == self.channel_id and "`I WILL BE BACK IN " in message.content:
+        if autoHuntBot and message.channel.id == self.channel_id and ("`I WILL BE BACK IN " in message.content or "I AM STILL HUNTING." in message.content):
             self.sleep = False
             self.hbRecieved2 = False
             self.hbRecieved = False
+            total_seconds_hb = 0
             for amount, unit in re.findall(r'(\d+)([DHM])', message.content):
+                
                 if unit == 'M':
                     total_seconds_hb += int(amount) * 60
                 elif unit == 'H':
                     total_seconds_hb += int(amount) * 3600
                 elif unit == 'D':
                     total_seconds_hb += int(amount) * 86400
+            print(total_seconds_hb)
             await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
             await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
             while True:
