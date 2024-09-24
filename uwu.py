@@ -36,10 +36,7 @@ try:
 except AttributeError:
     pass
 def clear():
-    if os.name == 'nt':  # Windows
-        os.system('cls')
-    else:  # Others
-        os.system('clear')
+    os.system('cls') if os.name == 'nt' else os.system('clear')
 clear()
 # For console.log thingy
 console = Console()
@@ -109,8 +106,17 @@ chatPrefix = config["textCommands"]["prefix"]
 chatCommandToStop = config["textCommands"]["commandToStopUser"]
 chatCommandToStart = config["textCommands"]["commandToStartUser"]
 chatAllowedUsers = [int(user_id) for user_id in config["textCommands"]["allowedUsers"]]
-print(chatAllowedUsers)
+#print(chatAllowedUsers)
 
+delayCheckApi = config["delayCheck"]["useOwobotApi"]["enabled"]
+minPing = config["delayCheck"]["useOwobotApi"]["minPing"]
+delayCheckMinSleep = config["delayCheck"]["useOwobotApi"]["minSleepTime"]
+delayCheckMaxSleep = config["delayCheck"]["useOwobotApi"]["maxSleepTime"]
+delayCheckMinRecheck = config["delayCheck"]["useOwobotApi"]["minDelayBetweenRecheck"]
+delayCheckMaxRecheck = config["delayCheck"]["useOwobotApi"]["maxDelayBetweenRecheck"]
+
+if delayCheckApi:
+    from utils.delaycheck import delaycheck
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
 if banConsoleEnabled:
@@ -195,7 +201,7 @@ autoHuntGem = config["autoUse"]["autoGem"]["huntGem"]
 autoEmpoweredGem = config["autoUse"]["autoGem"]["empoweredGem"]
 autoLuckyGem = config["autoUse"]["autoGem"]["luckyGem"]
 autoSpecialGem = config["autoUse"]["autoGem"]["specialGem"]
-autoGem = (autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem) # didn't know i could prevent the usage of multiple if statements like this haha.
+autoGem = (autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem)
 autoSell = config["commands"][2]["sell"]
 autoSac = config["commands"][2]["sacrifice"]
 autoQuest = config["commands"][4]["quest"]
@@ -327,7 +333,7 @@ if mobileBatteryCheckEnabled or desktopBatteryCheckEnabled:
     loop_thread.start()
 #For emoji names
 try:
-    with open("emojis.json", 'r', encoding="utf-8") as file:
+    with open("utils/emojis.json", 'r', encoding="utf-8") as file:
         emoji_dict = json.load(file)
 except FileNotFoundError:
     print("The file emojis.json was not found.")
@@ -690,13 +696,33 @@ class MyClient(discord.Client):
             if message.author.id == 408785106942164992:
                 self.lastMsg = 408785106942164992
         if self.lastMsg is None:
-            self.sleepTime = random.uniform(200.8372728, 447.8382828)
-            console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.".center(console_width - 2 ), style = "plum4 on black")
-            await asyncio.sleep(self.sleepTime)
-            console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
-            self.sleep = False
-            await asyncio.sleep(random.uniform(40,70)) # Give enough time for next messages to be send by selfbot
-        await asyncio.sleep(random.uniform(50,100))
+            if not delayCheckApi:
+                self.sleep = True
+                self.sleepTime = random.uniform(delayCheckMinSleep, delayCheckMaxSleep)
+                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.".center(console_width - 2 ), style = "plum4 on black")
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                await asyncio.sleep(self.sleepTime)
+                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[~] Finished sleeping  {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                self.sleep = False
+            else:
+                #may come in use later, thats why iam collecting whole data instead of just ping..,
+                self.delayData = await delaycheck(self.session, self.cm.guild.id)
+
+                while self.delayData["ping"] >= minPing:
+                    self.sleep = True
+                    self.sleepTime = random.uniform(delayCheckMinSleep,delayCheckMaxSleep)
+                    if webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                    console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ , {self.delayData["ping"]}ms delay".center(console_width - 2 ), style = "plum4 on black")
+                    await asyncio.sleep(self.sleepTime)
+                console.print(f"-{self.user}[~] Finished sleeping".center(console_width - 2 ), style = "plum4 on black")
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[~] Finished sleeping  {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                self.sleep = False
+        await asyncio.sleep(random.uniform(delayCheckMinRecheck,delayCheckMaxRecheck))
     #Sleep
     @tasks.loop()
     async def random_account_sleeper(self):
@@ -1435,6 +1461,7 @@ class MyClient(discord.Client):
         await self.wait_until_ready()
 #----------ON READY----------#
     async def on_ready(self):
+        
         self.on_ready_dn = False
         self.cmds = 1
         if self.session is None:
@@ -1457,6 +1484,10 @@ class MyClient(discord.Client):
             print(e)
         if self.dm == None:
             print("channel disabled")
+        #if await delaycheck()["ping"] >= minPing:
+            
+        #    pass
+        print(await self.delayCheck(self.session, 420104212895105044))
         self.presence.start()
         #self.list_channel.append(self.dm.id)
         self.broke = [False, False] #check, confirmed
@@ -2517,3 +2548,4 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
     if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
     run_bots(tokens_and_channels)
+
