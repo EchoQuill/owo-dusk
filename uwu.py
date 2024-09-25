@@ -757,7 +757,7 @@ class MyClient(discord.Client):
             self.hbRecieved = False
             await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
             await asyncio.sleep(random.uniform(10,20))
-            if self.hbRecieved:
+            if self.hbRecieved or self.hbWait:
                 self.hbRecieved = False
                 self.huntbotHandler.stop()
     #reaction bot command handler
@@ -1502,7 +1502,7 @@ class MyClient(discord.Client):
         #if await delaycheck()["ping"] >= minPing:
             
         #    pass
-        print(await delaycheck(self.session, 420104212895105044))
+        #print(await delaycheck(self.session, 420104212895105044))
         self.presence.start()
         #self.list_channel.append(self.dm.id)
         self.broke = [False, False] #check, confirmed
@@ -2104,8 +2104,12 @@ class MyClient(discord.Client):
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}")
-        
-        if autoHuntBot and message.channel.id == self.channel_id and ("`I WILL BE BACK IN " in message.content or "I AM STILL HUNTING." in message.content):
+        """
+        **:cbot: |** `BEEP BOOP. I AM STILL HUNTING. I WILL BE BACK IN 2M`
+**:blank: |** `33.36% DONE | 0 ANIMALS CAPTURED`
+**:blank: |** `[■■■■■■■■■□□□□□□□□□□□□□□□□]`
+        """
+        if autoHuntBot and message.channel.id == self.channel_id and ("`I WILL BE BACK IN " in message.content or "BEEP BOOP. I AM STILL HUNTING" in message.content):
             self.sleep = False
             self.hbRecieved2 = False
             self.hbRecieved = False
@@ -2119,8 +2123,10 @@ class MyClient(discord.Client):
                 elif unit == 'D':
                     total_seconds_hb += int(amount) * 86400
             print(total_seconds_hb)
+            self.hbWait = True
             await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
+            self.hbWait = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}", bypass=True)
             while True:
                 if self.hbWait:
                     break
@@ -2129,14 +2135,14 @@ class MyClient(discord.Client):
                     self.hbRecieved2 = False
                     break
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}", bypass=True)
 
         if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
             self.sleep = False
             self.hbRecieved2 = False
             self.hbRecieved = False
             self.hbWait = True
-            await asyncio.sleep(random.uniform(603,641))
+            await asyncio.sleep(random.uniform(607,641))
             self.hbWait = False
             while True:
                 await asyncio.sleep(random.uniform(0.6,0.9))
@@ -2144,7 +2150,7 @@ class MyClient(discord.Client):
                     self.hbRecieved2 = False
                     break
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb", bypass=True)
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {hbCashToSpend}", bypass=True)
 
         #End--->
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
@@ -2648,3 +2654,4 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
     if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
     run_bots(tokens_and_channels)
+
