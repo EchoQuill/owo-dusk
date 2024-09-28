@@ -61,7 +61,7 @@ if scratchSetup:
                         print(f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m")
                     break
             else:
-                print("\033[1;33m[!]Please enter 'c' for continue or 's' for stop.\033[m")
+                print("\033[1;33m[!]Please enter 1,2,3 only..\033[m")
     except Exception as e:
         print(f"\033[1;31m[x]error when trying to install requirements:-\n {e}\033[m")
 
@@ -217,6 +217,7 @@ if scratchSetup:
         print('\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file then\ntype `python uwu.py` to start the code\033[m')
         print()
         print('\033[1;35mEchoQuill - Thank you for using owo-dusk, I hope you have a great day ahead!\nif there is any error then letme know through https://discord.gg/pyvKUh5mMU\033[m')
+        sys.exit(0)
     except Exception as e:
         print(f'\033[1;31m[x]error when attempting to edit tokens.txt - {e}\033[m')
 
