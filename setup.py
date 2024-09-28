@@ -69,6 +69,23 @@ if scratchSetup:
     print()
     import discord
     import asyncio
+    #version check
+    def compare_versions(current_version, latest_version):
+        #current_version = current_version[1:]
+        #latest_version = latest_version[1:]
+        current = list(map(int, current_version.split('.')))
+        latest = list(map(int, latest_version.split('.')))
+        """
+        example output:
+        current = [1,5,0]
+        """
+        for c, l in zip(current, latest):
+            if l > c:
+                return True
+            elif l < c:
+                return False 
+        # If all parts are equal, return False (no new version)
+        return False
     #---CHECK VERSIONS---#
     print('\033[1;36m[0]attempting to check versions\033[m')
     try:
@@ -80,7 +97,8 @@ if scratchSetup:
         with open("version.txt", "r") as file:
             version = file.readline().strip()
         print(f'\033[1;36m[0]current version of owo-dusk - {version}')
-        if int(ver_check.replace(".","")) > int(version.replace(".","")):
+
+        if compare_versions(version, ver_check):
             print('[0]seems like there is a new version for OwO-dusk available in GitHub\033[m')
             while True:
                 o = input('\033[1;34mWould you like to stop the installation process or continue?\n(continue = c / stop = s):\n\033[m').lower()

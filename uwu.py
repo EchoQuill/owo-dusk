@@ -293,6 +293,33 @@ owoCd = [config["commands"][11]["minCooldown"], config["commands"][11]["maxCoold
 gawMaxCd = config["commands"][9]["maxCooldown"]
 gawMinCd = config["commands"][9]["minCooldown"]
 
+#version check
+def compare_versions(current_version, latest_version):
+    #current_version = current_version[1:]
+    #latest_version = latest_version[1:]
+    current = list(map(int, current_version.split('.')))
+    latest = list(map(int, latest_version.split('.')))
+    """
+    example output:
+    current = [1,5,0]
+    """
+    for c, l in zip(current, latest):
+        if l > c:
+            return True
+        elif l < c:
+            return False 
+    # If all parts are equal, return False (no new version)
+    return False
+
+# Example usage
+current_version = "v1.6.0"
+latest_version = "v1.7.10"
+
+if compare_versions(current_version, latest_version):
+    print(f"New update detected: v{latest_version} is newer than v{current_version}")
+else:
+    print(f"You are up to date with version v{current_version}")
+
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -2607,7 +2634,7 @@ if __name__ == "__main__":
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
     if websiteEnabled:
         printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold blue_violet on black' )
-    if int(ver_check.replace(".","")) > int(version.replace(".","")):
+    if compare_versions(version, ver_check):
         console.print(f"""new update detected (v {ver_check}) (current version:- v {version})...
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
         if desktopNotificationEnabled:
