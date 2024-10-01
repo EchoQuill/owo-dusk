@@ -1847,7 +1847,7 @@ class MyClient(discord.Client):
                     if self.captchaType == "link":
                         await self.webhookSender(
                             msg=f'-{self.user} [+] CAPTCHA Detected',
-                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
+                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)\n**Time to solve** : <t:{int(time.time())+600}:R>", #10m = 600
                             colors=0x00ffaf,  # Custom color
                             img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
                             author_img_url="https://i.imgur.com/6zeCgXo.png",
