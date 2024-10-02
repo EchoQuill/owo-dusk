@@ -1708,6 +1708,29 @@ class MyClient(discord.Client):
         if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
             console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = False
+        if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}sw" in message.content.lower():
+            print(f"{self.user} attempting to switch channel\nPlease note that this command is not recommended for use unless absolutely necessary.\nThis command may even break the code.\nBugs caused by this will not be entertained.")
+            self.sleep = True
+            if message.content.lower() == f"{chatPrefix}sw":
+                await asyncio.sleep(random.uniform(4.232,7.945))
+                self.id = message.channel.id
+                self.cm = self.get_channel(self.id)
+                self.channel_id = self.id
+                await asyncio.sleep(0.5)
+            else:
+                try:
+                    await asyncio.sleep(random.uniform(4.232,7.945))
+                    self.id = re.search(rf"{chatPrefix}sw (\d+)", message.content.lower())
+                    if self.id:
+                        self.cm = self.get_channel(int(self.id.group(1)))
+                        self.channel_id = int(self.id.group(1))
+                except:
+                    pass
+                await asyncio.sleep(0.5)
+            self.sleep = False
+
+            console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
+            self.sleep2 = False
         
         # Reaction bot
         if owoR and message.author.id == 519287796549156864 and "**OwO**" in message.content and message.channel.id == self.channel_id:
