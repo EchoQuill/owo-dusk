@@ -311,14 +311,7 @@ def compare_versions(current_version, latest_version):
     # If all parts are equal, return False (no new version)
     return False
 
-# Example usage
-current_version = "v1.6.0"
-latest_version = "v1.7.10"
 
-if compare_versions(current_version, latest_version):
-    print(f"New update detected: v{latest_version} is newer than v{current_version}")
-else:
-    print(f"You are up to date with version v{current_version}")
 
 # Box print
 def printBox(text, color):
