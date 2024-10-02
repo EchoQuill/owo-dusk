@@ -211,10 +211,10 @@ askForHelpChannel = config["commands"][4]["askForHelpChannel"]
 askForHelp = config["commands"][4]["askForHelp"]
 doEvenIfDisabled = config["commands"][4]["doEvenIfDisabled"]
 animalRarity = ""
-for i in config["commands"][2]["animalRarity"]:
+for i in config["commands"][2]["rarity"]:
     animalRarity = animalRarity + i + " "
 autoCf = config["commands"][3]["coinflip"]
-coinflipOptions = config["commands"][3]["coinflipOptions"]
+coinflipOptions = config["commands"][3]["cfOptions"]
 autoSlots = config["commands"][3]["slots"]
 doubleOnLose = config["commands"][3]["doubleOnLose"]
 gambleAllottedAmount = config["commands"][3]["allottedAmount"]
@@ -2082,6 +2082,7 @@ class MyClient(discord.Client):
             self.sleep = True
             self.hbRecieved = False
             self.hbRecieved2 = True
+            await asyncio.sleep(random.uniform(0.5,0.7))
             await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}", bypass=True)
             while True:
                 if self.hbWait:
@@ -2129,7 +2130,7 @@ class MyClient(discord.Client):
             self.hbRecieved2 = False
             self.hbRecieved = False
             self.hbWait = True
-            await asyncio.sleep(random.uniform(607,641))
+            await asyncio.sleep(random.uniform(607,641)) # 10 minutes
             self.hbWait = False
             while True:
                 await asyncio.sleep(random.uniform(0.6,0.9))
