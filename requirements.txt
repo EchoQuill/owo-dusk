@@ -1,4 +1,4 @@
-aiohttp==3.10.6
+aiohttp==3.10.8
 aiosignal==1.3.1
 attrs==24.2.0
 blinker==1.8.2
@@ -20,8 +20,8 @@ multidict==6.1.0
 protobuf==5.28.2
 Pygments==2.18.0
 requests==2.32.3
-rich==13.8.1
+rich==13.9.1
 tzlocal==5.2
 urllib3==2.2.3
 Werkzeug==3.0.4
-yarl==1.12.1
+yarl==1.13.1
