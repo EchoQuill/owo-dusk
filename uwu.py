@@ -731,11 +731,11 @@ class MyClient(discord.Client):
     # OwO delay check
     @tasks.loop()
     async def delayCheck(self):
-        self.lastMsg = None
+        self.lastMsg = False
         async for message in self.cm.history(limit=10):
             if message.author.id == 408785106942164992:
-                self.lastMsg = 408785106942164992
-        if self.lastMsg is None:
+                self.lastMsg = True
+        if not self.lastMsg:
             if not delayCheckApi:
                 self.sleep = True
                 self.sleepTime = random.uniform(delayCheckMinSleep, delayCheckMaxSleep)
@@ -749,7 +749,10 @@ class MyClient(discord.Client):
                 self.sleep = False
             else:
                 #may come in use later, thats why iam collecting whole data instead of just ping..,
-                self.delayData = await delaycheck(self.session, self.cm.guild.id)
+                try:
+                    self.delayData = await delaycheck(self.session, self.cm.guild.id)
+                except Exception as e:
+                    console.print(f"Error fetching delay data: {e}")
                 print(self.delayData)
                 while self.delayData["ping"] >= minPing:
                     self.sleep = True
@@ -758,7 +761,10 @@ class MyClient(discord.Client):
                         await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
                     console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ , {self.delayData["ping"]}ms delay".center(console_width - 2 ), style = "plum4 on black")
                     await asyncio.sleep(self.sleepTime)
-                    self.delayData = await delaycheck(self.session, self.cm.guild.id)
+                    try:
+                        self.delayData = await delaycheck(self.session, self.cm.guild.id)
+                    except Exception as e:
+                        console.print(f"Error fetching delay data: {e}")
                 console.print(f"-{self.user}[~] Finished sleeping".center(console_width - 2 ), style = "plum4 on black")
                 if webhookEnabled:
                     await self.webhookSender(f"-{self.user}[~] Finished sleeping  {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
@@ -2241,6 +2247,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[–] Missing team for battle... attempting to create one.".center(console_width - 2 ), style = "orchid1 on black")
                 self.sleep = True
                 self.zooCheckReq = True
+                await asyncio.sleep(random.uniform(1,2))
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}zoo", bypass=True)
                 await asyncio.sleep(random.uniform(1,2))
                 if self.zooCheckRecieved:
