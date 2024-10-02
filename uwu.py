@@ -1693,7 +1693,7 @@ class MyClient(discord.Client):
         if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
             console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = False
-        if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}sw" in message.content.lower():
+        if message.author.id == self.user.id and f"{chatPrefix}sw" in message.content.lower():
             print(f"{self.user} attempting to switch channel\nPlease note that this command is not recommended for use unless absolutely necessary.\nThis command may even break the code.\nBugs caused by this will not be entertained.")
             self.sleep = True
             if message.content.lower() == f"{chatPrefix}sw":
