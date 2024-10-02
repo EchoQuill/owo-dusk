@@ -2137,6 +2137,9 @@ class MyClient(discord.Client):
                 if self.hbRecieved2:
                     self.hbRecieved2 = False
                     break
+                if self.hbRecieved:
+                    self.hbRecieved = False
+                    break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}", bypass=True)
 
