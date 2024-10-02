@@ -758,6 +758,7 @@ class MyClient(discord.Client):
                         await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
                     console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ , {self.delayData["ping"]}ms delay".center(console_width - 2 ), style = "plum4 on black")
                     await asyncio.sleep(self.sleepTime)
+                    self.delayData = await delaycheck(self.session, self.cm.guild.id)
                 console.print(f"-{self.user}[~] Finished sleeping".center(console_width - 2 ), style = "plum4 on black")
                 if webhookEnabled:
                     await self.webhookSender(f"-{self.user}[~] Finished sleeping  {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
