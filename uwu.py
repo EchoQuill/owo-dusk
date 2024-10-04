@@ -2138,7 +2138,7 @@ class MyClient(discord.Client):
         # OwO sell
         if message.channel.id == self.channel_id and "for a total of **<:cowoncy:416043450337853441>" in message.content:
             if self.balance != -1:
-                self.saleRecievedAmt = int(re.search(r'for a total of <:cowoncy:\d+> (\d+)', message.content).group(1))
+                self.saleRecievedAmt = int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
                 console.print(f"-{self.user}[~] Sale of animals successful!, earned {self.saleRecievedAmt}".center(console_width - 2 ), style = "grey84 on black")
                 self.balance+=self.saleRecievedAmt
                 print(self.balance , self.user)
@@ -2635,6 +2635,12 @@ class MyClient(discord.Client):
         if autoSlots != True and autoCf != True:
             return
         # slots
+        """
+        **  `___SLOTS___`**
+` ` <:heart:417475705899712522> <:heart:417475705899712522> <:heart:417475705899712522> ` ` user. bet <:cowoncy:416043450337853441> 1,000
+  `|         |`   and won <:cowoncy:416043450337853441> 2,000
+  `|         |`
+        """
         if "slots" in after.content.lower():
             if "and won nothing... :c" in after.content:
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
@@ -2647,7 +2653,7 @@ class MyClient(discord.Client):
                 if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 elif "and won" in after.content.lower():
-                    self.slotsWinAmt = int(re.search(r'won <:cowoncy:\d+> (\d+)', after.content).group(1)) #.group(1) gives just the matched value while 0 the entire text.
+                    self.slotsWinAmt = int(re.search(r'won <:cowoncy:\d+> ([\d,]+)', after.content).group(1)) #.group(1) gives just the matched value while 0 the entire text.
                     if self.balance != -1:
                         self.balance+=self.slotsWinAmt
                     self.gambleTotal+=self.slotsWinAmt
@@ -2655,6 +2661,10 @@ class MyClient(discord.Client):
                     if doubleOnLose:
                         self.slotsLastAmt = gambleStartValue
         #coinflip
+        """
+        **user.** spent **<:cowoncy:416043450337853441> 1,000** and chose **tails**
+The coin spins... <:tail:436677926398853120> and you won **<:cowoncy:416043450337853441> 2,000**!!
+        """
         if "chose" in after.content.lower():
             try:
                 if "and you lost it all... :c" in after.content.lower():
