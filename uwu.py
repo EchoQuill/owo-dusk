@@ -820,6 +820,7 @@ class MyClient(discord.Client):
         if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.hbRecieved = False
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
+            console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
             await asyncio.sleep(random.uniform(10,20))
             if self.hbRecieved or self.hbWait:
                 self.hbRecieved = False
@@ -2205,11 +2206,12 @@ class MyClient(discord.Client):
                 elif unit == 'D':
                     total_seconds_hb += int(amount) * 86400
             #print(total_seconds_hb)
-            console.print(f"-{self.user}[+] huntbot will be back after {total_seconds_hb}".center(console_width - 2 ), style = "dodger_blue2 on black")
+            console.print(f"-{self.user}[+] huntbot will be back after {total_seconds_hb}s".center(console_width - 2 ), style = "dodger_blue2 on black")
             self.hbWait = True
             await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
             self.hbWait = False
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+            console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
             while True:
                 if self.hbWait:
                     break
@@ -2219,6 +2221,7 @@ class MyClient(discord.Client):
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+                    console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
 
         if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
             self.sleep = False
@@ -2240,6 +2243,8 @@ class MyClient(discord.Client):
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+                    console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+
 
         #End--->
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
