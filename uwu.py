@@ -954,7 +954,7 @@ class MyClient(discord.Client):
                 else:
                     pass
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.huntOrBattleStr == "hunt" and (self.balance == -1 or self.balance >= 5):
+                if (self.huntOrBattleInt == 0 and (self.balance == -1 or self.balance >= 5)) or self.huntOrBattleInt == 1:
                     if not self.tempHuntDisable:
                         if slashCommandsEnabled:
                             await self.slashCommandSender(self.huntOrBattleStr)
