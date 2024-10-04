@@ -1609,10 +1609,10 @@ class MyClient(discord.Client):
         self.hbRecieved2 = False
         self.hbWait = True
         # AutoGems
-        self.huntGem = True
-        self.empoweredGem = True
-        self.luckyGem = True
-        self.specialGem = True
+        self.autoHuntGem = True
+        self.autoEmpoweredGem = True
+        self.autoLuckyGem = True
+        self.autoSpecialGem = True
         self.tempGemCheckRecieved = False
         self.gems = autoGem
         self.invCheck = False
@@ -2073,10 +2073,10 @@ class MyClient(discord.Client):
                     # gem3 = circle
                     # star = star
                     # Ignore^, like I mean.. I am skilled at naming these right?
-                    self.huntGem = True
-                    self.empoweredGem = True
-                    self.luckyGem = True
-                    self.specialGem = True
+                    self.autoHuntGem = True
+                    self.autoEmpoweredGem = True
+                    self.autoLuckyGem = True
+                    self.autoSpecialGem = True
                     #[tempcheck,check repeat]
                     if not self.tempGem:
                         self.tempGem = True
@@ -2091,8 +2091,8 @@ class MyClient(discord.Client):
                         for gem, attr in gem_map.items():
                             if gem in message.content:
                                 setattr(self, attr, False)
-                        #print(f"hunt gem:{self.huntGem}\n empgem:{self.empoweredGem}\n luckgem:{self.luckyGem}\n specialgem:{self.specialGem}\n")
-                        if (self.empoweredGem and autoEmpoweredGem) or (self.huntGem and autoHuntGem) or (self.specialGem and autoSpecialGem) or (self.luckyGem and autoLuckyGem):
+                        #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
+                        if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
                             if self.captchaDetected:
                                 return
                             self.current_time = time.time()
@@ -2113,10 +2113,10 @@ class MyClient(discord.Client):
                     if self.captchaDetected:
                         return
                     #print("test")
-                    self.huntGem = True
-                    self.empoweredGem = True
-                    self.luckyGem = True
-                    self.specialGem = True
+                    self.autoHuntGem = True
+                    self.autoEmpoweredGem = True
+                    self.autoLuckyGem = True
+                    self.autoSpecialGem = True
                     self.current_time = time.time()
                     self.tempGem = False
                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -2340,17 +2340,17 @@ class MyClient(discord.Client):
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
                 #self.tempHuntDisable = True
-                #print(f"hunt gem:{self.huntGem}\n empgem:{self.empoweredGem}\n luckgem:{self.luckyGem}\n specialgem:{self.specialGem}\n")
+                #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                 self.sleep = True
                 self.tempForCheck = False
                 if self.tempGem:
                     self.tempGemCheckRecieved = True
                 self.sendingGemsIds = ""
                 self.gem_intent_mapping = {
-                    0: (huntGems, autoHuntGem, self.huntGem),
-                    1: (empGems, autoEmpoweredGem, self.empoweredGem),
-                    2: (luckGems, autoLuckyGem, self.luckyGem),
-                    3: (specialGems, autoSpecialGem, self.specialGem)
+                    0: (huntGems, autoHuntGem, self.autoHuntGem),
+                    1: (empGems, autoEmpoweredGem, self.autoEmpoweredGem),
+                    2: (luckGems, autoLuckyGem, self.autoLuckyGem),
+                    3: (specialGems, autoSpecialGem, self.autoSpecialGem)
                     }
                 self.gem_match_count = {}
                 #print(self.gem_intent_mapping)
@@ -2394,12 +2394,12 @@ class MyClient(discord.Client):
                 self.invCheck = False
                 await asyncio.sleep(random.uniform(0.5,0.9))
                 self.sleep = False
-                self.huntGem = True
-                self.empoweredGem = True
-                self.luckyGem = True
-                self.specialGem = True
+                self.autoHuntGem = True
+                self.autoEmpoweredGem = True
+                self.autoLuckyGem = True
+                self.autoSpecialGem = True
                 self.sendingGemsIds = ""
-                #print(f"hunt gem:{self.huntGem}\n empgem:{self.empoweredGem}\n luckgem:{self.luckyGem}\n specialgem:{self.specialGem}\n")
+                #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
