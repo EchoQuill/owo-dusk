@@ -4,6 +4,7 @@
 # I feel sorry for the one reading this code lol
 #                 - EchoQuill
 
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from datetime import datetime, timedelta, timezone
 from discord.ext import commands, tasks
@@ -36,10 +37,7 @@ try:
 except AttributeError:
     pass
 def clear():
-    if os.name == 'nt':  # Windows
-        os.system('cls')
-    else:  # Others
-        os.system('clear')
+    os.system('cls') if os.name == 'nt' else os.system('clear')
 clear()
 # For console.log thingy
 console = Console()
@@ -62,7 +60,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.5.4"
+version = "1.6.0"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -109,8 +107,19 @@ chatPrefix = config["textCommands"]["prefix"]
 chatCommandToStop = config["textCommands"]["commandToStopUser"]
 chatCommandToStart = config["textCommands"]["commandToStartUser"]
 chatAllowedUsers = [int(user_id) for user_id in config["textCommands"]["allowedUsers"]]
-print(chatAllowedUsers)
+#print(chatAllowedUsers)
 
+delayCheckApi = config["delayCheck"]["useOwobotApi"]
+minPing = config["delayCheck"]["minPing"]
+delayCheckMinSleep = config["delayCheck"]["minSleepTime"]
+delayCheckMaxSleep = config["delayCheck"]["maxSleepTime"]
+delayCheckMinRecheck = config["delayCheck"]["minDelayBetweenRecheck"]
+delayCheckMaxRecheck = config["delayCheck"]["maxDelayBetweenRecheck"]
+total_seconds_hb = 0 
+if delayCheckApi:
+    from utils.delaycheck import delaycheck
+if config["commands"][12]["autoHuntBot"]:
+    from utils.huntBotSolver import solveHbCaptcha
 if captchaConsoleEnabled:
     captchaConsoleContent = config["console"]["commandToRunOnCaptcha"]
 if banConsoleEnabled:
@@ -195,18 +204,18 @@ autoHuntGem = config["autoUse"]["autoGem"]["huntGem"]
 autoEmpoweredGem = config["autoUse"]["autoGem"]["empoweredGem"]
 autoLuckyGem = config["autoUse"]["autoGem"]["luckyGem"]
 autoSpecialGem = config["autoUse"]["autoGem"]["specialGem"]
-autoGem = (autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem) # didn't know i could prevent the usage of multiple if statements like this haha.
+autoGem = (autoHuntGem or autoEmpoweredGem or autoLuckyGem or autoSpecialGem)
 autoSell = config["commands"][2]["sell"]
-autoSac = config["commands"][2]["sacrifice"]
+autoSacrifice = config["commands"][2]["sacrifice"]
 autoQuest = config["commands"][4]["quest"]
 askForHelpChannel = config["commands"][4]["askForHelpChannel"]
 askForHelp = config["commands"][4]["askForHelp"]
 doEvenIfDisabled = config["commands"][4]["doEvenIfDisabled"]
-rarity = ""
+animalRarity = ""
 for i in config["commands"][2]["rarity"]:
-    rarity = rarity + i + " "
+    animalRarity = animalRarity + i + " "
 autoCf = config["commands"][3]["coinflip"]
-cfOptions = config["commands"][3]["cfOptions"]
+coinflipOptions = config["commands"][3]["cfOptions"]
 autoSlots = config["commands"][3]["slots"]
 doubleOnLose = config["commands"][3]["doubleOnLose"]
 gambleAllottedAmount = config["commands"][3]["allottedAmount"]
@@ -227,8 +236,30 @@ maxSleepTime = config["commands"][8]["maxTime"]
 sleepRandomness = config["commands"][8]["frequencyPercentage"]
 giveawayEnabled = config["commands"][9]["giveawayJoiner"]
 giveawayChannels = config["commands"][9]["channelsToJoin"]
+"""
+SHOP-
+100-110 - limited time items
+200-274 - wallpapers (one time buy)
+1-7 - rings
+"""
+"""shopItemsCash = {
+    1:10,
+    2:100,
+    3:1000,
+    4:10000,
+    5:100000,
+    6:1000000,
+    7:10000000
+}"""
+# int(f"1{'0'*i}")
+# 10**i ( same as raised to the value i, 10^i)
+
 shopEnabled = config["commands"][10]["shop"]
 shopItemsToBuy = config["commands"][10]["itemsToBuy"]
+
+
+autoHuntBot = config["commands"][12]["autoHuntBot"]
+huntbotCashToSpend = config["commands"][12]["cashToSpend"]
 skipSpamCheck = (shopEnabled == autoSlots == autoCf == autoBattle == autoHunt == False)
 slashCommandsEnabled = config["useSlashCommands"]
 # Logs
@@ -271,7 +302,7 @@ questsList = []
 huntBattleR = config["commands"][0]["useReactionBotCooldowns"]
 prayCurseR = config["commands"][1]["useReactionBotCooldowns"]
 owoR = config["commands"][11]["useReactionBotCooldowns"]
-rCheck = (huntBattleR or prayCurseR or owoR)
+reactionBotEnabled = (huntBattleR or prayCurseR or owoR)
 huntOrBattleCooldown = [config["commands"][0]["minCooldown"], config["commands"][0]["maxCooldown"]]
 huntBattleDelay = config["commands"][0]["delayBetweenCommands"]
 prayOrCurseCooldown = [config["commands"][1]["minCooldown"], config["commands"][1]["maxCooldown"]]
@@ -280,8 +311,29 @@ gambleCd = [config["commands"][3]["minCooldown"], config["commands"][3]["maxCool
 lvlGrindCooldown = [config["commands"][6]["minCooldown"], config["commands"][6]["maxCooldown"]]
 shopCd = [config["commands"][10]["minCooldown"], config["commands"][10]["maxCooldown"]]
 owoCd = [config["commands"][11]["minCooldown"], config["commands"][11]["maxCooldown"]]
-gawMaxCd = config["commands"][9]["maxCooldown"]
-gawMinCd = config["commands"][9]["minCooldown"]
+giveawayMaxCooldown = config["commands"][9]["maxCooldown"]
+giveawayMixCooldown = config["commands"][9]["minCooldown"]
+
+#version check
+def compare_versions(current_version, latest_version):
+    #current_version = current_version[1:]
+    #latest_version = latest_version[1:]
+    current = list(map(int, current_version.split('.')))
+    latest = list(map(int, latest_version.split('.')))
+    """
+    example output:
+    current = [1,5,0]
+    """
+    for c, l in zip(current, latest):
+        if l > c:
+            return True
+        elif l < c:
+            return False 
+    # If all parts are equal, return False (no new version)
+    return False
+
+
+
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -327,7 +379,7 @@ if mobileBatteryCheckEnabled or desktopBatteryCheckEnabled:
     loop_thread.start()
 #For emoji names
 try:
-    with open("emojis.json", 'r', encoding="utf-8") as file:
+    with open("utils/emojis.json", 'r', encoding="utf-8") as file:
         emoji_dict = json.load(file)
 except FileNotFoundError:
     print("The file emojis.json was not found.")
@@ -522,7 +574,7 @@ class MyClient(discord.Client):
 
     # send slash commands
     async def slashCommandSender(self, msg):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             try:
                 for command in await self.cm.application_commands():
                     if command.application.id == 408785106942164992:
@@ -568,19 +620,19 @@ class MyClient(discord.Client):
         try:
         # await sendCommands(channel=channel, message="")
             if typingIndicator and (
-                (self.f != True and self.sleep != True and self.sleep2 != True) or
-                (bypass and self.f != True and self.sleep2 != True)
+                (self.captchaDetected != True and self.sleep != True and self.sleep2 != True) or
+                (bypass and self.captchaDetected != True and self.sleep2 != True)
             ):
                 async with channel.typing():
-                    if self.f != True and self.sleep != True and self.sleep2 != True:
+                    if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                         await channel.send(message)
-                    elif bypass and self.f != True:
+                    elif bypass and self.captchaDetected != True:
                         await channel.send(message)
                     elif captcha:
                         await channel.send(message)
-            elif self.f != True and self.sleep != True and self.sleep2 != True:
+            elif self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                 await channel.send(message)
-            elif bypass and self.f != True and self.sleep2 != True:
+            elif bypass and self.captchaDetected != True and self.sleep2 != True:
                 await channel.send(message)
             elif captcha:
                 await channel.send(message)
@@ -591,18 +643,19 @@ class MyClient(discord.Client):
     async def rSend(self, channel, prayOrCurse=None):
         try:
             if autoHunt and huntBattleR:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                if slashCommandsEnabled:
-                    await self.slashCommandSender("hunt")
-                else:
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if self.balance == -1 or self.balance > 5:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender("hunt")
                     else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
-                self.rPrevTime[0] = time.time()
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                    if webhookUselessLog and webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                    self.rPrevTime[0] = time.time()
             if autoBattle and huntBattleR:
                 await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
                 if slashCommandsEnabled:
@@ -642,13 +695,13 @@ class MyClient(discord.Client):
     #custom commands func
     async def send_command_custom(self, command, cooldown):
         try:
-            while not self.f and not self.sleep and not self.sleep2:
+            while not self.captchaDetected and not self.sleep and not self.sleep2:
                 self.current_time = time.time()
                 await asyncio.sleep(random.uniform(0.2, 0.5) + cooldown)
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.f != True and self.sleep != True:
+                if self.captchaDetected != True and self.sleep != True:
                     #await self.cm.send(command)
                     await self.sendCommands(channel=self.cm, message=command)
                 self.last_cmd_time = time.time()
@@ -664,10 +717,10 @@ class MyClient(discord.Client):
 
 
 #----------SENDING COMMANDS----------#
-    #Solve Captchas
+    # Solve Captchas
     @tasks.loop()
     async def captchaSolver(self):
-        if self.webInt != None and self.webSend == True and self.tempJsonData != None:
+        if self.websiteIndex != None and self.webSend == True and self.tempJsonData != None:
             self.tempListCount = 0
             #self.captchaAnswerGot = False
             for i in captchas:
@@ -682,25 +735,67 @@ class MyClient(discord.Client):
                             pass
                 self.tempListCount+=1    
             await asyncio.sleep(random.uniform(1.5,2.7))
+    # balance check
+    @tasks.loop()
+    async def check_balance(self):
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
+            self.balanceCheck = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}cash")
+            console.print(f"-{self.user}[~] Checking for cash.".center(console_width - 2 ), style = "grey84 on black")
+            await asyncio.sleep(random.uniform(10,20))
+            if self.balanceCheck:
+                self.balanceCheck
+                self.check_balance.stop()
+            else:
+                console.print(f"-{self.user}[~] Checking for cash failed, reattempting.".center(console_width - 2 ), style = "grey84 on black")
+
+
     # OwO delay check
     @tasks.loop()
     async def delayCheck(self):
-        self.lastMsg = None
+        self.lastMsg = False
         async for message in self.cm.history(limit=10):
             if message.author.id == 408785106942164992:
-                self.lastMsg = 408785106942164992
-        if self.lastMsg is None:
-            self.sleepTime = random.uniform(200.8372728, 447.8382828)
-            console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.".center(console_width - 2 ), style = "plum4 on black")
-            await asyncio.sleep(self.sleepTime)
-            console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
-            self.sleep = False
-            await asyncio.sleep(random.uniform(40,70)) # Give enough time for next messages to be send by selfbot
-        await asyncio.sleep(random.uniform(50,100))
+                self.lastMsg = True
+        if not self.lastMsg:
+            if not delayCheckApi:
+                self.sleep = True
+                self.sleepTime = random.uniform(delayCheckMinSleep, delayCheckMaxSleep)
+                console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.".center(console_width - 2 ), style = "plum4 on black")
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                await asyncio.sleep(self.sleepTime)
+                console.print(f"-{self.user}[~] Finished sleeping {self.sleepTime} seconds".center(console_width - 2 ), style = "plum4 on black")
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[~] Finished sleeping  {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                self.sleep = False
+            else:
+                #may come in use later, thats why iam collecting whole data instead of just ping..,
+                try:
+                    self.delayData = await delaycheck(self.session, self.cm.guild.id)
+                except Exception as e:
+                    console.print(f"Error fetching delay data: {e}")
+                print(self.delayData)
+                while self.delayData["ping"] >= minPing:
+                    self.sleep = True
+                    self.sleepTime = random.uniform(delayCheckMinSleep,delayCheckMaxSleep)
+                    if webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                    console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ , {self.delayData["ping"]}ms delay".center(console_width - 2 ), style = "plum4 on black")
+                    await asyncio.sleep(self.sleepTime)
+                    try:
+                        self.delayData = await delaycheck(self.session, self.cm.guild.id)
+                    except Exception as e:
+                        console.print(f"Error fetching delay data: {e}")
+                console.print(f"-{self.user}[~] Finished sleeping".center(console_width - 2 ), style = "plum4 on black")
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[~] Finished sleeping  {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
+                self.sleep = False
+        await asyncio.sleep(random.uniform(delayCheckMinRecheck,delayCheckMaxRecheck))
     #Sleep
     @tasks.loop()
     async def random_account_sleeper(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.randSleepInt = random.randint(1,100)
             if self.randSleepInt > (100 - sleepRandomness):
                 self.sleep = True
@@ -719,6 +814,17 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(60,120))
         else:
             await asyncio.sleep(random.uniform(20,40))
+    #hunt bot handler
+    @tasks.loop(seconds=1)
+    async def huntbotHandler(self):
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
+            self.hbRecieved = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
+            console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+            await asyncio.sleep(random.uniform(10,20))
+            if self.hbRecieved or self.hbWait:
+                self.hbRecieved = False
+                self.huntbotHandler.stop()
     #reaction bot command handler
     @tasks.loop(seconds=1)
     async def rCommandHandler(self):
@@ -741,20 +847,21 @@ class MyClient(discord.Client):
             except TypeError:
                 self.rTime[2] = None
             if (autoBattle or autoHunt) and huntBattleR and self.rTime[0] != None:
-                if self.rTime[0] >= 20 and self.f != True and self.sleep != True and self.sleep2 != True:
+                if self.rTime[0] >= 20 and self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                     if autoHunt:
-                        await asyncio.sleep(random.uniform(0.4,0.8))
-                        if slashCommandsEnabled:
-                            await self.slashCommandSender("hunt")
-                        else:
-                            if useShortForm:
-                                await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        if self.balance == -1 or self.balance > 5:
+                            await asyncio.sleep(random.uniform(0.4,0.8))
+                            if slashCommandsEnabled:
+                                await self.slashCommandSender("hunt")
                             else:
-                                await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                        console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                        if webhookUselessLog and webhookEnabled:
-                            await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
-                        self.rPrevTime[0] = time.time()
+                                if useShortForm:
+                                    await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                                else:
+                                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                            console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                            if webhookUselessLog and webhookEnabled:
+                                await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                            self.rPrevTime[0] = time.time()
                     if autoBattle:
                         await asyncio.sleep(random.uniform(0.4,0.8))
                         if slashCommandsEnabled:
@@ -769,7 +876,7 @@ class MyClient(discord.Client):
                             await self.webhookSender(f"-{self.user}[+] ran battle.", colors=0xaf00ff)
                         self.rPrevTime[0] = time.time()
             if prayCurseR and (autoPray or autoCurse) and self.rTime[1] != None:
-                if self.rTime[1] >= 305 and self.f != True and self.sleep != True and self.sleep2 != True:
+                if self.rTime[1] >= 305 and self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                     await asyncio.sleep(random.uniform(0.4,0.8))
                     if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
                         if pingUserOnPrayOrCurse:
@@ -785,7 +892,7 @@ class MyClient(discord.Client):
                     if webhookUselessLog and webhookEnabled:
                         await self.webhookSender(f"-{self.user}[+] ran {self.prayOrCurse}.", colors=0xFF00FF)
             if owoR and autoOwo and self.rTime[2] != None:
-                if self.rTime[2] >= 15 and self.f != True and self.sleep != True and self.sleep2 != True:
+                if self.rTime[2] >= 15 and self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                     await asyncio.sleep(random.uniform(0.4,0.8))
                     await self.sendCommands(channel=self.cm, message="owo")
                     console.print(f"-{self.user}[+] ran OwO".center(console_width - 2 ), style = "light_steel_blue1 on black")
@@ -798,7 +905,7 @@ class MyClient(discord.Client):
     #daily
     @tasks.loop()
     async def send_daily(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             await asyncio.sleep(random.uniform(21, 67))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -807,7 +914,6 @@ class MyClient(discord.Client):
             # await self.cm.send(f"{setprefix}daily")
             await self.sendCommands(channel=self.cm, message=f"{setprefix}daily")
             self.last_cmd_time = time.time()
-            self.lastcmd = "daily"
             # Make the current time in PST timezone-aware
             pst_timezone = pytz.timezone('US/Pacific')
             self.current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone)
@@ -827,7 +933,6 @@ class MyClient(discord.Client):
             console.print(f"-{self.user}[+] ran daily (next daily :> {self.formatted_time})".center(console_width - 2), style="Cyan on black")
             if webhookUselessLog and webhookEnabled:
                 await self.webhookSender(f"-{self.user}[+] ran daily", f"next daily in {self.formatted_time}", colors=0x00FFFF)
-            self.lastcmd = "daily"
             await asyncio.sleep(self.total_seconds + random.uniform(30, 90))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -835,14 +940,14 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_hunt_or_battle(self):
         if not self.huntOrBattleSelected:
-            if self.hb == 1:
-                self.huntOrBattle = "battle"
-            elif self.hb == 0:
-                self.huntOrBattle = "hunt"
+            if self.huntOrBattleInt == 1:
+                self.huntOrBattleStr = "battle"
+            elif self.huntOrBattleInt == 0:
+                self.huntOrBattleStr = "hunt"
             else:
-                self.hb = 0
-                self.huntOrBattle = "hunt"
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+                self.huntOrBattleInt = 0
+                self.huntOrBattleStr = "hunt"
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             try:
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -850,30 +955,26 @@ class MyClient(discord.Client):
                 else:
                     pass
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if not self.tempHuntDisable:
-                    if self.hb == 0:
-                        if self.broke[1]:
-                            self.hb = 1
-                            self.huntOrBattle = "battle"
-                            await asyncio.sleep(random.uniform(huntOrBattleCooldown[0], huntOrBattleCooldown[1]))
-                        elif self.lastHb == self.hb == 0 and self.broke[0]:
-                            self.broke[1] = True
-                            self.broke[0] = False
+                if (self.huntOrBattleInt == 0 and (self.balance == -1 or self.balance >= 5)) or self.huntOrBattleInt == 1:
+                    if not self.tempHuntDisable:
+                        if slashCommandsEnabled:
+                            await self.slashCommandSender(self.huntOrBattleStr)
                         else:
-                            #self.broke[False,False]
-                            await asyncio.sleep(random.uniform(1.9,3.7))
-                    if slashCommandsEnabled:
-                        await self.slashCommandSender(self.huntOrBattle)
+                            if useShortForm:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattleStr[0]}")
+                                #await self.cm.send(f'{setprefix}{self.huntOrBattleStr[0]}')
+                            else:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattleStr}")
+                        self.lastHb = self.huntOrBattleInt
+                        console.print(f"-{self.user}[+] ran {self.huntOrBattleStr}.".center(console_width - 2 ), style = "purple on black")
+                        if webhookUselessLog and webhookEnabled:
+                            await self.webhookSender(f"-{self.user}[+] ran {self.huntOrBattleStr}.", colors=0xaf00ff)
                     else:
-                        if useShortForm:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle[0]}")
-                            #await self.cm.send(f'{setprefix}{self.huntOrBattle[0]}')
-                        else:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattle}")
-                    self.lastHb = self.hb
-                    console.print(f"-{self.user}[+] ran {self.huntOrBattle}.".center(console_width - 2 ), style = "purple on black")
-                    if webhookUselessLog and webhookEnabled:
-                        await self.webhookSender(f"-{self.user}[+] ran {self.huntOrBattle}.", colors=0xaf00ff)
+                        console.print(f"-{self.user}[+] skipped {self.huntOrBattleStr} - no cash.".center(console_width - 2 ), style = "red on black")
+                        self.huntOrBattleInt = 1
+                        if not self.balanceCheck:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}cash")
+                            self.balanceCheck = True
                     if (autoBattle == False or autoHunt == False) and (self.huntQuestValue != None or self.battleQuestValue != None):
                         if autoHunt == False and autoBattle == False:
                             self.tempBattleQuestValue+=1
@@ -884,33 +985,33 @@ class MyClient(discord.Client):
                                 self.send_hunt_or_battle.stop()
                             elif self.huntQuestValue <= self.tempHuntQuestValue:
                                 self.huntOrBattleSelected = False
-                                self.huntOrBattle = "battle"
-                                self.hb = 1
+                                self.huntOrBattleStr = "battle"
+                                self.huntOrBattleInt = 1
                                 self.battleQuestValue = None
                                 self.tempBattleQuestValue = None
                             elif self.battleQuestValue <= self.tempBattleQuestValue:
                                 self.huntOrBattleSelected = False
-                                self.huntOrBattle = "hunt"
-                                self.hb = 0
+                                self.huntOrBattleStr = "hunt"
+                                self.huntOrBattleInt = 0
                                 self.battleQuestValue = None
                                 self.tempBattleQuestValue = None
                         elif autoHunt:
                             self.tempBattleQuestValue+=1
                             if self.battleQuestValue <= self.tempBattleQuestValue:
                                 self.huntOrBattleSelected = False
-                                self.huntOrBattle = "hunt"
-                                self.hb = 0
+                                self.huntOrBattleStr = "hunt"
+                                self.huntOrBattleInt = 0
                                 self.battleQuestValue = None
                                 self.tempBattleQuestValue = None
                         elif autoBattle:
                             self.tempahuntQuestValue+=1
                             if self.huntQuestValue <= self.tempBattleQuestValue:
                                 self.huntOrBattleSelected = False
-                                self.huntOrBattle = "battle"
-                                self.hb = 1
+                                self.huntOrBattleStr = "battle"
+                                self.huntOrBattleInt = 1
                                 self.battleQuestValue = None
                                 self.tempBattleQuestValue = None
-                    if self.hb == 1 or self.huntOrBattleSelected:
+                    if self.huntOrBattleInt == 1 or self.huntOrBattleSelected:
                         await asyncio.sleep(random.uniform(huntOrBattleCooldown[0], huntOrBattleCooldown[1]))
                     else:
                         await asyncio.sleep(random.uniform(0.72667373732, 1.9439393929))
@@ -928,7 +1029,7 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(0.93535353, 1.726364646))
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))        
-            if self.f != True and self.sleep != True and self.sleep2 != True:
+            if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                 if userToPrayOrCurse and self.user.id != userToPrayOrCurse:
                     self.current_time = time.time()
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -954,7 +1055,6 @@ class MyClient(discord.Client):
                                         if questsList[o][3][z][1] == 0:
                                             questsList[o][3].pop(z)
                                             break                   
-                    self.lastcmd = self.prayOrCurse
                     self.last_cmd_time = time.time()
                 else:
                     if self.tempPrayOrCurse == []:
@@ -969,7 +1069,6 @@ class MyClient(discord.Client):
                                         if questsList[o][3][z][1] == 0:
                                             questsList[o][3].pop(z)
                                             break  
-                    self.lastcmd = self.prayOrCurse
                     self.last_cmd_time = time.time()
                 console.print(f"-{self.user}[+] ran {self.prayOrCurse}.".center(console_width - 2 ), style = "magenta on black")
                 if webhookUselessLog and webhookEnabled:
@@ -983,20 +1082,11 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def send_cf(self):
         try:
-            if self.f != True and self.sleep != True and self.sleep2 != True:
+            if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
                 self.current_time = time.time()
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if self.gambleCashCheck[0] == self.cfLastAmt and self.cfLastAmt != gambleStartValue:
-                    self.gambleCashCheck2[0]+=1
-                    if self.gambleCashCheck2[0] == 4:
-                        console.print(f"-{self.user}[–] Stopping coinflip ‐ No Cash".center(console_width - 2 ), style = "red on black")
-                        if webhookEnabled:
-                            await self.webhookSender(f"-{self.user}[–] Stopping coinflip ‐ No Cash.", colors=0xff0037)
-                        self.send_cf.stop()
-                else:
-                    self.gambleCashCheck[0] = self.cfLastAmt
                 if self.cfLastAmt >= 250000:
                     console.print(f"-{self.user}[–] Stopping coinflip ‐ 250k exceeded".center(console_width - 2 ), style = "red on black")
                     if webhookEnabled:
@@ -1012,30 +1102,31 @@ class MyClient(discord.Client):
                     return
                     #add bj here...
                 #await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.choice(cfOptions)[0]}")
-                if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
-                console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "magenta on black")
-                await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+                if self.balance == -1 or self.balance >= self.cfLastAmt:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.choice(coinflipOptions)[0]}")
+                    if webhookUselessLog and webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
+                    console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "magenta on black")
+                    await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+                else:
+                    if webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ No cash.", colors=0xff0037)
+                    console.print(f"-{self.user}[–] Stopping coinflip ‐ No cash.".center(console_width - 2 ), style = "red on black")
+                    self.send_slots.stop()
+                    self.send_cf.stop()
+                    return
+            else:
+                await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
         except Exception as e:
             print(e)
     # Slots    
     @tasks.loop()
     async def send_slots(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
-            if self.gambleCashCheck[1] == self.slotsLastAmt and self.slotsLastAmt != gambleStartValue:
-                self.gambleCashCheck2[1]+=1
-                if self.gambleCashCheck2[1] == 4:
-                    console.print(f"-{self.user}[–] Stopping slots ‐ No Cash".center(console_width - 2 ), style = "red on black")
-                    if webhookEnabled:
-                        await self.webhookSender(f"-{self.user}[–] Stopping slots ‐ No Cash.", colors=0xff0037)
-                    self.send_slots.stop()
-            else:
-                self.gambleCashCheck[0] = self.slotsLastAmt
             if self.slotsLastAmt >= 250000:
                 if webhookEnabled:
                     await self.webhookSender(f"-{self.user}[–] Stopping slots ‐ 250k exceeded.", colors=0xff0037)
@@ -1051,17 +1142,25 @@ class MyClient(discord.Client):
                 return
                 #add bj here...
             #await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}")
-            if webhookUselessLog and webhookEnabled:
-                await self.webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
-            console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "magenta on black")
-            await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+            if self.balance == -1 or self.balance >= self.slotsLastAmt:
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}")
+                if webhookUselessLog and webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
+                console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "magenta on black")
+                await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+            else:
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ No cash.", colors=0xff0037)
+                console.print(f"-{self.user}[–] Stopping coinflip ‐ No cash.".center(console_width - 2 ), style = "red on black")
+                self.send_slots.stop()
+                self.send_cf.stop()
+                return
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Owo top
     @tasks.loop()
     async def send_owo(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -1083,27 +1182,21 @@ class MyClient(discord.Client):
     #shop
     @tasks.loop()
     async def buyItems(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             #await self.cm.send('owo')
-            if self.shopCheck[0] != True:
-                if self.shopCheck[2]:
-                    console.print(f"-{self.user}[–] disabling shop as user doesn't have enough cash".center(console_width - 2 ), style = "red on black")
-                    self.buyItems.stop()
-                    self.shopCheck = [True, None, False]
-                else:
-                    self.shopCheck[2] = True
-            self.shopCheck[0] = False
-            self.shopCheck[1] = random.choice(shopItemsToBuy) # This will be made use of later for improved shop buy
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}buy {self.shopCheck[1]}")
-            self.last_cmd_time = time.time()
-            console.print(f"-{self.user}[+] brought item(s) from shop".center(console_width - 2 ), style = "Cyan on black")
-            if webhookUselessLog and webhookEnabled:
-                await self.webhookSender(f"-{self.user}[–] brought item(s) from shop", colors=0x00FFFF)
-            await asyncio.sleep(random.uniform(shopCd[0], shopCd[1]))
+            self.itemToBuy = random.choice(shopItemsToBuy)
+            if self.balance == -1 or self.balance >= 10**int(self.itemToBuy):
+                self.balance -= 10**int(self.itemToBuy)
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}buy {random.choice(shopItemsToBuy)}")
+                self.last_cmd_time = time.time()
+                console.print(f"-{self.user}[+] brought item(s) from shop".center(console_width - 2 ), style = "Cyan on black")
+                if webhookUselessLog and webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[–] brought item with id {self.itemToBuy} from shop", colors=0x00FFFF)
+                await asyncio.sleep(random.uniform(shopCd[0], shopCd[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # auto sell / auto sac.
@@ -1111,24 +1204,23 @@ class MyClient(discord.Client):
     async def send_sell_or_sac(self):
         try:
             if not self.sellOrSacSelected:
-                if self.ss == 1:
+                if self.sellOrSacrifice == 1:
                     self.sellOrSac = "sac"
-                    self.ss = 0
-                elif self.ss == 0:
+                    self.sellOrSacrifice = 0
+                elif self.sellOrSacrifice == 0:
                     self.sellOrSac = "sell"
-                    self.ss = 1
-                    self.broke[1] = False
-            if self.f != True and self.sleep != True and self.sleep2 != True:
+                    self.sellOrSacrifice = 1
+            if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                 self.current_time = time.time()
                 if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                     await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                #await self.cm.send(f'{setprefix}{self.sellOrSac} {rarity}')
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {rarity}")
+                #await self.cm.send(f'{setprefix}{self.sellOrSac} {animalRarity}')
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.sellOrSac} {animalRarity}")
                 self.last_cmd_time = time.time()
                 if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[+] {self.sellOrSac} animals ({rarity})", colors=0xff875f)
-                console.print(f"-{self.user}[+] {self.sellOrSac} animals ({rarity})".center(console_width - 2 ), style = "salmon1 on black")
+                    await self.webhookSender(f"-{self.user}[+] {self.sellOrSac} animals ({animalRarity})", colors=0xff875f)
+                console.print(f"-{self.user}[+] {self.sellOrSac} animals ({animalRarity})".center(console_width - 2 ), style = "salmon1 on black")
                 await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
             else:
                 await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
@@ -1137,20 +1229,20 @@ class MyClient(discord.Client):
      # Custom commands
     @tasks.loop(seconds=1)
     async def send_custom(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             try:
                 self.tasks = [self.send_command_custom(cmd, cd) for cmd, cd in zip(sorted_list1, sorted_list2)]
                 await asyncio.gather(*self.tasks)
             except Exception as e:
                 print("send_custom error", e)
-        #while self.f or self.sleep:
+        #while self.captchaDetected or self.sleep:
             #await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # Quests
     @tasks.loop()
     async def check_quests(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -1179,7 +1271,7 @@ class MyClient(discord.Client):
     @tasks.loop()
     async def questHandler(self):
         try:
-            if self.f != True and self.sleep != True and self.sleep2 != True:
+            if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                 print("questHandler started", self.user)
                 await asyncio.sleep(random.uniform(10.3389,20.399))
                 if questsList != []:
@@ -1264,7 +1356,7 @@ class MyClient(discord.Client):
     # Lottery
     @tasks.loop()
     async def send_lottery(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.current_time = time.time()
             self.time_since_last_cmd = self.current_time - self.last_cmd_time
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.5 seconds wait
@@ -1272,6 +1364,8 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             # await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
             await self.sendCommands(channel=self.cm, message=f"{setprefix}lottery {lotteryAmt}")
+            if self.balance != -1:
+                self.balance-=lotteryAmt
             # Make the current time in PST timezone-aware
             pst_timezone = pytz.timezone('US/Pacific')
             self.current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone)
@@ -1294,7 +1388,7 @@ class MyClient(discord.Client):
      # Lvl grind
     @tasks.loop()
     async def lvlGrind(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             if useQuoteInstead:
                 try:
                     async with self.session.get(quotesUrl) as response:
@@ -1326,7 +1420,7 @@ class MyClient(discord.Client):
     # cookie
     @tasks.loop()
     async def send_cookie(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             if self.tempCookie is not None:
                 for o, i in enumerate(questsList):
                     if i[0] == self.tempCookie:  # userid
@@ -1373,7 +1467,7 @@ class MyClient(discord.Client):
      # emoteTo {Quest}
     @tasks.loop()
     async def emoteTo(self):
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             if self.emoteCount >= self.emoteCountGoal:
                 self.emoteTo.stop()
             self.last_cmd_time = time.time()
@@ -1395,7 +1489,7 @@ class MyClient(discord.Client):
     async def send_gamble(self):
         if self.gambleCount >= self.gambleCountGoal:
             self.send_gamble.stop()
-        if self.f != True and self.sleep != True and self.sleep2 != True:
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             while self.gambleCount != self.gambleCountGoal:
                 self.last_cmd_time = time.time()
                 self.current_time = time.time()
@@ -1435,7 +1529,7 @@ class MyClient(discord.Client):
         await self.wait_until_ready()
 #----------ON READY----------#
     async def on_ready(self):
-        self.on_ready_dn = False
+        self.on_ready_done = False
         self.cmds = 1
         if self.session is None:
             self.session = aiohttp.ClientSession()
@@ -1457,9 +1551,12 @@ class MyClient(discord.Client):
             print(e)
         if self.dm == None:
             print("channel disabled")
+        #if await delaycheck()["ping"] >= minPing:
+            
+        #    pass
+        #print(await delaycheck(self.session, 420104212895105044))
         self.presence.start()
         #self.list_channel.append(self.dm.id)
-        self.broke = [False, False] #check, confirmed
         # AUTO QUEST
         self.questsDone = False
         self.emoteby = False
@@ -1478,12 +1575,14 @@ class MyClient(discord.Client):
         
         #-------
         self.hunt = None
-        self.webInt = None
+        self.websiteIndex = None
         self.webSend = False
         self.tempHuntDisable = False
         self.battle = None
         self.justStarted = True
         self.list_channel = [self.channel_id, self.dm.id]
+        self.balance = -1
+        self.balanceCheck = False
         if askForHelp:
             try:
                 self.questChannel = self.get_channel(askForHelpChannel)
@@ -1492,40 +1591,34 @@ class MyClient(discord.Client):
             except:
                 self.questChannel = None
                 console.print(f"-{self.user}[!] Failed to get channel with channelid {askForHelpChannel}".center(console_width - 2 ), style = "medium_purple3 on black")
-        # [Coinflip, Slots]
-        self.gambleCashCheck = [0,0]
-        self.gambleCashCheck2 = [0,0]
         #---
-        self.shopCheck = [True, None, False]
         self.last_cmd_time = 0
-        self.lastcmd = None
         self.busy = False
-        self.hb = 0
+        self.huntOrBattleInt = 0
         self.profit = 0
         self.lastHb = None
-        self.ss = 0
+        self.sellOrSacrifice = 0
         self.time_since_last_cmd = 0
         self.tempForCheck = False
-        self.f = False
+        self.captchaDetected = False
         self.zooCheckRecieved = False
         self.captchaType = None
         self.tempCookie = None
         self.sleep = False
         self.sleep2 = False
-        self.changedPrefix = False
+        self.hbRecieved = False
+        self.hbRecieved2 = False
+        self.hbWait = True
         # AutoGems
         self.autoHuntGem = True
         self.autoEmpoweredGem = True
         self.autoLuckyGem = True
         self.autoSpecialGem = True
         self.tempGemCheckRecieved = False
-        self.gemHuntCnt = None
-        self.gemEmpCnt = None
-        self.gemLuckCnt = None
-        self.gemSpecialCnt = None
         self.gems = autoGem
         self.invCheck = False
         self.tempGem = False
+        
         #-------
         # Slash Commands
         #if slashCommandsEnabled:
@@ -1534,23 +1627,23 @@ class MyClient(discord.Client):
 
         #-------
         self.gambleTotal = gambleAllottedAmount
-        if rCheck:
+        if reactionBotEnabled:
             self.rTime = [None, None, None]
             self.rPrevTime = [None, None, None]
 
         # List for running loops randomly
         self.task_methods = []
         # Starting hunt/battle loop
-        self.on_ready_dn = True
+        self.on_ready_done = True
         if (autoHunt or autoBattle):
             if autoHunt and autoBattle:
-                self.huntOrBattle = None
+                self.huntOrBattleStr = None
                 self.huntOrBattleSelected = False
             elif autoHunt:
-                self.huntOrBattle = "hunt"
+                self.huntOrBattleStr = "hunt"
                 self.huntOrBattleSelected = True
             else:
-                self.huntOrBattle = "battle"
+                self.huntOrBattleStr = "battle"
                 self.huntOrBattleSelected = True
             #self.send_hunt_or_battle.start()
             if not huntBattleR:
@@ -1612,19 +1705,28 @@ class MyClient(discord.Client):
             await self.rSend(channel=self.cm)
         random.shuffle(self.task_methods)
         for task_method in self.task_methods:
-            task_method()
+            try:
+                task_method()
+            except Exception as e:
+                print(f"error on task_method() :-\n{e}")
+                print()
+                print(task_method)
             await asyncio.sleep(random.uniform(0.4,0.8))
         
         await asyncio.sleep(random.uniform(2.69,3.69))
         self.justStarted = False
+        if autoHuntBot:
+            self.huntbotHandler.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
+        self.check_balance.start()
         await asyncio.sleep(random.uniform(10, 30))
         if not skipSpamCheck:
             self.delayCheck.start()
-        if rCheck:
+        if reactionBotEnabled:
             self.rCommandHandler.start()
-        if autoSell or autoSac:
+        if autoSell or autoSacrifice:
             await asyncio.sleep(random.uniform(sellOrSacCooldown[0], sellOrSacCooldown[1]))
-            if autoSell and autoSac:
+            if autoSell and autoSacrifice:
                 self.sellOrSac = None
                 self.sellOrSacSelected = False
             elif autoSell:
@@ -1643,7 +1745,7 @@ class MyClient(discord.Client):
 #----------ON MESSAGE----------#
     async def on_message(self, message):
         try:
-            if not self.on_ready_dn:
+            if not self.on_ready_done:
                 return
         except:
             return
@@ -1656,6 +1758,30 @@ class MyClient(discord.Client):
             self.sleep2 = True
         #chatCommandToStart
         if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStart}" in message.content.lower():
+            console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
+            self.sleep2 = False
+        if message.author.id == self.user.id and f"{chatPrefix}sw" in message.content.lower():
+            print(f"{self.user} attempting to switch channel\nPlease note that this command is not recommended for use unless absolutely necessary.\nThis command may even break the code.\nBugs caused by this will not be entertained.")
+            self.sleep = True
+            if message.content.lower() == f"{chatPrefix}sw":
+                await asyncio.sleep(random.uniform(4.232,7.945))
+                self.id = message.channel.id
+                self.cm = self.get_channel(self.id)
+                self.channel_id = self.id
+                self.list_channel[0] = self.id
+                await asyncio.sleep(0.5)
+            else:
+                try:
+                    await asyncio.sleep(random.uniform(4.232,7.945))
+                    self.id = re.search(rf"{chatPrefix}sw (\d+)", message.content.lower())
+                    if self.id:
+                        self.cm = self.get_channel(int(self.id.group(1)))
+                        self.channel_id = int(self.id.group(1))
+                except:
+                    pass
+                await asyncio.sleep(0.5)
+            self.sleep = False
+
             console.print(f"-{self.user}[+] Starting...".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep2 = False
         
@@ -1683,18 +1809,19 @@ class MyClient(discord.Client):
         if huntBattleR and message.author.id == 519287796549156864 and "**hunt/battle**" in message.content and message.channel.id == self.channel_id:
             #print(message.content)
             if autoHunt:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                if slashCommandsEnabled:
-                    await self.slashCommandSender("hunt")
-                else:
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if self.balance == -1 or self.balance > 5:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender("hunt")
                     else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
-                self.rPrevTime[0] = time.time()
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                    if webhookUselessLog and webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
+                    self.rPrevTime[0] = time.time()
             if autoBattle:
                 await asyncio.sleep(huntBattleDelay[0], huntBattleDelay[1])
                 if slashCommandsEnabled:
@@ -1711,7 +1838,7 @@ class MyClient(discord.Client):
         # OwO bot
         if "I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
             console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
-            #if rCheck:
+            #if reactionBotEnabled:
                 #if autoPray or autoCurse:
                     #await self.rSend(channel=self.cm, prayOrCurse=self.prayOrCurse)
                 #else:
@@ -1720,8 +1847,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(0.69, 2.69))
             if webhookEnabled:
                 await self.webhookSender(f'-{self.user}[+] Captcha solved. restarting...', desc=f"**User** : <@{self.user.id}>", colors=0x00ffaf, img_url="https://cdn.discordapp.com/emojis/672273475846668309.gif", webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url)
-            #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user}')
-            if websiteEnabled and self.webInt != None:
+            if websiteEnabled and self.websiteIndex != None:
                 #print("attempting to pop captcha indirectly")
                 while True:
                     self.tempListCount = 0
@@ -1738,13 +1864,12 @@ class MyClient(discord.Client):
                         break
                 #print(captchas , captchaAnswers)
                 
-                self.webInt = None
+                self.websiteIndex = None
 
                 self.captchaSolver.stop()
                 self.webSend = False
-                #print(f'int {self.webInt} bool(webSend) {self.webSend} -- {self.user} after solving')
                 #print(f"{self.user} stopped captcha solver")
-            self.f = False
+            self.captchaDetected = False
             return
         if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
             try:
@@ -1752,7 +1877,7 @@ class MyClient(discord.Client):
                     self.captchaType = "link"
                 else:
                     self.captchaType = "image"
-                self.f = True
+                self.captchaDetected = True
                 self.captcha_channel_name = get_channel_name(message.channel)
                 if termuxNotificationEnabled: #8ln from here
                     run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
@@ -1763,7 +1888,7 @@ class MyClient(discord.Client):
                     if self.captchaType == "link":
                         await self.webhookSender(
                             msg=f'-{self.user} [+] CAPTCHA Detected',
-                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)",
+                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)\n**Time to solve** : <t:{int(time.time())+600}:R>", #10m = 600
                             colors=0x00ffaf,  # Custom color
                             img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
                             author_img_url="https://i.imgur.com/6zeCgXo.png",
@@ -1836,10 +1961,8 @@ class MyClient(discord.Client):
                     except Exception as e:
                         print(f"error when attempting to send captcha to web {e}, for {self.user}")
                     try:
-                        if self.webInt is None:
+                        if self.websiteIndex is None:
                             self.data_json = json.dumps(self.dataToSend)
-                            #self.data_json = self.data_json.replace('"', '\\"').replace('&', '\\&')
-                            #print(self.data_json)
                             self.curl_command = [
                                 'curl',
                                 '-X', 'POST',
@@ -1847,24 +1970,16 @@ class MyClient(discord.Client):
                                 '-H', 'Content-Type: application/json',
                                 '-d', self.data_json
                             ]
-                            #self.curl_command = f"""curl -X POST http://localhost:{websitePort}/add_captcha -H "Content-Type: application/json" -d '{self.data_json}'"""
-                            #print(self.curl_command)
                             self.result = subprocess.run(self.curl_command, capture_output=True, text=True)
-                            #self.response_json = os.popen(self.curl_command).read()
-                            #self.response_dict = json.loads(self.response_json)
-                            #self.webInt = int(self.response_dict.get('status'))
-                            #self.tempJsonData = captchas[self.webInt]
                             if self.result.returncode == 0:
                                 self.response_json = self.result.stdout
                                 self.response_dict = json.loads(self.response_json)
-                                self.webInt = int(self.response_dict.get('status'))
-                                self.tempJsonData = captchas[self.webInt]
+                                self.websiteIndex = int(self.response_dict.get('status'))
+                                self.tempJsonData = captchas[self.websiteIndex]
                             else:
                                 print("Error:", self.result.stderr)
-                            #print(self.webInt, "from curl post section")
-                            #print("captcha solver started")
-                    except json.JSONDecodeError as json_err:
-                        print(f"Error decoding JSON response: {json_err}")
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON response: {e}")
                     except Exception as e:
                         print(f'Error when trying to get status :-> {e} Error for {self.user}')
                 console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2), style="deep_pink2 on black")
@@ -1872,7 +1987,7 @@ class MyClient(discord.Client):
             except Exception as e:
                 print(e)
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
-            self.f = True
+            self.captchaDetected = True
             self.captcha_channel_name = get_channel_name(message.channel)
             if termuxNotificationEnabled: #8ln from here
                 run_system_command(f"termux-notification -c '{notificationBannedContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype='Banned')}'", timeout=5, retry=True)
@@ -1922,10 +2037,10 @@ class MyClient(discord.Client):
         if message.channel.id == self.channel_id and ('you found:' in message.content.lower() or "caught" in message.content.lower()):
             try:
                 if not huntBattleR:
-                    self.hb = 1
+                    self.huntOrBattleInt = 1
+                if self.balance != -1:
+                    self.balance-=5 #hunt costs 5 cowoncy
                 self.last_cmd_time = time.time()
-                self.lastcmd = "hunt"
-                self.broke = [False,False]
                 if logRareHunts:
                     if "xp" not in message.content:
                         self.cash,self.rareHunt = get_emoji_numbers(message.content)
@@ -1979,7 +2094,7 @@ class MyClient(discord.Client):
                                 setattr(self, attr, False)
                         #print(f"hunt gem:{self.autoHuntGem}\n empgem:{self.autoEmpoweredGem}\n luckgem:{self.autoLuckyGem}\n specialgem:{self.autoSpecialGem}\n")
                         if (self.autoEmpoweredGem and autoEmpoweredGem) or (self.autoHuntGem and autoHuntGem) or (self.autoSpecialGem and autoSpecialGem) or (self.autoLuckyGem and autoLuckyGem):
-                            if self.f:
+                            if self.captchaDetected:
                                 return
                             self.current_time = time.time()
                             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
@@ -1996,7 +2111,7 @@ class MyClient(discord.Client):
                             await asyncio.sleep(random.uniform(0.5,0.9))
                             self.tempGem = False
                 elif "caught" in message.content.lower() and self.gems:
-                    if self.f:
+                    if self.captchaDetected:
                         return
                     #print("test")
                     self.autoHuntGem = True
@@ -2015,17 +2130,131 @@ class MyClient(discord.Client):
                     self.invCheck = True
             except Exception as e:
                 print(e)
+        # OwO cash
+        if message.channel.id == self.channel_id and "you currently have **__" in message.content:
+            self.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
+            console.print(f"-{self.user}[~] Checked for cash - {self.balance} cowoncy!".center(console_width - 2 ), style = "grey84 on black")
+            print(self.balance , self.user)
+            self.balanceCheck = True
+        # OwO sell
+        if message.channel.id == self.channel_id and "for a total of **<:cowoncy:416043450337853441>" in message.content:
+            if self.balance != -1:
+                self.saleRecievedAmt = int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
+                console.print(f"-{self.user}[~] Sale of animals successful!, earned {self.saleRecievedAmt}".center(console_width - 2 ), style = "grey84 on black")
+                self.balance+=self.saleRecievedAmt
+                print(self.balance , self.user)
+
+        #<---Auto Hunt Bot
+
+        """
+        Wanted to try not depend on loops too much,
+        so i only used loop to send first command, resnt handled on on_message()
+        """
+
+        if autoHuntBot and message.channel.id == self.channel_id and ", Here is your password!" in message.content:
+            self.sleep = True
+            self.hbRecieved = True
+            self.hbRecieved2 = False
+            try:
+                """if message.attachments:
+                    print('uh yea..?')"""
+                self.ans = await solveHbCaptcha(message.attachments[0].url, self.session)
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend} {self.ans}", bypass=True)
+                console.print(f"-{self.user}[+] solved hb captcha - {self.ans}".center(console_width - 2 ), style = "pale_green3 on black")
+            except Exception as e:
+                print(f"error when handling huntbot answer:\n{e}")
+            self.sleep = False
+            
+        if autoHuntBot and message.channel.id == self.channel_id and "`BEEP BOOP. I AM BACK" in message.content:
+            self.sleep = True
+            self.hbRecieved = False
+            self.hbRecieved2 = True
+            await asyncio.sleep(random.uniform(0.5,0.7))
+            console.print(f"-{self.user}[+] huntbot back after a successful round!".center(console_width - 2 ), style = "dodger_blue2 on black")
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+            while True:
+                if self.hbWait:
+                    break
+                await asyncio.sleep(random.uniform(0.6,0.9))
+                if self.hbRecieved:
+                    break
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
+        """
+        **:cbot: |** `BEEP BOOP. I AM STILL HUNTING. I WILL BE BACK IN 2M`
+**:blank: |** `33.36% DONE | 0 ANIMALS CAPTURED`
+**:blank: |** `[■■■■■■■■■□□□□□□□□□□□□□□□□]`
+        """
+        if autoHuntBot and message.channel.id == self.channel_id and ("`I WILL BE BACK IN " in message.content or "BEEP BOOP. I AM STILL HUNTING" in message.content):
+            self.sleep = False
+            self.hbRecieved2 = False
+            self.hbRecieved = False
+            total_seconds_hb = 0
+            if "`I WILL BE BACK IN " in message.content:
+                if self.balance != -1:
+                    try:
+                        self.balance-=int(re.search(r"YOU SPENT (\d+) cowoncy", message.content).group(1))
+                    except:
+                        print(f'scrapping huntbot cost failed, using huntbotCashToSpend variable - {self.user}')
+                        self.balance-=huntbotCashToSpend
+            for amount, unit in re.findall(r'(\d+)([DHM])', message.content):
+                
+                if unit == 'M':
+                    total_seconds_hb += int(amount) * 60
+                elif unit == 'H':
+                    total_seconds_hb += int(amount) * 3600
+                elif unit == 'D':
+                    total_seconds_hb += int(amount) * 86400
+            #print(total_seconds_hb)
+            console.print(f"-{self.user}[+] huntbot will be back after {total_seconds_hb}s".center(console_width - 2 ), style = "dodger_blue2 on black")
+            self.hbWait = True
+            await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
+            self.hbWait = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+            console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+            while True:
+                if self.hbWait:
+                    break
+                await asyncio.sleep(random.uniform(0.6,0.9))
+                if self.hbRecieved2:
+                    self.hbRecieved2 = False
+                    break
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+                    console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+
+        if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
+            self.sleep = False
+            self.hbRecieved2 = False
+            self.hbRecieved = False
+            self.hbWait = True
+            self.waitAmt = int(re.search(r"Password will reset in (\d+) minutes", message.content).group(1))*60
+            #print(f"self.waitamt = {self.waitAmt}")
+            console.print(f"-{self.user}[!] couldnt get huntbot captcha image, retrying in {self.waitAmt}s before retrying to reset.".center(console_width - 2 ), style = "dodger_blue2 on black")
+            await asyncio.sleep(random.uniform(self.waitAmt+14,self.waitAmt+30))
+            self.hbWait = False
+            while True:
+                await asyncio.sleep(random.uniform(0.6,0.9))
+                if self.hbRecieved2:
+                    self.hbRecieved2 = False
+                    break
+                if self.hbRecieved:
+                    self.hbRecieved = False
+                    break
+                else:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+                    console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+
+
+        #End--->
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
             if huntOrBattleCooldown < 20:
                 huntOrBattleCooldown+=10
                 console.print(f"-{self.user}[–] Increasing hunt and battle cooldowns since owo is having ratelimits... [test]".center(console_width - 2 ), style = "red on black")
                 if webhookUselessLog and webhookEnabled:
                     await self.webhookSender(f"-{self.user}[~] Cooldown for hunt and battle increased.", "OwO seems to have enabled cooldowns for hunt and battle due to ratelimits. Increasing sleep time to prevent spam...", colors=0xff0037)
-        if message.channel.id == self.channel_id and "You don't have enough cowoncy!" in message.content:
-            self.broke[0] = True
-            console.print(f"-{self.user}[–] may disable hunt since not enough cash... checking..".center(console_width - 2 ), style = "red on black")
         if message.channel.id == self.channel_id and ("you found a **lootbox**!" in message.content.lower() or "you found a **weapon crate**!" in message.content.lower()):
-            if self.f:
+            if self.captchaDetected:
                 return
             if "**lootbox**" in message.content.lower() and (autoLootbox or logLootboxes):
                 if logLootboxes:
@@ -2037,7 +2266,6 @@ class MyClient(discord.Client):
                             colors=0xffafd7,
                             img_url="https://cdn.discordapp.com/emojis/427004983460888588.gif"
                         )
-                        #await self.webhookSender(f"-{self.user}[+] found a lootbox", colors=0xFF00FF)
                 if autoLootbox:
                     self.current_time = time.time()
                     self.time_since_last_cmd = self.current_time - self.last_cmd_time
@@ -2091,6 +2319,7 @@ class MyClient(discord.Client):
                 console.print(f"-{self.user}[–] Missing team for battle... attempting to create one.".center(console_width - 2 ), style = "orchid1 on black")
                 self.sleep = True
                 self.zooCheckReq = True
+                await asyncio.sleep(random.uniform(1,2))
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}zoo", bypass=True)
                 await asyncio.sleep(random.uniform(1,2))
                 if self.zooCheckRecieved:
@@ -2112,8 +2341,6 @@ class MyClient(discord.Client):
                 await asyncio.sleep(random.uniform(1.5,2.3))
             console.print(f"-{self.user}[–] Created team for auto battle!".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep = False 
-        if shopEnabled and message.channel.id == self.channel_id and ", you bought a" in message.content:
-            self.shopCheck[0] = True
         if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
             if self.invCheck:
                 self.invNumbers = re.findall(r'`(\d+)`', message.content)
@@ -2182,9 +2409,8 @@ class MyClient(discord.Client):
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
                     # Check to see if Hunt is completed or not.
-                    self.hb = 0 #check
+                    self.huntOrBattleInt = 0 #check
                     self.last_cmd_time = time.time()
-                    self.lastcmd = "battle"
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if not autoQuest:
                         return
@@ -2223,14 +2449,14 @@ class MyClient(discord.Client):
                                         self.send_hunt_or_battle.stop()
                                 elif autoHunt == False:
                                     self.huntOrBattleSelected = False
-                                    self.huntOrBattle = "battle"
-                                    self.hb = 1
+                                    self.huntOrBattleStr = "battle"
+                                    self.huntOrBattleInt = 1
                                     self.battleQuestValue = None
                                     self.tempBattleQuestValue = None
                                 elif autoBattle == False:
                                     self.huntOrBattleSelected = False
-                                    self.huntOrBattle = "hunt"
-                                    self.hb = 0
+                                    self.huntOrBattleStr = "hunt"
+                                    self.huntOrBattleInt = 0
                                     self.battleQuestValue = None
                                     self.tempBattleQuestValue = None
                             console.print(f"-{self.user}[+] Quests have been fully completed!!".center(console_width - 2 ), style = "medium_purple3 on black")
@@ -2250,12 +2476,12 @@ class MyClient(discord.Client):
                                         self.huntQuestValue = int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])
                                     if autoBattle:
                                         self.huntOrBattleSelected = False
-                                        self.hb = 0
-                                        self.huntOrBattle = "hunt"
+                                        self.huntOrBattleInt = 0
+                                        self.huntOrBattleStr = "hunt"
                                     else:
                                         self.huntOrBattleSelected = True
-                                        self.huntOrBattle = "hunt"
-                                        self.hb = 0
+                                        self.huntOrBattleStr = "hunt"
+                                        self.huntOrBattleInt = 0
                                         if not self.send_hunt_or_battle.is_running():
                                             self.send_hunt_or_battle.start()
                             except Exception as e:
@@ -2268,12 +2494,12 @@ class MyClient(discord.Client):
                                 self.battleQuestValue = int(self.questProgress[(o*2)+1]) - int(self.questProgress[o*2])
                                 if autoHunt:
                                     self.huntOrBattleSelected = False
-                                    self.hb = 1
-                                    self.huntOrBattle = "battle"
+                                    self.huntOrBattleInt = 1
+                                    self.huntOrBattleStr = "battle"
                                 else:
                                     self.huntOrBattleSelected = True
-                                    self.huntOrBattle = "battle"
-                                    self.hb = 1
+                                    self.huntOrBattleStr = "battle"
+                                    self.huntOrBattleInt = 1
                                     if not self.send_hunt_or_battle.is_running():
                                         self.send_hunt_or_battle.start()          
                             except Exception as e:
@@ -2373,18 +2599,18 @@ class MyClient(discord.Client):
                             try:
                                 if autoHunt == False or autoBattle == False and doEvenIfDisabled:
                                     self.huntOrBattleSelected = False
-                                    self.huntOrBattle = None
+                                    self.huntOrBattleStr = None
                                     if autoHunt == False and autoBattle == False:
                                         self.huntOrBattleSelected = False
-                                        self.huntOrBattle = "hunt"
-                                        self.hb = 0
+                                        self.huntOrBattleStr = "hunt"
+                                        self.huntOrBattleInt = 0
                                         self.huntQuestValue = None
                                         self.battleQuestValue = None
                                         self.send_hunt_or_battle.start()
                                     elif autoHunt or autoBattle:
                                         self.huntOrBattleSelected = False
-                                        self.huntOrBattle = "hunt"
-                                        self.hb = 0
+                                        self.huntOrBattleStr = "hunt"
+                                        self.huntOrBattleInt = 0
                                         self.huntQuestValue = None
                                         self.battleQuestValue = None
                                     print("enabled Earn xp quest", self.user)
@@ -2403,7 +2629,7 @@ class MyClient(discord.Client):
                             print(e, "last part of quest logs")
                     if giveawayEnabled and embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in giveawayChannels:
                         try:
-                            await asyncio.sleep(random.uniform(gawMinCd,gawMaxCd))
+                            await asyncio.sleep(random.uniform(giveawayMixCooldown,giveawayMaxCooldown))
                             await message.components[0].children[0].click()
                             console.print(f"-{self.user}[+] Joined giveaway in {message.channel.name} successfuly!".center(console_width - 2 ), style = "medium_purple3 on black")
                         except Exception as e:
@@ -2417,26 +2643,43 @@ class MyClient(discord.Client):
         if autoSlots != True and autoCf != True:
             return
         # slots
+        """
+        **  `___SLOTS___`**
+` ` <:heart:417475705899712522> <:heart:417475705899712522> <:heart:417475705899712522> ` ` user. bet <:cowoncy:416043450337853441> 1,000
+  `|         |`   and won <:cowoncy:416043450337853441> 2,000
+  `|         |`
+        """
         if "slots" in after.content.lower():
             if "and won nothing... :c" in after.content:
                 console.print(f"-{self.user}[+] ran Slots and lost {self.slotsLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                 if doubleOnLose:
                     self.slotsLastAmt = self.slotsLastAmt * 2
                 self.gambleTotal-=self.slotsLastAmt
+                if self.balance != -1:
+                    self.balance-=self.slotsLastAmt
             else:
                 if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 elif "and won" in after.content.lower():
-                    self.gambleTotal+=self.slotsLastAmt
-                    console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
+                    self.slotsWinAmt = int(re.search(r'won <:cowoncy:\d+> ([\d,]+)', after.content).group(1)) #.group(1) gives just the matched value while 0 the entire text.
+                    if self.balance != -1:
+                        self.balance+=self.slotsWinAmt
+                    self.gambleTotal+=self.slotsWinAmt
+                    console.print(f"-{self.user}[+] ran Slots and won {self.slotsWinAmt}..".center(console_width - 2 ), style = "magenta on black")
                     if doubleOnLose:
                         self.slotsLastAmt = gambleStartValue
         #coinflip
+        """
+        **user.** spent **<:cowoncy:416043450337853441> 1,000** and chose **tails**
+The coin spins... <:tail:436677926398853120> and you won **<:cowoncy:416043450337853441> 2,000**!!
+        """
         if "chose" in after.content.lower():
             try:
                 if "and you lost it all... :c" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                     self.gambleTotal-=self.cfLastAmt
+                    if self.balance != -1:
+                        self.balance-=self.cfLastAmt
                     if doubleOnLose:
                         #print("cdble")
                         self.cfLastAmt = self.cfLastAmt*2
@@ -2444,6 +2687,8 @@ class MyClient(discord.Client):
                 else:
                     console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                     self.gambleTotal+=self.cfLastAmt
+                    if self.balance != -1:
+                        self.balance+=self.cfLastAmt
                     if doubleOnLose:
                         #print("c")
                         self.cfLastAmt = gambleStartValue
@@ -2470,7 +2715,7 @@ if __name__ == "__main__":
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
     if websiteEnabled:
         printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold blue_violet on black' )
-    if int(ver_check.replace(".","")) > int(version.replace(".","")):
+    if compare_versions(version, ver_check):
         console.print(f"""new update detected (v {ver_check}) (current version:- v {version})...
 please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow on black")
         if desktopNotificationEnabled:
@@ -2498,7 +2743,14 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
         console.print("openCaptchaWebsite :- These are not well tested, and only works if the phone your using is ON.", style="orchid on black")
     if termuxTtsEnabled:
         console.print("termuxTtsEnabled :- These sometimes do not work, so don't rely on it fully!", style="orchid on black")
-
+    for i,o in enumerate(shopItemsToBuy):
+        if o not in [1,2,3,4,5,6,7]:
+            if o >= 200 and o <= 274:
+                console.print(f"shop item with id {i} has been removed as its an wallpaper,\n dont be lazy ;-;, just buy that manually.\nIf you really really is that lazy then use `custom commands` to do it (you can find it in config.json)", style="orchid on black")
+                shopItemsToBuy.pop(i)
+            else:
+                console.print(f"shop item with id {i} is disabled as its either not an wallpaper or a ring.\ncould be invalid id, if not let `@EchoQuill` (discord acc) know.\n rings are supported for now.")
+                shopItemsToBuy.pop(i)
 
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
@@ -2517,3 +2769,4 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
     if termuxToastEnabled:
         run_system_command(f"termux-toast -c magenta -b black 'owo-dusk started with {token_len} tokens!'", timeout=5, retry=True)
     run_bots(tokens_and_channels)
+

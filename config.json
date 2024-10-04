@@ -90,9 +90,21 @@
       "useReactionBotCooldowns": false,
       "minCooldown": 10,
       "maxCooldown": 13
+    },
+    {
+      "autoHuntBot": false,
+      "cashToSpend": 10000
     }
   ],
   "autoDaily": false,
+  "delayCheck": {
+    "useOwobotApi": true,
+    "minPing": 60,
+    "minDelayBetweenRecheck": 5,
+    "maxDelayBetweenRecheck": 9,
+    "minSleepTime": 200.83,
+    "maxSleepTime": 447.83
+  },
   "textCommands": {
     "prefix": ".",
     "commandToStopUser": "stop",
