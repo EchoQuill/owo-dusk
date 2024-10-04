@@ -4,6 +4,7 @@
 # I feel sorry for the one reading this code lol
 #                 - EchoQuill
 
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from datetime import datetime, timedelta, timezone
 from discord.ext import commands, tasks
@@ -235,8 +236,28 @@ maxSleepTime = config["commands"][8]["maxTime"]
 sleepRandomness = config["commands"][8]["frequencyPercentage"]
 giveawayEnabled = config["commands"][9]["giveawayJoiner"]
 giveawayChannels = config["commands"][9]["channelsToJoin"]
+"""
+SHOP-
+100-110 - limited time items
+200-274 - wallpapers (one time buy)
+1-7 - rings
+"""
+"""shopItemsCash = {
+    1:10,
+    2:100,
+    3:1000,
+    4:10000,
+    5:100000,
+    6:1000000,
+    7:10000000
+}"""
+# int(f"1{'0'*i}")
+# 10**i ( same as raised to the value i, 10^i)
+
 shopEnabled = config["commands"][10]["shop"]
 shopItemsToBuy = config["commands"][10]["itemsToBuy"]
+
+
 autoHuntBot = config["commands"][12]["autoHuntBot"]
 huntbotCashToSpend = config["commands"][12]["cashToSpend"]
 skipSpamCheck = (shopEnabled == autoSlots == autoCf == autoBattle == autoHunt == False)
@@ -622,18 +643,19 @@ class MyClient(discord.Client):
     async def rSend(self, channel, prayOrCurse=None):
         try:
             if autoHunt and huntBattleR:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                if slashCommandsEnabled:
-                    await self.slashCommandSender("hunt")
-                else:
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if self.balance == -1 or self.balance > 5:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender("hunt")
                     else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
-                self.rPrevTime[0] = time.time()
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                    if webhookUselessLog and webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                    self.rPrevTime[0] = time.time()
             if autoBattle and huntBattleR:
                 await asyncio.sleep(random.uniform(huntBattleDelay[0], huntBattleDelay[1]))
                 if slashCommandsEnabled:
@@ -716,7 +738,18 @@ class MyClient(discord.Client):
     # balance check
     @tasks.loop()
     async def check_balance(self):
-        pass
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
+            self.balanceCheck = False
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}cash")
+            console.print(f"-{self.user}[~] Checking for cash.".center(console_width - 2 ), style = "grey84 on black")
+            await asyncio.sleep(random.uniform(10,20))
+            if self.balanceCheck:
+                self.balanceCheck
+                self.check_balance.stop()
+            else:
+                console.print(f"-{self.user}[~] Checking for cash failed, reattempting.".center(console_width - 2 ), style = "grey84 on black")
+
+
     # OwO delay check
     @tasks.loop()
     async def delayCheck(self):
@@ -786,7 +819,7 @@ class MyClient(discord.Client):
     async def huntbotHandler(self):
         if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             self.hbRecieved = False
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}")
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
             await asyncio.sleep(random.uniform(10,20))
             if self.hbRecieved or self.hbWait:
                 self.hbRecieved = False
@@ -815,18 +848,19 @@ class MyClient(discord.Client):
             if (autoBattle or autoHunt) and huntBattleR and self.rTime[0] != None:
                 if self.rTime[0] >= 20 and self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
                     if autoHunt:
-                        await asyncio.sleep(random.uniform(0.4,0.8))
-                        if slashCommandsEnabled:
-                            await self.slashCommandSender("hunt")
-                        else:
-                            if useShortForm:
-                                await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        if self.balance == -1 or self.balance > 5:
+                            await asyncio.sleep(random.uniform(0.4,0.8))
+                            if slashCommandsEnabled:
+                                await self.slashCommandSender("hunt")
                             else:
-                                await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                        console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                        if webhookUselessLog and webhookEnabled:
-                            await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
-                        self.rPrevTime[0] = time.time()
+                                if useShortForm:
+                                    await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                                else:
+                                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                            console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                            if webhookUselessLog and webhookEnabled:
+                                await self.webhookSender(f"-{self.user}[+] ran hunt.", colors=0xaf00ff)
+                            self.rPrevTime[0] = time.time()
                     if autoBattle:
                         await asyncio.sleep(random.uniform(0.4,0.8))
                         if slashCommandsEnabled:
@@ -920,19 +954,26 @@ class MyClient(discord.Client):
                 else:
                     pass
                 self.time_since_last_cmd = self.current_time - self.last_cmd_time
-                if not self.tempHuntDisable:
-                    if slashCommandsEnabled:
-                        await self.slashCommandSender(self.huntOrBattleStr)
-                    else:
-                        if useShortForm:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattleStr[0]}")
-                            #await self.cm.send(f'{setprefix}{self.huntOrBattleStr[0]}')
+                if self.huntOrBattleStr == "hunt" and (self.balance == -1 or self.balance >= 5):
+                    if not self.tempHuntDisable:
+                        if slashCommandsEnabled:
+                            await self.slashCommandSender(self.huntOrBattleStr)
                         else:
-                            await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattleStr}")
-                    self.lastHb = self.huntOrBattleInt
-                    console.print(f"-{self.user}[+] ran {self.huntOrBattleStr}.".center(console_width - 2 ), style = "purple on black")
-                    if webhookUselessLog and webhookEnabled:
-                        await self.webhookSender(f"-{self.user}[+] ran {self.huntOrBattleStr}.", colors=0xaf00ff)
+                            if useShortForm:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattleStr[0]}")
+                                #await self.cm.send(f'{setprefix}{self.huntOrBattleStr[0]}')
+                            else:
+                                await self.sendCommands(channel=self.cm, message=f"{setprefix}{self.huntOrBattleStr}")
+                        self.lastHb = self.huntOrBattleInt
+                        console.print(f"-{self.user}[+] ran {self.huntOrBattleStr}.".center(console_width - 2 ), style = "purple on black")
+                        if webhookUselessLog and webhookEnabled:
+                            await self.webhookSender(f"-{self.user}[+] ran {self.huntOrBattleStr}.", colors=0xaf00ff)
+                    else:
+                        console.print(f"-{self.user}[+] skipped {self.huntOrBattleStr} - no cash.".center(console_width - 2 ), style = "red on black")
+                        self.huntOrBattleInt = 1
+                        if not self.balanceCheck:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}cash")
+                            self.balanceCheck = True
                     if (autoBattle == False or autoHunt == False) and (self.huntQuestValue != None or self.battleQuestValue != None):
                         if autoHunt == False and autoBattle == False:
                             self.tempBattleQuestValue+=1
@@ -1060,11 +1101,21 @@ class MyClient(discord.Client):
                     return
                     #add bj here...
                 #await self.cm.send(f'{setprefix}cf {self.cfLastAmt}')
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.choice(coinflipOptions)[0]}")
-                if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
-                console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "magenta on black")
-                await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+                if self.balance == -1 or self.balance >= self.cfLastAmt:
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}cf {self.cfLastAmt} {random.choice(coinflipOptions)[0]}")
+                    if webhookUselessLog and webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[–] ran Coinflip", colors=0xff0037)
+                    console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "magenta on black")
+                    await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+                else:
+                    if webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ No cash.", colors=0xff0037)
+                    console.print(f"-{self.user}[–] Stopping coinflip ‐ No cash.".center(console_width - 2 ), style = "red on black")
+                    self.send_slots.stop()
+                    self.send_cf.stop()
+                    return
+            else:
+                await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
         except Exception as e:
             print(e)
     # Slots    
@@ -1090,11 +1141,19 @@ class MyClient(discord.Client):
                 return
                 #add bj here...
             #await self.cm.send(f'{setprefix}slots {self.slotsLastAmt}')
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}")
-            if webhookUselessLog and webhookEnabled:
-                await self.webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
-            console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "magenta on black")
-            await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+            if self.balance == -1 or self.balance >= self.slotsLastAmt:
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}slots {self.slotsLastAmt}")
+                if webhookUselessLog and webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[‐] ran Slots", colors=0x00FFFF)
+                console.print(f"-{self.user}[+] ran Slots.".center(console_width - 2 ), style = "magenta on black")
+                await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
+            else:
+                if webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ No cash.", colors=0xff0037)
+                console.print(f"-{self.user}[–] Stopping coinflip ‐ No cash.".center(console_width - 2 ), style = "red on black")
+                self.send_slots.stop()
+                self.send_cf.stop()
+                return
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
      # Owo top
@@ -1128,12 +1187,15 @@ class MyClient(discord.Client):
             if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                 await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1, 0.3))
             #await self.cm.send('owo')
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}buy {random.choice(shopItemsToBuy)}")
-            self.last_cmd_time = time.time()
-            console.print(f"-{self.user}[+] brought item(s) from shop".center(console_width - 2 ), style = "Cyan on black")
-            if webhookUselessLog and webhookEnabled:
-                await self.webhookSender(f"-{self.user}[–] brought item(s) from shop", colors=0x00FFFF)
-            await asyncio.sleep(random.uniform(shopCd[0], shopCd[1]))
+            self.itemToBuy = random.choice(shopItemsToBuy)
+            if self.balance == -1 or self.balance >= 10**int(self.itemToBuy):
+                self.balance -= 10**int(self.itemToBuy)
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}buy {random.choice(shopItemsToBuy)}")
+                self.last_cmd_time = time.time()
+                console.print(f"-{self.user}[+] brought item(s) from shop".center(console_width - 2 ), style = "Cyan on black")
+                if webhookUselessLog and webhookEnabled:
+                    await self.webhookSender(f"-{self.user}[–] brought item with id {self.itemToBuy} from shop", colors=0x00FFFF)
+                await asyncio.sleep(random.uniform(shopCd[0], shopCd[1]))
         else:
             await asyncio.sleep(random.uniform(1.12667373732, 1.9439393929))
     # auto sell / auto sac.
@@ -1301,6 +1363,8 @@ class MyClient(discord.Client):
             self.last_cmd_time = time.time()
             # await self.cm.send(f'{setprefix}lottery {lotteryAmt}')
             await self.sendCommands(channel=self.cm, message=f"{setprefix}lottery {lotteryAmt}")
+            if self.balance != -1:
+                self.balance-=lotteryAmt
             # Make the current time in PST timezone-aware
             pst_timezone = pytz.timezone('US/Pacific')
             self.current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone)
@@ -1464,7 +1528,6 @@ class MyClient(discord.Client):
         await self.wait_until_ready()
 #----------ON READY----------#
     async def on_ready(self):
-        
         self.on_ready_done = False
         self.cmds = 1
         if self.session is None:
@@ -1517,7 +1580,8 @@ class MyClient(discord.Client):
         self.battle = None
         self.justStarted = True
         self.list_channel = [self.channel_id, self.dm.id]
-        self.balance = 0
+        self.balance = -1
+        self.balanceCheck = False
         if askForHelp:
             try:
                 self.questChannel = self.get_channel(askForHelpChannel)
@@ -1652,6 +1716,8 @@ class MyClient(discord.Client):
         self.justStarted = False
         if autoHuntBot:
             self.huntbotHandler.start()
+        await asyncio.sleep(random.uniform(0.4,0.8))
+        self.check_balance.start()
         await asyncio.sleep(random.uniform(10, 30))
         if not skipSpamCheck:
             self.delayCheck.start()
@@ -1701,6 +1767,7 @@ class MyClient(discord.Client):
                 self.id = message.channel.id
                 self.cm = self.get_channel(self.id)
                 self.channel_id = self.id
+                self.list_channel[0] = self.id
                 await asyncio.sleep(0.5)
             else:
                 try:
@@ -1741,18 +1808,19 @@ class MyClient(discord.Client):
         if huntBattleR and message.author.id == 519287796549156864 and "**hunt/battle**" in message.content and message.channel.id == self.channel_id:
             #print(message.content)
             if autoHunt:
-                await asyncio.sleep(random.uniform(0.4,0.8))
-                if slashCommandsEnabled:
-                    await self.slashCommandSender("hunt")
-                else:
-                    if useShortForm:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                if self.balance == -1 or self.balance > 5:
+                    await asyncio.sleep(random.uniform(0.4,0.8))
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender("hunt")
                     else:
-                        await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
-                console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
-                if webhookUselessLog and webhookEnabled:
-                    await self.webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
-                self.rPrevTime[0] = time.time()
+                        if useShortForm:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}h")
+                        else:
+                            await self.sendCommands(channel=self.cm, message=f"{setprefix}hunt")
+                    console.print(f"-{self.user}[+] ran hunt.".center(console_width - 2 ), style = "purple on black")
+                    if webhookUselessLog and webhookEnabled:
+                        await self.webhookSender(f"-{self.user}[+] ran hunt", colors=0xaf00ff)
+                    self.rPrevTime[0] = time.time()
             if autoBattle:
                 await asyncio.sleep(huntBattleDelay[0], huntBattleDelay[1])
                 if slashCommandsEnabled:
@@ -1969,6 +2037,8 @@ class MyClient(discord.Client):
             try:
                 if not huntBattleR:
                     self.huntOrBattleInt = 1
+                if self.balance != -1:
+                    self.balance-=5 #hunt costs 5 cowoncy
                 self.last_cmd_time = time.time()
                 if logRareHunts:
                     if "xp" not in message.content:
@@ -2059,6 +2129,20 @@ class MyClient(discord.Client):
                     self.invCheck = True
             except Exception as e:
                 print(e)
+        # OwO cash
+        if message.channel.id == self.channel_id and "you currently have **__" in message.content:
+            self.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
+            console.print(f"-{self.user}[~] Checked for cash - {self.balance} cowoncy!".center(console_width - 2 ), style = "grey84 on black")
+            print(self.balance , self.user)
+            self.balanceCheck = True
+        # OwO sell
+        if message.channel.id == self.channel_id and "for a total of **<:cowoncy:416043450337853441>" in message.content:
+            if self.balance != -1:
+                self.saleRecievedAmt = int(re.search(r'for a total of <:cowoncy:\d+> (\d+)', message.content).group(1))
+                console.print(f"-{self.user}[~] Sale of animals successful!, earned {self.saleRecievedAmt}".center(console_width - 2 ), style = "grey84 on black")
+                self.balance+=self.saleRecievedAmt
+                print(self.balance , self.user)
+
         #<---Auto Hunt Bot
 
         """
@@ -2071,11 +2155,13 @@ class MyClient(discord.Client):
             self.hbRecieved = True
             self.hbRecieved2 = False
             try:
+                """if message.attachments:
+                    print('uh yea..?')"""
                 self.ans = await solveHbCaptcha(message.attachments[0].url, self.session)
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend} {self.ans}", bypass=True)
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend} {self.ans}", bypass=True)
                 console.print(f"-{self.user}[+] solved hb captcha - {self.ans}".center(console_width - 2 ), style = "pale_green3 on black")
             except Exception as e:
-                print(f"error when handling huntbot:\n{e}")
+                print(f"error when handling huntbot answer:\n{e}")
             self.sleep = False
             
         if autoHuntBot and message.channel.id == self.channel_id and "`BEEP BOOP. I AM BACK" in message.content:
@@ -2083,7 +2169,7 @@ class MyClient(discord.Client):
             self.hbRecieved = False
             self.hbRecieved2 = True
             await asyncio.sleep(random.uniform(0.5,0.7))
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}", bypass=True)
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
             while True:
                 if self.hbWait:
                     break
@@ -2091,7 +2177,7 @@ class MyClient(discord.Client):
                 if self.hbRecieved:
                     break
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}")
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
         """
         **:cbot: |** `BEEP BOOP. I AM STILL HUNTING. I WILL BE BACK IN 2M`
 **:blank: |** `33.36% DONE | 0 ANIMALS CAPTURED`
@@ -2102,6 +2188,13 @@ class MyClient(discord.Client):
             self.hbRecieved2 = False
             self.hbRecieved = False
             total_seconds_hb = 0
+            if "`I WILL BE BACK IN " in message.content:
+                if self.balance != -1:
+                    try:
+                        self.balance-=int(re.search(r"YOU SPENT (\d+) cowoncy", message.content).group(1))
+                    except:
+                        print(f'scrapping huntbot cost failed, using huntbotCashToSpend variable - {self.user}')
+                        self.balance-=huntbotCashToSpend
             for amount, unit in re.findall(r'(\d+)([DHM])', message.content):
                 
                 if unit == 'M':
@@ -2114,7 +2207,7 @@ class MyClient(discord.Client):
             self.hbWait = True
             await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
             self.hbWait = False
-            await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}", bypass=True)
+            await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
             while True:
                 if self.hbWait:
                     break
@@ -2123,14 +2216,16 @@ class MyClient(discord.Client):
                     self.hbRecieved2 = False
                     break
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}", bypass=True)
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
 
         if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
             self.sleep = False
             self.hbRecieved2 = False
             self.hbRecieved = False
             self.hbWait = True
-            await asyncio.sleep(random.uniform(607,641)) # 10 minutes
+            self.waitAmt = int(re.search(r"Password will reset in (\d+) minutes", message.content).group(1))*60
+            print(f"self.waitamt = {self.waitAmt}")
+            await asyncio.sleep(random.uniform(self.waitAmt+14,self.waitAmt+30))
             self.hbWait = False
             while True:
                 await asyncio.sleep(random.uniform(0.6,0.9))
@@ -2141,7 +2236,7 @@ class MyClient(discord.Client):
                     self.hbRecieved = False
                     break
                 else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}hb {huntbotCashToSpend}", bypass=True)
+                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
 
         #End--->
         if message.channel.id == self.channel_id and "`battle` and `hunt` cooldowns have increased to prevent rateLimits issues." in message.content:
@@ -2546,12 +2641,17 @@ class MyClient(discord.Client):
                 if doubleOnLose:
                     self.slotsLastAmt = self.slotsLastAmt * 2
                 self.gambleTotal-=self.slotsLastAmt
+                if self.balance != -1:
+                    self.balance-=self.slotsLastAmt
             else:
                 if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 elif "and won" in after.content.lower():
-                    self.gambleTotal+=self.slotsLastAmt
-                    console.print(f"-{self.user}[+] ran Slots and won {self.slotsLastAmt}..".center(console_width - 2 ), style = "magenta on black")
+                    self.slotsWinAmt = int(re.search(r'won <:cowoncy:\d+> (\d+)', after.content).group(1)) #.group(1) gives just the matched value while 0 the entire text.
+                    if self.balance != -1:
+                        self.balance+=self.slotsWinAmt
+                    self.gambleTotal+=self.slotsWinAmt
+                    console.print(f"-{self.user}[+] ran Slots and won {self.slotsWinAmt}..".center(console_width - 2 ), style = "magenta on black")
                     if doubleOnLose:
                         self.slotsLastAmt = gambleStartValue
         #coinflip
@@ -2560,6 +2660,8 @@ class MyClient(discord.Client):
                 if "and you lost it all... :c" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Coinflip and lost {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                     self.gambleTotal-=self.cfLastAmt
+                    if self.balance != -1:
+                        self.balance-=self.cfLastAmt
                     if doubleOnLose:
                         #print("cdble")
                         self.cfLastAmt = self.cfLastAmt*2
@@ -2567,6 +2669,8 @@ class MyClient(discord.Client):
                 else:
                     console.print(f"-{self.user}[+] ran Coinflip and won {self.cfLastAmt} cowoncy!.".center(console_width - 2 ), style = "magenta on black")
                     self.gambleTotal+=self.cfLastAmt
+                    if self.balance != -1:
+                        self.balance+=self.cfLastAmt
                     if doubleOnLose:
                         #print("c")
                         self.cfLastAmt = gambleStartValue
@@ -2621,7 +2725,14 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
         console.print("openCaptchaWebsite :- These are not well tested, and only works if the phone your using is ON.", style="orchid on black")
     if termuxTtsEnabled:
         console.print("termuxTtsEnabled :- These sometimes do not work, so don't rely on it fully!", style="orchid on black")
-
+    for i,o in enumerate(shopItemsToBuy):
+        if o not in [1,2,3,4,5,6,7]:
+            if o >= 200 and o <= 274:
+                console.print(f"shop item with id {i} has been removed as its an wallpaper,\n dont be lazy ;-;, just buy that manually.\nIf you really really is that lazy then use `custom commands` to do it (you can find it in config.json)", style="orchid on black")
+                shopItemsToBuy.pop(i)
+            else:
+                console.print(f"shop item with id {i} is disabled as its either not an wallpaper or a ring.\ncould be invalid id, if not let `@EchoQuill` (discord acc) know.\n rings are supported for now.")
+                shopItemsToBuy.pop(i)
 
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
