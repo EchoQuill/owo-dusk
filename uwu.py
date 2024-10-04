@@ -2169,6 +2169,7 @@ class MyClient(discord.Client):
             self.hbRecieved = False
             self.hbRecieved2 = True
             await asyncio.sleep(random.uniform(0.5,0.7))
+            console.print(f"-{self.user}[+] huntbot back after a successful round!".center(console_width - 2 ), style = "dodger_blue2 on black")
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
             while True:
                 if self.hbWait:
@@ -2203,7 +2204,8 @@ class MyClient(discord.Client):
                     total_seconds_hb += int(amount) * 3600
                 elif unit == 'D':
                     total_seconds_hb += int(amount) * 86400
-            print(total_seconds_hb)
+            #print(total_seconds_hb)
+            console.print(f"-{self.user}[+] huntbot will be back after {total_seconds_hb}".center(console_width - 2 ), style = "dodger_blue2 on black")
             self.hbWait = True
             await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
             self.hbWait = False
@@ -2224,7 +2226,8 @@ class MyClient(discord.Client):
             self.hbRecieved = False
             self.hbWait = True
             self.waitAmt = int(re.search(r"Password will reset in (\d+) minutes", message.content).group(1))*60
-            print(f"self.waitamt = {self.waitAmt}")
+            #print(f"self.waitamt = {self.waitAmt}")
+            console.print(f"-{self.user}[!] couldnt get huntbot captcha image, retrying in {self.waitAmt}s before retrying to reset.".center(console_width - 2 ), style = "dodger_blue2 on black")
             await asyncio.sleep(random.uniform(self.waitAmt+14,self.waitAmt+30))
             self.hbWait = False
             while True:
