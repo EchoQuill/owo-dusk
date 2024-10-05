@@ -22,6 +22,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 # 🌟 Features
 ---
 * Multi-Account Support!!
+* auto **HuntBot** Solver! O-O (free)
 * Supports reaction bot cooldowns (enable through the config).
 * Supports both mobile and desktop/laptop!
 * Cool website for solving captchas in one place [allows solving of image captchas there] (localhost) with a 10-minute timer!
