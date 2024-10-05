@@ -781,7 +781,7 @@ class MyClient(discord.Client):
                     self.sleepTime = random.uniform(delayCheckMinSleep,delayCheckMaxSleep)
                     if webhookEnabled:
                         await self.webhookSender(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ No Msg from owo last 10 msgs.", colors=0x5fd7d7)
-                    console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ , {self.delayData["ping"]}ms delay".center(console_width - 2 ), style = "plum4 on black")
+                    console.print(f"-{self.user}[~] sleeping for {self.sleepTime} seconds ‐ , {self.delayData['ping']}ms delay".center(console_width - 2 ), style = "plum4 on black")
                     await asyncio.sleep(self.sleepTime)
                     try:
                         self.delayData = await delaycheck(self.session, self.cm.guild.id)
@@ -1109,6 +1109,7 @@ class MyClient(discord.Client):
                     console.print(f"-{self.user}[+] ran Coinflip.".center(console_width - 2 ), style = "magenta on black")
                     await asyncio.sleep(random.uniform(gambleCd[0], gambleCd[1]))
                 else:
+                    #print(self.balance)
                     if webhookEnabled:
                         await self.webhookSender(f"-{self.user}[–] Stopping All Gambling. ‐ No cash.", colors=0xff0037)
                     console.print(f"-{self.user}[–] Stopping coinflip ‐ No cash.".center(console_width - 2 ), style = "red on black")
@@ -2160,7 +2161,9 @@ class MyClient(discord.Client):
                     print('uh yea..?')"""
                 self.ans = await solveHbCaptcha(message.attachments[0].url, self.session)
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend} {self.ans}", bypass=True)
+                console.print(f"-{self.user}[+] running huntbot command -- at solved".center(console_width - 2 ), style = "dodger_blue2 on black")
                 console.print(f"-{self.user}[+] solved hb captcha - {self.ans}".center(console_width - 2 ), style = "pale_green3 on black")
+                print(self.hbWait,self.hbRecieved,self.hbRecieved2)
             except Exception as e:
                 print(f"error when handling huntbot answer:\n{e}")
             self.sleep = False
@@ -2172,6 +2175,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(0.5,0.7))
             console.print(f"-{self.user}[+] huntbot back after a successful round!".center(console_width - 2 ), style = "dodger_blue2 on black")
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+            print(self.hbWait,self.hbRecieved,self.hbRecieved2)
             while True:
                 if self.hbWait:
                     break
@@ -2180,6 +2184,8 @@ class MyClient(discord.Client):
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
+                    console.print(f"-{self.user}[+] running huntbot command -- at iam back!".center(console_width - 2 ), style = "dodger_blue2 on black")
+                    print(self.hbWait,self.hbRecieved,self.hbRecieved2)
         """
         **:cbot: |** `BEEP BOOP. I AM STILL HUNTING. I WILL BE BACK IN 2M`
 **:blank: |** `33.36% DONE | 0 ANIMALS CAPTURED`
@@ -2211,6 +2217,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(total_seconds_hb+10,total_seconds_hb+49))
             self.hbWait = False
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+            print(self.hbWait,self.hbRecieved,self.hbRecieved2)
             console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
             while True:
                 if self.hbWait:
@@ -2221,7 +2228,8 @@ class MyClient(discord.Client):
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
-                    console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+                    console.print(f"-{self.user}[+] running huntbot command -- at willbeback/stillhunting".center(console_width - 2 ), style = "dodger_blue2 on black")
+                    print(self.hbWait,self.hbRecieved,self.hbRecieved2)
 
         if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
             self.sleep = False
@@ -2243,7 +2251,8 @@ class MyClient(discord.Client):
                     break
                 else:
                     await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
-                    console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
+                    console.print(f"-{self.user}[+] running huntbot command -- at password".center(console_width - 2 ), style = "dodger_blue2 on black")
+                    print(self.hbWait,self.hbRecieved,self.hbRecieved2)
 
 
         #End--->
