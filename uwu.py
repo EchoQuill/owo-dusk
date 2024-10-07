@@ -825,7 +825,7 @@ class MyClient(discord.Client):
             if self.hbRecieved or self.hbWait:
                 self.hbRecieved = False
                 self.huntbotHandler.stop()
-                print("whut")
+                print("whut", self.hbRecieved, self.hbWait)
     #reaction bot command handler
     @tasks.loop(seconds=1)
     async def rCommandHandler(self):
@@ -1610,7 +1610,7 @@ class MyClient(discord.Client):
         self.sleep2 = False
         self.hbRecieved = False
         self.hbRecieved2 = False
-        self.hbWait = True
+        self.hbWait = False
         # AutoGems
         self.autoHuntGem = True
         self.autoEmpoweredGem = True
