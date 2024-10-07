@@ -825,6 +825,7 @@ class MyClient(discord.Client):
             if self.hbRecieved or self.hbWait:
                 self.hbRecieved = False
                 self.huntbotHandler.stop()
+                print("whut")
     #reaction bot command handler
     @tasks.loop(seconds=1)
     async def rCommandHandler(self):
@@ -2290,7 +2291,7 @@ class MyClient(discord.Client):
                             colors=0xffafd7,
                             img_url="https://cdn.discordapp.com/emojis/427019823747301377.gif"
                         )
-                    if autoGem:
+                    if autoGem and self.gems == False:
                         self.gems = True
                         console.print(f"-{self.user}[+] renabling auto gems".center(console_width - 2 ), style = "pink1 on black")
                     await asyncio.sleep(random.uniform(0.3,0.5))
