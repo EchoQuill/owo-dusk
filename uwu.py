@@ -822,10 +822,10 @@ class MyClient(discord.Client):
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
             console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
             await asyncio.sleep(random.uniform(10,20))
-            if self.hbRecieved or self.hbWait:
+            if self.hbRecieved or self.hbWait or self.hbRecieved2:
                 self.hbRecieved = False
                 self.huntbotHandler.stop()
-                print("whut", self.hbRecieved, self.hbWait)
+                print("whut", self.hbRecieved, self.hbWait, self.hbRecieved2)
     #reaction bot command handler
     @tasks.loop(seconds=1)
     async def rCommandHandler(self):

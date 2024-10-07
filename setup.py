@@ -87,6 +87,8 @@ if scratchSetup:
         # If all parts are equal, return False (no new version)
         return False
     #---CHECK VERSIONS---#
+    
+
     print('\033[1;36m[0]attempting to check versions\033[m')
     try:
         import requests
@@ -116,111 +118,119 @@ if scratchSetup:
         print(f"\033[1;31m[x]error when trying to check versions:-\n {e}\033[m")
 
     #---EDIT TOKENS.TXT---#
-    print('\033[1;36m[0]attempting to edit tokens.txt\033[m')
-    try:
-        """
-        open('filename.txt', x)
-        where if x is a then it adds while while preserving its content
-        and if its w it basically selects all text...? and removes it i guess.
-        -------------------------------
-        'r': Read (default mode)
-        'w': Write
-        'a': Append
-        'r+': Read and write
-        """
-        with open('tokens.txt', 'w') as t:
-            pass
-        async def validate_token(token, channelinput):
-            try:
-                client = discord.Client()
-                result = {
-                    "valid": False,
-                    "channel_found": False,
-                    "channel": None
-                }
-
-                @client.event
-                async def on_ready():
-                    print(f"\033[1;36m[0] Received token for - {client.user.name} ({client.user.id})")
-                    try:
-                        channel = client.get_channel(channelinput)
-                        result['valid'] = True
-                        if channel:
-                            result['channel_found'] = True
-                            result['channel'] = channel
-                    except Exception as e:
-                        print(f"[x] An error occurred while checking the channel:\n{e}\033[m")
-                    finally:
-                        await asyncio.sleep(0.1)
-                        await client.close()  # Close the client after successful login
-
-                await client.start(token)
-
-                # Return after the client is done running
-                return result['valid'], (result['channel_found'], result['channel'])
-
-            except discord.LoginFailure:
-                print("\033[1;31m[x] Invalid token provided. Please check and try again.\033[m")
-                return False, (False, None)
-            except Exception as e:
-                print(f"\033[1;31m[x] An error occurred:\n{e}")
-                return False, (False, None)
-        while True:
-            token_count = input('\033[1;34m[0]how many accounts do you want run with owo-dusk? :\n\033[m')
-            try:
-                token_count = int(token_count)
-                break
-            except ValueError:
-                print('\033[1;31m[x]please enter valid integer!\033[m')
-            except Exception as e:
-                print(f'\033[1;31m[x]An error occured:-\n {e}\033[m')
-        for i in range(token_count):
-            while True:
-                print(f'\033[1;36m[0]token [{i+1}/{token_count}]\033[m')
-                while True:
-                    tokeninput = input(f'please enter your token for account #{i+1} :\n\033[m')
-                    if "." in tokeninput:
-                        if '"' in tokeninput:
-                            if tokeninput[0] == '"':
-                                tokeninput = tokeninput[1:]
-                            if tokeninput[-1] == '"':
-                                tokeninput = tokeninput[:-1]
-                            print(tokeninput)
-                        break
-                    else:
-                        print('\033[1;31m[x]invalid token!')
-                while True:
-                    channelinput = input(f'\033[1;34mplease enter channel id for account #{i+1} :\n\033[m')
-                    try:
-                        channelinput = int(channelinput)
-                        break
-                    except ValueError:
-                        print('\033[1;33m[!]please enter a valid integer for channelid\033[m')
-                    except Exception as e:
-                        print(f'\033[1;31m[x]error while attempting to retrieve channel id -\n{e}\033[m')
-                #validtoken=False
+    while True:
+        edit_tokens = input('\033[1;34mwould you like to edit tokens.txt?\n1) yes\n2) no\n:\033[m').lower()
+        if edit_tokens in ["1","2","y","n","yes","no"]:
+            if edit_tokens in ["1","y","yes"]:
+                print('\033[1;36m[0]attempting to edit tokens.txt\033[m')
                 try:
-                    validtoken,validchannel=asyncio.run(validate_token(tokeninput, channelinput))
+                    """
+                    open('filename.txt', x)
+                    where if x is a then it adds while while preserving its content
+                    and if its w it basically selects all text...? and removes it i guess.
+                    -------------------------------
+                    'r': Read (default mode)
+                    'w': Write
+                    'a': Append
+                    'r+': Read and write
+                    """
+                    with open('tokens.txt', 'w') as t:
+                        pass
+                    async def validate_token(token, channelinput):
+                        try:
+                            client = discord.Client()
+                            result = {
+                                "valid": False,
+                                "channel_found": False,
+                                "channel": None
+                            }
+
+                            @client.event
+                            async def on_ready():
+                                print(f"\033[1;36m[0] Received token for - {client.user.name} ({client.user.id})")
+                                try:
+                                    channel = client.get_channel(channelinput)
+                                    result['valid'] = True
+                                    if channel:
+                                        result['channel_found'] = True
+                                        result['channel'] = channel
+                                except Exception as e:
+                                    print(f"[x] An error occurred while checking the channel:\n{e}\033[m")
+                                finally:
+                                    await asyncio.sleep(0.1)
+                                    await client.close()  # Close the client after successful login
+
+                            await client.start(token)
+
+                            # Return after the client is done running
+                            return result['valid'], (result['channel_found'], result['channel'])
+
+                        except discord.LoginFailure:
+                            print("\033[1;31m[x] Invalid token provided. Please check and try again.\033[m")
+                            return False, (False, None)
+                        except Exception as e:
+                            print(f"\033[1;31m[x] An error occurred:\n{e}")
+                            return False, (False, None)
+                    while True:
+                        token_count = input('\033[1;34m[0]how many accounts do you want run with owo-dusk? :\n\033[m')
+                        try:
+                            token_count = int(token_count)
+                            break
+                        except ValueError:
+                            print('\033[1;31m[x]please enter valid integer!\033[m')
+                        except Exception as e:
+                            print(f'\033[1;31m[x]An error occured:-\n {e}\033[m')
+                    for i in range(token_count):
+                        while True:
+                            print(f'\033[1;36m[0]token [{i+1}/{token_count}]\033[m')
+                            while True:
+                                tokeninput = input(f'please enter your token for account #{i+1} :\n\033[m')
+                                if "." in tokeninput:
+                                    if '"' in tokeninput:
+                                        if tokeninput[0] == '"':
+                                            tokeninput = tokeninput[1:]
+                                        if tokeninput[-1] == '"':
+                                            tokeninput = tokeninput[:-1]
+                                        print(tokeninput)
+                                    break
+                                else:
+                                    print('\033[1;31m[x]invalid token!')
+                            while True:
+                                channelinput = input(f'\033[1;34mplease enter channel id for account #{i+1} :\n\033[m')
+                                try:
+                                    channelinput = int(channelinput)
+                                    break
+                                except ValueError:
+                                    print('\033[1;33m[!]please enter a valid integer for channelid\033[m')
+                                except Exception as e:
+                                    print(f'\033[1;31m[x]error while attempting to retrieve channel id -\n{e}\033[m')
+                            #validtoken=False
+                            try:
+                                validtoken,validchannel=asyncio.run(validate_token(tokeninput, channelinput))
+                            except Exception as e:
+                                print(f"\033[1;31m[x] Error validating token for account #{i+1}:\n{e}\033[m")
+                            if validtoken:
+                                if validchannel[0]:
+                                    print(f'\033[1;36m[0]valid channel with name {validchannel[1]}\033[m')
+                                    break
+                                else:
+                                    print('\033[1;31m[x]Failed to get channel id, please try again.\033[m')
+                        with open('tokens.txt', 'a') as t:
+                            t.write(f"{tokeninput} {channelinput}\n")
+                    print()
+                    print()
+                    print('\033[1;36m[0]Finished editing tokens.txt successfully!\033[m')
+                    print('\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file then\ntype `python uwu.py` to start the code\033[m')
                 except Exception as e:
-                    print(f"\033[1;31m[x] Error validating token for account #{i+1}:\n{e}\033[m")
-                if validtoken:
-                    if validchannel[0]:
-                        print(f'\033[1;36m[0]valid channel with name {validchannel[1]}\033[m')
-                        break
-                    else:
-                        print('\033[1;31m[x]Failed to get channel id, please try again.\033[m')
-            with open('tokens.txt', 'a') as t:
-                t.write(f"{tokeninput} {channelinput}\n")
-        print()
-        print()
-        print('\033[1;36m[0]Finished editing tokens.txt successfully!\033[m')
-        print('\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file then\ntype `python uwu.py` to start the code\033[m')
+                    print(f'\033[1;31m[x]error when attempting to edit tokens.txt - {e}\033[m')
+            else:
+                print('\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file and `tokens.txt` file then\ntype `python uwu.py` to start the code\033[m')
+        else:
+            print("\033[1;33m[!]Please enter 1,2 only..\033[m")
+            
         print()
         print('\033[1;35mEchoQuill - Thank you for using owo-dusk, I hope you have a great day ahead!\nif there is any error then letme know through https://discord.gg/pyvKUh5mMU\033[m')
         sys.exit(0)
-    except Exception as e:
-        print(f'\033[1;31m[x]error when attempting to edit tokens.txt - {e}\033[m')
-
 
 
 
