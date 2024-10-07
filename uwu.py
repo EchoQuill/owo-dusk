@@ -2671,7 +2671,7 @@ class MyClient(discord.Client):
                 if "<:eggplant:417475705719226369>" in after.content.lower() and "and won" in after.content.lower():
                     console.print(f"-{self.user}[+] ran Slots and didn't win nor lose anything..".center(console_width - 2 ), style = "magenta on black")
                 elif "and won" in after.content.lower():
-                    self.slotsWinAmt = int(re.search(r'won <:cowoncy:\d+> ([\d,]+)', after.content).group(1)) #.group(1) gives just the matched value while 0 the entire text.
+                    self.slotsWinAmt = int(re.search(r'won <:cowoncy:\d+> ([\d,]+)', after.content).group(1).replace(",","")) #.group(1) gives just the matched value while 0 the entire text.
                     if self.balance != -1:
                         self.balance+=self.slotsWinAmt
                     self.gambleTotal+=self.slotsWinAmt
