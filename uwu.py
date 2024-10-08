@@ -822,10 +822,10 @@ class MyClient(discord.Client):
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
             console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
             await asyncio.sleep(random.uniform(10,20))
-            if self.hbRecieved or self.hbWait or self.hbRecieved2:
+            if self.hbRecieved or self.hbWait:
                 self.hbRecieved = False
                 self.huntbotHandler.stop()
-                print("whut", self.hbRecieved, self.hbWait, self.hbRecieved2)
+                print("whut", self.hbRecieved, self.hbWait)
     #reaction bot command handler
     @tasks.loop(seconds=1)
     async def rCommandHandler(self):
@@ -1766,12 +1766,16 @@ class MyClient(discord.Client):
             print(f"{self.user} attempting to switch channel\nPlease note that this command is not recommended for use unless absolutely necessary.\nThis command may even break the code.\nBugs caused by this will not be entertained.")
             self.sleep = True
             if message.content.lower() == f"{chatPrefix}sw":
-                await asyncio.sleep(random.uniform(4.232,7.945))
-                self.id = message.channel.id
-                self.cm = self.get_channel(self.id)
-                self.channel_id = self.id
-                self.list_channel[0] = self.id
-                await asyncio.sleep(0.5)
+                try:
+                    await asyncio.sleep(random.uniform(4.232,7.945))
+                    self.id = message.channel.id
+                    self.cm = self.get_channel(self.id)
+                    self.channel_id = self.id
+                    self.list_channel[0] = self.id
+                    print(self.list_channel, self.id)
+                    await asyncio.sleep(0.5)
+                except Exception as e:
+                    print(e)
             else:
                 try:
                     await asyncio.sleep(random.uniform(4.232,7.945))
@@ -1779,8 +1783,10 @@ class MyClient(discord.Client):
                     if self.id:
                         self.cm = self.get_channel(int(self.id.group(1)))
                         self.channel_id = int(self.id.group(1))
-                except:
-                    pass
+                        self.list_channel[0] = int(self.id.group(1))
+                    await asyncio.sleep(0.5)
+                except Exception as e:
+                    print(e)
                 await asyncio.sleep(0.5)
             self.sleep = False
 
