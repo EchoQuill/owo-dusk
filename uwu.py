@@ -4,7 +4,6 @@
 # I feel sorry for the one reading this code lol
 #                 - EchoQuill
 
-
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from datetime import datetime, timedelta, timezone
 from discord.ext import commands, tasks
@@ -386,10 +385,8 @@ except FileNotFoundError:
 except json.JSONDecodeError:
     print("Failed to decode JSON from the file.")
 def get_emoji_names(text, emoji_dict=emoji_dict):
-    # Extract all emojis and custom emoji strings from the text
-    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
+    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
     emojis = pattern.findall(text)
-    # Get names of the extracted emojis
     emoji_names = [emoji_dict[char] for char in emojis if char in emoji_dict]
     return emoji_names
 
@@ -2353,8 +2350,8 @@ class MyClient(discord.Client):
             #print(self.animals)
             self.threeAnimals = min(len(self.animals), 3) #int
             for i in range(self.threeAnimals):
-                await self.sendCommands(channel=self.cm, message=f"{setprefix}team add {self.animals[i]}")
-                await asyncio.sleep(random.uniform(1.5,2.3))
+                await self.sendCommands(channel=self.cm, message=f"{setprefix}team add {self.animals[i]}", bypass=True)
+                await asyncio.sleep(random.uniform(3.1,4.3))
             console.print(f"-{self.user}[–] Created team for auto battle!".center(console_width - 2 ), style = "orchid1 on black")
             self.sleep = False 
         if message.channel.id == self.channel_id and "Inventory" in message.content and "=" in message.content.lower():
