@@ -59,7 +59,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.6.1"
+version = "1.6.2"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -1546,6 +1546,9 @@ class MyClient(discord.Client):
             print(e)
         """
         NOTE:-  Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
+        Hopefully the above gets fixed soon.
+        for now we will send `owo ping` command in the grind channel to get owo bot's message through the channels history.
+        then we will use that instead to create the dm
         """
         try:
             self.dm = await (await self.fetch_user(408785106942164992)).create_dm()
@@ -1559,6 +1562,7 @@ class MyClient(discord.Client):
                 if message.author.id == 408785106942164992:
                     print(f"{self.user} found bot!, attempting to create dm")
                     break
+            await asyncio.sleep(random.uniform(0.5,0.9))
             self.dm = await message.author.create_dm()
             print(f"{self.user} created dm {self.dm} successfully!")
             print(self.dm)
@@ -2739,13 +2743,13 @@ def run_bots(tokens_and_channels):
 def run_bot(token, channel_id):
     logging.getLogger("discord.client").setLevel(logging.ERROR) #remove that useless voice chat thingy warn
     client = MyClient(token, channel_id)
-    client.run(token, log_level=logging.INFO)
+    client.run(token, log_level=logging.ERROR)
 if __name__ == "__main__":
     console.print(owoPanel)
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30 on black' )
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
-    printBox(f'This is a debug/modified version of owo-dusk.'.center(console_width - 2 ),'bold orange4 on black' )
+    printBox(f'Due to a bug in discord.py-self, a temporary patch was enabled in this version. It should work fine but if any bugs let @echoquill know (ignore messages at start)'.center(console_width - 2 ),'bold orange4 on black' )
     if websiteEnabled:
         printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold blue_violet on black' )
     if compare_versions(version, ver_check):
