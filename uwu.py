@@ -59,7 +59,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.6.0"
+version = "1.6.2"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -1530,6 +1530,7 @@ class MyClient(discord.Client):
     async def on_ready(self):
         self.on_ready_done = False
         self.cmds = 1
+        self.dm,self.cm = None,None
         if self.session is None:
             self.session = aiohttp.ClientSession()
         await asyncio.sleep(0.1)
@@ -1543,11 +1544,33 @@ class MyClient(discord.Client):
             self.cm = self.get_channel(self.channel_id)
         except Exception as e:
             print(e)
+        """
+        NOTE:-  Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
+        Hopefully the above gets fixed soon.
+        for now we will send `owo ping` command in the grind channel to get owo bot's message through the channels history.
+        then we will use that instead to create the dm
+        """
         try:
-            #self.dm = await self.fetch_user(408785106942164992) #owo bot's id
-            self.dm = await (await self.fetch_user(408785106942164992)).create_dm() #fixes dm closed issue
+            self.dm = await (await self.fetch_user(408785106942164992)).create_dm()
+            print(self.dm)
+        except discord.Forbidden as e:
+            print(e)
+            print(f"attempting to get user with the help of {self.cm}")
+            await self.cm.send(f"{setprefix}ping")
+            print(f"{self.user} send ping command to trigger bot response")
+            async for message in self.cm.history(limit=10):
+                if message.author.id == 408785106942164992:
+                    print(f"{self.user} found bot!, attempting to create dm")
+                    break
+            await asyncio.sleep(random.uniform(0.5,0.9))
+            self.dm = await message.author.create_dm()
+            print(f"{self.user} created dm {self.dm} successfully!")
+            print(self.dm)
+           
+
         except Exception as e:
             print(e)
+
         if self.dm == None:
             print("channel disabled")
         #if await delaycheck()["ping"] >= minPing:
@@ -2726,6 +2749,7 @@ if __name__ == "__main__":
     print('-'*console_width)
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30 on black' )
     printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
+    printBox(f'Due to a bug in discord.py-self, a temporary patch was enabled in this version. It should work fine but if any bugs let @echoquill know (ignore messages at start)'.center(console_width - 2 ),'bold orange4 on black' )
     if websiteEnabled:
         printBox(f'-Website captcha logger:- http://localhost:{websitePort}/'.center(console_width - 2 ),'bold blue_violet on black' )
     if compare_versions(version, ver_check):
