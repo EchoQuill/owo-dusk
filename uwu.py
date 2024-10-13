@@ -59,7 +59,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.6.2"
+version = "1.6.3"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -573,12 +573,9 @@ class MyClient(discord.Client):
     async def slashCommandSender(self, msg):
         if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             try:
-                for command in await self.cm.application_commands():
-                    if command.application.id == 408785106942164992:
-                        #print(command.name)
-                        if command.name == msg:
-                            #print(f"Command found at index {i}: {command.name}")
-                            await command()
+                for command in self.commands:
+                    if command.name == msg:
+                        await command()
             except Exception as e:
                 print(e)
 
@@ -1565,7 +1562,7 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(0.5,0.9))
             self.dm = await message.author.create_dm()
             print(f"{self.user} created dm {self.dm} successfully!")
-            print(self.dm)
+            #print(self.dm)
            
 
         except Exception as e:
@@ -1580,6 +1577,27 @@ class MyClient(discord.Client):
         self.presence.start()
         #self.list_channel.append(self.dm.id)
         # AUTO QUEST
+        """
+        async def slashCommandSender(self, msg):
+        if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
+            try:
+                for command in await self.cm.application_commands():
+                    if command.application.id == 408785106942164992:
+                        #print(command.name)
+                        if command.name == msg:
+                            #print(f"Command found at index {i}: {command.name}")
+                            await command()
+            except Exception as e:
+                print(e)
+        """
+        if slashCommandsEnabled:
+            self.commands = []
+            #print(f"{self.user} attempting to get slash commands")
+            for command in await self.cm.application_commands():
+                if command.application.id == 408785106942164992:
+                    self.commands.append(command)
+            #print(self.commands)
+
         self.questsDone = False
         self.emoteby = False
         self.repBy = False
