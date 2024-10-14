@@ -2462,9 +2462,13 @@ class MyClient(discord.Client):
         if message.embeds and message.channel.id == self.channel_id:
             for embed in message.embeds:
                 if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
-                    # Check to see if Hunt is completed or not.
-                    self.huntOrBattleInt = 0 #check
-                    self.last_cmd_time = time.time()
+                    if message.reference is not None:
+                        #print("battle reply detected")
+                        pass
+                    else:
+                        # Check to see if Battle is completed or not.
+                        self.huntOrBattleInt = 0 #check
+                        self.last_cmd_time = time.time()
                 if embed.author.name is not None and "quest log" in embed.author.name.lower():
                     if not autoQuest:
                         return
