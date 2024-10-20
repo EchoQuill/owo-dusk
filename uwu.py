@@ -59,7 +59,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.6.4"
+version = "1.6.5"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -2205,6 +2205,7 @@ class MyClient(discord.Client):
                 """if message.attachments:
                     print('uh yea..?')"""
                 self.ans = await solveHbCaptcha(message.attachments[0].url, self.session)
+                await asyncio.sleep(random.uniform(0.01,0.1))
                 await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend} {self.ans}", bypass=True)
                 console.print(f"-{self.user}[+] running huntbot command -- at solved".center(console_width - 2 ), style = "dodger_blue2 on black")
                 console.print(f"-{self.user}[+] solved hb captcha - {self.ans}".center(console_width - 2 ), style = "pale_green3 on black")
@@ -2222,15 +2223,16 @@ class MyClient(discord.Client):
             await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
             print(self.hbWait,self.hbRecieved,self.hbRecieved2)
             while True:
-                if self.hbWait:
-                    break
-                await asyncio.sleep(random.uniform(0.6,0.9))
-                if self.hbRecieved:
-                    break
-                else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
-                    console.print(f"-{self.user}[+] running huntbot command -- at iam back!".center(console_width - 2 ), style = "dodger_blue2 on black")
-                    print(self.hbWait,self.hbRecieved,self.hbRecieved2)
+                if not self.captchaDetected:
+                    if self.hbWait:
+                        break
+                    await asyncio.sleep(random.uniform(0.6,0.9))
+                    if self.hbRecieved:
+                        break
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}")
+                        console.print(f"-{self.user}[+] running huntbot command -- at iam back!".center(console_width - 2 ), style = "dodger_blue2 on black")
+                        print(self.hbWait,self.hbRecieved,self.hbRecieved2)
         """
         **:cbot: |** `BEEP BOOP. I AM STILL HUNTING. I WILL BE BACK IN 2M`
 **:blank: |** `33.36% DONE | 0 ANIMALS CAPTURED`
@@ -2265,16 +2267,17 @@ class MyClient(discord.Client):
             print(self.hbWait,self.hbRecieved,self.hbRecieved2)
             console.print(f"-{self.user}[+] running huntbot command".center(console_width - 2 ), style = "dodger_blue2 on black")
             while True:
-                if self.hbWait:
-                    break
-                await asyncio.sleep(random.uniform(0.6,0.9))
-                if self.hbRecieved2:
-                    self.hbRecieved2 = False
-                    break
-                else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
-                    console.print(f"-{self.user}[+] running huntbot command -- at willbeback/stillhunting".center(console_width - 2 ), style = "dodger_blue2 on black")
-                    print(self.hbWait,self.hbRecieved,self.hbRecieved2)
+                if not self.captchaDetected:
+                    if self.hbWait:
+                        break
+                    await asyncio.sleep(random.uniform(0.6,0.9))
+                    if self.hbRecieved2:
+                        self.hbRecieved2 = False
+                        break
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+                        console.print(f"-{self.user}[+] running huntbot command -- at willbeback/stillhunting".center(console_width - 2 ), style = "dodger_blue2 on black")
+                        print(self.hbWait,self.hbRecieved,self.hbRecieved2)
 
         if autoHuntBot and message.channel.id == self.channel_id and "Please include your password!" in message.content:
             self.sleep = False
@@ -2287,17 +2290,20 @@ class MyClient(discord.Client):
             await asyncio.sleep(random.uniform(self.waitAmt+14,self.waitAmt+30))
             self.hbWait = False
             while True:
-                await asyncio.sleep(random.uniform(0.6,0.9))
-                if self.hbRecieved2:
-                    self.hbRecieved2 = False
-                    break
-                if self.hbRecieved:
-                    self.hbRecieved = False
-                    break
-                else:
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
-                    console.print(f"-{self.user}[+] running huntbot command -- at password".center(console_width - 2 ), style = "dodger_blue2 on black")
-                    print(self.hbWait,self.hbRecieved,self.hbRecieved2)
+                if not self.captchaDetected:
+                    await asyncio.sleep(random.uniform(0.6,0.9))
+                    if self.hbRecieved2:
+                        self.hbRecieved2 = False
+                        break
+                    if self.hbRecieved:
+                        self.hbRecieved = False
+                        break
+                    if self.hbWait:
+                        break
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}ah {huntbotCashToSpend}", bypass=True)
+                        console.print(f"-{self.user}[+] running huntbot command -- at password".center(console_width - 2 ), style = "dodger_blue2 on black")
+                        print(self.hbWait,self.hbRecieved,self.hbRecieved2)
 
 
         #End--->
