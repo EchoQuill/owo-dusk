@@ -2800,8 +2800,8 @@ please update from -> https://github.com/EchoQuill/owo-dusk""", style = "yellow 
         console.print("No captcha alert systems have been enabled. Please enable any if this wasn't done intentionally.", style="red on black")
     if autoQuest:
         console.print("Auto quest is still in testing and is not fully tested yet. so expect bugs. (report all bugs in our discord server to make fixing them easier! :>)", style="orchid on black")
-    if desktopAudioPlayer:
-        console.print("Desktop audio player is having issues for 'some' users. so please don't completely depend on it, for captcha alerts!", style="orchid on black")
+    #if desktopAudioPlayer:
+    #    console.print("Desktop audio player is having issues for 'some' users. so please don't completely depend on it, for captcha alerts!", style="orchid on black")
     if lvlGrind and useQuoteInstead:
         console.print("Qoutes are not reccomended as thats an easy way to get banned (basically asking for ban...)", style="orchid on black")
     if openCaptchaWebsite:
