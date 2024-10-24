@@ -36,12 +36,21 @@ if scratchSetup:
                     #print("it may ask if you want to proceed with the installation...")
                     #print("please type and enter \"Y\" for all such!")
                     print()
-                    print("\033[1;36m[0]Attepmting to install numpy\033[m")
+
+                    print("\033[1;36m[0]Attempting to update and upgrade packages\033[m")
+                    try:
+                        subprocess.check_call("pkg update && pkg upgrade -y", shell=True)
+                        print("\033[1;36m[0]Updated and upgraded packages successfully!\033[m")
+                    except Exception as e:
+                        print(f"\033[1;31m[x]Error when trying to update and upgrade packages:\n {e}\033[m")
+
+                    print("\033[1;36m[0]Attempting to install numpy\033[m")
                     try:
                         subprocess.check_call(["pkg", "install", "python-numpy", "-y"]) #-y auto confirms y/n prompt
                         print("\033[1;36m[0]installed numpy successfully!\033[m")
                     except Exception as e:
                         print(f"\033[1;31m[x]error when trying to install numpy:-\n {e}\033[m")
+                    
                     print("\033[1;36m[0]Attepmting to install PIL\033[m")
                     try:
                         subprocess.check_call(["pkg", "install", "python-pillow", "-y"]) #-y auto confirms y/n prompt
@@ -49,6 +58,7 @@ if scratchSetup:
                     except Exception as e:
                         print(f"\033[1;31m[x]error when trying to install PIL:-\n {e}\033[m")
                     break
+
                 elif device == "2" or device == "3":
                     # desktop
                     if device == "3":
