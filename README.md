@@ -6,6 +6,7 @@
   <a href="https://discord.gg/hDDrKhWPqr"><img src="https://invidget.switchblade.xyz/hDDrKhWPqr" alt="Discord Invite"/> </a>
   <br/>
   <p>join our discord! (Join with an **CLEAN** alt please , one that hasn't and won't use owobot!)</p>
+  <p>Alternatively, send a friend request to `@echoquill` on discord for help!</p>
 </div>
 
 ---
@@ -15,8 +16,11 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 > [!IMPORTANT]
 > ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbot to grind owo.
 ---
+> [!TIP]
+> For help with setup, please join our discord server(or send `echoquill` a friend request) and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutoriales for it laters!
 
-> For help with setup, please join our discord server and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutoriales for it laters!
+> [!NOTE]
+> OwO-Dusk is currently under the process of a complete re-write, but v1 will be maintained till its done.
 
 ---
 # 🌟 Features
