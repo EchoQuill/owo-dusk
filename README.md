@@ -9,6 +9,15 @@
   <p>Alternatively, send a friend request to `@echoquill` on discord for help!</p>
 </div>
 
+
+> [!WARNING]
+> [Nov 1 2024]
+> Due to some changes discord made on their end, we can't fetch channels and dms, without these OwO-Dusk can't work...
+> we will have to wait for it to get fixed, keep an eye on: 
+> [#issue 774](https://github.com/dolfies/discord.py-self/issues/744) and [#issue 500](https://github.com/dolfies/discord.py-self/issues/500)
+>
+> meanwhile ill work on redoing the code(v2.0.0). Thanks for your patience and support :>
+
 ---
 
 Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also support reaction bot, and have a custom dashboard for solving captchas (image ones) through your browser!
