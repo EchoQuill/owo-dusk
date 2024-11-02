@@ -14,7 +14,7 @@ class Others(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.channel.id == self.bot.cm and message.author.id == self.bot.owo_bot_id:
+        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "**you must accept these rules to use the bot!**" in message.content.lower():
                 await asyncio.sleep(random.uniform(0.6,1.7))
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:

@@ -94,20 +94,15 @@ class MyClient(commands.Bot):
         await asyncio.sleep(0.1)
         printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold royal_blue1 on black' )
         listUserIds.append(self.user.id)
-        # Load cogs
-        
-        for filename in os.listdir(resource_path("./cogs")):
-            if filename.endswith(".py"):
-                print(filename)
-                await self.load_extension(f"cogs.{filename[:-3]}")
-        #self.log(f'{self.user}[+] ran hunt', 'purple')
 
         try:
+            print(f"attempting to get channel {self.channel_id}")
             self.cm = self.get_channel(self.channel_id)
+            print(self.cm)
         except Exception as e:
             print(e)
         """
-        NOTE:-  Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
+        NOTE:- Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
         Hopefully the above gets fixed soon.
         for now we will send `owo ping` command in the grind channel to get owo bot's message through the channels history.
         then we will use that instead to create the dm
@@ -127,9 +122,18 @@ class MyClient(commands.Bot):
             await asyncio.sleep(random.uniform(0.5,0.9))
             self.dm = await message.author.create_dm()
             print(f"{self.user} created dm {self.dm} successfully!")
-            #print(self.dm)
+            print(self.dm)
         except Exception as e:
             print(e)
+
+        # Load cogs
+        for filename in os.listdir(resource_path("./cogs")):
+            if filename.endswith(".py"):
+                print(filename)
+                await self.load_extension(f"cogs.{filename[:-3]}")
+        #self.log(f'{self.user}[+] ran hunt', 'purple')
+
+        
 
 #----------STARTING BOT----------#                 
 def run_bots(tokens_and_channels):

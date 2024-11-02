@@ -17,7 +17,7 @@ class Giveaway(commands.Cog):
         self.bot.log(f"conf","purple")
         self.bot.state = False # make more humane like
         await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
-        for i in self.giveaway_channels:
+        for i in config_dict["commands"][9]["channelsToJoin"]:
             channel = self.bot.get_channel(i)
             async for message in channel.history(limit=6):
                 if message.embeds:
@@ -39,7 +39,7 @@ class Giveaway(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         """Join Giveaways"""
-        if message.channel.id in self.giveaway_channels:
+        if message.channel.id in config_dict["commands"][9]["channelsToJoin"]:
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in config_dict["commands"][9]["channelsToJoin"]:
