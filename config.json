@@ -8,90 +8,71 @@
     "port": 1200,
     "refreshInterval": 15
   },
-  "commands": [
-    {
-      "hunt": false,
-      "battle": false,
+  "commands": {
+    "hunt": {
+      "enabled": false,
       "useReactionBotCooldowns": false,
-      "delayBetweenCommands": [0.7266, 1.9439],
-      "minCooldown": 12,
-      "maxCooldown": 16,
+      "cooldown": [12, 16],
       "useShortForm": false
     },
-    {
-      "pray": false,
-      "curse": false,
+    "battle": {
+      "enabled": false,
       "useReactionBotCooldowns": false,
-      "minCooldown": 300,
-      "maxCooldown": 350,
-      "userToPrayOrCurse": null,
-      "pingUser": false
+      "cooldown": [12, 16],
+      "useShortForm": false
     },
-    {
-      "sell": false,
-      "sacrifice": false,
-      "minCooldown": 200,
-      "maxCooldown": 500,
+    "sell": {
+      "enabled": false,
+      "cooldown": [200, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
-    {
-      "slots": false,
-      "coinflip": false,
-      "cfOptions": ["tails"],
-      "minCooldown": 15,
-      "maxCooldown": 20,
-      "doubleOnLose": false,
-      "allottedAmount": 200000,
-      "startValue": 1000
+    "sacrifice": {
+      "enabled": false,
+      "cooldown": [200, 500],
+      "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
-    {
-      "quest": false,
-      "doEvenIfDisabled": false,
-      "askForHelp": false,
-      "askForHelpChannel": 465978474163601436
-    },
-    {
-      "lottery": false,
+    "lottery": {
+      "enabled": false,
       "amount": 1
     },
-    {
-      "lvlGrind": false,
+    "lvlGrind": {
+      "enabled": false,
       "cooldown": [20, 30],
       "useQuoteInstead": false,
       "minLengthForRandomString": 5,
       "maxLengthForRandomString": 20
     },
-    {
-      "cookie": false,
+    "cookie": {
+      "enabled": false,
       "userid": 408785106942164992,
       "pingUser": false
     },
-    {
-      "sleep": false,
-      "frequencyPercentage": 12,
-      "minTime": 1,
-      "maxTime": 10
-    },
-    {
-      "giveawayJoiner": false,
+    "giveawayJoiner": {
+      "enabled": false,
       "channelsToJoin": [1, 2, 3],
       "cooldown": [40, 100]
     },
-    {
-      "shop": false,
+    "shop": {
+      "enabled": false,
       "itemsToBuy": [1, 2, 3],
       "cooldown": [10, 16]
     },
-    {
-      "sendOwo": false,
+    "sendOwo": {
+      "enabled": false,
       "useReactionBotCooldowns": false,
       "cooldown": [10, 13]
     },
-    {
-      "autoHuntBot": false,
+    "autoHuntBot": {
+      "enabled": false,
       "cashToSpend": 10000
     }
-  ],
+  },
+  "sleep": {
+    "enabled": false,
+    "frequencyPercentage": 12,
+    "minTime": 1,
+    "maxTime": 10
+    },
   "autoDaily": false,
   "defaultCooldowns": {
     "longCooldown": [400, 600],
