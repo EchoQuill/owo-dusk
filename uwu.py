@@ -59,7 +59,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.6.5"
+version = "1.6.6"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
@@ -570,12 +570,12 @@ class MyClient(discord.Client):
         self.session = None
 
     # send slash commands
-    async def slashCommandSender(self, msg):
+    async def slashCommandSender(self, msg, **kwargs):
         if self.captchaDetected != True and self.sleep != True and self.sleep2 != True:
             try:
                 for command in self.commands:
                     if command.name == msg:
-                        await command()
+                        await command(**kwargs)
             except Exception as e:
                 print(e)
 
@@ -2333,7 +2333,10 @@ class MyClient(discord.Client):
                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                     #await self.cm.send(f"{setprefix}lb all")
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all")
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender("lootbox", count="all")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}lb all")
                     console.print(f"-{self.user}[+] used lootbox".center(console_width - 2 ), style = "magenta on black")
                     if webhookEnabled and logLootboxes:
                         await self.webhookSender(
@@ -2364,7 +2367,10 @@ class MyClient(discord.Client):
                     if self.time_since_last_cmd < 0.5:  # Ensure at least 0.3 seconds wait
                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                     #await self.cm.send(f"{setprefix}crate all")
-                    await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
+                    if slashCommandsEnabled:
+                        await self.slashCommandSender("crate", count="all")
+                    else:
+                        await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
                     if webhookEnabled and logCrates:
                         await self.webhookSender(
                             msg=f'{self.user} used crates!',
