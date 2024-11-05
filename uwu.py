@@ -1548,7 +1548,9 @@ class MyClient(discord.Client):
         then we will use that instead to create the dm
         """
         try:
-            self.dm = await (await self.fetch_user(408785106942164992)).create_dm()
+            self.dm = await (self.get_user(408785106942164992)).create_dm()
+            if self.dm == None:
+                self.dm = await (self.fetch_user(408785106942164992)).create_dm()
             print(self.dm)
         except discord.Forbidden as e:
             print(e)
@@ -1556,17 +1558,16 @@ class MyClient(discord.Client):
             await self.cm.send(f"{setprefix}ping")
             print(f"{self.user} send ping command to trigger bot response")
             async for message in self.cm.history(limit=10):
-                if message.author.id == 408785106942164992:
+                if message.author.id == self.owo_bot_id:
                     print(f"{self.user} found bot!, attempting to create dm")
                     break
             await asyncio.sleep(random.uniform(0.5,0.9))
             self.dm = await message.author.create_dm()
             print(f"{self.user} created dm {self.dm} successfully!")
-            #print(self.dm)
-           
-
+            print(self.dm)
         except Exception as e:
             print(e)
+
 
         if self.dm == None:
             print("channel disabled")
