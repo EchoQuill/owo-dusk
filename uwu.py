@@ -1558,7 +1558,7 @@ class MyClient(discord.Client):
             await self.cm.send(f"{setprefix}ping")
             print(f"{self.user} send ping command to trigger bot response")
             async for message in self.cm.history(limit=10):
-                if message.author.id == self.owo_bot_id:
+                if message.author.id == 408785106942164992:
                     print(f"{self.user} found bot!, attempting to create dm")
                     break
             await asyncio.sleep(random.uniform(0.5,0.9))
