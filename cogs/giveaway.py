@@ -15,6 +15,7 @@ class Giveaway(commands.Cog):
     async def join_previous_giveaways(self):
         self.bot.log(f"conf","purple")
         self.bot.state = False
+        # Using briefcooldown here as using the long cooldown of giveaway joiner might look weird here.
         await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
         for i in config_dict["giveawayJoiner"]["channelsToJoin"]:
             channel = self.bot.get_channel(i)
@@ -50,7 +51,7 @@ class Giveaway(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in config_dict["giveawayJoiner"]["channelsToJoin"]:
-                        await asyncio.sleep(self.bot.random_float(config_dict[9]["cooldown"]))
+                        await asyncio.sleep(self.bot.random_float(config_dict["giveawayJoiner"]["cooldown"]))
                         if message.components[0].children[0] and not message.components[0].children[0].disabled:
                             await message.components[0].children[0].click()
                             self.bot.log(f"{self.bot.user}[+] giveaway joined in {message.channel.name}", "cyan3")
