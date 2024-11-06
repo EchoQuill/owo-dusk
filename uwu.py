@@ -2368,7 +2368,7 @@ class MyClient(discord.Client):
                         await asyncio.sleep(0.5 - self.time_since_last_cmd + random.uniform(0.1,0.3))
                     #await self.cm.send(f"{setprefix}crate all")
                     if slashCommandsEnabled:
-                        await self.slashCommandSender("crate", count="all")
+                        await self.slashCommandSender("crate", count=1)
                     else:
                         await self.sendCommands(channel=self.cm, message=f"{setprefix}crate all")
                     if webhookEnabled and logCrates:
