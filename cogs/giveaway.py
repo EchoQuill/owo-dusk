@@ -14,10 +14,13 @@ class Giveaway(commands.Cog):
     """Join previous giveaways"""
     async def join_previous_giveaways(self):
         self.bot.log(f"conf","purple")
-        self.bot.state = False # make more humane like
+        self.bot.state = False
         await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
         for i in config_dict["giveawayJoiner"]["channelsToJoin"]:
             channel = self.bot.get_channel(i)
+            if not channel:
+                # To prevent giving error if channel id is invalid
+                continue
             async for message in channel.history(limit=6):
                 if message.embeds:
                     for embed in message.embeds:
@@ -26,14 +29,19 @@ class Giveaway(commands.Cog):
                             if message.components[0].children[0] and not message.components[0].children[0].disabled:
                                 await message.components[0].children[0].click()
                                 self.bot.log(f"{self.bot.user}[+] giveaway joined in {message.channel.name}", "cyan3")
+
+        self.bot.state = True
+
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        """Run join_previous_giveaways when bot is ready"""
-        self.bot.log(f"{self.bot.user}[+] waiting~~", "cyan3")
-        await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
-
-        await self.join_previous_giveaways()
-        self.bot.log(f"{self.bot.user}[+] started~~", "cyan3")
+        if config_dict["giveawayJoiner"]["enabled"]:
+            """Run join_previous_giveaways when bot is ready"""
+            self.bot.log(f"{self.bot.user}[+] waiting~~", "cyan3")
+            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.join_previous_giveaways()
+            self.bot.log(f"{self.bot.user}[+] started~~", "cyan3")
+        else:
+            await self.bot.unload_extension("cogs.giveaway")
     
     @commands.Cog.listener()
     async def on_message(self, message):
