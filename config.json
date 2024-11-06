@@ -3,6 +3,7 @@
   "typingIndicator": false,
   "offlineStatus": false,
   "useSlashCommands": false,
+  "silentTextMessages": false,
   "website": {
     "enabled": false,
     "port": 1200,
@@ -10,13 +11,13 @@
   },
   "commands": {
     "hunt": {
-      "enabled": false,
+      "enabled": true,
       "useReactionBotCooldowns": false,
       "cooldown": [12, 16],
       "useShortForm": false
     },
     "battle": {
-      "enabled": false,
+      "enabled": true,
       "useReactionBotCooldowns": false,
       "cooldown": [12, 16],
       "useShortForm": false
@@ -26,8 +27,8 @@
       "cooldown": [200, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
-    "sacrifice": {
-      "enabled": false,
+    "sac": {
+      "enabled": true,
       "cooldown": [200, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
@@ -43,21 +44,16 @@
       "maxLengthForRandomString": 20
     },
     "cookie": {
-      "enabled": false,
+      "enabled": true,
       "userid": 408785106942164992,
       "pingUser": false
     },
-    "giveawayJoiner": {
-      "enabled": false,
-      "channelsToJoin": [1, 2, 3],
-      "cooldown": [40, 100]
-    },
     "shop": {
-      "enabled": false,
+      "enabled": true,
       "itemsToBuy": [1, 2, 3],
       "cooldown": [10, 16]
     },
-    "sendOwo": {
+    "owo": {
       "enabled": false,
       "useReactionBotCooldowns": false,
       "cooldown": [10, 13]
@@ -67,12 +63,17 @@
       "cashToSpend": 10000
     }
   },
+  "giveawayJoiner": {
+    "enabled": false,
+    "channelsToJoin": [1099453684691243098, 1168797748343099444, 1168797827464429618],
+    "cooldown": [40, 100]
+  },
   "sleep": {
     "enabled": false,
     "frequencyPercentage": 12,
     "minTime": 1,
     "maxTime": 10
-    },
+  },
   "autoDaily": false,
   "defaultCooldowns": {
     "longCooldown": [400, 600],
