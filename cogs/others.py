@@ -20,6 +20,13 @@ class Others(commands.Cog):
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:
                     await message.components[0].children[0].click()
                 self.bot.log(f"-{self.user}[+] Accepted OwO bot rules","spring_green1")
+            """if "Create a team with the command `owo team add {animal}`" in message.content:
+                self.bot.state = False
+                await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
+                await self.bot.send("zoo", bypass=True)"""
+                
+                
+
 
 async def setup(bot):
     await bot.add_cog(Others(bot))

@@ -28,7 +28,7 @@
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
     "sac": {
-      "enabled": true,
+      "enabled": false,
       "cooldown": [200, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
@@ -44,17 +44,17 @@
       "maxLengthForRandomString": 20
     },
     "cookie": {
-      "enabled": true,
+      "enabled": false,
       "userid": 408785106942164992,
       "pingUser": false
     },
     "shop": {
-      "enabled": true,
+      "enabled": false,
       "itemsToBuy": [1, 2, 3],
       "cooldown": [10, 16]
     },
     "owo": {
-      "enabled": false,
+      "enabled": true,
       "useReactionBotCooldowns": false,
       "cooldown": [10, 13]
     },
@@ -82,7 +82,7 @@
     "briefCooldown": [0.7, 2.7]
   },
   "delayCheck": {
-    "useOwobotApi": true,
+    "useOwobotApi": false,
     "minPing": 60,
     "minDelayBetweenRecheck": 5,
     "maxDelayBetweenRecheck": 9,

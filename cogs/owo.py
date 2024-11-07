@@ -14,14 +14,16 @@ class Owo(commands.Cog):
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
         if not config_dict["commands"]["owo"]["enabled"]:
-            await self.bot.unload_extension("cogs.giveaway")
+            await self.bot.unload_extension("cogs.owo")
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
-            if "owo" in message.content.lower():
+            if "owo" == message.content.lower():
+                self.bot.log(f"owo detected from {message.author.name}.","cornflower_blue")
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
                 self.bot.queue.put("owo")
+                self.bot.log(f"owo put to queue again","cornflower_blue")
                 
                 
 

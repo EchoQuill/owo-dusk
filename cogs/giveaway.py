@@ -2,6 +2,7 @@ import asyncio
 import json
 
 from discord.ext import commands
+from discord.ext.commands import ExtensionNotLoaded
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
@@ -42,7 +43,10 @@ class Giveaway(commands.Cog):
             await self.join_previous_giveaways()
             self.bot.log(f"{self.bot.user}[+] started~~", "cyan3")
         else:
-            await self.bot.unload_extension("cogs.giveaway")
+            try:
+                await self.bot.unload_extension("cogs.giveaway")
+            except ExtensionNotLoaded:
+                pass
     
     @commands.Cog.listener()
     async def on_message(self, message):

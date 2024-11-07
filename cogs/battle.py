@@ -1,5 +1,4 @@
 import asyncio
-import random
 import json
 
 from discord.ext import commands
@@ -7,14 +6,14 @@ from discord.ext import commands
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
-class Owo(commands.Cog):
+class Battle(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - OwO","purple")
+        self.bot.log(f"conf2 - Battle","purple")
     
     async def cog_load(self):
         if not config_dict["commands"]["battle"]["enabled"]:
-            await self.bot.unload_extension("cogs.giveaway")
+            await self.bot.unload_extension("cogs.battle")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -22,11 +21,18 @@ class Owo(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
+                        self.bot.checks = [check for check in self.bot.checks if check[0] != "battle"]
+                        self.bot.log(f"Removed battle from checks from main","cornflower_blue")
                         await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
+                        """
+                        self.bot.checks.remove((command, timestamp))
+                        is not used to prevent valueerror and better error management
+                        """
                         self.bot.queue.put("battle")
+                        self.bot.log(f"Added battle to queue again from main","cornflower_blue")
                 
                 
 
 
 async def setup(bot):
-    await bot.add_cog(Owo(bot))
+    await bot.add_cog(Battle(bot))

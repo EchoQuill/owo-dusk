@@ -12,6 +12,7 @@ from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 from rich.align import Align
+from queue import Queue
 import discord
 import asyncio
 import logging
@@ -50,9 +51,6 @@ def printBox(text, color):
     test_panel = Panel(text, style=color)
     console.print(test_panel)
 
-
-
-
 def resource_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
@@ -74,7 +72,30 @@ class MyClient(commands.Bot):
         even after captcha..."""
         self.state = True
         self.captcha = False
+        """
+        for making use of queue to make a FIFO (First In First Out)
+        to efficienctly manage sending of commands in a random order
+        and to also prevent the spammy code issue of v1
+        """
+        self.commands_list = []
+        for command, settings in config_dict["commands"].items():
+            try:
+                if settings["enabled"]:
+                    self.commands_list.append(command)
+            except KeyError:
+                print(f"failed to fetch {command}'s status..., stopping code.")
+                print(settings)
+                os._exit(0)
+        self.queue = Queue()
+        random.shuffle(self.commands_list)
+        print(self.commands_list)
+        for i in self.commands_list:
+            self.queue.put(i)
+
+
+
         
+    """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
         return random.uniform(cooldown_list[0],cooldown_list[1])
 
@@ -85,9 +106,18 @@ class MyClient(commands.Bot):
         else:
             console.print(text.center(console_width - 2), style=style)
 
+    # send commands
+    async def send(self, message, bypass=False, noprefix=False, channel=None, silent=config_dict["silentTextMessages"]):
+        if not channel:
+            channel = self.cm
+        if not self.captcha and (self.state or bypass):
+            if not noprefix:
+                await channel.send(f"{config_dict['setprefix']}{message}", silent=silent)
+            else:
+                await channel.send(message, silent=silent)
+
     async def on_ready(self):
-        self.on_ready_dn = False
-        self.cmds = 1
+        #self.on_ready_dn = False
         self.owo_bot_id = 408785106942164992
         if self.session is None:
             self.session = aiohttp.ClientSession()
@@ -108,12 +138,14 @@ class MyClient(commands.Bot):
         then we will use that instead to create the dm
         """
         try:
-            self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
+            self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
+            if self.dm == None:
+                self.dm = await (self.fetch_user(self.owo_bot_id)).create_dm()
             print(self.dm)
         except discord.Forbidden as e:
             print(e)
             print(f"attempting to get user with the help of {self.cm}")
-            await self.cm.send(f"{config_dict["setprefix"]}ping")
+            await self.cm.send(f"{config_dict['setprefix']}ping")
             print(f"{self.user} send ping command to trigger bot response")
             async for message in self.cm.history(limit=10):
                 if message.author.id == self.owo_bot_id:
