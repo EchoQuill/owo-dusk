@@ -32,10 +32,9 @@ class Commands(commands.Cog):
     async def send_commands(self):
         while not self.bot.queue.empty():
             try:
-                print(list(self.bot.queue.queue))
-                cmd = self.bot.queue.get()
-                
                 if self.bot.state and not self.bot.captcha:
+                    print(list(self.bot.queue.queue))
+                    cmd = self.bot.queue.get()
                     if cmd == "lvlGrind":
                         continue
                     elif cmd == "shop":
