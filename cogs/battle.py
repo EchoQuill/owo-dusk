@@ -2,6 +2,7 @@ import asyncio
 import json
 
 from discord.ext import commands
+from discord.ext.commands import ExtensionNotLoaded
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
@@ -13,7 +14,10 @@ class Battle(commands.Cog):
     
     async def cog_load(self):
         if not config_dict["commands"]["battle"]["enabled"]:
-            await self.bot.unload_extension("cogs.battle")
+            try:
+                await self.bot.unload_extension("cogs.battle")
+            except:
+                pass
 
     @commands.Cog.listener()
     async def on_message(self, message):

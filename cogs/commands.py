@@ -48,6 +48,8 @@ class Commands(commands.Cog):
                         await self.bot.send(cmd)
                         self.bot.checks.append((cmd, datetime.now(timezone.utc)))
                     await asyncio.sleep(random.uniform(0.5, 0.9))
+                else:
+                    await asyncio.sleep(random.uniform(0.5, 0.9))
             except Empty:
                 # Break out of the loop if there are no more items
                 await asyncio.sleep(random.uniform(0.5, 0.9))

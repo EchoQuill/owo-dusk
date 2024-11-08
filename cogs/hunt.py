@@ -2,6 +2,7 @@ import asyncio
 import json
 
 from discord.ext import commands
+from discord.ext.commands import ExtensionNotLoaded
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
@@ -13,7 +14,10 @@ class Hunt(commands.Cog):
 
     async def cog_load(self):
         if not config_dict["commands"]["hunt"]["enabled"]:
-            await self.bot.unload_extension("cogs.hunt")
+            try:
+                await self.bot.unload_extension("cogs.hunt")
+            except ExtensionNotLoaded:
+                pass
     
 
 
