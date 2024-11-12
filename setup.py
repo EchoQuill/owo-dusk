@@ -8,6 +8,18 @@ except:
     pass
 print('\033[1;32mwelcome to OwO-Dusk\nThis setup will guide you through with the setup of OwO-Dusk\nThankyou for your trust in OwO-Dusk\033[m')
 
+def is_termux():
+    termux_prefix = os.environ.get("PREFIX")
+    termux_home = os.environ.get("HOME")
+    
+    if termux_prefix and "com.termux" in termux_prefix:
+        return True
+    elif termux_home and "com.termux" in termux_home:
+        return True
+    else:
+        return os.path.isdir("/data/data/com.termux")
+    
+
 """while True:
     user_input = input("[?]Do you want help setting this up from scratch? (Y/N):-\n").lower()
     if user_input in ["y", "n"]:
@@ -15,6 +27,7 @@ print('\033[1;32mwelcome to OwO-Dusk\nThis setup will guide you through with the
         break
     else:
         print("[!]Please enter 'Y' or 'N'.")"""
+
 scratchSetup = True
 if scratchSetup:
     #print('[0]Alright, got it!')
@@ -22,46 +35,44 @@ if scratchSetup:
     #---INSTALL REQUIREMENTS--#
     print('\033[1;36m[0]attempting to install requirements.txt\033[m')
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        except:
+            if is_termux():
+                print('\033[1;36m[0]attempting to retry installing requirements.txt, after ensuring pkgs are uptodate\033[m')
+                subprocess.check_call(["pkg", "update", "-y"])
+                subprocess.check_call(["pkg", "upgrade", "-y"])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         print('\033[1;36m[0]Installed modules from requirements.txt successfully!\033[m')
         print('\033[1;36m[0]attempting to install numpy and pil\033[m')
-        while True:
-            device = input('\033[1;34mWhat device are you on?\n1) mobile\n2) desktop/laptop etc\n3) others like hosts etc\n(answer with 1,2,3.):\n\033[m').lower()
-            if device in ["1", "2", "3"]:
-                if device == "1":
-                    # Termux
-                    print("\033[1;36m[0]installing for termux...\033[m")
-                    print()
-                    print("\033[1;36m[info]We are going to be making use of termux's version of numpy and pil as normal ones won't work with termux.\033[m")
-                    #print("it may ask if you want to proceed with the installation...")
-                    #print("please type and enter \"Y\" for all such!")
-                    print()
-                    print("\033[1;36m[0]Attepmting to install numpy\033[m")
-                    try:
-                        subprocess.check_call(["pkg", "install", "python-numpy", "-y"]) #-y auto confirms y/n prompt
-                        print("\033[1;36m[0]installed numpy successfully!\033[m")
-                    except Exception as e:
-                        print(f"\033[1;31m[x]error when trying to install numpy:-\n {e}\033[m")
-                    print("\033[1;36m[0]Attepmting to install PIL\033[m")
-                    try:
-                        subprocess.check_call(["pkg", "install", "python-pillow", "-y"]) #-y auto confirms y/n prompt
-                        print("\033[1;36m[0]installed PIL successfully!\033[m")
-                    except Exception as e:
-                        print(f"\033[1;31m[x]error when trying to install PIL:-\n {e}\033[m")
-                    break
-                elif device == "2" or device == "3":
-                    # desktop
-                    if device == "3":
-                        print('\033[1;36m[0]since your on an unknown device not sure if this will work. still attempting.')
-                    print("\033[1;36minstalling normally...\033[m")
-                    try:
-                        subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow"])
-                        print("\033[1;36m[0]Installed numpy and PIL successfully!\033[m")
-                    except Exception as e:
-                        print(f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m")
-                    break
-            else:
-                print("\033[1;33m[!]Please enter 1,2,3 only..\033[m")
+        if is_termux():
+            # Termux
+            print("\033[1;36m[0]installing for termux...\033[m")
+            print()
+            print("\033[1;36m[info]We are going to be making use of termux's version of numpy and pil as normal ones won't work with termux.\033[m")
+            #print("it may ask if you want to proceed with the installation...")
+            #print("please type and enter \"Y\" for all such!")
+            print()
+            print("\033[1;36m[0]Attepmting to install numpy\033[m")
+            try:
+                subprocess.check_call(["pkg", "install", "python-numpy", "-y"]) #-y auto confirms y/n prompt
+                print("\033[1;36m[0]installed numpy successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]error when trying to install numpy:-\n {e}\033[m")
+            print("\033[1;36m[0]Attepmting to install PIL\033[m")
+            try:
+                subprocess.check_call(["pkg", "install", "python-pillow", "-y"]) #-y auto confirms y/n prompt
+                print("\033[1;36m[0]installed PIL successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]error when trying to install PIL:-\n {e}\033[m")
+        else:
+            print("\033[1;36minstalling normally...\033[m")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow"])
+                print("\033[1;36m[0]Installed numpy and PIL successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m")
+
     except Exception as e:
         print(f"\033[1;31m[x]error when trying to install requirements:-\n {e}\033[m")
 
@@ -221,16 +232,18 @@ if scratchSetup:
                     print()
                     print('\033[1;36m[0]Finished editing tokens.txt successfully!\033[m')
                     print('\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file then\ntype `python uwu.py` to start the code\033[m')
+                    break
                 except Exception as e:
                     print(f'\033[1;31m[x]error when attempting to edit tokens.txt - {e}\033[m')
             else:
                 print('\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file and `tokens.txt` file then\ntype `python uwu.py` to start the code\033[m')
+                break
         else:
             print("\033[1;33m[!]Please enter 1,2 only..\033[m")
             
-        print()
-        print('\033[1;35mEchoQuill - Thank you for using owo-dusk, I hope you have a great day ahead!\nif there is any error then letme know through https://discord.gg/pyvKUh5mMU\033[m')
-        sys.exit(0)
+print()
+print('\033[1;35mEchoQuill - Thank you for using owo-dusk, I hope you have a great day ahead!\nif there is any error then letme know through https://discord.gg/pyvKUh5mMU\033[m')
+sys.exit(0)
 
 
 
