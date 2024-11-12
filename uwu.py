@@ -3,7 +3,8 @@ NOTE:
 This repo is made with the help of https://github.com/BridgeSenseDev/Dank-Memer-Grinder
 So there are many parts I don't understand properly yet.
 To make it easier to maintain ill be adding lots of comments,
-Please don't remove those if making contributions!
+Do check them before to understand what i was attempting to do,
+and feel free to contibute by improving those parts. :}
 """
 # Do consider giving our repo a star in github :>
 
@@ -72,6 +73,7 @@ class MyClient(commands.Bot):
         even after captcha..."""
         self.state = True
         self.captcha = False
+        self.cash = 0
         """
         for making use of queue to make a FIFO (First In First Out)
         to efficienctly manage sending of commands in a random order
@@ -90,7 +92,8 @@ class MyClient(commands.Bot):
         random.shuffle(self.commands_list)
         print(self.commands_list)
         for i in self.commands_list:
-            self.queue.put(i)
+            if i not in ["lvlGrind", "lottery", "sell", "sac"]: #will be handled differently compared to others.
+                self.queue.put(i)
 
 
 
@@ -107,14 +110,15 @@ class MyClient(commands.Bot):
             console.print(text.center(console_width - 2), style=style)
 
     # send commands
-    async def send(self, message, bypass=False, noprefix=False, channel=None, silent=config_dict["silentTextMessages"]):
+    async def send(self, message, bypass=False, noprefix=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
         if not self.captcha and (self.state or bypass):
-            if not noprefix:
-                await channel.send(f"{config_dict['setprefix']}{message}", silent=silent)
+            if typingIndicator:
+                async with channel.typing():
+                    await channel.send(f"{config_dict['setprefix'] if not noprefix else ''}{message}", silent=silent)
             else:
-                await channel.send(message, silent=silent)
+                await channel.send(f"{config_dict['setprefix'] if not noprefix else ''}{message}", silent=silent)
 
     async def on_ready(self):
         #self.on_ready_dn = False
@@ -182,9 +186,9 @@ def run_bot(token, channel_id):
     client.run(token, log_level=logging.INFO)
 if __name__ == "__main__":
     console.print(owoPanel)
-    console.rule(style="navy_blue")
+    console.rule(f"[bold blue1]version - {version}", style="navy_blue")
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30 on black' )
-    printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
+    #printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta on black' )

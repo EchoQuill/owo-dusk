@@ -44,8 +44,14 @@ class Commands(commands.Cog):
                     elif cmd == "owo":
                         await self.bot.send(cmd, noprefix=True)
                     else:
-                        await self.bot.send(cmd)
-                        self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+                        if isinstance(cmd, list):
+                            """check if cmd is a list"""
+                            await self.bot.send(f"{cmd[0]}{cmd[1]}")
+                            #makes list neat i guess..?
+                            self.bot.checks.append((cmd[0], datetime.now(timezone.utc)))
+                        else:
+                            await self.bot.send(cmd)
+                            self.bot.checks.append((cmd, datetime.now(timezone.utc)))
                     await asyncio.sleep(random.uniform(0.5, 0.9))
                 else:
                     await asyncio.sleep(random.uniform(0.5, 0.9))
