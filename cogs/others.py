@@ -1,6 +1,7 @@
 import asyncio
 import random
 import json
+import re
 
 from discord.ext import commands
 
@@ -20,6 +21,10 @@ class Others(commands.Cog):
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:
                     await message.components[0].children[0].click()
                 self.bot.log(f"-{self.user}[+] Accepted OwO bot rules","spring_green1")
+            elif "you currently have **__" in message.content:
+                """task: add checks for cash at ready."""
+                self.bot.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
+                self.bot.log(f"{self.bot.user}[+] Checked for cash - {self.bot.balance} cowoncy!", "cyan3")
             """if "Create a team with the command `owo team add {animal}`" in message.content:
                 self.bot.state = False
                 await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))

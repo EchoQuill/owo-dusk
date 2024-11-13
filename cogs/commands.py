@@ -52,12 +52,12 @@ class Commands(commands.Cog):
                         else:
                             await self.bot.send(cmd)
                             self.bot.checks.append((cmd, datetime.now(timezone.utc)))
-                    await asyncio.sleep(random.uniform(0.5, 0.9))
+                    await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
-                    await asyncio.sleep(random.uniform(0.5, 0.9))
+                    await asyncio.sleep(random.uniform(0.7, 1.2))
             except Empty:
                 # Break out of the loop if there are no more items
-                await asyncio.sleep(random.uniform(0.5, 0.9))
+                await asyncio.sleep(random.uniform(0.7, 1.2))
                 break
 
     @tasks.loop(seconds=1)
@@ -69,7 +69,7 @@ class Commands(commands.Cog):
         Like when owobot lags.
         """
         for command, timestamp in self.bot.checks[:]:  # Loop through a copy to avoid modification issues
-            if (current_time - timestamp).total_seconds() > 3:
+            if (current_time - timestamp).total_seconds() > 5:
                 """Put the command back to the queue
                 Not using any sleeps here as the delay should randomize it enough."""
                 self.bot.queue.put(command)

@@ -18,6 +18,7 @@ import discord
 import asyncio
 import logging
 import random
+import traceback
 import aiohttp
 import json
 import sys
@@ -105,7 +106,10 @@ class MyClient(commands.Bot):
     def log(self, text, color, bold=False, debug=debug_print):
         style = f"{color} on black"
         if debug:
-            console.log(text, style=style)
+            frame_info = traceback.extract_stack()[-2]
+            print(frame_info)
+            print(f"{frame_info.filename}, {frame_info.lineno}")
+            console.log(text, style=style) # stack_offset changes the line no to the place where log func was called.
         else:
             console.print(text.center(console_width - 2), style=style)
 
