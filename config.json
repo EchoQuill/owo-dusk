@@ -13,13 +13,13 @@
     "hunt": {
       "enabled": true,
       "useReactionBotCooldowns": false,
-      "cooldown": [12, 16],
+      "cooldown": [15, 17],
       "useShortForm": false
     },
     "battle": {
       "enabled": true,
       "useReactionBotCooldowns": false,
-      "cooldown": [12, 16],
+      "cooldown": [15, 17],
       "useShortForm": false
     },
     "sell": {
