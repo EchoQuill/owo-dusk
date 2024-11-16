@@ -19,6 +19,7 @@ import asyncio
 import logging
 import random
 import traceback
+import threading
 import aiohttp
 import json
 import sys
@@ -29,11 +30,17 @@ def clear():
     os.system('cls') if os.name == 'nt' else os.system('clear')
 
 console = Console()
-
+lock = threading.Lock()
 clear()
+
+def load_accounts_dict(file_path="utils/stats.json"):
+    with open(file_path, "r") as config_file:
+        return json.load(config_file)
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
+
+
 
 console.rule("[bold blue1]:>", style="navy_blue")
 console_width = console.size.width
@@ -74,7 +81,7 @@ class MyClient(commands.Bot):
         even after captcha..."""
         self.state = True
         self.captcha = False
-        self.cash = 0
+        self.balance = 0
         """
         for making use of queue to make a FIFO (First In First Out)
         to efficienctly manage sending of commands in a random order
@@ -107,7 +114,7 @@ class MyClient(commands.Bot):
         style = f"{color} on black"
         if debug:
             frame_info = traceback.extract_stack()[-2]
-            print(frame_info)
+            #print(frame_info)
             print(f"{frame_info.filename}, {frame_info.lineno}")
             console.log(text, style=style) # stack_offset changes the line no to the place where log func was called.
         else:
@@ -165,6 +172,28 @@ class MyClient(commands.Bot):
             print(self.dm)
         except Exception as e:
             print(e)
+
+        # add account to stat.json
+        self.default_config = {
+            self.user.id: {
+                "daily": 0,
+                "lottery": 0,
+                "banned": [],
+                "giveaways": 0
+            }
+        }
+        with lock:
+            accounts_dict = load_accounts_dict()
+            print(accounts_dict)
+            if str(self.user.id) not in accounts_dict:
+                accounts_dict.update(self.default_config)
+                with open("utils/stats.json", "w") as f:
+                    json.dump(accounts_dict, f, indent=4)
+                accounts_dict = load_accounts_dict()
+
+                print(f"Default values added for bot ID: {self.user.id}")
+            else:
+                print("Bot ID already exists in accounts.json.")
 
         # Load cogs
         for filename in os.listdir(resource_path("./cogs")):
