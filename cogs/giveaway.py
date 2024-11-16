@@ -14,6 +14,9 @@ class Giveaway(commands.Cog):
 
     """Join previous giveaways"""
     async def join_previous_giveaways(self):
+        self.bot.log(f"{self.bot.user}[+] waiting~~", "cyan3")
+        await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+        self.bot.log(f"{self.bot.user}[+] started~~", "cyan3")
         self.bot.log(f"conf","purple")
         self.bot.state = False
         # Using briefcooldown here as using the long cooldown of giveaway joiner might look weird here.
@@ -38,10 +41,7 @@ class Giveaway(commands.Cog):
     async def cog_load(self):
         if config_dict["giveawayJoiner"]["enabled"]:
             """Run join_previous_giveaways when bot is ready"""
-            self.bot.log(f"{self.bot.user}[+] waiting~~", "cyan3")
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
-            await self.join_previous_giveaways()
-            self.bot.log(f"{self.bot.user}[+] started~~", "cyan3")
+            asyncio.create_task(self.join_previous_giveaways())
         else:
             try:
                 await self.bot.unload_extension("cogs.giveaway")

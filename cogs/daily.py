@@ -35,6 +35,32 @@ class Daily(commands.Cog):
         if time_to_convert is None:
             time_to_convert = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_to_convert.timestamp()
+    
+    async def start_daily(self):
+        if str(self.bot.user.id) in accounts_dict:
+            self.bot.log("daily - 0", "honeydew2")
+            self.current_time_seconds = self.time_in_seconds()
+            self.last_daily_time = accounts_dict[str(self.bot.user.id)].get("daily", 0)
+
+            # Time difference calculation
+            self.time_diff = self.current_time_seconds - self.last_daily_time
+            print(self.current_time_seconds, self.last_daily_time)
+            print(self.time_diff, "time diff")
+
+            if self.time_diff < 0:
+                self.last_daily_time = self.current_time_seconds
+            if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
+                print(self.calc_time())
+                await asyncio.sleep(self.calc_time())  # Wait until next 12:00 AM PST
+
+            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
+            self.bot.queue.put("daily")
+            self.bot.log("put to queue - Daily", "honeydew2")
+
+            with lock:
+                accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
+                with open("utils/stats.json", "w") as f:
+                    json.dump(accounts_dict, f, indent=4)
 
     async def cog_load(self):
         self.bot.log(f"daily - start", "purple")
@@ -44,30 +70,7 @@ class Daily(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            if str(self.bot.user.id) in accounts_dict:
-                self.bot.log("daily - 0", "honeydew2")
-                self.current_time_seconds = self.time_in_seconds()
-                self.last_daily_time = accounts_dict[str(self.bot.user.id)].get("daily", 0)
-
-                # Time difference calculation
-                self.time_diff = self.current_time_seconds - self.last_daily_time
-                print(self.current_time_seconds, self.last_daily_time)
-                print(self.time_diff, "time diff")
-
-                if self.time_diff < 0:
-                    self.last_daily_time = self.current_time_seconds
-                if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                    print(self.calc_time())
-                    await asyncio.sleep(self.calc_time())  # Wait until next 12:00 AM PST
-
-                await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
-                self.bot.queue.put("daily")
-                self.bot.log("put to queue - Daily", "honeydew2")
-
-                with lock:
-                    accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
-                    with open("utils/stats.json", "w") as f:
-                        json.dump(accounts_dict, f, indent=4)
+            asyncio.create_task(self.start_daily())
 
     @commands.Cog.listener()
     async def on_message(self, message):

@@ -28,6 +28,11 @@ class Sell(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.log(f"conf2 - sell","purple")
+    async def sell_sac_queue(self, cmd, cooldown):
+        await asyncio.sleep(self.bot.random_float(cooldown))
+        self.bot.queue.put(["sell", f" {sell_rarity if cmd=="sell" else sac_rarity}"])
+
+
 
     async def cog_load(self):
         if not config_dict["commands"]["sell"]["enabled"] and not config_dict["commands"]["sac"]["enabled"]:
@@ -37,11 +42,9 @@ class Sell(commands.Cog):
                 pass
         if (config_dict["commands"]["sell"]["enabled"] and config_dict["commands"]["sac"]["enabled"]) or (config_dict["commands"]["sell"]["enabled"]):
             # start sell first.
-            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["sell"]["cooldown"]))
-            self.bot.queue.put(["sell", f" {sell_rarity}"])
+            asyncio.create_task(self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"]))
         else:
-            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["sac"]["cooldown"]))
-            self.bot.queue.put(["sac", f" {sac_rarity}"])
+            asyncio.create_task(self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"]))
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -53,20 +56,16 @@ class Sell(commands.Cog):
                 except:
                     self.bot.log(f"{self.bot.user}[+] failed to fetch cowoncy from sales,", "cyan3")
                 if config_dict["commands"]["sac"]["enabled"]:
-                    await asyncio.sleep(self.bot.random_float(config_dict["commands"]["sac"]["cooldown"]))
-                    self.bot.queue.put(["sac", f" {sac_rarity}"])
+                    await self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"])
                 else:
-                    await asyncio.sleep(self.bot.random_float(config_dict["commands"]["sell"]["cooldown"]))
-                    self.bot.queue.put(["sell", f" {sell_rarity}"])
+                    await self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"])
 
             elif "sacrificed" in message.content and "for a total of" in message.content.lower():
                 self.bot.checks = [check for check in self.bot.checks if check[0] != "sac"]
                 if config_dict["commands"]["sell"]["enabled"]:
-                    await asyncio.sleep(self.bot.random_float(config_dict["commands"]["sell"]["cooldown"]))
-                    self.bot.queue.put(["sell", f" {sell_rarity}"])
+                    await self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"])
                 else:
-                    await asyncio.sleep(self.bot.random_float(config_dict["commands"]["sac"]["cooldown"]))
-                    self.bot.queue.put(["sac", f" {sac_rarity}"])
+                    await self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"])
 
 
 async def setup(bot):

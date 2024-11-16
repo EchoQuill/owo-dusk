@@ -19,13 +19,14 @@ class Commands(commands.Cog):
         self.bot.log(f"conf2 - commands","purple")
         self.bot.checks = []
 
-    async def cog_load(self):
-        """Run join_previous_giveaways when bot is ready"""
-        self.bot.log(f"{self.bot.user}[+] waiting~~", "cyan3")
-        await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
+    async def start_commands(self, waitTime=config_dict["defaultCooldowns"]["briefCooldown"]):
+        await asyncio.sleep(self.bot.random_float(waitTime))
         self.send_commands.start()
         self.bot.log(f"{self.bot.user}[+] started sending commands~~", "cyan3")
         self.monitor_checks.start()
+    async def cog_load(self):
+        """Run join_previous_giveaways when bot is ready"""
+        asyncio.create_task(self.start_commands())
 
     """send commands"""
     @tasks.loop()
