@@ -36,23 +36,22 @@ class Commands(commands.Cog):
                 if self.bot.state and not self.bot.captcha:
                     print(list(self.bot.queue.queue))
                     cmd = self.bot.queue.get()
-                    if cmd == "lvlGrind":
-                        continue
-                    elif cmd == "shop":
-                        await self.bot.send(f"buy {random.choice(config_dict['commands']['shop']['itemsToBuy'])}")
-                    elif cmd == "autoHuntBot":
-                        continue
-                    elif cmd == "owo":
-                        await self.bot.send(cmd, noprefix=True)
-                    else:
-                        if isinstance(cmd, list):
-                            """check if cmd is a list"""
-                            await self.bot.send(f"{cmd[0]}{cmd[1]}")
-                            #makes list neat i guess..?
+                    if isinstance(cmd, list):
+                        """check if cmd is a list"""
+                        #makes list neat i guess..?
+                        for i in cmd:
+                            if isinstance(i, list):
+                                if i[1] == True:
+                                    print(i, "wuwuwuwuwuuw")
+                                    await self.bot.send(f"{cmd[0]}{cmd[1] if not isinstance(cmd[1], list) else ''}", noprefix=True)
+                                else:
+                                    await self.bot.send(f"{cmd[0]}{cmd[1] if not isinstance(cmd[1], list) else ''}")
+                                if i[0] == False:
+                                    continue
                             self.bot.checks.append((cmd[0], datetime.now(timezone.utc)))
-                        else:
-                            await self.bot.send(cmd)
-                            self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+                    else:
+                        await self.bot.send(cmd)
+                        self.bot.checks.append((cmd, datetime.now(timezone.utc)))
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))

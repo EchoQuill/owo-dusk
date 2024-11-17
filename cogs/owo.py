@@ -27,7 +27,7 @@ class Owo(commands.Cog):
             if "owo" == message.content.lower():
                 self.bot.log(f"owo detected from {message.author.name}.","cornflower_blue")
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
-                self.bot.queue.put("owo")
+                self.bot.queue.put(["owo", [True, True]])
                 self.bot.log(f"owo put to queue again","cornflower_blue")
                 
                 

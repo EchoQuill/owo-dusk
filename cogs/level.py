@@ -26,7 +26,7 @@ class Level(commands.Cog):
         try:
             await asyncio.sleep(self.bot.random_float(config_dict["commands"]["lvlGrind"]["cooldown"]))
             self.last_level_grind_message = generate_random_string()
-            self.bot.queue.put([self.last_level_grind_message, False])
+            self.bot.queue.put([self.last_level_grind_message, [False, True]])
         except Exception as e:
             print(e)
         
