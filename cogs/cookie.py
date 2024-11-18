@@ -55,9 +55,10 @@ class Cookie(commands.Cog):
 
             await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
             if config_dict["commands"]["cookie"]["pingUser"]:
-                self.bot.queue.put(["cookie", f" <@{config_dict["commands"]["cookie"]["userid"]}>"])
+                self.bot.put_queue(f"cookie <@{config_dict['commands']['cookie']['userid']}>")
+                #self.bot.queue.put(["cookie ", f" <@{config_dict["commands"]["cookie"]["userid"]}>"])
             else:
-                self.bot.queue.put(["cookie", f" {config_dict["commands"]["cookie"]["userid"]}"])
+                self.bot.put_queue(f"cookie {config_dict['commands']['cookie']['userid']}")
             self.bot.log("put to queue - lottry", "honeydew2")
 
             with lock:
@@ -84,9 +85,9 @@ class Cookie(commands.Cog):
                 await asyncio.sleep(self.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
                 if config_dict["commands"]["cookie"]["pingUser"]:
-                    self.bot.queue.put(["cookie", f" <@{config_dict["commands"]["cookie"]["userid"]}>"])
+                    self.bot.put_queue(f"cookie <@{config_dict['commands']['cookie']['userid']}>")
                 else:
-                    self.bot.queue.put(["cookie", f" {config_dict["commands"]["cookie"]["userid"]}"])
+                    self.bot.put_queue(f"cookie {config_dict['commands']['cookie']['userid']}")
                 self.bot.log("put to queue - cookie", "honeydew2")
                 with lock:
                     accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()

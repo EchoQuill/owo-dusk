@@ -100,8 +100,8 @@ class MyClient(commands.Bot):
         random.shuffle(self.commands_list)
         print(self.commands_list)
         for i in self.commands_list:
-            if i not in ["lvlGrind", "lottery", "sell", "sac"]: #will be handled differently compared to others.
-                self.queue.put(i)
+            if i not in ["lvlGrind", "lottery", "sell", "sac", "cookie"]: #will be handled differently compared to others.
+                self.queue.put(i) if i!="owo" else self.queue.put(["owo", [True, True]])
 
 
 
@@ -113,23 +113,27 @@ class MyClient(commands.Bot):
     def log(self, text, color, bold=False, debug=debug_print):
         style = f"{color} on black"
         if debug:
-            frame_info = traceback.extract_stack()[-2]
+            #frame_info = traceback.extract_stack()[-2]
             #print(frame_info)
-            print(f"{frame_info.filename}, {frame_info.lineno}")
+            #print(f"{frame_info.filename}, {frame_info.lineno}")
             console.log(text, style=style) # stack_offset changes the line no to the place where log func was called.
         else:
             console.print(text.center(console_width - 2), style=style)
 
+    async def put_queue(self, cmd, prefix=True, check=True):
+        self.queue.put((f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check, cmd.split()[0]))
+
+
     # send commands
-    async def send(self, message, bypass=False, noprefix=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
+    async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
         if not self.captcha and (self.state or bypass):
             if typingIndicator:
                 async with channel.typing():
-                    await channel.send(f"{config_dict['setprefix'] if not noprefix else ''}{message}", silent=silent)
+                    await channel.send(message, silent=silent)
             else:
-                await channel.send(f"{config_dict['setprefix'] if not noprefix else ''}{message}", silent=silent)
+                await channel.send(message, silent=silent)
 
     async def on_ready(self):
         #self.on_ready_dn = False
@@ -178,6 +182,7 @@ class MyClient(commands.Bot):
             self.user.id: {
                 "daily": 0,
                 "lottery": 0,
+                "cookie": 0,
                 "banned": [],
                 "giveaways": 0
             }

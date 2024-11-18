@@ -54,7 +54,8 @@ class Lottery(commands.Cog):
                 await asyncio.sleep(self.calc_time())  # Wait until next 12:00 AM PST
 
             await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
-            self.bot.queue.put(["lottery", f" {config_dict["commands"]["lottery"]["amount"]}"])
+            #self.bot.queue.put(["lottery", f" {config_dict["commands"]["lottery"]["amount"]}"])
+            self.bot.put_queue(f"lottery {config_dict['commands']['lottery']['amount']}")
             self.bot.log("put to queue - lottry", "honeydew2")
 
             with lock:
@@ -82,7 +83,7 @@ class Lottery(commands.Cog):
                         print(self.calc_time())
                         await asyncio.sleep(self.calc_time())
                         await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                        self.bot.queue.put(["lottery", f" {config_dict["commands"]["lottery"]["amount"]}"])
+                        self.bot.put_queue(f"lottery {config_dict['commands']['lottery']['amount']}")
                         self.bot.log("put to queue - Lottery", "honeydew2")
                         with lock:
                             accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()

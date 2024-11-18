@@ -26,11 +26,10 @@ class Level(commands.Cog):
         try:
             await asyncio.sleep(self.bot.random_float(config_dict["commands"]["lvlGrind"]["cooldown"]))
             self.last_level_grind_message = generate_random_string()
-            self.bot.queue.put([self.last_level_grind_message, [False, True]])
+            self.bot.put_queue(self.last_level_grind_message, prefix=False)
         except Exception as e:
             print(e)
         
-
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
@@ -43,9 +42,6 @@ class Level(commands.Cog):
         else:
             asyncio.create_task(self.start_level_grind())
 
-
-            
-
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
@@ -53,8 +49,6 @@ class Level(commands.Cog):
                 self.bot.log(f"lvlgrind msg detected from {message.author.name}.","cornflower_blue")
                 self.start_level_grind()
                 
-                
-
 
 async def setup(bot):
     await bot.add_cog(Level(bot))

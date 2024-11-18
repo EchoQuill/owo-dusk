@@ -28,7 +28,7 @@ class Hunt(commands.Cog):
                 self.bot.checks = [check for check in self.bot.checks if check[0] != "hunt"]
                 self.bot.log(f"Removed hunt from checks from main","cornflower_blue")
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
-                self.bot.queue.put("hunt")
+                self.bot.put_queue("hunt")
                 self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
                 
                 

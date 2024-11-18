@@ -32,7 +32,7 @@ class Battle(commands.Cog):
                         self.bot.checks.remove((command, timestamp))
                         is not used to prevent valueerror and better error management
                         """
-                        self.bot.queue.put("battle")
+                        self.bot.put_queue("battle")
                         self.bot.log(f"Added battle to queue again from main","cornflower_blue")
                 
                 

@@ -34,24 +34,18 @@ class Commands(commands.Cog):
         while not self.bot.queue.empty():
             try:
                 if self.bot.state and not self.bot.captcha:
+                    """
+                    Here cmd tuple includes
+                    cmd[0] = command to send
+                    cmd[1] = whether to add to checks
+                    cmd[2] = if it is to be added to checks, this is added.
+                    (command without prefix)
+                    """
                     print(list(self.bot.queue.queue))
                     cmd = self.bot.queue.get()
-                    if isinstance(cmd, list):
-                        """check if cmd is a list"""
-                        #makes list neat i guess..?
-                        for i in cmd:
-                            if isinstance(i, list):
-                                if i[1] == True:
-                                    print(i, "wuwuwuwuwuuw")
-                                    await self.bot.send(f"{cmd[0]}{cmd[1] if not isinstance(cmd[1], list) else ''}", noprefix=True)
-                                else:
-                                    await self.bot.send(f"{cmd[0]}{cmd[1] if not isinstance(cmd[1], list) else ''}")
-                                if i[0] == False:
-                                    continue
-                            self.bot.checks.append((cmd[0], datetime.now(timezone.utc)))
-                    else:
-                        await self.bot.send(cmd)
-                        self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+                    await self.bot.send(cmd[0])
+                    if cmd[1]:
+                        self.bot.checks.append((cmd[2], datetime.now(timezone.utc)))
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))
@@ -64,7 +58,7 @@ class Commands(commands.Cog):
     async def monitor_checks(self):
         current_time = datetime.now(timezone.utc)
         """
-        The [:]  creates a new list containing all the same items as the original list.
+        The [:] creates a new list containing all the same items as the original list.
         Using it directly may lead to issues if its removed meanwhile
         Like when owobot lags.
         """
