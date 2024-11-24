@@ -7,8 +7,11 @@ from discord.ext import commands, tasks
 from datetime import datetime, timezone
 from queue import Empty
 
-import queue
 
+
+"""
+Just redo this entire mess
+"""
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
@@ -42,10 +45,10 @@ class Commands(commands.Cog):
                     (command without prefix)
                     """
                     print(list(self.bot.queue.queue))
-                    cmd = self.bot.queue.get()
+                    cmd = self.bot.queue.get() # double check blocking in .get()
                     await self.bot.send(cmd[0])
                     if cmd[1]:
-                        self.bot.checks.append((cmd[2], datetime.now(timezone.utc)))
+                        self.bot.checks.append((cmd[2], datetime.now(timezone.utc), cmd[0]))
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))
@@ -66,7 +69,8 @@ class Commands(commands.Cog):
             if (current_time - timestamp).total_seconds() > 5:
                 """Put the command back to the queue
                 Not using any sleeps here as the delay should randomize it enough."""
-                self.bot.queue.put(command)
+                #self.bot.queue.put(command)
+                self.bot.put_queue(command, prefix=False)
                 self.bot.log(f"added {command} from cmd","cornflower_blue")
                 try:
                     self.bot.checks.remove((command, timestamp))

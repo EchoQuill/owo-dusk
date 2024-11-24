@@ -80,7 +80,7 @@ class Cookie(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "You got a cookie from" in message.content:
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "cookie"]
+                self.bot.remove_queue("cookie")
                 print(self.calc_time())
                 await asyncio.sleep(self.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))

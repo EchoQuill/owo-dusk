@@ -25,7 +25,7 @@ class Battle(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
-                        self.bot.checks = [check for check in self.bot.checks if check[0] != "battle"]
+                        self.bot.remove_queue("battle")
                         self.bot.log(f"Removed battle from checks from main","cornflower_blue")
                         await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
                         """

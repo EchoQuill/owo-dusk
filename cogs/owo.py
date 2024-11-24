@@ -26,10 +26,10 @@ class Owo(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if "owo" == message.content:
                 self.bot.log(f"owo detected from {message.author.name}.","cornflower_blue")
+                self.bot.remove_queue("owo", with_preifx=False)
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
                 #self.bot.queue.put(["owo", [True, True]])
                 self.bot.put_queue("owo", prefix=False)
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "owo"]
                 self.bot.log(f"owo put to queue again","cornflower_blue")
                 
                 

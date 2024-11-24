@@ -77,7 +77,7 @@ class Daily(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "daily"]
+                self.bot.remove_queue("daily")
                 print(self.calc_time())
                 await asyncio.sleep(self.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
@@ -90,7 +90,7 @@ class Daily(commands.Cog):
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 self.bot.log("Nu - Daily", "honeydew2")
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "daily"]
+                self.bot.remove_queue("daily")
                 print(self.calc_time())
                 await asyncio.sleep(self.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))

@@ -101,7 +101,7 @@ class MyClient(commands.Bot):
         print(self.commands_list)
         for i in self.commands_list:
             if i not in ["lvlGrind", "lottery", "sell", "sac", "cookie"]: #will be handled differently compared to others.
-                self.queue.put(i) if i!="owo" else self.queue.put(["owo", [True, True]])
+                self.put_queue(i) if i!="owo" else self.put_queue("owo", prefix=False)
 
 
 
@@ -120,8 +120,14 @@ class MyClient(commands.Bot):
         else:
             console.print(text.center(console_width - 2), style=style)
 
-    async def put_queue(self, cmd, prefix=True, check=True):
-        self.queue.put((f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check, cmd.split()[0]))
+    def put_queue(self, cmd, prefix=True, check=True):
+        print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
+        self.queue.put((
+            f"{config_dict['setprefix']}{cmd}" if prefix else cmd,
+            check
+            ))
+    def remove_queue(self, cmd, with_prefix=True):
+        self.checks = [check for check in self.checks if check[0] != (f"{config_dict['prefix']}{cmd}" if with_prefix else cmd)]
 
 
     # send commands

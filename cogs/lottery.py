@@ -79,7 +79,7 @@ class Lottery(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
-                        self.bot.checks = [check for check in self.bot.checks if check[0] != "lottery"]
+                        self.bot.remove_queue("lottery")
                         print(self.calc_time())
                         await asyncio.sleep(self.calc_time())
                         await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))

@@ -25,7 +25,7 @@ class Hunt(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'you found:' in message.content.lower() or "caught" in message.content.lower():
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "hunt"]
+                self.bot.remove_queue("hunt")
                 self.bot.log(f"Removed hunt from checks from main","cornflower_blue")
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
                 self.bot.put_queue("hunt")
