@@ -1,6 +1,7 @@
 import json
 
 from discord.ext import commands
+from utils.captcha import captcha_handler
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
@@ -24,10 +25,7 @@ class Captcha(commands.Cog):
             if any(b in message.content.lower() for b in list_captcha):
                 self.bot.captcha = True
                 self.bot.log(f"captcha detected! - {self.bot.user}", "indian_red")
-                
-
-                
-                
+                captcha_handler(message.channel, self.bot.user, "Link")
 
 
 async def setup(bot):
