@@ -48,7 +48,7 @@ class Commands(commands.Cog):
                     cmd = self.bot.queue.get() # double check blocking in .get()
                     await self.bot.send(cmd[0])
                     if cmd[1]:
-                        self.bot.checks.append((cmd[2], datetime.now(timezone.utc), cmd[0]))
+                        self.bot.checks.append((cmd[0], datetime.now(timezone.utc)))
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))
