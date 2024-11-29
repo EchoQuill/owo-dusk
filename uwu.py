@@ -1920,8 +1920,8 @@ class MyClient(discord.Client):
             self.captchaDetected = False
             return
         #if any(b in message.content.lower() for b in list_captcha) or (if message.button and message.button.name == "Verify") and message.channel.id in self.list_channel:
-        if (message.channel.id in self.list_channel) and message.button:
-            if message.button.lable == "Verify" or message.button.url == "https://owobot.com/captcha":
+        if (message.channel.id in self.list_channel) and message.components[0].children:
+            if message.components[0].children[0].label == "Verify" or message.components[0].children[0].url == "https://owobot.com/captcha":
                 try:
                     if list_captcha[1] in message.content:
                         self.captchaType = "link"
