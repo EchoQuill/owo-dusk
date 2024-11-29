@@ -3,6 +3,7 @@
   "typingIndicator": false,
   "offlineStatus": false,
   "useSlashCommands": false,
+  "checkForAlerts": true,
   "website": {
     "enabled": false,
     "port": 1200,
