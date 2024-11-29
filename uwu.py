@@ -62,11 +62,12 @@ with open(resource_path("config.json")) as file:
 version = "1.6.6"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
+saftey_check_url = "https://echoquill.github.io/owo-dusk-api/saftey_check.json"
 quotesUrl = "https://favqs.com/api/qotd" #["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
 ver_check = requests.get(ver_check_url).text.strip()
 lock = threading.Lock()
 typingIndicator = config["typingIndicator"]
-list_captcha = ["to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
+list_captcha = ["are yo​u a real h​uman", "to check that you are a human!","https://owobot.com/captcha","please reply with the following", "captcha"]
 mobileBatteryCheckEnabled = config["termux"]["batteryCheck"]["enabled"]
 mobileBatteryStopLimit = config["termux"]["batteryCheck"]["minPercentage"]
 batteryCheckSleepTime = config["termux"]["batteryCheck"]["refreshInterval"]
@@ -1883,7 +1884,7 @@ class MyClient(discord.Client):
                     await self.webhookSender(f"-{self.user}[+] ran battle", colors=0xaf00ff)
                 self.rPrevTime[0] = time.time()
         # OwO bot
-        if "I have verified that you are human! Thank you! :3" in message.content and message.channel.id in self.list_channel:
+        if ("I have verified that you are human! Thank you! :3" in message.content) and message.channel.id in self.list_channel:
             console.print(f"-{self.user}[+] Captcha solved. restarting...".center(console_width - 2 ), style = "dark_magenta on black")
             #if reactionBotEnabled:
                 #if autoPray or autoCurse:
@@ -1918,35 +1919,26 @@ class MyClient(discord.Client):
                 #print(f"{self.user} stopped captcha solver")
             self.captchaDetected = False
             return
-        if any(b in message.content.lower() for b in list_captcha) and message.channel.id in self.list_channel:
-            try:
-                if list_captcha[1] in message.content:
-                    self.captchaType = "link"
-                else:
-                    self.captchaType = "image"
-                self.captchaDetected = True
-                self.captcha_channel_name = get_channel_name(message.channel)
-                if termuxNotificationEnabled: #8ln from here
-                    run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
-                if termuxToastEnabled:
-                    run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
-                console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
-                if webhookEnabled:
-                    if self.captchaType == "link":
-                        await self.webhookSender(
-                            msg=f'-{self.user} [+] CAPTCHA Detected',
-                            desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)\n**Time to solve** : <t:{int(time.time())+600}:R>", #10m = 600
-                            colors=0x00ffaf,  # Custom color
-                            img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
-                            author_img_url="https://i.imgur.com/6zeCgXo.png",
-                            plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
-                            webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
-                        )
+        #if any(b in message.content.lower() for b in list_captcha) or (if message.button and message.button.name == "Verify") and message.channel.id in self.list_channel:
+        if (message.channel.id in self.list_channel) and message.button:
+            if message.button.lable == "Verify" or message.button.url == "https://owobot.com/captcha":
+                try:
+                    if list_captcha[1] in message.content:
+                        self.captchaType = "link"
                     else:
-                        if message.guild:
+                        self.captchaType = "image"
+                    self.captchaDetected = True
+                    self.captcha_channel_name = get_channel_name(message.channel)
+                    if termuxNotificationEnabled: #8ln from here
+                        run_system_command(f"termux-notification -c '{notificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
+                    if termuxToastEnabled:
+                        run_system_command(f"termux-toast -c {toastTextColor} -b {toastBgColor} '{toastCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType)}'", timeout=5, retry=True)
+                    console.print(f"-{self.user}[!] CAPTCHA DETECTED in {self.captcha_channel_name} waiting...".center(console_width - 2), style="deep_pink2 on black")
+                    if webhookEnabled:
+                        if self.captchaType == "link":
                             await self.webhookSender(
                                 msg=f'-{self.user} [+] CAPTCHA Detected',
-                                desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                                desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha](https://owobot.com/captcha)\n**Time to solve** : <t:{int(time.time())+600}:R>", #10m = 600
                                 colors=0x00ffaf,  # Custom color
                                 img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
                                 author_img_url="https://i.imgur.com/6zeCgXo.png",
@@ -1954,85 +1946,96 @@ class MyClient(discord.Client):
                                 webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
                             )
                         else:
-                            await self.webhookSender(
-                                msg=f'-{self.user} [+] CAPTCHA Detected',
-                                desc=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
-                                colors=0x00ffaf,  # Custom color
-                                img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
-                                author_img_url="https://i.imgur.com/6zeCgXo.png",
-                                webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url,
-                                plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None
-                            )
+                            if message.guild:
+                                await self.webhookSender(
+                                    msg=f'-{self.user} [+] CAPTCHA Detected',
+                                    desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                                    colors=0x00ffaf,  # Custom color
+                                    img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                                    author_img_url="https://i.imgur.com/6zeCgXo.png",
+                                    plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None,
+                                    webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url
+                                )
+                            else:
+                                await self.webhookSender(
+                                    msg=f'-{self.user} [+] CAPTCHA Detected',
+                                    desc=f"**User** : <@{self.user.id}>\n**Link** : in DMs",
+                                    colors=0x00ffaf,  # Custom color
+                                    img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                                    author_img_url="https://i.imgur.com/6zeCgXo.png",
+                                    webhook_url=webhookCaptchaChnl if webhookCaptchaChnl else webhook_url,
+                                    plain_text_msg=f"<@{webhookPingId}> , " if webhookPingId else None
+                                )
 
-                #<:owo_scared:1171297031772438618>
-                if termuxVibrationEnabled:
-                    run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
-                if termuxAudioPlayer:
-                    run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
-                if termuxTtsEnabled:
-                    run_system_command(f"termux-tts-speak {termuxTtsContent}", timeout=7, retry=False)
-                if desktopNotificationEnabled:
-                    notification.notify(
-                        title=f'{self.user}  DETECTED CAPTCHA',
-                        message=desktopNotificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType),
-                        app_icon=None,
-                        timeout=15,
-                    )
-                if captchaConsoleEnabled:
-                    run_system_command(captchaConsoleContent, timeout=7, retry=False)
-                if desktopPopup:
-                     popup_queue.put((captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType))
-                if desktopAudioPlayer:
-                    playsound(desktopAudioPlayerPath, block=False)
-                if openCaptchaWebsite:
-                    run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
-                if self.webSend == False and websiteEnabled:
-                    try:
-                        if list_captcha[1] in message.content:
-                            self.dataToSend = {
-                                "type": "link",
-                                "url": "https://owobot.com/captcha",
-                                "username": self.user.name,
-                                "timestamp": datetime.now().isoformat(timespec='seconds')
-                            }
-                        elif message.attachments:
-                            if message.attachments[0].url is not None:
+                    #<:owo_scared:1171297031772438618>
+                    if termuxVibrationEnabled:
+                        run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
+                    if termuxAudioPlayer:
+                        run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
+                    if termuxTtsEnabled:
+                        run_system_command(f"termux-tts-speak {termuxTtsContent}", timeout=7, retry=False)
+                    if desktopNotificationEnabled:
+                        notification.notify(
+                            title=f'{self.user}  DETECTED CAPTCHA',
+                            message=desktopNotificationCaptchaContent.format(username=self.user.name,channelname=self.captcha_channel_name,captchatype=self.captchaType),
+                            app_icon=None,
+                            timeout=15,
+                        )
+                    if captchaConsoleEnabled:
+                        run_system_command(captchaConsoleContent, timeout=7, retry=False)
+                    if desktopPopup:
+                        popup_queue.put((captchaPopupMsg,self.user.name,self.captcha_channel_name,self.captchaType))
+                    if desktopAudioPlayer:
+                        playsound(desktopAudioPlayerPath, block=False)
+                    if openCaptchaWebsite:
+                        run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
+                    if self.webSend == False and websiteEnabled:
+                        try:
+                            if list_captcha[1] in message.content:
                                 self.dataToSend = {
-                                    "type": "image",
-                                    "url": str(message.attachments[0].url),
+                                    "type": "link",
+                                    "url": "https://owobot.com/captcha",
                                     "username": self.user.name,
                                     "timestamp": datetime.now().isoformat(timespec='seconds')
                                 }
-                                self.captchaSolver.start()
-                                self.webSend = True
-                    except Exception as e:
-                        print(f"error when attempting to send captcha to web {e}, for {self.user}")
-                    try:
-                        if self.websiteIndex is None:
-                            self.data_json = json.dumps(self.dataToSend)
-                            self.curl_command = [
-                                'curl',
-                                '-X', 'POST',
-                                f'http://localhost:{websitePort}/add_captcha',
-                                '-H', 'Content-Type: application/json',
-                                '-d', self.data_json
-                            ]
-                            self.result = subprocess.run(self.curl_command, capture_output=True, text=True)
-                            if self.result.returncode == 0:
-                                self.response_json = self.result.stdout
-                                self.response_dict = json.loads(self.response_json)
-                                self.websiteIndex = int(self.response_dict.get('status'))
-                                self.tempJsonData = captchas[self.websiteIndex]
-                            else:
-                                print("Error:", self.result.stderr)
-                    except json.JSONDecodeError as e:
-                        print(f"Error decoding JSON response: {e}")
-                    except Exception as e:
-                        print(f'Error when trying to get status :-> {e} Error for {self.user}')
-                console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2), style="deep_pink2 on black")
-                return
-            except Exception as e:
-                print(e)
+                            elif message.attachments:
+                                if message.attachments[0].url is not None:
+                                    self.dataToSend = {
+                                        "type": "image",
+                                        "url": str(message.attachments[0].url),
+                                        "username": self.user.name,
+                                        "timestamp": datetime.now().isoformat(timespec='seconds')
+                                    }
+                                    self.captchaSolver.start()
+                                    self.webSend = True
+                        except Exception as e:
+                            print(f"error when attempting to send captcha to web {e}, for {self.user}")
+                        try:
+                            if self.websiteIndex is None:
+                                self.data_json = json.dumps(self.dataToSend)
+                                self.curl_command = [
+                                    'curl',
+                                    '-X', 'POST',
+                                    f'http://localhost:{websitePort}/add_captcha',
+                                    '-H', 'Content-Type: application/json',
+                                    '-d', self.data_json
+                                ]
+                                self.result = subprocess.run(self.curl_command, capture_output=True, text=True)
+                                if self.result.returncode == 0:
+                                    self.response_json = self.result.stdout
+                                    self.response_dict = json.loads(self.response_json)
+                                    self.websiteIndex = int(self.response_dict.get('status'))
+                                    self.tempJsonData = captchas[self.websiteIndex]
+                                else:
+                                    print("Error:", self.result.stderr)
+                        except json.JSONDecodeError as e:
+                            print(f"Error decoding JSON response: {e}")
+                        except Exception as e:
+                            print(f'Error when trying to get status :-> {e} Error for {self.user}')
+                    console.print(f"-{self.user}[!] Delay test successfully completed!.".center(console_width - 2), style="deep_pink2 on black")
+                    return
+                except Exception as e:
+                    print(e)
         if "☠" in message.content and "You have been banned for" in message.content and message.channel.id in self.list_channel:
             self.captchaDetected = True
             self.captcha_channel_name = get_channel_name(message.channel)
