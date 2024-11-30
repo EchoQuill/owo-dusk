@@ -59,7 +59,7 @@ def resource_path(relative_path):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.7.0"
+version = "1.7.1"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 saftey_check_url = "https://echoquill.github.io/owo-dusk-api/saftey_check.json"
@@ -1938,7 +1938,7 @@ class MyClient(discord.Client):
             self.captchaDetected = False
             return
         #if any(b in message.content.lower() for b in list_captcha) or (if message.button and message.button.name == "Verify") and message.channel.id in self.list_channel:
-        if (message.channel.id in self.list_channel and message.components and message.components[0].children):
+        if (message.channel.id in self.list_channel) and ((message.components and message.components[0].children) or ("⚠️" in message.content and message.attachments)):
             #if hasattr(first_child, "label") and hasattr(first_child, "url"):
             if ((hasattr(message.components[0].children[0], "label") and 
                 message.components[0].children[0].label == "Verify") or 
