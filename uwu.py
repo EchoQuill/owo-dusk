@@ -2048,7 +2048,7 @@ class MyClient(discord.Client):
                     run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
                 if self.webSend == False and websiteEnabled:
                     try:
-                        if list_captcha[1] in message.content:
+                        if self.captchaType == "link":
                             self.dataToSend = {
                                 "type": "link",
                                 "url": "https://owobot.com/captcha",
@@ -2065,6 +2065,7 @@ class MyClient(discord.Client):
                                 }
                                 self.captchaSolver.start()
                                 self.webSend = True
+                            
                     except Exception as e:
                         print(f"error when attempting to send captcha to web {e}, for {self.user}")
                     try:
