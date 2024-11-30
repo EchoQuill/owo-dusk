@@ -1963,9 +1963,19 @@ class MyClient(discord.Client):
         if (
             message.channel.id in self.list_channel
             and (
-                ((message.components and message.components[0].children) and (hasattr(message.components[0].children[0], "label") and message.components[0].children[0].label == "Verify") or (hasattr(message.components[0].children[0], "url") and message.components[0].children[0].url == "https://owobot.com/captcha")) #message button check
-                or ("⚠️" in message.content and message.attachments) #message attachment check
-                or any(b in clean(message.content) for b in list_captcha) #captcha keywords check
+                (
+                    message.components 
+                    and len(message.components) > 0 
+                    and hasattr(message.components[0], "children") 
+                    and len(message.components[0].children) > 0 
+                    and (
+                        (hasattr(message.components[0].children[0], "label") and message.components[0].children[0].label == "Verify") 
+                        or 
+                        (hasattr(message.components[0].children[0], "url") and message.components[0].children[0].url == "https://owobot.com/captcha")
+                    )
+                )  # message button check
+                or ("⚠️" in message.content and message.attachments)  # message attachment check
+                or any(b in clean(message.content) for b in list_captcha)  # captcha keywords check
             )
         ):
             #if hasattr(first_child, "label") and hasattr(first_child, "url"):
