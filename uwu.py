@@ -1980,7 +1980,7 @@ class MyClient(discord.Client):
         ):
             #if hasattr(first_child, "label") and hasattr(first_child, "url"):
             try:
-                if list_captcha[1] in message.content:
+                if hasattr(message.components[0].children[0], "url") and message.components[0].children[0].url == "https://owobot.com/captcha":
                     self.captchaType = "link"
                 else:
                     self.captchaType = "image"
