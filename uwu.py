@@ -1833,6 +1833,16 @@ class MyClient(discord.Client):
             return
         if message.author.id not in [408785106942164992, 519287796549156864, self.user.id] + chatAllowedUsers:
             return
+        
+        if message.embeds:
+            for embed in message.embeds:
+                if giveawayEnabled and embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in giveawayChannels:
+                        try:
+                            await asyncio.sleep(random.uniform(giveawayMixCooldown,giveawayMaxCooldown))
+                            await message.components[0].children[0].click()
+                            console.print(f"-{self.user}[+] Joined giveaway in {message.channel.name} successfuly!".center(console_width - 2 ), style = "medium_purple3 on black")
+                        except Exception as e:
+                            console.print(f"-{self.user}[!] Error:- Giveaway,, {e}".center(console_width - 2 ), style = "medium_purple3 on black")
 
         # Start Stop
         if (message.author.id == self.user.id or message.author.id in chatAllowedUsers) and f"{chatPrefix}{chatCommandToStop}" in message.content.lower():
@@ -2766,13 +2776,7 @@ class MyClient(discord.Client):
                             self.questsList = []
                         except Exception as e:
                             print(e, "last part of quest logs")
-                    if giveawayEnabled and embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in giveawayChannels:
-                        try:
-                            await asyncio.sleep(random.uniform(giveawayMixCooldown,giveawayMaxCooldown))
-                            await message.components[0].children[0].click()
-                            console.print(f"-{self.user}[+] Joined giveaway in {message.channel.name} successfuly!".center(console_width - 2 ), style = "medium_purple3 on black")
-                        except Exception as e:
-                            console.print(f"-{self.user}[!] Error:- Giveaway,, {e}".center(console_width - 2 ), style = "medium_purple3 on black")
+                    
 #----------ON MESSAGE EDIT----------#
     async def on_message_edit(self, before, after):
         if before.author.id != 408785106942164992:
