@@ -387,28 +387,31 @@ def check_alerts():
         data = response.json()
         #print(data)
         if data["enabled"]:
-            stop_code = True
-            printBox(f'STOPPED CODE FROM SENDING MESSAGES, breaking change detected'.center(console_width - 2 ),'bold red on black' )
-            printBox(f"reason: {data['reason']} , author: {data['author']}".center(console_width - 2 ),'bold red on black' )
-            if termuxNotificationEnabled: #8ln from here
-                run_system_command(f"termux-notification -c 'code stopped!'", timeout=5, retry=True)
-            if termuxToastEnabled:
-                run_system_command(f"termux-toast -c green -b black 'code stopped!'", timeout=5, retry=True)
-            if termuxVibrationEnabled:
-                run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
-            if termuxAudioPlayer:
-                run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
-            if termuxTtsEnabled:
-                run_system_command(f"termux-tts-speak alert", timeout=7, retry=False)
-            if desktopNotificationEnabled:
-                notification.notify(
-                    title=f'OWO-DUSK STOPPED!',
-                    message="We have stopped owo-dusk, check console log for more info!",
-                    app_icon=None,
-                    timeout=15,
-                )
-            if desktopAudioPlayer:
-                playsound(desktopAudioPlayerPath, block=False)
+            if (compare_versions(version, data["version"]) or version==data["version"]):
+                stop_code = True
+                printBox(f'STOPPED CODE FROM SENDING MESSAGES, breaking change detected'.center(console_width - 2 ),'bold red on black' )
+                printBox(f"reason: {data['reason']} , author: {data['author']}".center(console_width - 2 ),'bold red on black' )
+                if termuxNotificationEnabled: #8ln from here
+                    run_system_command(f"termux-notification -c 'code stopped!'", timeout=5, retry=True)
+                if termuxToastEnabled:
+                    run_system_command(f"termux-toast -c green -b black 'code stopped!'", timeout=5, retry=True)
+                if termuxVibrationEnabled:
+                    run_system_command(f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True) 
+                if termuxAudioPlayer:
+                    run_system_command(f"termux-media-player play {termuxAudioPlayerPath}", timeout=5, retry=True)
+                if termuxTtsEnabled:
+                    run_system_command(f"termux-tts-speak alert", timeout=7, retry=False)
+                if desktopNotificationEnabled:
+                    notification.notify(
+                        title=f'OWO-DUSK STOPPED!',
+                        message="We have stopped owo-dusk, check console log for more info!",
+                        app_icon=None,
+                        timeout=15,
+                    )
+                if desktopAudioPlayer:
+                    playsound(desktopAudioPlayerPath, block=False)
+            else:
+                pass
             
     # for user to be able to see why the code was stopped, incase if closing causes console messages to disapear.
     time.sleep(350) # 5.5 minutes
