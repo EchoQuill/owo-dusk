@@ -61,7 +61,7 @@ def clean(msg):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.7.2"
+version = "1.7.3"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 saftey_check_url = "https://echoquill.github.io/owo-dusk-api/saftey_check.json"
