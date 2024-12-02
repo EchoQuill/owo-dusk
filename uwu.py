@@ -1980,7 +1980,7 @@ class MyClient(discord.Client):
         ):
             #if hasattr(first_child, "label") and hasattr(first_child, "url"):
             try:
-                if hasattr(message.components[0].children[0], "url") and message.components[0].children[0].url == "https://owobot.com/captcha":
+                if "https://owobot.com" in message.content:
                     self.captchaType = "link"
                 else:
                     self.captchaType = "image"
@@ -2048,14 +2048,7 @@ class MyClient(discord.Client):
                     run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
                 if self.webSend == False and websiteEnabled:
                     try:
-                        if self.captchaType == "link":
-                            self.dataToSend = {
-                                "type": "link",
-                                "url": "https://owobot.com/captcha",
-                                "username": self.user.name,
-                                "timestamp": datetime.now().isoformat(timespec='seconds')
-                            }
-                        elif message.attachments:
+                        if message.attachments:
                             if message.attachments[0].url is not None:
                                 self.dataToSend = {
                                     "type": "image",
@@ -2065,6 +2058,20 @@ class MyClient(discord.Client):
                                 }
                                 self.captchaSolver.start()
                                 self.webSend = True
+                        elif self.captchaType == "link":
+                            self.dataToSend = {
+                                "type": "link",
+                                "url": "https://owobot.com/captcha",
+                                "username": self.user.name,
+                                "timestamp": datetime.now().isoformat(timespec='seconds')
+                            }
+                        else:
+                            self.dataToSend = {
+                                "type": "error",
+                                "url": "error",
+                                "username": self.user.name,
+                                "timestamp": datetime.now().isoformat(timespec='seconds')
+                            }
                             
                     except Exception as e:
                         print(f"error when attempting to send captcha to web {e}, for {self.user}")
