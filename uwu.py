@@ -61,7 +61,7 @@ def clean(msg):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 #----------OTHER VARIABLES----------#
-version = "1.7.3"
+version = "1.7.4"
 offline = config["offlineStatus"]
 ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
 saftey_check_url = "https://echoquill.github.io/owo-dusk-api/saftey_check.json"
@@ -1984,7 +1984,7 @@ class MyClient(discord.Client):
                     and (
                         (hasattr(message.components[0].children[0], "label") and message.components[0].children[0].label == "Verify") 
                         or 
-                        (hasattr(message.components[0].children[0], "url") and message.components[0].children[0].url == "https://owobot.com/captcha")
+                        (hasattr(message.components[0].children[0], "url") and message.components[0].children[0].url == "https://owobot.com?login=")
                     )
                 )  # message button check
                 or ("⚠️" in message.content and message.attachments)  # message attachment check
@@ -1993,10 +1993,14 @@ class MyClient(discord.Client):
         ):
             #if hasattr(first_child, "label") and hasattr(first_child, "url"):
             try:
-                if "https://owobot.com" in message.content:
-                    self.captchaType = "link"
-                else:
-                    self.captchaType = "image"
+                try:
+                    if message.attachments:
+                        if message.attachments[0].url is not None:
+                            self.captchaType = "image"
+                    else:
+                        self.captchaType = "link"
+                except:
+                    pass
                 self.captchaDetected = True
                 self.captcha_channel_name = get_channel_name(message.channel)
                 if termuxNotificationEnabled: #8ln from here
@@ -2061,27 +2065,19 @@ class MyClient(discord.Client):
                     run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
                 if self.webSend == False and websiteEnabled:
                     try:
-                        if message.attachments:
-                            if message.attachments[0].url is not None:
-                                self.dataToSend = {
-                                    "type": "image",
-                                    "url": str(message.attachments[0].url),
-                                    "username": self.user.name,
-                                    "timestamp": datetime.now().isoformat(timespec='seconds')
-                                }
-                                self.captchaSolver.start()
-                                self.webSend = True
-                        elif self.captchaType == "link":
+                        if self.captchaType == "image":
                             self.dataToSend = {
-                                "type": "link",
-                                "url": "https://owobot.com/captcha",
+                                "type": "image",
+                                "url": str(message.attachments[0].url),
                                 "username": self.user.name,
                                 "timestamp": datetime.now().isoformat(timespec='seconds')
                             }
+                            self.captchaSolver.start()
+                            self.webSend = True
                         else:
                             self.dataToSend = {
-                                "type": "error",
-                                "url": "error",
+                                "type": "link",
+                                "url": "https://owobot.com/captcha",
                                 "username": self.user.name,
                                 "timestamp": datetime.now().isoformat(timespec='seconds')
                             }
