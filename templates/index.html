@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,15 +10,18 @@
     <style>
         /* Style for the page */
         body {
-            background-color: black; /* Change the background color to black */
-            text-align: center; /* Center-align content */
+            background-color: black;
+            /* Change the background color to black */
+            text-align: center;
+            /* Center-align content */
             font-family: Arial, Helvetica, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow-x: hidden; /* Hide horizontal overflow */
+            overflow-x: hidden;
+            /* Hide horizontal overflow */
         }
 
         p {
@@ -25,13 +29,15 @@
         }
 
         h2 {
-            color: rgb(181, 117, 255); /* Change the title color to purple */
+            color: rgb(181, 117, 255);
+            /* Change the title color to purple */
             font-family: Arial, Helvetica, sans-serif;
         }
 
         /* Style for title and subheading */
         h3 {
-            color: rgb(212, 212, 212); /* Purple color for subheading */
+            color: rgb(212, 212, 212);
+            /* Purple color for subheading */
             font-family: Arial, Helvetica, sans-serif;
             margin-bottom: 12px;
         }
@@ -40,67 +46,97 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #000000; /* Background color of the navbar */
+            background-color: #000000;
+            /* Background color of the navbar */
             padding: 10px 20px;
-            border-bottom: 2px solid rgb(156, 69, 255); /* Border color */
-            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            border-bottom: 2px solid rgb(156, 69, 255);
+            /* Border color */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
         }
 
         .box {
-            border: 1px solid #e384f8; /* Border color */
-            display: inline-block; /* Allow the box to expand with content */
-            max-width: 90%; /* Set a max width for the box */
+            border: 1px solid #e384f8;
+            /* Border color */
+            display: inline-block;
+            /* Allow the box to expand with content */
+            max-width: 90%;
+            /* Set a max width for the box */
             min-width: 200px;
-            padding: 8px; /* Padding inside the box */
-            text-align: center; /* Center-align content */
-            margin: 7px auto; /* Center the box on the page and reduce margin */
+            padding: 8px;
+            /* Padding inside the box */
+            text-align: center;
+            /* Center-align content */
+            margin: 7px auto;
+            /* Center the box on the page and reduce margin */
             border-radius: 4px;
-            word-wrap: break-word; /* Allow text to wrap within the box */
+            word-wrap: break-word;
+            /* Allow text to wrap within the box */
             color: rgb(220, 150, 253);
-            overflow: hidden; /* Hide any overflowing content */
-            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            overflow: hidden;
+            /* Hide any overflowing content */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
         }
 
         .box img {
-            max-width: 100%; /* Ensure the image scales down with its container */
-            max-height: 300px; /* Set a maximum height for the image */
-            height: auto; /* Maintain the aspect ratio */
+            max-width: 100%;
+            /* Ensure the image scales down with its container */
+            max-height: 300px;
+            /* Set a maximum height for the image */
+            height: auto;
+            /* Maintain the aspect ratio */
             display: block;
-            margin: 0 auto; /* Center the image */
-            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            margin: 0 auto;
+            /* Center the image */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
         }
 
         /* Style for input and button */
         .input-container {
-            display: flex; /* Use flexbox for side-by-side layout */
-            margin-top: 9px; /* Margin above the container */
-            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            display: flex;
+            /* Use flexbox for side-by-side layout */
+            margin-top: 9px;
+            /* Margin above the container */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
         }
 
         /* Style for the input bar */
         .input-container input[type="text"] {
-            flex: 1; /* Allow input to take remaining width */
-            padding: 5px; /* Padding inside the input */
-            border: 1px solid rgb(255, 255, 255); /* Gray border */
+            flex: 1;
+            /* Allow input to take remaining width */
+            padding: 5px;
+            /* Padding inside the input */
+            border: 1px solid rgb(255, 255, 255);
+            /* Gray border */
             background-color: black;
             border-radius: 5px;
             color: #5B2681;
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            box-sizing: border-box;
+            /* Include padding and border in the element's total width and height */
         }
 
         /* Style for the send button */
         .input-container button {
-            padding: 5px 10px; /* Padding inside the button */
-            border: none; /* Remove border */
-            background-color: #4d00b1; /* Button background color */
-            color: white; /* Button text color */
-            cursor: pointer; /* Pointer cursor on hover */
+            padding: 5px 10px;
+            /* Padding inside the button */
+            border: none;
+            /* Remove border */
+            background-color: #4d00b1;
+            /* Button background color */
+            color: white;
+            /* Button text color */
+            cursor: pointer;
+            /* Pointer cursor on hover */
             border-radius: 5px;
         }
 
         /* Style for the green text */
         .no-captcha-text {
-            color: #d48ec3; /* Green color for "no captchas to solve" text */
+            color: #d48ec3;
+            /* Green color for "no captchas to solve" text */
             font-family: Arial, Helvetica, sans-serif;
             margin-top: 50px;
             margin-bottom: 2px;
@@ -113,12 +149,14 @@
         }
 
         .icon {
-            height: 40px; /* Adjust the height of the logo */
+            height: 40px;
+            /* Adjust the height of the logo */
             margin-right: 10px;
         }
 
         .discord-icon {
-            height: 30px; /* Adjust the height of the Discord logo */
+            height: 30px;
+            /* Adjust the height of the Discord logo */
             margin-right: 10px;
         }
 
@@ -134,7 +172,8 @@
 
         .support {
             margin-left: auto;
-            display: flex; /* Use flexbox to align logos side by side */
+            display: flex;
+            /* Use flexbox to align logos side by side */
             align-items: center;
         }
 
@@ -142,24 +181,30 @@
             margin-top: auto;
             text-align: center;
             color: rgb(211, 115, 255);
-            padding: 10px 0; /* Add some padding to the footer */
-            background-color: black; /* Ensure the footer background matches the page */
+            padding: 10px 0;
+            /* Add some padding to the footer */
+            background-color: black;
+            /* Ensure the footer background matches the page */
         }
 
         @media (max-width: 600px) {
             .box {
-                width: 90%; /* Width of the box on mobile devices */
-                max-width: 100%; /* Maximum width of the box */
+                width: 90%;
+                /* Width of the box on mobile devices */
+                max-width: 100%;
+                /* Maximum width of the box */
             }
         }
     </style>
 </head>
+
 <body>
     <nav>
         <div class="logo">
             <img class="icon" src="{{ url_for('static', filename='logo.png') }}" alt="OwO-Dusk Logo">
             <span class="lt">OwO-Dusk</span>
-            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: help;" target="_blank">
+            <a href="https://github.com/EchoQuill/OwO-Dusk" style="text-decoration: none; cursor: help;"
+                target="_blank">
                 <span class="ltm">A grinder for owo. v{{ version }}</span>
             </a>
         </div>
@@ -174,79 +219,79 @@
     </nav>
     <!-- Page Title -->
     {% if no_captchas %}
-        <!-- Display green text if no captchas are present -->
-        <p class="no-captcha-text">No captchas to solve</p>
-        <p>Captchas will show up here when owo gives out one to any of the grinder accounts.<br>Make sure to solve them!</p>
+    <!-- Display green text if no captchas are present -->
+    <p class="no-captcha-text">No captchas to solve</p>
+    <p>Captchas will show up here when owo gives out one to any of the grinder accounts.<br>Make sure to solve them!</p>
     {% else %}
-        <!-- Loop through captcha data and render boxes -->
-        {% for captcha in captchas %}
-            <br>
-            <div class="box">
-                {% if captcha.type == 'image' %}
-                    <!-- Display image captcha -->
-                    <img src="{{ captcha.url }}" alt="Captcha Image">
-                    <!-- Username (placed before the form) -->
-                    <p>User: {{ captcha.username }}</p>
-                    <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
-                    <!-- Form to submit the captcha -->
-                    <form action="/submit" method="POST" class="input-container">
-                        <input type="text" name="text" placeholder="Type here...">
-                        <input type="hidden" name="captcha_index" value="{{ loop.index0 }}">
-                        <button type="submit">Submit</button>
-                    </form>
-                {% else %}
-                    <!-- Display link captcha -->
-                    <p>Captcha Link: <a href="{{ captcha.url }}" target="_blank">{{ captcha.url }}</a></p>
-                    <!-- Username -->
-                    <p>User: {{ captcha.username }}</p>
-                    <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
-                {% endif %}
-            </div>
-            <script>
-                // Retrieve timestamp from server (passed as a variable)
-                var timestamp2 = "{{ captcha.timestamp }}"; // Ensure this is in the correct ISO format
+    <!-- Loop through captcha data and render boxes -->
+    {% for captcha in captchas %}
+    <br>
+    <div class="box">
+        {% if captcha.type == 'image' %}
+        <!-- Display image captcha -->
+        <img src="{{ captcha.url }}" alt="Captcha Image">
+        <!-- Username (placed before the form) -->
+        <p>User: {{ captcha.username }}</p>
+        <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
+        <!-- Form to submit the captcha -->
+        <form action="/submit" method="POST" class="input-container">
+            <input type="text" name="text" placeholder="Type here...">
+            <input type="hidden" name="captcha_index" value="{{ loop.index0 }}">
+            <button type="submit">Submit</button>
+        </form>
+        {% else %}
+        <!-- Display link captcha -->
+        <p>Captcha Link: <a href="{{ captcha.url }}" target="_blank">{{ captcha.url }}</a></p>
+        <!-- Username -->
+        <p>User: {{ captcha.username }}</p>
+        <p id="time-left-{{ loop.index0 }}" class="time-left">Time left until cross: Calculating...</p>
+        {% endif %}
+    </div>
+    <script>
+        // Retrieve timestamp from server (passed as a variable)
+        var timestamp2 = "{{ captcha.timestamp }}"; // Ensure this is in the correct ISO format
 
-                // Debugging: Log the timestamp to the console
-                console.log("Timestamp from server:", timestamp2);
+        // Debugging: Log the timestamp to the console
+        console.log("Timestamp from server:", timestamp2);
 
-                function startCountdown(elementId, startTime) {
-                    // Validate and parse startTime
-                    var startTimestamp = new Date(startTime).getTime();
-                    if (isNaN(startTimestamp)) {
-                        console.error("Invalid countdown date:", startTime);
-                        document.getElementById(elementId).innerHTML = "Invalid " + startTime;
-                        return;
-                    }
+        function startCountdown(elementId, startTime) {
+            // Validate and parse startTime
+            var startTimestamp = new Date(startTime).getTime();
+            if (isNaN(startTimestamp)) {
+                console.error("Invalid countdown date:", startTime);
+                document.getElementById(elementId).innerHTML = "Invalid " + startTime;
+                return;
+            }
 
-                    var countDownDate = startTimestamp + 10 * 60 * 1000; // 10 minutes from startTime
+            var countDownDate = startTimestamp + 10 * 60 * 1000; // 10 minutes from startTime
 
-                    // Update the count down every 1 second
-                    var x = setInterval(function() {
-                        var now = new Date().getTime();
-                        var distance = countDownDate - now;
+            // Update the count down every 1 second
+            var x = setInterval(function () {
+                var now = new Date().getTime();
+                var distance = countDownDate - now;
 
-                        // Time calculations for minutes and seconds
-                        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                // Time calculations for minutes and seconds
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                        // Output the result in an element with id="time-left-{{ loop.index0 }}"
-                        document.getElementById(elementId).innerHTML = "Time left until cross: " + minutes + "m " + seconds + "s ";
+                // Output the result in an element with id="time-left-{{ loop.index0 }}"
+                document.getElementById(elementId).innerHTML = "Time left until cross: " + minutes + "m " + seconds + "s ";
 
-                        // If the count down is over, write some text 
-                        if (distance < 0) {
-                            clearInterval(x);
-                            document.getElementById(elementId).innerHTML = "Time left until cross: EXPIRED";
-                        }
-                    }, 1000);
+                // If the count down is over, write some text 
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById(elementId).innerHTML = "Time left until cross: EXPIRED";
                 }
+            }, 1000);
+        }
 
-                // Start the countdown for this captcha
-                startCountdown("time-left-{{ loop.index0 }}", timestamp2);
-            </script>
-        {% endfor %}
+        // Start the countdown for this captcha
+        startCountdown("time-left-{{ loop.index0 }}", timestamp2);
+    </script>
+    {% endfor %}
     {% endif %}
     <div class="footer">
-        <hr color="#750090"/>
+        <hr color="#750090" />
         <p>Grinder made by EchoQuill. Do star our repo on GitHub!</p>
     </div>
     <!-- Add the auto-refresh script just before the closing body tag -->
@@ -254,9 +299,10 @@
         // Set an interval to refresh the page
         var refresh_interval = "{{ refresh_interval | int }}" // this should have been converted to int had it not been for the commas, but if i remove that it gives error...
         var refresh_interval_int = parseInt(refresh_interval, 10) * 1000;
-        setInterval(function() {
+        setInterval(function () {
             location.reload();
         }, refresh_interval_int); // 15000 milliseconds = 15 seconds
     </script>
 </body>
+
 </html>

@@ -9,12 +9,14 @@ from PIL import Image
 Made with the help of https://github.com/realphandat/phandat-selfbot/blob/main/owo/modules.py
 I have recieved permission to use this code snippet.
 """
+
+
 async def solveHbCaptcha(captcha_url, session):
     checks = []
     """
     I tried my best to make these work without folder seperation but uhh failed lol.
      ill think of a way later but hey, it works somehow with folder seperation
-    """ 
+    """
     check_images = glob.glob("imgs/corpus/**/*.png")
     for check_image in sorted(check_images):
         img = Image.open(check_image)
@@ -23,10 +25,10 @@ async def solveHbCaptcha(captcha_url, session):
     the above is basically the size, img and path (name to be used if matched)
     """
     try:
-        #get img, aiohttp session passed from main file
-        #iam not making the mistake of making session each time lol.
+        # get img, aiohttp session passed from main file
+        # iam not making the mistake of making session each time lol.
         async with session.get(captcha_url) as resp:
-            if resp.status == 200 and 'image' in resp.headers.get('Content-Type', ''):
+            if resp.status == 200 and "image" in resp.headers.get("Content-Type", ""):
                 large_image = Image.open(io.BytesIO(await resp.read()))
                 large_array = np.array(large_image)
             else:
@@ -43,15 +45,21 @@ async def solveHbCaptcha(captcha_url, session):
         with this the captcha can be easily solved.
         """
         mask = small_array[:, :, 3] > 0  # Alpha mask for non-transparent pixels
-        
+
         for y in range(large_array.shape[0] - small_h + 1):
             for x in range(large_array.shape[1] - small_w + 1):
-                segment = large_array[y:y + small_h, x:x + small_w]
+                segment = large_array[y : y + small_h, x : x + small_w]
                 if np.array_equal(segment[mask], small_array[mask]):
                     """
-                    prevents matching of letters close with prev matched letters 
+                    prevents matching of letters close with prev matched letters
                     """
-                    if not any((m[0] - small_w < x < m[0] + small_w) and (m[1] - small_h < y < m[1] + small_h) for m in matches):
-                        matches.append((x, y, letter)) #no need of x,y here but ill let it stay
+                    if not any(
+                        (m[0] - small_w < x < m[0] + small_w)
+                        and (m[1] - small_h < y < m[1] + small_h)
+                        for m in matches
+                    ):
+                        matches.append(
+                            (x, y, letter)
+                        )  # no need of x,y here but ill let it stay
     matches = sorted(matches, key=lambda tup: tup[0])
     return "".join([i[2] for i in matches])
