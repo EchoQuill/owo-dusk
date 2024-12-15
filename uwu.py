@@ -477,7 +477,7 @@ def check_alerts():
                     )
                 if termuxVibrationEnabled:
                     run_system_command(
-                        f"termux-vibrate -d {termuxVibrationTime}",
+                        f"termux-vibrate -f -d {termuxVibrationTime}",
                         timeout=5,
                         retry=True,
                     )
@@ -2939,7 +2939,7 @@ class MyClient(discord.Client):
                 # <:owo_scared:1171297031772438618>
                 if termuxVibrationEnabled:
                     run_system_command(
-                        f"termux-vibrate -d {termuxVibrationTime}",
+                        f"termux-vibrate -f -d {termuxVibrationTime}",
                         timeout=5,
                         retry=True,
                     )
@@ -3086,7 +3086,7 @@ class MyClient(discord.Client):
                 )
             if termuxVibrationEnabled:
                 run_system_command(
-                    f"termux-vibrate -d {termuxVibrationTime}", timeout=5, retry=True
+                    f"termux-vibrate -f -d {termuxVibrationTime}", timeout=5, retry=True
                 )
             if termuxAudioPlayer:
                 run_system_command(
