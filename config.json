@@ -1,18 +1,18 @@
 {
   "setprefix": "owo ",
-  "typingIndicator": false,
+  "typingIndicator": true,
   "offlineStatus": false,
-  "useSlashCommands": false,
+  "useSlashCommands": true,
   "checkForAlerts": true,
   "website": {
-    "enabled": false,
+    "enabled": true,
     "port": 1200,
     "refreshInterval": 15
   },
   "commands": [
     {
-      "hunt": false,
-      "battle": false,
+      "hunt": true,
+      "battle": true,
       "useReactionBotCooldowns": false,
       "delayBetweenCommands": [0.7266, 1.9439],
       "minCooldown": 12,
@@ -76,7 +76,7 @@
     },
     {
       "giveawayJoiner": false,
-      "channelsToJoin": [1, 2, 3],
+      "channelsToJoin": [1099453684691243098, 1168797748343099444, 1168797827464429618],
       "minCooldown": 40,
       "maxCooldown": 100
     },
@@ -87,7 +87,7 @@
       "maxCooldown": 16
     },
     {
-      "sendOwo": false,
+      "sendOwo": true,
       "useReactionBotCooldowns": false,
       "minCooldown": 10,
       "maxCooldown": 13
