@@ -18,6 +18,7 @@ import json
 import pytz
 import sys
 import os
+import requests
 
 
 def clear():
@@ -40,6 +41,8 @@ console.rule("[bold blue1]:>", style="navy_blue")
 console_width = console.size.width
 listUserIds = []
 
+owo_dusk_api = "https://echoquill.github.io/owo-dusk-api"
+
 owoArt = r"""
   __   _  _   __       ____  _  _  ____  __ _ 
  /  \ / )( \ /  \  ___(    \/ )( \/ ___)(  / )
@@ -50,8 +53,8 @@ owoPanel = Panel(Align.center(owoArt), style="purple on black", highlight=False)
 version = "2.0.0-alpha"
 debug_print = True
 
-def printBox(text, color):
-    test_panel = Panel(text, style=color)
+def printBox(text, color, title=None):
+    test_panel = Panel(text, style=color, title=title)
     console.print(test_panel)
 
 def resource_path(relative_path):
@@ -240,6 +243,12 @@ if __name__ == "__main__":
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta on black' )
+    try:
+        news_json = requests.get(f"{owo_dusk_api}/news.json").json()
+        if news_json["available"]:
+            printBox(f'{news_json["content"]}'.center(console_width - 2 ),'bold aquamarine1 on black', title=news_json["title"] )
+    except Exception as e:
+        print(e)
     console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1 on black")
     console.rule(style="navy_blue")
     run_bots(tokens_and_channels)
