@@ -9,6 +9,9 @@
     "port": 1200,
     "refreshInterval": 15
   },
+  "account": {
+    "startupDelay": [0.5, 3]
+  },
   "commands": {
     "hunt": {
       "enabled": true,

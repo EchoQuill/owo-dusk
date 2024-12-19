@@ -1,11 +1,3 @@
-"""
-NOTE:
-This repo is made with the help of https://github.com/BridgeSenseDev/Dank-Memer-Grinder
-So there are many parts I don't understand properly yet.
-To make it easier to maintain ill be adding lots of comments,
-Do check them before to understand what i was attempting to do,
-and feel free to contibute by improving those parts. :}
-"""
 # Do consider giving our repo a star in github :>
 
 from datetime import datetime, timedelta, timezone
@@ -86,23 +78,6 @@ class MyClient(commands.Bot):
         self.balance = 0
         self.queue = Queue()
 
-        """self.commands_list = []
-        for command, settings in config_dict["commands"].items():
-            try:
-                if settings["enabled"]:
-                    self.commands_list.append(command)
-            except KeyError:
-                print(f"failed to fetch {command}'s status..., stopping code.")
-                print(settings)
-                os._exit(0)
-        
-        random.shuffle(self.commands_list)
-        print(self.commands_list)
-
-        for i in self.commands_list:
-            if i not in ["lvlGrind", "lottery", "sell", "sac", "cookie"]:
-                self.put_queue(i) if i!="owo" else self.put_queue("owo", prefix=False)"""
-
 
 
         
@@ -175,7 +150,7 @@ class MyClient(commands.Bot):
         self.owo_bot_id = 408785106942164992
         if self.session is None:
             self.session = aiohttp.ClientSession()
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
         printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold royal_blue1 on black' )
         listUserIds.append(self.user.id)
 
