@@ -7,6 +7,13 @@ from discord.ext.commands import ExtensionNotLoaded
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
+cmd = {
+    "cmd_name": "owo",
+    "prefix": False,
+    "checks": True,
+    "retry_count": 0
+}
+
 class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -19,6 +26,9 @@ class Owo(commands.Cog):
                 await self.bot.unload_extension("cogs.owo")
             except ExtensionNotLoaded:
                 pass
+        else:
+            self.bot.put_queue(cmd)
+        
             
 
     @commands.Cog.listener()
@@ -26,10 +36,10 @@ class Owo(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if "owo" == message.content:
                 self.bot.log(f"owo detected from {message.author.name}.","cornflower_blue")
-                self.bot.remove_queue("owo", with_prefix=False)
+                self.bot.remove_queue(cmd)
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
                 #self.bot.queue.put(["owo", [True, True]])
-                self.bot.put_queue("owo", prefix=False)
+                self.bot.put_queue(cmd)
                 self.bot.log(f"owo put to queue again","cornflower_blue")
                 
                 

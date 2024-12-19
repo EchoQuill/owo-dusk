@@ -41,17 +41,19 @@ class Sell(commands.Cog):
                 await self.bot.unload_extension("cogs.sell")
             except ExtensionNotLoaded:
                 pass
-        if (config_dict["commands"]["sell"]["enabled"] and config_dict["commands"]["sac"]["enabled"]) or (config_dict["commands"]["sell"]["enabled"]):
-            # start sell first.
-            asyncio.create_task(self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"]))
         else:
-            asyncio.create_task(self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"]))
+            if (config_dict["commands"]["sell"]["enabled"] and config_dict["commands"]["sac"]["enabled"]) or (config_dict["commands"]["sell"]["enabled"]):
+                # start sell first.
+                asyncio.create_task(self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"]))
+            else:
+                asyncio.create_task(self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"]))
     
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
                 self.bot.checks = [check for check in self.bot.checks if check[0] != "sell"]
+
                 try:
                     self.bot.balance += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
                 except:

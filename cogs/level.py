@@ -16,17 +16,26 @@ def generate_random_string():
     random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
 
+
 class Level(commands.Cog):
     def __init__(self, bot):
+        
         self.bot = bot
         self.bot.log(f"conf2 - OwO","purple")
         self.last_level_grind_message = None
+        self.cmd = {
+            "cmd_name": None,
+            "prefix": False,
+            "checks": True,
+            "retry_count": 0
+        }
 
     async def start_level_grind(self):
         try:
             await asyncio.sleep(self.bot.random_float(config_dict["commands"]["lvlGrind"]["cooldown"]))
             self.last_level_grind_message = generate_random_string()
-            self.bot.put_queue(self.last_level_grind_message, prefix=False)
+            self.cmd["cmd_name"] = self.last_level_grind_message
+            self.bot.put_queue(self.cmd)
         except Exception as e:
             print(e)
         
@@ -47,7 +56,7 @@ class Level(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if self.last_level_grind_message == message.content:
                 self.bot.log(f"lvlgrind msg detected from {message.author.name}.","cornflower_blue")
-                self.bot.remove_queue(self.last_level_grind_message, with_prefix=False)
+                self.bot.remove_queue(self.cmd)
                 await self.start_level_grind()
                 
 

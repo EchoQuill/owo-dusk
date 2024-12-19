@@ -8,6 +8,7 @@ and feel free to contibute by improving those parts. :}
 """
 # Do consider giving our repo a star in github :>
 
+from datetime import datetime, timedelta, timezone
 from discord.ext import commands
 from rich.console import Console
 from threading import Thread
@@ -22,6 +23,7 @@ import traceback
 import threading
 import aiohttp
 import json
+import pytz
 import sys
 import os
 
@@ -82,12 +84,9 @@ class MyClient(commands.Bot):
         self.state = True
         self.captcha = False
         self.balance = 0
-        """
-        for making use of queue to make a FIFO (First In First Out)
-        to efficienctly manage sending of commands in a random order
-        and to also prevent the spammy code issue of v1
-        """
-        self.commands_list = []
+        self.queue = Queue()
+
+        """self.commands_list = []
         for command, settings in config_dict["commands"].items():
             try:
                 if settings["enabled"]:
@@ -96,12 +95,13 @@ class MyClient(commands.Bot):
                 print(f"failed to fetch {command}'s status..., stopping code.")
                 print(settings)
                 os._exit(0)
-        self.queue = Queue()
+        
         random.shuffle(self.commands_list)
         print(self.commands_list)
+
         for i in self.commands_list:
-            if i not in ["lvlGrind", "lottery", "sell", "sac", "cookie"]: #will be handled differently compared to others.
-                self.put_queue(i) if i!="owo" else self.put_queue("owo", prefix=False)
+            if i not in ["lvlGrind", "lottery", "sell", "sac", "cookie"]:
+                self.put_queue(i) if i!="owo" else self.put_queue("owo", prefix=False)"""
 
 
 
@@ -109,6 +109,35 @@ class MyClient(commands.Bot):
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
         return random.uniform(cooldown_list[0],cooldown_list[1])
+    
+    """
+    DATA EXAMPLE:
+    command_data = {
+        "cmd_name": "sell",
+        "cmd_arguments": rarity_value,
+        "prefix": True,
+        "checks": True,
+        "retry_count": 0
+}
+    """
+    
+    def construct_command(self, data):
+        print(data, "   - construct_command")
+        prefix = config_dict['setprefix'] if data.get("prefix") else ""
+        return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
+
+
+    def put_queue(self, cmd_data):
+        #print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
+        self.queue.put(cmd_data)
+    
+    def remove_queue(self, cmd_data, **kwargs):
+        self.checks = [
+            check for check in self.checks 
+            if check[0] != cmd_data
+        ]
+
+
 
     def log(self, text, color, bold=False, debug=debug_print):
         style = f"{color} on black"
@@ -119,15 +148,6 @@ class MyClient(commands.Bot):
             console.log(text, style=style) # stack_offset changes the line no to the place where log func was called.
         else:
             console.print(text.center(console_width - 2), style=style)
-
-    def put_queue(self, cmd, prefix=True, check=True):
-        print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
-        self.queue.put((
-            f"{config_dict['setprefix']}{cmd}" if prefix else cmd,
-            check
-            ))
-    def remove_queue(self, cmd, with_prefix=True):
-        self.checks = [check for check in self.checks if check[0] != (f"{config_dict['prefix']}{cmd}" if with_prefix else cmd)]
 
 
     # send commands
@@ -140,6 +160,15 @@ class MyClient(commands.Bot):
                     await channel.send(message, silent=silent)
             else:
                 await channel.send(message, silent=silent)
+
+    def calc_time(self):
+        pst_timezone = pytz.timezone('US/Pacific') #gets timezone
+        current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone) #current pst time
+        midnight_pst = pst_timezone.localize(datetime(current_time_pst.year, current_time_pst.month, current_time_pst.day, 0, 0, 0)) #gets 00:00 of the day
+        time_until_12am_pst = midnight_pst + timedelta(days=1) - current_time_pst # adds a day to the midnight to get time till next midnight, then subract it with current time
+        total_seconds = time_until_12am_pst.total_seconds() # turn that time to seconds
+        # 12am = 00:00, I might need this the next time I take a look here.
+        return total_seconds
 
     async def on_ready(self):
         #self.on_ready_dn = False
@@ -183,7 +212,7 @@ class MyClient(commands.Bot):
         except Exception as e:
             print(e)
 
-        # add account to stat.json
+        """add account to stat.json"""
         self.default_config = {
             self.user.id: {
                 "daily": 0,
