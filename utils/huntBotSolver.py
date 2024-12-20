@@ -1,3 +1,22 @@
+# This file includes code originally authored by realphandat.
+# Source: "phandat-selfbot" (https://github.com/realphandat/phandat-selfbot)
+# This file is licensed under the GNU General Public License v3.0 (GPL-3.0).
+# 
+# This project as a whole is also licensed under the GNU General Public License v3.0.
+
+# This file is part of owo-dusk.
+#
+# Copyright (c) 2024-present EchoQuill
+#
+# Portions of this file are based on code by EchoQuill, licensed under the
+# GNU General Public License v3.0 (GPL-3.0).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+
 import glob
 import os
 import numpy as np

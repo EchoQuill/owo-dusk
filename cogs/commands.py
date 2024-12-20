@@ -1,3 +1,15 @@
+# This file is part of owo-dusk.
+#
+# Copyright (c) 2024-present EchoQuill
+#
+# Portions of this file are based on code by EchoQuill, licensed under the
+# GNU General Public License v3.0 (GPL-3.0).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
 import asyncio
 import random
 import json
@@ -73,6 +85,7 @@ class Commands(commands.Cog):
             :
         ]:  # Loop through a copy to avoid modification issues
             if (current_time - timestamp).total_seconds() > 5:
+                
                 """Put the command back to the queue
                 Not using any sleeps here as the delay should randomize it enough."""
                 # self.bot.queue.put(command)

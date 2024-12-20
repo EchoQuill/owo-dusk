@@ -41,7 +41,7 @@
     },
     "lvlGrind": {
       "enabled": false,
-      "cooldown": [20, 30],
+      "cooldown": [5, 10],
       "useQuoteInstead": false,
       "minLengthForRandomString": 5,
       "maxLengthForRandomString": 20
@@ -49,15 +49,14 @@
     "cookie": {
       "enabled": false,
       "userid": 408785106942164992,
-      "pingUser": false
+      "pingUser": true
     },
     "shop": {
       "enabled": false,
       "itemsToBuy": [1, 2, 3],
       "cooldown": [10, 16]
     },
-    "owo": {
-      "enabled": true,
+    "owo": {      "enabled": false,
       "useReactionBotCooldowns": false,
       "cooldown": [10, 13]
     },
@@ -134,57 +133,44 @@
     "runConsoleCommandOnBan": false,
     "commandToRunOnBan": "command to run goes here"
   },
-  "termux": {
-    "vibrate": {
-      "enabled": false,
-      "time": 5
-    },
-    "texttospeech": {
-      "enabled": false,
-      "content": "Captcha detected! owo"
+  "captcha": {
+    "notifications": {
+      "enabled": true,
+      "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
+      "bannedContent": "{username} Banned from OwO!"
     },
     "playAudio": {
       "enabled": false,
-      "path": "path/filename.extention, for example 'audiofile.mp3', audiofile.mp3 should be in owo-cusk folder.. "
+      "path": "path/filename.extension (e.g., 'audiofile.mp3' within the owo-dusk folder)"
     },
-    "notifications": {
+    "batteryCheck": {
       "enabled": false,
-      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
-      "bannedContent": "{username} Banned from OwO!"
+      "minPercentage": 15,
+      "refreshInterval": 120
     },
-    "toastOnCaptcha": {
+    "toastOrPopup": {
       "enabled": false,
-      "backgroundColour": "black",
-      "textColour": "red",
       "captchaContent": "Captcha Detected! {username}",
-      "bannedContent": "{username} Banned from OwO!"
+      "bannedContent": "{username} Banned from OwO!",
+      "termuxToast": {
+        "backgroundColour": "black",
+        "textColour": "red"
+      }
     },
-    "batteryCheck": {
-      "enabled": false,
-      "minPercentage": 15,
-      "refreshInterval": 120
-    },
-    "openCaptchaWebsite": false
-  },
-  "desktop": {
-    "notifications": {
-      "enabled": false,
-      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
-      "bannedContent": "{username} Banned from OwO!"
-    },
-    "playAudio": {
-      "enabled": false,
-      "path": "PATH to audio file here"
-    },
-    "batteryCheck": {
-      "enabled": false,
-      "minPercentage": 15,
-      "refreshInterval": 120
-    },
-    "popup": {
-      "enabled": false,
-      "captchaContent": "Captcha Detected:- {username} in {channelname} , captcha type :- {captchatype}",
-      "bannedContent": "{username} Banned from OwO!"
+    "termux": {
+      "vibrate": {
+        "enabled": false,
+        "time": 5
+      },
+      "textToSpeech": {
+        "enabled": false,
+        "content": "Captcha detected! owo"
+      },
+      "openCaptchaWebsite": false
     }
+  },
+  "debug": {
+    "enabled": true,
+    "logInTextFile": false
   }
 }
