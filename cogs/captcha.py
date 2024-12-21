@@ -42,6 +42,7 @@ class Captcha(commands.Cog):
                 self.bot.captcha = False
                 self.bot.log(
                     f"captcha solved! - {self.bot.user}", "chartreuse3")
+                return
 
         if (
             message.channel.id in {self.bot.dm.id, self.bot.cm.id}
