@@ -28,6 +28,7 @@ class Commands(commands.Cog):
         self.bot = bot
         self.bot.log(f"conf2 - commands", "purple")
         self.bot.checks = []
+        self.calc_time = 0
 
     async def start_commands(
         self, waitTime=config_dict["defaultCooldowns"]["briefCooldown"]
@@ -81,23 +82,29 @@ class Commands(commands.Cog):
         Using it directly may lead to issues if its removed meanwhile
         Like when owobot lags.
         """
-        for command, timestamp in self.bot.checks[
-            :
-        ]:  # Loop through a copy to avoid modification issues
-            if (current_time - timestamp).total_seconds() > 5:
-                
-                """Put the command back to the queue
-                Not using any sleeps here as the delay should randomize it enough."""
-                # self.bot.queue.put(command)
-                self.bot.put_queue(command)
-                self.bot.log(f"added {command} from cmd", "cornflower_blue")
-                try:
-                    self.bot.checks.remove((command, timestamp))
-                    self.bot.log(
-                        f"removed {command} from cmd, from checks", "cornflower_blue"
-                    )
-                except:
-                    pass
+        if not self.bot.captcha and self.bot.state:
+            for command, timestamp in self.bot.checks[
+                :
+            ]:  # Loop through a copy to avoid modification issues
+                if (current_time+self.calc_time - timestamp).total_seconds() > 5:
+
+                    
+                    """Put the command back to the queue
+                    Not using any sleeps here as the delay should randomize it enough."""
+                    # self.bot.queue.put(command)
+                    self.bot.put_queue(command)
+                    self.bot.log(f"added {command} from cmd", "cornflower_blue")
+                    try:
+                        self.bot.checks.remove((command, timestamp))
+                        self.bot.log(
+                            f"removed {command} from cmd, from checks", "cornflower_blue"
+                        )
+                    except:
+                        pass
+            self.calc_time = 0
+        else:
+            self.calc_time = datetime.now(timezone.utc)
+
 
 
 async def setup(bot):
