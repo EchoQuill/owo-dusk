@@ -39,7 +39,7 @@ class Owo(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            self.bot.put_queue(cmd)
+            await self.bot.put_queue(cmd)
         
             
 
@@ -51,7 +51,7 @@ class Owo(commands.Cog):
                 self.bot.remove_queue(cmd)
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
                 #self.bot.queue.put(["owo", [True, True]])
-                self.bot.put_queue(cmd)
+                await self.bot.put_queue(cmd)
                 self.bot.log(f"owo put to queue again","cornflower_blue")
                 
                 

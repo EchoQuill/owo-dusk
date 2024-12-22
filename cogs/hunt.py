@@ -38,7 +38,7 @@ class Hunt(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            self.bot.put_queue(cmd)
+            await self.bot.put_queue(cmd)
     
 
 
@@ -49,7 +49,7 @@ class Hunt(commands.Cog):
                 self.bot.remove_queue(cmd)
                 self.bot.log(f"Removed hunt from checks from main","cornflower_blue")
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
-                self.bot.put_queue(cmd)
+                await self.bot.put_queue(cmd)
                 self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
                 
                 

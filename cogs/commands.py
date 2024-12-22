@@ -15,8 +15,7 @@ import random
 import json
 
 from discord.ext import commands, tasks
-from datetime import datetime, timezone
-from queue import Empty, Queue
+from datetime import datetime, timezone, timedelta
 
 
 with open("config.json", "r") as config_file:
@@ -28,7 +27,7 @@ class Commands(commands.Cog):
         self.bot = bot
         self.bot.log(f"conf2 - commands", "purple")
         self.bot.checks = []
-        self.calc_time = 0
+        self.calc_time = timedelta(0)
 
     async def start_commands(
         self, waitTime=config_dict["defaultCooldowns"]["briefCooldown"]
@@ -43,12 +42,11 @@ class Commands(commands.Cog):
         asyncio.create_task(self.start_commands())
 
     """send commands"""
-
     @tasks.loop()
     async def send_commands(self):
         while not self.bot.queue.empty():
             try:
-                if self.bot.state and not self.bot.captcha:
+                if not self.bot.captcha:
                     """
                     DATA EXAMPLE:
                     command_data = {
@@ -59,16 +57,16 @@ class Commands(commands.Cog):
                         "retry_count": 0
                     }
                     """
-                    print(list(self.bot.queue.queue))
-                    cmd = self.bot.queue.get()  # double check blocking in .get()
+                    cmd = await self.bot.queue.get()
+                    print(list(self.bot.queue._queue))
                     await self.bot.send(self.bot.construct_command(cmd))
-                    if cmd["checks"]:
+                    if cmd.get("checks"):
                         self.bot.checks.append((cmd, datetime.now(timezone.utc)))
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))
-            except Empty:
-                # Break out of the loop if there are no more items
+            except Exception as e:
+                print(f"Error in send_commands loop: {e}")
                 await asyncio.sleep(random.uniform(0.7, 1.2))
                 break
 
@@ -87,12 +85,10 @@ class Commands(commands.Cog):
                 :
             ]:  # Loop through a copy to avoid modification issues
                 if (current_time+self.calc_time - timestamp).total_seconds() > 5:
-
-                    
                     """Put the command back to the queue
                     Not using any sleeps here as the delay should randomize it enough."""
                     # self.bot.queue.put(command)
-                    self.bot.put_queue(command)
+                    await self.bot.put_queue(command)
                     self.bot.log(f"added {command} from cmd", "cornflower_blue")
                     try:
                         self.bot.checks.remove((command, timestamp))
@@ -101,9 +97,11 @@ class Commands(commands.Cog):
                         )
                     except:
                         pass
-            self.calc_time = 0
+            self.calc_time = timedelta(0)
         else:
-            self.calc_time = datetime.now(timezone.utc)
+            if hasattr(self, 'last_check_time'):
+                self.calc_time += current_time - self.last_check_time
+            self.last_check_time = current_time
 
 
 

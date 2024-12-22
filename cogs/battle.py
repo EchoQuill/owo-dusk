@@ -37,7 +37,7 @@ class Battle(commands.Cog):
                 await self.bot.unload_extension("cogs.battle")
             except:
                 pass
-        self.bot.put_queue(cmd)
+        await self.bot.put_queue(cmd)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -52,7 +52,7 @@ class Battle(commands.Cog):
                         self.bot.checks.remove((command, timestamp))
                         is not used to prevent valueerror and better error management
                         """
-                        self.bot.put_queue(cmd)
+                        await self.bot.put_queue(cmd)
                         self.bot.log(f"Added battle to queue again from main","cornflower_blue")
                 
                 

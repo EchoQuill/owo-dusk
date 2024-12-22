@@ -28,6 +28,14 @@ lock = threading.Lock()
 accounts_dict = load_json_dict()
 config_dict = load_json_dict("config.json")
 
+cmd = {
+    "cmd_name": "lottery",
+    "cmd_argument": "<@{config_dict['commands']['lottery']['amount']}>",
+    "prefix": True,
+    "checks": True,
+    "retry_count": 0
+}
+
 
 class Lottery(commands.Cog):
     def __init__(self, bot):
@@ -57,9 +65,9 @@ class Lottery(commands.Cog):
                 print(self.bot.calc_time())
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
+            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
             #self.bot.queue.put(["lottery", f" {config_dict["commands"]["lottery"]["amount"]}"])
-            self.bot.put_queue(f"lottery {config_dict['commands']['lottery']['amount']}")
+            self.bot.put_queue(cmd)
             self.bot.log("put to queue - lottry", "honeydew2")
 
             with lock:
@@ -83,11 +91,11 @@ class Lottery(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
-                        self.bot.remove_queue("lottery")
+                        self.bot.remove_queue(cmd)
                         print(self.bot.calc_time())
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                        self.bot.put_queue(f"lottery {config_dict['commands']['lottery']['amount']}")
+                        self.bot.put_queue(cmd)
                         self.bot.log("put to queue - Lottery", "honeydew2")
                         with lock:
                             accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()

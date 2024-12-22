@@ -64,9 +64,9 @@ class Cookie(commands.Cog):
                 print(self.bot.calc_time())
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
-            self.bot.put_queue(cmd)
-            self.bot.log("put to queue - lottry", "honeydew2")
+            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+            self.bot.put_queue(cmd, priority=True)
+            self.bot.log("put to queue - cookie", "honeydew2")
 
             with lock:
                 accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()
@@ -92,7 +92,7 @@ class Cookie(commands.Cog):
 
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                self.bot.put_queue(cmd)
+                self.bot.put_queue(cmd, priority=True)
                 self.bot.log("put to queue - cookie", "honeydew2")
                 with lock:
                     accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()

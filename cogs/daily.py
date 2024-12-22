@@ -22,6 +22,13 @@ from datetime import datetime, timezone
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
+    
+cmd = {
+    "cmd_name": "daily",
+    "prefix": True,
+    "checks": True,
+    "retry_count": 0
+}
 
 lock = threading.Lock()
 accounts_dict = load_json_dict()
@@ -56,8 +63,9 @@ class Daily(commands.Cog):
                 print(self.bot.calc_time())
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
-            self.bot.queue.put("daily")
+            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.put_queue(cmd, priority=True)
+            self.bot.state = False
             self.bot.log("put to queue - Daily", "honeydew2")
 
             with lock:
@@ -80,11 +88,13 @@ class Daily(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
-                self.bot.remove_queue("daily")
+                self.bot.remove_queue(cmd)
                 print(self.bot.calc_time())
+                self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                self.bot.queue.put("daily")
+                await self.bot.put_queue(cmd, priority=True)
+                self.bot.state = False
                 self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
@@ -93,11 +103,13 @@ class Daily(commands.Cog):
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 self.bot.log("Nu - Daily", "honeydew2")
-                self.bot.remove_queue("daily")
+                self.bot.remove_queue(cmd)
                 print(self.bot.calc_time())
+                self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                self.bot.queue.put("daily")
+                await self.bot.put_queue(cmd, priority=True)
+                self.bot.state = False
                 self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
