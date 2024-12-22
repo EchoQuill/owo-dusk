@@ -17,7 +17,6 @@ from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 from rich.align import Align
-from queue import Queue
 import discord
 import asyncio
 import logging
@@ -90,7 +89,7 @@ class MyClient(commands.Bot):
         self.state = True
         self.captcha = False
         self.balance = 0
-        self.queue = Queue()
+        self.queue = asyncio.Queue()
 
 
 
@@ -116,9 +115,15 @@ class MyClient(commands.Bot):
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
 
-    def put_queue(self, cmd_data):
+    async def put_queue(self, cmd_data, priority=False):
         #print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
-        self.queue.put(cmd_data)
+        while not self.state or self.captcha:
+            if priority:
+                await self.queue.put(cmd_data)
+                print(cmd_data)
+                return
+            await asyncio.sleep(random.uniform(1.4,2.9))
+        await self.queue.put(cmd_data)
     
     def remove_queue(self, cmd_data, **kwargs):
         self.checks = [
@@ -143,7 +148,7 @@ class MyClient(commands.Bot):
     async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
-        if not self.captcha and (self.state or bypass):
+        if not self.captcha or bypass:
             if typingIndicator:
                 async with channel.typing():
                     await channel.send(message, silent=silent)

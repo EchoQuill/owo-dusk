@@ -13,7 +13,7 @@
 import asyncio
 import json
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import ExtensionNotLoaded
 
 with open("config.json", "r") as config_file:
@@ -22,7 +22,7 @@ with open("config.json", "r") as config_file:
 cmd = {
     "cmd_name": "owo",
     "prefix": False,
-    "checks": True,
+    "checks": False,
     "retry_count": 0
 }
 
@@ -30,6 +30,12 @@ class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.log(f"conf2 - OwO","purple")
+
+    @tasks.loop(seconds=1)
+    async def send_owo(self):
+        if not self.bot.captcha and self.bot.state:
+            await self.bot.put_queue(cmd)
+            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
@@ -39,20 +45,8 @@ class Owo(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            await self.bot.put_queue(cmd)
-        
-            
+            self.send_owo.start()
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
-            if "owo" == message.content:
-                self.bot.log(f"owo detected from {message.author.name}.","cornflower_blue")
-                self.bot.remove_queue(cmd)
-                await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
-                #self.bot.queue.put(["owo", [True, True]])
-                await self.bot.put_queue(cmd)
-                self.bot.log(f"owo put to queue again","cornflower_blue")
                 
                 
 

@@ -25,12 +25,15 @@ def load_json_dict(file_path="utils/stats.json"):
         return json.load(config_file)
 
 lock = threading.Lock()
-accounts_dict = load_json_dict()
+def load_dict():
+    global accounts_dict
+    accounts_dict = load_json_dict()
+load_dict()
 config_dict = load_json_dict("config.json")
 
 cmd = {
     "cmd_name": "lottery",
-    "cmd_argument": "<@{config_dict['commands']['lottery']['amount']}>",
+    "cmd_arguments": config_dict['commands']['lottery']['amount'],
     "prefix": True,
     "checks": True,
     "retry_count": 0
@@ -67,13 +70,15 @@ class Lottery(commands.Cog):
 
             await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
             #self.bot.queue.put(["lottery", f" {config_dict["commands"]["lottery"]["amount"]}"])
-            self.bot.put_queue(cmd)
+            await self.bot.put_queue(cmd)
             self.bot.log("put to queue - lottry", "honeydew2")
 
             with lock:
+                load_dict()
                 accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
+                print("written lottery")
 
     async def cog_load(self):
         self.bot.log(f"lottery - start", "purple")
@@ -95,12 +100,14 @@ class Lottery(commands.Cog):
                         print(self.bot.calc_time())
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                        self.bot.put_queue(cmd)
+                        await self.bot.put_queue(cmd)
                         self.bot.log("put to queue - Lottery", "honeydew2")
                         with lock:
+                            load_dict()
                             accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()
                             with open("utils/stats.json", "w") as f:
                                 json.dump(accounts_dict, f, indent=4)
+                            print("written lottery")
                 
 async def setup(bot):
     await bot.add_cog(Lottery(bot))

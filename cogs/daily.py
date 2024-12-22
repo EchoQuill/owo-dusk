@@ -31,7 +31,10 @@ cmd = {
 }
 
 lock = threading.Lock()
-accounts_dict = load_json_dict()
+def load_dict():
+    global accounts_dict
+    accounts_dict = load_json_dict()
+load_dict()
 config_dict = load_json_dict("config.json")
 
 
@@ -69,9 +72,12 @@ class Daily(commands.Cog):
             self.bot.log("put to queue - Daily", "honeydew2")
 
             with lock:
+                load_dict()
                 accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
+                print("written daily")
+                
 
     async def cog_load(self):
         self.bot.log(f"daily - start", "purple")
@@ -97,9 +103,11 @@ class Daily(commands.Cog):
                 self.bot.state = False
                 self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
+                    load_dict()
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
+                    print("written daily")
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 self.bot.log("Nu - Daily", "honeydew2")
@@ -112,9 +120,12 @@ class Daily(commands.Cog):
                 self.bot.state = False
                 self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
+                    load_dict()
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
+                    print("written daily")
+
                 
 async def setup(bot):
     await bot.add_cog(Daily(bot))
