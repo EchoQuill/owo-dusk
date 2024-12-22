@@ -64,18 +64,31 @@ if scratchSetup:
             #print("it may ask if you want to proceed with the installation...")
             #print("please type and enter \"Y\" for all such!")
             print()
+
+            """Numpy Installation"""
             print("\033[1;36m[0]Attepmting to install numpy\033[m")
             try:
-                subprocess.check_call(["pkg", "install", "python-numpy", "-y"]) #-y auto confirms y/n prompt
+                subprocess.check_call(["pkg", "install", "python-numpy", "-y"])
                 print("\033[1;36m[0]installed numpy successfully!\033[m")
             except Exception as e:
                 print(f"\033[1;31m[x]error when trying to install numpy:-\n {e}\033[m")
+
+            """PILL Installation"""
             print("\033[1;36m[0]Attepmting to install PIL\033[m")
             try:
-                subprocess.check_call(["pkg", "install", "python-pillow", "-y"]) #-y auto confirms y/n prompt
+                subprocess.check_call(["pkg", "install", "python-pillow", "-y"])
                 print("\033[1;36m[0]installed PIL successfully!\033[m")
             except Exception as e:
                 print(f"\033[1;31m[x]error when trying to install PIL:-\n {e}\033[m")
+            
+            """Termux-api Installation"""
+            print("\033[1;36m[0]Attepmting to install termux-api...\033[m")
+            try:
+                subprocess.check_call(["pkg", "install", "termux-api", "-y"])
+                print("\033[1;36m[0]installed termux-api successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]error when trying to install termux-api:-\n {e}\033[m")
+            
         else:
             print("\033[1;36minstalling normally...\033[m")
             try:

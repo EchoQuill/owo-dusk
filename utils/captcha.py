@@ -11,14 +11,10 @@
 # (at your option) any later version.
 
 import os
-import discord
+from discord import DMChannel
 import json
 import time
 import threading
-
-#desktop
-from plyer import notification
-from playsound3 import playsound
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
@@ -36,6 +32,12 @@ def is_termux():
         return True
     else:
         return os.path.isdir("/data/data/com.termux")
+mobile = is_termux()
+
+if not mobile:
+    #desktop
+    from plyer import notification
+    from playsound3 import playsound
     
 def run_system_command(command, timeout, retry=False, delay=5):
     def target():
@@ -60,18 +62,18 @@ def run_system_command(command, timeout, retry=False, delay=5):
             run_system_command(command, timeout, retry=False)
     
 def get_channel_name(channel):
-    if isinstance(channel, discord.DMChannel):
+    if isinstance(channel, DMChannel):
         return "owo DMs"
     return channel.name
 
 def captcha_handler(channel, username, captcha_type):
-    mobile = is_termux()
+    
     channel_name = get_channel_name(channel)
     """Notifications"""
     if config_dict["captcha"]["notifications"]["enabled"]:
         try:
             if mobile:
-                run_system_command(f"termux-notification -c '{config_dict["captcha"]["notifications"]["captchaContent"].format(username=username,channelname=channel_name,captchatype=captcha_type)}'", timeout=5, retry=True)
+                run_system_command(f"termux-notification -c '{config_dict['captcha']['notifications']['captchaContent'].format(username=username,channelname=channel_name,captchatype=captcha_type)}'", timeout=5, retry=True)
             else:
                 notification.notify(
                     title=f'{username} DETECTED CAPTCHA',
@@ -91,7 +93,7 @@ def captcha_handler(channel, username, captcha_type):
     if config_dict["captcha"]["playAudio"]["enabled"]:
         try:
             if mobile:
-                run_system_command(f"termux-media-player play {config_dict["playAudio"]["path"]}", timeout=5, retry=True)
+                run_system_command(f"termux-media-player play {config_dict['playAudio']['path']}", timeout=5, retry=True)
             else:
                 playsound(config_dict["playAudio"]["path"], block=False)
         except Exception as e:
@@ -100,15 +102,33 @@ def captcha_handler(channel, username, captcha_type):
     if config_dict["captcha"]["toastOrPopup"]["enabled"]:
         try:
             if mobile:
-                run_system_command(f"termux-toast -c {config_dict["captcha"]["toastOrPopup"]["termuxToast"]["textColour"]} -b {config_dict["captcha"]["toastOrPopup"]["termuxToast"]["backgroundColour"]} '{config_dict["captcha"]["toastOrPopup"]["captchaContent"].format(username=username,channelname=channel_name,captchatype=captcha_type)}'", timeout=5, retry=True)
+                run_system_command(f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} '{config_dict['captcha']['toastOrPopup']['captchaContent'].format(username=username,channelname=channel_name,captchatype=captcha_type)}'", timeout=5, retry=True)
             else:
                 pass
         except Exception as e:
             print(f"{e} - at Toast/Popup")
-
-
-
-    
-
-
+    """Termux - Vibrate"""
+    if config_dict["captcha"]["termux"]["vibrate"]["enabled"]:
+        try:
+            if mobile:
+                run_system_command(
+                    f"termux-vibrate -f -d {config_dict['captcha']['termux']['vibrate']['time']}",
+                    timeout=5,
+                    retry=True,
+                )
+            else:
+                pass
+        except Exception as e:
+            print(f"{e} - at Toast/Popup")
+    """Termux - TTS"""
+    if config_dict["captcha"]["termux"]["textToSpeech"]["enabled"]:
+        try:
+            if mobile:
+                run_system_command(
+                        f"termux-tts-speak {config_dict['captcha']['termux']['textToSpeech']['content']}", timeout=7, retry=False
+                    )
+            else:
+                pass
+        except Exception as e:
+            print(f"{e} - at Toast/Popup")
 
