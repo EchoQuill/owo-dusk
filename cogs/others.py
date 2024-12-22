@@ -51,14 +51,14 @@ class Others(commands.Cog):
                 """task: add checks for cash at ready."""
                 self.bot.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
                 self.bot.log(f"{self.bot.user}[+] Checked for cash - {self.bot.balance} cowoncy!", "cyan3")
-            """if "Create a team with the command `owo team add {animal}`" in message.content:
+                """if "Create a team with the command `owo team add {animal}`" in message.content:
                 self.bot.state = False
                 await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
                 await self.bot.send("zoo", bypass=True)"""
-        elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
-            self.bot.put_queue(crate_cmd)
-        elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
-            self.bot.put_queue(lootbox_cmd)
+            elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
+                await self.bot.put_queue(crate_cmd)
+            elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
+                await self.bot.put_queue(lootbox_cmd)
                 
                 
 
