@@ -26,14 +26,26 @@
       "useShortForm": false
     },
     "sell": {
-      "enabled": false,
-      "cooldown": [200, 500],
+      "enabled": true,
+      "cooldown": [410, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
     "sac": {
-      "enabled": false,
-      "cooldown": [200, 500],
+      "enabled": true,
+      "cooldown": [410, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
+    },
+    "pray": {
+      "enabled": true,
+      "cooldown": [310, 400],
+      "userid": [],
+      "pingUser": false
+    },
+    "curse": {
+      "enabled": true,
+      "cooldown": [310, 400],
+      "userid": [],
+      "pingUser": false
     },
     "lottery": {
       "enabled": false,
@@ -56,7 +68,8 @@
       "itemsToBuy": [1, 2, 3],
       "cooldown": [10, 16]
     },
-    "owo": {      "enabled": false,
+    "owo": {      
+      "enabled": false,
       "useReactionBotCooldowns": false,
       "cooldown": [10, 13]
     },
@@ -66,7 +79,7 @@
     }
   },
   "giveawayJoiner": {
-    "enabled": false,
+    "enabled": true,
     "channelsToJoin": [1099453684691243098, 1168797748343099444, 1168797827464429618],
     "cooldown": [40, 100]
   },
@@ -76,7 +89,7 @@
     "minTime": 1,
     "maxTime": 10
   },
-  "autoDaily": false,
+  "autoDaily": true,
   "defaultCooldowns": {
     "longCooldown": [400, 600],
     "moderateCooldown": [70, 200],
