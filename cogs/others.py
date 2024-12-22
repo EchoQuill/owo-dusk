@@ -17,6 +17,20 @@ import re
 
 from discord.ext import commands
 
+lootbox_cmd = {
+    "cmd_name": "lb",
+    "prefix": True,
+    "checks": False,
+    "retry_count": 0
+}
+
+crate_cmd = {
+    "cmd_name": "wc",
+    "prefix": True,
+    "checks": False,
+    "retry_count": 0
+}
+
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
@@ -41,6 +55,10 @@ class Others(commands.Cog):
                 self.bot.state = False
                 await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
                 await self.bot.send("zoo", bypass=True)"""
+        elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
+            self.bot.put_queue(crate_cmd)
+        elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
+            self.bot.put_queue(lootbox_cmd)
                 
                 
 
