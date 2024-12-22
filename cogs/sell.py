@@ -35,6 +35,22 @@ else:
 sell_rarity = " ".join(config_dict["commands"]["sell"]["rarity"])
 sac_rarity = " ".join(config_dict["commands"]["sac"]["rarity"])
 
+sell_cmd = {
+    "cmd_name": "sell",
+    "cmd_arguments": sell_rarity,
+    "prefix": True,
+    "checks": True,
+    "retry_count": 0
+}
+
+sac_cmd = {
+    "cmd_name": "sac",
+    "cmd_arguments": sac_rarity,
+    "prefix": True,
+    "checks": True,
+    "retry_count": 0
+}
+
 
 class Sell(commands.Cog):
     def __init__(self, bot):
@@ -43,7 +59,8 @@ class Sell(commands.Cog):
     async def sell_sac_queue(self, cmd, cooldown):
         await asyncio.sleep(self.bot.random_float(cooldown))
         #self.bot.queue.put(["sell", f" {sell_rarity if cmd=="sell" else sac_rarity}"])
-        self.bot.put_queue(f"sell {sell_rarity if cmd=="sell" else sac_rarity}")
+        #self.bot.put_queue(f"sell {sell_rarity if cmd=="sell" else sac_rarity}")
+        await self.bot.put_queue(cmd)
 
 
 
@@ -56,31 +73,31 @@ class Sell(commands.Cog):
         else:
             if (config_dict["commands"]["sell"]["enabled"] and config_dict["commands"]["sac"]["enabled"]) or (config_dict["commands"]["sell"]["enabled"]):
                 # start sell first.
-                asyncio.create_task(self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"]))
+                asyncio.create_task(self.sell_sac_queue(sell_cmd, config_dict["commands"]["sell"]["cooldown"]))
             else:
-                asyncio.create_task(self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"]))
+                asyncio.create_task(self.sell_sac_queue(sac_cmd, config_dict["commands"]["sac"]["cooldown"]))
     
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "sell"]
+                self.bot.remove_queue(sell_cmd)
 
                 try:
                     self.bot.balance += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
                 except:
                     self.bot.log(f"{self.bot.user}[+] failed to fetch cowoncy from sales,", "cyan3")
                 if config_dict["commands"]["sac"]["enabled"]:
-                    await self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"])
+                    await self.sell_sac_queue(sac_cmd, config_dict["commands"]["sac"]["cooldown"])
                 else:
-                    await self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"])
+                    await self.sell_sac_queue(sell_cmd, config_dict["commands"]["sell"]["cooldown"])
 
             elif "sacrificed" in message.content and "for a total of" in message.content.lower():
-                self.bot.checks = [check for check in self.bot.checks if check[0] != "sac"]
+                self.bot.remove_queue(sac_cmd)
                 if config_dict["commands"]["sell"]["enabled"]:
-                    await self.sell_sac_queue("sell", config_dict["commands"]["sell"]["cooldown"])
+                    await self.sell_sac_queue(sell_cmd, config_dict["commands"]["sell"]["cooldown"])
                 else:
-                    await self.sell_sac_queue("sac", config_dict["commands"]["sac"]["cooldown"])
+                    await self.sell_sac_queue(sac_cmd, config_dict["commands"]["sac"]["cooldown"])
 
 
 async def setup(bot):
