@@ -26,38 +26,70 @@ def cmd_argument(userid, ping):
     else:
         return ""
 
-pray_cmd = {
-    "cmd_name": "pray",
-    "cmd_arguments": cmd_argument(config_dict['commands']['pray']['userid'], config_dict['commands']['pray']['pingUser']),
-    "prefix": True,
-    "checks": True,
-    "retry_count": 0
-}
-
-curse_cmd = {
-    "cmd_name": "curse",
-    "cmd_arguments": cmd_argument(config_dict['commands']['curse']['userid'], config_dict['commands']['curse']['pingUser']),
-    "prefix": True,
-    "checks": True,
-    "retry_count": 0
-}
 
 class Pray(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.log(f"conf2 - Pray/Curse","purple")
+        self.pray_cmd_arguement = None
+        self.curse_cmd_arguement = None
+        self.pray_cmd = {
+            "cmd_name": "pray",
+            "cmd_arguments": None,
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0
+        }
+
+        self.curse_cmd = {
+            "cmd_name": "curse",
+            "cmd_arguments": None,
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0
+        }
+
+    async def startup(self):
+        await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+        self.start_pray_curse()
+
+    async def start_pray_curse(self, cmd=None):
+        """
+        this long messed up code is temporary, but hey atleast it still works
+
+        issues:-
+        using similar code twice
+        startup has higher delay than required
+
+        """
+        if config_dict["commands"]["pray"]["enabled"]:
+            self.bot.remove_queue(self.pray_cmd)
+            self.bot.log(f"Removed pray from checks from main","cornflower_blue")
+            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["curse"]["cooldown"]))
+            self.pray_cmd_arguement = cmd_argument(config_dict['commands']['pray']['userid'], config_dict['commands']['pray']['pingUser'])
+            self.pray_cmd["cmd_arguments"]=self.pray_cmd_arguement
+            self.bot.state = False
+            await self.bot.put_queue(self.pray_cmd)
+        else:
+            self.bot.remove_queue(self.curse_cmd)
+            self.bot.log(f"Removed curse from checks from main","cornflower_blue")
+            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["curse"]["cooldown"]))
+            self.curse_cmd_arguement = cmd_argument(config_dict['commands']['curse']['userid'], config_dict['commands']['curse']['pingUser'])
+            self.curse_cmd["cmd_arguments"]=self.curse_cmd_arguement
+            self.bot.state = False
+            await self.bot.put_queue(self.curse_cmd)
 
     async def cog_load(self):
-        if not config_dict["commands"]["pray"]["enabled"] and not config_dict["commands"]["curse"]["enabled"]:
-            try:
-                await self.bot.unload_extension("cogs.pray")
-            except ExtensionNotLoaded:
-                pass
-        else:
-            if config_dict["commands"]["pray"]["enabled"]:
-                await self.bot.put_queue(pray_cmd)
+        try:
+            if not config_dict["commands"]["pray"]["enabled"] and not config_dict["commands"]["curse"]["enabled"]:
+                try:
+                    await self.bot.unload_extension("cogs.pray")
+                except ExtensionNotLoaded:
+                    pass
             else:
-                await self.bot.put_queue(curse_cmd)
+                asyncio.create_task(self.start_pray_curse())
+        except Exception as e:
+            print(e)
     
 
 
@@ -65,23 +97,23 @@ class Pray(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             """ add individual ones as well """
+
+            """
+            **⏱ | user**! Slow down and try the command again **<t:1734943219:R>**
+            """
+
             """pray"""
-            if (f"<@{self.bot.user.id}>** prays for **<@{config_dict['commands']['pray']['userid']}>**!"
-            or f"<@{self.bot.user.id}** prays... Luck is on your side!" in message.content):
-                self.bot.remove_queue(pray_cmd)
-                self.bot.log(f"Removed pray from checks from main","cornflower_blue")
-                await asyncio.sleep(self.bot.random_float(config_dict["commands"]["pray"]["cooldown"]))
-                await self.bot.put_queue(pray_cmd)
-                self.bot.log(f"Added pray to queue again from main","cornflower_blue")
+            if ((f"<@{self.bot.user.id}>** prays for **<@{config_dict['commands']['pray']['userid']}>**!" in message.content
+            or f"<@{self.bot.user.id}** prays..." in message.content
+            or "Slow down and try the command again" in message.content) and
+            config_dict['commands']['pray']['enabled']):
+                self.start_pray_curse("pray")
             """curse"""
-            if (f"<@{self.bot.user.id}>** puts a curse on **<@{config_dict['commands']['curse']['userid']}>**!" in message.content
-            or 
-            f"<@{self.bot.user.id}>** is now cursed." in message.content):
-                self.bot.remove_queue(pray_cmd)
-                self.bot.log(f"Removed pray from checks from main","cornflower_blue")
-                await asyncio.sleep(self.bot.random_float(config_dict["commands"]["pray"]["cooldown"]))
-                await self.bot.put_queue(pray_cmd)
-                self.bot.log(f"Added pray to queue again from main","cornflower_blue")
+            if ((f"<@{self.bot.user.id}>** puts a curse on **<@{config_dict['commands']['curse']['userid']}>**!" in message.content
+            or f"<@{self.bot.user.id}>** is now cursed." in message.content 
+            or "Slow down and try the command again" in message.content) and
+            config_dict['commands']['curse']['enabled']):
+                self.start_pray_curse("curse")
                 
                 
                 
