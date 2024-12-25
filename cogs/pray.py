@@ -68,7 +68,7 @@ class Pray(commands.Cog):
             self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
             self.bot.state = False
             print("pray - put state to False")
-            await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"])
+            await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
 
     async def cog_load(self):
         try:
