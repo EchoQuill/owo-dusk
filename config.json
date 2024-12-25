@@ -1,6 +1,6 @@
 {
-  "setprefix": "owo ",
-  "typingIndicator": false,
+  "setprefix": "w",
+  "typingIndicator": true,
   "offlineStatus": false,
   "useSlashCommands": false,
   "silentTextMessages": false,
@@ -26,12 +26,12 @@
       "useShortForm": false
     },
     "sell": {
-      "enabled": true,
+      "enabled": false,
       "cooldown": [410, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
     "sac": {
-      "enabled": true,
+      "enabled": false,
       "cooldown": [410, 500],
       "rarity": ["c", "u", "r", "e", "m", "l", "g"]
     },
@@ -42,7 +42,7 @@
       "pingUser": false
     },
     "curse": {
-      "enabled": true,
+      "enabled": false,
       "cooldown": [310, 400],
       "userid": [],
       "pingUser": false
@@ -78,8 +78,27 @@
       "cashToSpend": 10000
     }
   },
+  "gamble": {
+    "allottedAmount": 100000,
+    "coinflip": {
+      "enabled": false,
+      "startValue": 200,
+      "multiplierOnLose": 2,
+      "cooldown": [16,18],
+      "options": ["h","t"]
+    },
+    "slots": {
+      "enabled": true,
+      "startValue": 1,
+      "multiplierOnLose": 2,
+      "cooldown": [16,18]
+    },
+    "blackjack": {
+
+    }
+  },
   "giveawayJoiner": {
-    "enabled": true,
+    "enabled": false,
     "channelsToJoin": [1099453684691243098, 1168797748343099444, 1168797827464429618],
     "cooldown": [40, 100]
   },
