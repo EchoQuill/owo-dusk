@@ -96,13 +96,13 @@ class Pray(commands.Cog):
             or f"<@{self.bot.user.id}** prays..." in message.content
             or "Slow down and try the command again" in message.content) and
             config_dict['commands']['pray']['enabled']):
-                self.start_pray_curse("pray")
+                await self.start_pray_curse("pray")
             """curse"""
             if ((f"<@{self.bot.user.id}>** puts a curse on **<@{config_dict['commands']['curse']['userid']}>**!" in message.content
             or f"<@{self.bot.user.id}>** is now cursed." in message.content 
             or "Slow down and try the command again" in message.content) and
             config_dict['commands']['curse']['enabled']):
-                self.start_pray_curse("curse")
+                await self.start_pray_curse("curse")
                 
                 
                 
