@@ -22,12 +22,14 @@ import asyncio
 import logging
 import random
 import traceback
+import subprocess
 import threading
 import aiohttp
 import json
 import pytz
 import sys
 import os
+import time
 import requests
 
 
@@ -71,6 +73,92 @@ def resource_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
+
+def install_package(package_name):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+
+def try_import_or_install(package_name):
+    try:
+        __import__(package_name)
+        print(f"Module {package_name} imported successfully.")
+    except ImportError:
+        print(f"{package_name} is not installed, attempting to install automatically...")
+        try:
+            install_package(package_name)
+            __import__(package_name)
+            print(f"{package_name} installed and imported successfully.")
+        except Exception as e:
+            print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
+
+def is_termux():
+    termux_prefix = os.environ.get("PREFIX")
+    termux_home = os.environ.get("HOME")
+    
+    if termux_prefix and "com.termux" in termux_prefix:
+        return True
+    elif termux_home and "com.termux" in termux_home:
+        return True
+    else:
+        return os.path.isdir("/data/data/com.termux")
+    
+on_mobile = is_termux()
+
+if not on_mobile:
+    try_import_or_install("psutil")
+    try:
+        import psutil
+
+        print("psutil imported successfully")
+    except Exception as e:
+        print(f"ImportError: {e}")
+
+
+# For battery check
+def batteryCheckFunc():
+    try:
+        if on_mobile:
+            while True:
+                time.sleep(config_dict["batteryCheck"]["refreshInterval"])
+                try:
+                    battery_status = os.popen("termux-battery-status").read()
+                except Exception as e:
+                    console.print(
+                        f"""-system[0] Battery check failed!!""".center(console_width - 2),
+                        style="red on black",
+                    )
+                battery_data = json.loads(battery_status)
+                percentage = battery_data["percentage"]
+                console.print(
+                    f"-system[0] Current battery •> {percentage}".center(console_width - 2),
+                    style="blue on black",
+                )
+                if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
+                    break
+        else:
+            while True:
+                time.sleep(config_dict["batteryCheck"]["refreshInterval"])
+                try:
+                    battery = psutil.sensors_battery()
+                    if battery is not None:
+                        percentage = int(battery.percent)
+                        console.print(
+                            f"-system[0] Current battery •> {percentage}".center(console_width - 2),
+                            style="blue on black",
+                        )
+                        if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
+                            break
+                except Exception as e:
+                    console.print(
+                        f"""-system[0] Battery check failed!!.""".center(console_width - 2),
+                        style="red on black",
+                    )
+    except Exception as e:
+        print("battery check", e)
+    os._exit(0)
+
+if config_dict["batteryCheck"]["enabled"]:
+    loop_thread = threading.Thread(target=batteryCheckFunc)
+    loop_thread.start()
 
 class MyClient(commands.Bot):
     
@@ -116,20 +204,32 @@ class MyClient(commands.Bot):
 
 
     async def put_queue(self, cmd_data, priority=False):
-        #print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
-        while not self.state or self.captcha:
-            if priority:
-                await self.queue.put(cmd_data)
-                print(cmd_data)
-                return
-            await asyncio.sleep(random.uniform(1.4,2.9))
-        await self.queue.put(cmd_data)
+        try:
+            #print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
+            while not self.state or self.captcha:
+                if priority:
+                    await self.queue.put(cmd_data)
+                    print(cmd_data)
+                    return
+                print("stuck in put_queue")
+                print(self.state)
+                print(self.captcha)
+                await asyncio.sleep(random.uniform(1.4,2.9))
+            await self.queue.put(cmd_data)
+            print(cmd_data)
+        except Exception as e:
+            print(e)
+            print("^ at put_queue")
     
     def remove_queue(self, cmd_data, **kwargs):
-        self.checks = [
-            check for check in self.checks 
-            if check[0] != cmd_data
-        ]
+        try:
+            self.checks = [
+                check for check in self.checks 
+                if check[0] != cmd_data
+            ]
+        except Exception as e:
+            print(e)
+            print("^ at remove_queue")
 
 
 
@@ -145,15 +245,26 @@ class MyClient(commands.Bot):
 
 
     # send commands
-    async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
+    async def send(self, message, bypass=False, channel=None, slash_command=False, slash_command_arg=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
         if not self.captcha or bypass:
             if typingIndicator:
                 async with channel.typing():
                     await channel.send(message, silent=silent)
+                    if slash_command:
+                        self.slashCommandSender(message)
             else:
                 await channel.send(message, silent=silent)
+                if slash_command:
+                    self.slashCommandSender(message)
+    async def slashCommandSender(self, msg, **kwargs):
+        try:
+            for command in self.commands:
+                if command.name == msg:
+                    await command(**kwargs)
+        except Exception as e:
+            print(e)
 
     def calc_time(self):
         pst_timezone = pytz.timezone('US/Pacific') #gets timezone
@@ -205,6 +316,13 @@ class MyClient(commands.Bot):
             print(self.dm)
         except Exception as e:
             print(e)
+
+        """Fetch slash commands in self.cm"""
+        self.slash_commands = []
+        # print(f"{self.user} attempting to get slash commands")
+        for command in await self.cm.application_commands():
+            if command.application.id == 408785106942164992:
+                self.slash_commands.append(command)
 
         """add account to stat.json"""
         self.default_config = {
