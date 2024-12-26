@@ -58,6 +58,9 @@ class Pray(commands.Cog):
             if not startup:
                 self.bot.remove_queue(self.__dict__[f"{cmd}_cmd"])
                 self.bot.log(f"Removed {cmd} from checks from main", "cornflower_blue")
+                """
+                REDUCE COOLDOWN AND CHECK STUCK IN PUT_QUEUE ERROR!
+                """
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"][cmd]["cooldown"]))
             else:
                 self.bot.state = True
@@ -96,7 +99,7 @@ class Pray(commands.Cog):
 
             """pray"""
             if ((f"<@{self.bot.user.id}>** prays for **<@{config_dict['commands']['pray']['userid']}>**!" in message.content
-            or f"<@{self.bot.user.id}** prays..." in message.content
+            or f"<@{self.bot.user.id}>** prays..." in message.content
             or "Slow down and try the command again" in message.content) and
             config_dict['commands']['pray']['enabled']):
                 await self.start_pray_curse("pray")
