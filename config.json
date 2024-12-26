@@ -136,7 +136,7 @@
   },
   "autoUse": {
     "gems": {
-      "enabled": true,
+      "enabled": false,
       "order": {
         "lowestToHighest": false
       },
@@ -185,11 +185,6 @@
       "enabled": false,
       "path": "path/filename.extension (e.g., 'audiofile.mp3' within the owo-dusk folder)"
     },
-    "batteryCheck": {
-      "enabled": false,
-      "minPercentage": 15,
-      "refreshInterval": 120
-    },
     "toastOrPopup": {
       "enabled": false,
       "captchaContent": "Captcha Detected! {username}",
@@ -214,5 +209,10 @@
   "debug": {
     "enabled": true,
     "logInTextFile": false
+  },
+  "batteryCheck": {
+    "enabled": false,
+    "minPercentage": 15,
+    "refreshInterval": 120
   }
 }

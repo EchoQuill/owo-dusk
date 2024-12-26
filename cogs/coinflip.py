@@ -34,7 +34,6 @@ won_pattern = r"you won \*\*<:cowoncy:\d+> ([\d,]+)"
 class Coinflip(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - Hunt","purple")
         self.cmd = {
             "cmd_name": "coinflip",
             "cmd_arguments": None,
@@ -59,8 +58,8 @@ class Coinflip(commands.Cog):
             if startup:
                 await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
             else:
-                self.bot.remove_queue(self.cmd)
-                self.bot.log("queue removed - cf", "purple")
+                """self.bot.remove_queue(self.cmd)
+                self.bot.log("queue removed - cf", "purple")"""
                 await asyncio.sleep(self.bot.random_float(config_dict["gamble"]["coinflip"]["cooldown"]))
             
 
@@ -71,6 +70,17 @@ class Coinflip(commands.Cog):
             self.bot.log("queue put cf", "purple")
         except Exception as e:
             print(e)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.id != 408785106942164992:
+            return
+        if message.channel.id != self.bot.channel_id:
+            return
+        
+        if "and chose" in message.content:
+            self.bot.remove_queue(self.cmd)
+            self.bot.log("queue removed - cf", "purple")
 
 
     @commands.Cog.listener()
@@ -91,8 +101,6 @@ class Coinflip(commands.Cog):
                         match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     except Exception as e:
                         print(e)
-                        print("failed to fetch cf value, falling back!")
-                        match = config_dict["gamble"]["coinflip"]["startValue"]*2 #the 
                     self.turns_lost = 0
                     await self.start_cf()
                     self.bot.log(f"won cf by {match}", "purple")
@@ -102,5 +110,4 @@ class Coinflip(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Coinflip(bot))
-
 

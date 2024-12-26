@@ -41,7 +41,6 @@ cmd = {
 class Cookie(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - cookie","purple")
     
     """change to conver times"""
     def time_in_seconds(self, time_to_convert=None):
@@ -57,13 +56,10 @@ class Cookie(commands.Cog):
 
             # Time difference calculation
             self.time_diff = self.current_time_seconds - self.last_cookie_time
-            print(self.current_time_seconds, self.last_cookie_time)
-            print(self.time_diff, "time diff")
 
             if self.time_diff < 0:
                 self.last_cookie_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                print(self.bot.calc_time())
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
             await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
@@ -75,10 +71,8 @@ class Cookie(commands.Cog):
                 accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-                print("written cookie")
 
     async def cog_load(self):
-        self.bot.log(f"cookie - start", "purple")
         if not config_dict["commands"]["cookie"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.cookie")
@@ -92,7 +86,6 @@ class Cookie(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "You got a cookie from" in message.content or "Nu! You need to wait" in message.content:
                 self.bot.remove_queue(cmd)
-                print(self.bot.calc_time())
 
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
@@ -103,7 +96,6 @@ class Cookie(commands.Cog):
                     accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
-                    print("written cookie")
 
 
         

@@ -30,7 +30,6 @@ def clean(msg):
 class Captcha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log("conf2 - captcha", "purple")
 
     @commands.Cog.listener()
     async def on_message(self, message):

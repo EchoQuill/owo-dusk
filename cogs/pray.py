@@ -30,7 +30,6 @@ def cmd_argument(userid, ping):
 class Pray(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - Pray/Curse","purple")
         self.pray_cmd_arguement = None
         self.curse_cmd_arguement = None
         self.pray_cmd = {
@@ -56,6 +55,7 @@ class Pray(commands.Cog):
         if config_dict["commands"][cmd]["enabled"]:
             
             if not startup:
+                self.bot.state = True
                 self.bot.remove_queue(self.__dict__[f"{cmd}_cmd"])
                 self.bot.log(f"Removed {cmd} from checks from main", "cornflower_blue")
                 """
@@ -63,14 +63,14 @@ class Pray(commands.Cog):
                 """
                 await asyncio.sleep(self.bot.random_float(config_dict["commands"][cmd]["cooldown"]))
             else:
-                self.bot.state = True
-                await asyncio.sleep(self.bot.random_float(config_dict["commands"][cmd]["cooldown"]))
+                #self.bot.state = True
+                await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+                
             cmd_argument_data = cmd_argument(
                 config_dict['commands'][cmd]['userid'], config_dict['commands'][cmd]['pingUser']
             )
             self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
             self.bot.state = False
-            print("pray - put state to False")
             await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
 
     async def cog_load(self):

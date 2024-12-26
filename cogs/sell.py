@@ -55,7 +55,7 @@ sac_cmd = {
 class Sell(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - sell","purple")
+
     async def sell_sac_queue(self, cmd, cooldown):
         await asyncio.sleep(self.bot.random_float(cooldown))
         #self.bot.queue.put(["sell", f" {sell_rarity if cmd=="sell" else sac_rarity}"])

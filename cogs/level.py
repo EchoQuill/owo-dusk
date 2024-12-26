@@ -33,7 +33,6 @@ class Level(commands.Cog):
     def __init__(self, bot):
         
         self.bot = bot
-        self.bot.log(f"conf2 - OwO","purple")
         self.last_level_grind_message = None
         self.cmd = {
             "cmd_name": None,
@@ -56,7 +55,6 @@ class Level(commands.Cog):
     async def cog_load(self):
         if not config_dict["commands"]["lvlGrind"]["enabled"]:
             try:
-                self.bot.log("test", "purple")
                 await self.bot.unload_extension("cogs.level")
             except ExtensionNotLoaded:
                 pass

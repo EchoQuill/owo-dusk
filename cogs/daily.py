@@ -41,7 +41,6 @@ config_dict = load_json_dict("config.json")
 class Daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - daily","purple")
     
     """change to conver times"""
     def time_in_seconds(self, time_to_convert=None):
@@ -51,19 +50,15 @@ class Daily(commands.Cog):
     
     async def start_daily(self):
         if str(self.bot.user.id) in accounts_dict:
-            self.bot.log("daily - 0", "honeydew2")
             self.current_time_seconds = self.time_in_seconds()
             self.last_daily_time = accounts_dict[str(self.bot.user.id)].get("daily", 0)
 
             # Time difference calculation
             self.time_diff = self.current_time_seconds - self.last_daily_time
-            print(self.current_time_seconds, self.last_daily_time)
-            print(self.time_diff, "time diff")
 
             if self.time_diff < 0:
                 self.last_daily_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                print(self.bot.calc_time())
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
             await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
@@ -76,11 +71,9 @@ class Daily(commands.Cog):
                 accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-                print("written daily")
                 
 
     async def cog_load(self):
-        self.bot.log(f"daily - start", "purple")
         if not config_dict["autoDaily"]:
             try:
                 await self.bot.unload_extension("cogs.daily")
@@ -95,7 +88,6 @@ class Daily(commands.Cog):
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
                 self.bot.remove_queue(cmd)
-                print(self.bot.calc_time())
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
@@ -107,12 +99,10 @@ class Daily(commands.Cog):
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
-                    print("written daily")
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 self.bot.log("Nu - Daily", "honeydew2")
                 self.bot.remove_queue(cmd)
-                print(self.bot.calc_time())
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
@@ -124,7 +114,6 @@ class Daily(commands.Cog):
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
-                    print("written daily")
 
                 
 async def setup(bot):

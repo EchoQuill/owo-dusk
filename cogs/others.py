@@ -54,7 +54,6 @@ with open("config.json", "r") as config_file:
 class Others(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - others","purple")
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -92,7 +91,6 @@ class Others(commands.Cog):
                 animals = get_emoji_names(message.content)
                 animals.reverse()
                 await asyncio.sleep(random.uniform(1.5,2.3))
-                #print(self.animals)
                 three_animals = min(len(animals), 3) #int
                 for i in range(three_animals):
                     zoo_cmd = {

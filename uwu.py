@@ -17,6 +17,7 @@ from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 from rich.align import Align
+from datetime import datetime
 import discord
 import asyncio
 import logging
@@ -198,25 +199,18 @@ class MyClient(commands.Bot):
     """
     
     def construct_command(self, data):
-        print(data, "   - construct_command")
         prefix = config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
 
     async def put_queue(self, cmd_data, priority=False):
         try:
-            #print(f"{config_dict['setprefix']}{cmd}" if prefix else cmd, check)
             while not self.state or self.captcha:
                 if priority:
                     await self.queue.put(cmd_data)
-                    print(cmd_data)
                     return
-                print("stuck in put_queue")
-                print(self.state)
-                print(self.captcha)
                 await asyncio.sleep(random.uniform(1.4,2.9))
             await self.queue.put(cmd_data)
-            print(cmd_data)
         except Exception as e:
             print(e)
             print("^ at put_queue")
@@ -233,15 +227,19 @@ class MyClient(commands.Bot):
 
 
 
-    def log(self, text, color, bold=False, debug=debug_print):
+    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"]):
         style = f"{color} on black"
         if debug:
-            #frame_info = traceback.extract_stack()[-2]
-            #print(frame_info)
-            #print(f"{frame_info.filename}, {frame_info.lineno}")
-            console.log(text, style=style) # stack_offset changes the line no to the place where log func was called.
+            # Get the stack trace and the caller frame info
+            frame_info = traceback.extract_stack()[-2]
+            filename = os.path.basename(frame_info.filename)
+            lineno = frame_info.lineno
+            current_time = datetime.now().strftime("%H:%M:%S")
+            content_to_print = f"[{current_time}] {text} | [{filename}:{lineno}]"
+            console.print(content_to_print, style=style, markup=False)
         else:
             console.print(text.center(console_width - 2), style=style)
+
 
 
     # send commands
@@ -285,9 +283,7 @@ class MyClient(commands.Bot):
         listUserIds.append(self.user.id)
 
         try:
-            print(f"attempting to get channel {self.channel_id}")
             self.cm = self.get_channel(self.channel_id)
-            print(self.cm)
         except Exception as e:
             print(e)
         """
@@ -300,26 +296,20 @@ class MyClient(commands.Bot):
             self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
             if self.dm == None:
                 self.dm = await (self.fetch_user(self.owo_bot_id)).create_dm()
-            print(self.dm)
         except discord.Forbidden as e:
             print(e)
             print(f"attempting to get user with the help of {self.cm}")
             await self.cm.send(f"{config_dict['setprefix']}ping")
-            print(f"{self.user} send ping command to trigger bot response")
             async for message in self.cm.history(limit=10):
                 if message.author.id == self.owo_bot_id:
-                    print(f"{self.user} found bot!, attempting to create dm")
                     break
             await asyncio.sleep(random.uniform(0.5,0.9))
             self.dm = await message.author.create_dm()
-            print(f"{self.user} created dm {self.dm} successfully!")
-            print(self.dm)
         except Exception as e:
             print(e)
 
         """Fetch slash commands in self.cm"""
         self.slash_commands = []
-        # print(f"{self.user} attempting to get slash commands")
         for command in await self.cm.application_commands():
             if command.application.id == 408785106942164992:
                 self.slash_commands.append(command)
@@ -336,7 +326,6 @@ class MyClient(commands.Bot):
         }
         with lock:
             accounts_dict = load_accounts_dict()
-            print(accounts_dict)
             if str(self.user.id) not in accounts_dict:
                 accounts_dict.update(self.default_config)
                 with open("utils/stats.json", "w") as f:
@@ -344,13 +333,10 @@ class MyClient(commands.Bot):
                 accounts_dict = load_accounts_dict()
 
                 print(f"Default values added for bot ID: {self.user.id}")
-            else:
-                print("Bot ID already exists in accounts.json.")
 
         # Load cogs
         for filename in os.listdir(resource_path("./cogs")):
             if filename.endswith(".py"):
-                print(filename)
                 await self.load_extension(f"cogs.{filename[:-3]}")
         #self.log(f'{self.user}[+] ran hunt', 'purple')
 
@@ -366,9 +352,9 @@ def run_bots(tokens_and_channels):
     for thread in threads:
         thread.join()
 def run_bot(token, channel_id):
-    logging.getLogger("discord.client").setLevel(logging.INFO)
+    logging.getLogger("discord.client").setLevel(logging.ERROR)
     client = MyClient(token, channel_id)
-    client.run(token, log_level=logging.INFO)
+    client.run(token, log_level=logging.ERROR)
 if __name__ == "__main__":
     console.print(owoPanel)
     console.rule(f"[bold blue1]version - {version}", style="navy_blue")

@@ -43,7 +43,6 @@ cmd = {
 class Lottery(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - lottery","purple")
     
     """change to conver times"""
     def time_in_seconds(self, time_to_convert=None):
@@ -53,19 +52,15 @@ class Lottery(commands.Cog):
 
     async def start_lottery(self):
         if str(self.bot.user.id) in accounts_dict:
-            self.bot.log("lottery - 0", "honeydew2")
             self.current_time_seconds = self.time_in_seconds()
             self.last_lottery_time = accounts_dict[str(self.bot.user.id)].get("lottery", 0)
 
             # Time difference calculation
             self.time_diff = self.current_time_seconds - self.last_lottery_time
-            print(self.current_time_seconds, self.last_lottery_time)
-            print(self.time_diff, "time diff")
 
             if self.time_diff < 0:
                 self.last_lottery_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                print(self.bot.calc_time())
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
             await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
@@ -78,7 +73,6 @@ class Lottery(commands.Cog):
                 accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-                print("written lottery")
 
     async def cog_load(self):
         self.bot.log(f"lottery - start", "purple")
@@ -97,7 +91,6 @@ class Lottery(commands.Cog):
                 for embed in message.embeds:
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
                         self.bot.remove_queue(cmd)
-                        print(self.bot.calc_time())
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
                         await self.bot.put_queue(cmd)
@@ -107,7 +100,6 @@ class Lottery(commands.Cog):
                             accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()
                             with open("utils/stats.json", "w") as f:
                                 json.dump(accounts_dict, f, indent=4)
-                            print("written lottery")
                 
 async def setup(bot):
     await bot.add_cog(Lottery(bot))

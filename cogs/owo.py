@@ -29,7 +29,6 @@ cmd = {
 class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - OwO","purple")
 
     @tasks.loop(seconds=1)
     async def send_owo(self):

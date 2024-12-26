@@ -22,7 +22,6 @@ with open("config.json", "r") as config_file:
 class Giveaway(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2","purple")
 
     """Join previous giveaways"""
     async def join_previous_giveaways(self):

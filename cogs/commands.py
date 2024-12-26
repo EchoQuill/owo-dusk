@@ -25,16 +25,12 @@ with open("config.json", "r") as config_file:
 class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - commands", "purple")
         self.bot.checks = []
         self.calc_time = timedelta(0)
 
-    async def start_commands(
-        self, waitTime=config_dict["defaultCooldowns"]["briefCooldown"]
-    ):
+    async def start_commands(self, waitTime=config_dict["defaultCooldowns"]["briefCooldown"]):
         await asyncio.sleep(self.bot.random_float(waitTime))
         self.send_commands.start()
-        self.bot.log(f"{self.bot.user}[+] started sending commands~~", "cyan3")
         self.monitor_checks.start()
 
     async def cog_load(self):
@@ -58,7 +54,7 @@ class Commands(commands.Cog):
                     }
                     """
                     cmd = await self.bot.queue.get()
-                    print(list(self.bot.queue._queue))
+                    #print(list(self.bot.queue._queue))
                     await self.bot.send(self.bot.construct_command(cmd))
                     if cmd.get("checks"):
                         self.bot.checks.append((cmd, datetime.now(timezone.utc)))
@@ -74,34 +70,38 @@ class Commands(commands.Cog):
 
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
-        current_time = datetime.now(timezone.utc)
-        """
-        The [:] creates a new list containing all the same items as the original list.
-        Using it directly may lead to issues if its removed meanwhile
-        Like when owobot lags.
-        """
-        if not self.bot.captcha and self.bot.state:
-            for command, timestamp in self.bot.checks[
-                :
-            ]:  # Loop through a copy to avoid modification issues
-                if (current_time+self.calc_time - timestamp).total_seconds() > 5:
-                    """Put the command back to the queue
-                    Not using any sleeps here as the delay should randomize it enough."""
-                    # self.bot.queue.put(command)
-                    await self.bot.put_queue(command)
-                    self.bot.log(f"added {command} from cmd", "cornflower_blue")
-                    try:
-                        self.bot.checks.remove((command, timestamp))
-                        self.bot.log(
-                            f"removed {command} from cmd, from checks", "cornflower_blue"
-                        )
-                    except:
-                        pass
-            self.calc_time = timedelta(0)
-        else:
-            if hasattr(self, 'last_check_time'):
-                self.calc_time += current_time - self.last_check_time
-            self.last_check_time = current_time
+        try:
+            current_time = datetime.now(timezone.utc)
+            """
+            The [:] creates a new list containing all the same items as the original list.
+            Using it directly may lead to issues if its removed meanwhile
+            Like when owobot lags.
+            """
+            if not self.bot.captcha and self.bot.state:
+                for command, timestamp in self.bot.checks[
+                    :
+                ]:  # Loop through a copy to avoid modification issues
+                    if (current_time+self.calc_time - timestamp).total_seconds() > 7:
+                        """Put the command back to the queue
+                        Not using any sleeps here as the delay should randomize it enough."""
+                        # self.bot.queue.put(command)
+                        await self.bot.put_queue(command)
+                        self.bot.log(f"added {command} from cmd", "cornflower_blue")
+                        try:
+                            self.bot.checks.remove((command, timestamp))
+                            self.bot.log(
+                                f"removed {command} from cmd, from checks", "cornflower_blue"
+                            )
+                        except:
+                            pass
+                self.calc_time = timedelta(0)
+            else:
+                if hasattr(self, 'last_check_time'):
+                    self.calc_time += current_time - self.last_check_time
+                self.last_check_time = current_time
+        except Exception as e:
+            print(e)
+            print("^ at command monitor")
 
 
 

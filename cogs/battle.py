@@ -29,7 +29,6 @@ cmd = {
 class Battle(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - Battle","purple")
     
     async def cog_load(self):
         if not config_dict["commands"]["battle"]["enabled"]:

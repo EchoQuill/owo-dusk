@@ -34,7 +34,6 @@ won_pattern = r"and won <:cowoncy:\d+> ([\d,]+)"
 class Slots(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.log(f"conf2 - Hunt","purple")
         self.cmd = {
             "cmd_name": "slots",
             "cmd_arguments": None,
