@@ -135,17 +135,27 @@
     "gettingOrOpeningCrates": false
   },
   "autoUse": {
-    "autoGem": {
+    "gems": {
+      "enabled": true,
       "order": {
         "lowestToHighest": false
+      },
+      "tiers": {
+        "common": true,
+        "uncommon": true,
+        "rare": true,
+        "epic": true,
+        "mythical": true,
+        "legendary": true,
+        "fabled": false
       },
       "huntGem": false,
       "empoweredGem": false,
       "luckyGem": false,
       "specialGem": false
     },
-    "autoUseLootbox": false,
-    "autoUseCrate": false
+    "lootbox": false,
+    "crate": false
   },
   "customCommands": {
     "enabled": false,

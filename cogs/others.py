@@ -75,10 +75,12 @@ class Others(commands.Cog):
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
-                await self.bot.put_queue(crate_cmd)
+                if config_dict["autoUse"]["crate"]:
+                    await self.bot.put_queue(crate_cmd)
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
-                await self.bot.put_queue(lootbox_cmd)
+                if config_dict["autoUse"]["lootbox"]:
+                    await self.bot.put_queue(lootbox_cmd)
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:
@@ -104,11 +106,6 @@ class Others(commands.Cog):
                     await asyncio.sleep(random.uniform(1.5,2.3))
                 self.bot.log("","orchid1")
                 self.bot.state = True
-
-
-                
-                
-
 
 async def setup(bot):
     await bot.add_cog(Others(bot))
