@@ -15,8 +15,8 @@
       "battle": true,
       "useReactionBotCooldowns": false,
       "delayBetweenCommands": [0.7266, 1.9439],
-      "minCooldown": 12,
-      "maxCooldown": 16,
+      "minCooldown": 16,
+      "maxCooldown": 18,
       "useShortForm": false
     },
     {
