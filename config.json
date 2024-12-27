@@ -136,9 +136,9 @@
   },
   "autoUse": {
     "gems": {
-      "enabled": false,
+      "enabled": true,
       "order": {
-        "lowestToHighest": false
+        "lowestToHighest": true
       },
       "tiers": {
         "common": true,
@@ -146,16 +146,18 @@
         "rare": true,
         "epic": true,
         "mythical": true,
-        "legendary": true,
+        "legendary": false,
         "fabled": false
       },
-      "huntGem": false,
-      "empoweredGem": false,
-      "luckyGem": false,
-      "specialGem": false
+      "gemsToUse": {
+        "huntGem": true,
+        "empoweredGem": true,
+        "luckyGem": true,
+        "specialGem": false
+      }
     },
-    "lootbox": false,
-    "crate": false
+    "lootbox": true,
+    "crate": true
   },
   "customCommands": {
     "enabled": false,
