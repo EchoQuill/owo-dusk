@@ -20,7 +20,7 @@ with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
 cmd = {
-    "cmd_name": "battle",
+    "cmd_name": "b" if config_dict["commands"]["hunt"]["useShortForm"] else "battle",
     "prefix": True,
     "checks": True,
     "retry_count": 0

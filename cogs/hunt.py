@@ -20,7 +20,7 @@ with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
 cmd = {
-    "cmd_name": "hunt",
+    "cmd_name": "h" if config_dict["commands"]["hunt"]["useShortForm"] else "hunt",
     "prefix": True,
     "checks": True,
     "retry_count": 0
@@ -38,6 +38,7 @@ class Hunt(commands.Cog):
                 pass
         else:
             await self.bot.put_queue(cmd)
+            self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
 
     @commands.Cog.listener()
     async def on_message(self, message):
