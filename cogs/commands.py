@@ -37,22 +37,11 @@ class Commands(commands.Cog):
         """Run join_previous_giveaways when bot is ready"""
         asyncio.create_task(self.start_commands())
 
-    """send commands"""
-    @tasks.loop(seconds=0.5)
+    """@tasks.loop()
     async def send_commands(self):
         while not self.bot.queue.empty():
             try:
                 if not self.bot.captcha:
-                    """
-                    DATA EXAMPLE:
-                    command_data = {
-                        "cmd_name": "sell",
-                        "cmd_arguments": rarity_value,
-                        "prefix": True,
-                        "checks": True,
-                        "retry_count": 0
-                    }
-                    """
                     cmd = await self.bot.queue.get()
                     #print(list(self.bot.queue._queue))
                     await self.bot.send(self.bot.construct_command(cmd))
@@ -61,15 +50,27 @@ class Commands(commands.Cog):
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))
-                await self.bot.queue.join()
             except Exception as e:
                 print(f"Error in send_commands loop: {e}")
                 await asyncio.sleep(random.uniform(0.7, 1.2))
-                break
+                break"""
+    
+    """send commands"""
+    @tasks.loop()
+    async def send_commands(self):
+        try:
+            cmd = await self.bot.queue.get()
+            await self.bot.send(self.bot.construct_command(cmd))
+            if cmd.get("checks"):
+                self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+            await asyncio.sleep(random.uniform(0.7, 1.2))
+        except Exception as e:
+            print(f"Error in send_commands loop: {e}")
+            await asyncio.sleep(random.uniform(0.7, 1.2))
 
     """TASK: check monitor"""
 
-    @tasks.loop(seconds=2)
+    @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
             current_time = datetime.now(timezone.utc)
