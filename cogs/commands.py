@@ -38,7 +38,7 @@ class Commands(commands.Cog):
         asyncio.create_task(self.start_commands())
 
     """send commands"""
-    @tasks.loop()
+    @tasks.loop(seconds=0.5)
     async def send_commands(self):
         while not self.bot.queue.empty():
             try:
@@ -61,6 +61,7 @@ class Commands(commands.Cog):
                     await asyncio.sleep(random.uniform(0.7, 1.2))
                 else:
                     await asyncio.sleep(random.uniform(0.7, 1.2))
+                await self.bot.queue.join()
             except Exception as e:
                 print(f"Error in send_commands loop: {e}")
                 await asyncio.sleep(random.uniform(0.7, 1.2))
@@ -68,7 +69,7 @@ class Commands(commands.Cog):
 
     """TASK: check monitor"""
 
-    @tasks.loop(seconds=1)
+    @tasks.loop(seconds=2)
     async def monitor_checks(self):
         try:
             current_time = datetime.now(timezone.utc)
