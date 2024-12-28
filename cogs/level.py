@@ -21,12 +21,22 @@ from discord.ext.commands import ExtensionNotLoaded
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
+quotes_url = "https://favqs.com/api/qotd"
+
 def generate_random_string():
     """something like a list?"""
     characters = string.ascii_lowercase + ' '
     length = random.randint(config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
     random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
+
+async def fetch_quotes(session):
+    async with session.get(quotes_url) as response:
+        if response.status == 200:
+            data = await response.json()
+            quote = data["quote"]["body"]  # data[0]["quote"]
+            return quote
+
 
 
 class Level(commands.Cog):
@@ -44,8 +54,12 @@ class Level(commands.Cog):
     async def start_level_grind(self):
         try:
             await asyncio.sleep(self.bot.random_float(config_dict["commands"]["lvlGrind"]["cooldown"]))
-            self.last_level_grind_message = generate_random_string()
+            if config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
+                fetch_quotes(self.bot.session)
+            else:
+                self.last_level_grind_message = generate_random_string()
             self.cmd["cmd_name"] = self.last_level_grind_message
+
             await self.bot.put_queue(self.cmd)
         except Exception as e:
             print(e)
