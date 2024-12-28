@@ -45,7 +45,7 @@ class Slots(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["gamble"]["slots"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.slots")
+                asyncio.create_task(self.bot.unload_cog("cogs.slots"))
             except ExtensionNotLoaded:
                 pass
         else:

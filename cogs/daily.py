@@ -76,7 +76,7 @@ class Daily(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["autoDaily"]:
             try:
-                await self.bot.unload_extension("cogs.daily")
+                asyncio.create_task(self.bot.unload_cog("cogs.daily"))
             except ExtensionNotLoaded:
                 pass
         else:

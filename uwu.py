@@ -190,7 +190,11 @@ class MyClient(commands.Bot):
             # Read the JSON data directly
             self.config_dict = json.load(config_file)
 
-
+    async def unload_cog(self, cog_name):
+        try:
+            await self.unload_extension(cog_name)
+        except Exception as e:
+            print(e)
         
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):

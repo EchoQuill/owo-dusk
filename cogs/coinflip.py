@@ -46,9 +46,12 @@ class Coinflip(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["gamble"]["coinflip"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.coinflip")
-            except ExtensionNotLoaded:
-                pass
+                print("unloading coinflip")
+                asyncio.create_task(self.bot.unload_cog("cogs.coinflip"))
+            except ExtensionNotLoaded as e:
+                print(e)
+            except Exception as e:
+                print(e)
         else:
             asyncio.create_task(self.start_cf(startup=True))
 

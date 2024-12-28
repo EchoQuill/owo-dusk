@@ -31,7 +31,7 @@ class Battle(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["battle"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.battle")
+                asyncio.create_task(self.bot.unload_cog("cogs.battle"))
             except:
                 pass
         await self.bot.put_queue(self.cmd)

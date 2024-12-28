@@ -54,7 +54,7 @@ class Giveaway(commands.Cog):
             asyncio.create_task(self.join_previous_giveaways())
         else:
             try:
-                await self.bot.unload_extension("cogs.giveaway")
+                asyncio.create_task(self.bot.unload_cog("cogs.giveaway"))
             except ExtensionNotLoaded:
                 pass
     

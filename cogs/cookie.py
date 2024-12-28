@@ -74,7 +74,7 @@ class Cookie(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["cookie"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.cookie")
+                asyncio.create_task(self.bot.unload_cog("cogs.cookie"))
             except ExtensionNotLoaded:
                 pass
         else:

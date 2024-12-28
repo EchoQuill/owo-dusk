@@ -68,7 +68,7 @@ class Level(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["lvlGrind"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.level")
+                asyncio.create_task(self.bot.unload_cog("cogs.level"))
             except ExtensionNotLoaded:
                 pass
         else:

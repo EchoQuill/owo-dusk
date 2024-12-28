@@ -57,7 +57,7 @@ class Sell(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["sell"]["enabled"] and not self.bot.config_dict["commands"]["sac"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.sell")
+                asyncio.create_task(self.bot.unload_cog("cogs.sell"))
             except ExtensionNotLoaded:
                 pass
         else:

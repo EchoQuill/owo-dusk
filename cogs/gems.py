@@ -148,7 +148,7 @@ class Gems(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["hunt"]["enabled"] or not self.bot.config_dict["autoUse"]["gems"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.gems")
+                asyncio.create_task(self.bot.unload_cog("cogs.gems"))
             except ExtensionNotLoaded:
                 pass
 

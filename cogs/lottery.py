@@ -79,7 +79,7 @@ class Lottery(commands.Cog):
         self.bot.log(f"lottery - start", "purple")
         if not self.bot.config_dict["commands"]["lottery"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.lottery")
+                asyncio.create_task(self.bot.unload_cog("cogs.lottery"))
             except ExtensionNotLoaded:
                 pass
         else:

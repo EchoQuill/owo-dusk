@@ -79,7 +79,7 @@ class Pray(commands.Cog):
         try:
             if not self.bot.config_dict["commands"]["pray"]["enabled"] and not self.bot.config_dict["commands"]["curse"]["enabled"]:
                 try:
-                    await self.bot.unload_extension("cogs.pray")
+                    asyncio.create_task(self.bot.unload_cog("cogs.pray"))
                 except ExtensionNotLoaded:
                     pass
             else:

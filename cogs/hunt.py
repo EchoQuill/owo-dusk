@@ -32,7 +32,7 @@ class Hunt(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["hunt"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.hunt")
+                asyncio.create_task(self.bot.unload_cog("cogs.hunt"))
             except ExtensionNotLoaded:
                 pass
         else:

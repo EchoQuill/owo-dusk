@@ -39,7 +39,7 @@ class Owo(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["owo"]["enabled"]:
             try:
-                await self.bot.unload_extension("cogs.owo")
+                asyncio.create_task(self.bot.unload_cog("cogs.owo"))
             except ExtensionNotLoaded:
                 pass
         else:
