@@ -227,7 +227,7 @@ class MyClient(commands.Bot):
 
 
 
-    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"]):
+    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"]):
         style = f"{color} on black"
         if debug:
             # Get the stack trace and the caller frame info
@@ -237,6 +237,10 @@ class MyClient(commands.Bot):
             current_time = datetime.now().strftime("%H:%M:%S")
             content_to_print = f"[{current_time}] {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=style, markup=False)
+            if save_log:
+                with open("logs.txt", "a") as log:  # Open in append mode
+                    log.write(f"{text}\n")
+
         else:
             console.print(text.center(console_width - 2), style=style)
 
@@ -338,6 +342,7 @@ class MyClient(commands.Bot):
         for filename in os.listdir(resource_path("./cogs")):
             if filename.endswith(".py"):
                 await self.load_extension(f"cogs.{filename[:-3]}")
+                #print(filename)
         #self.log(f'{self.user}[+] ran hunt', 'purple')
 
         
