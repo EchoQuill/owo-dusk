@@ -46,9 +46,11 @@ class Pray(commands.Cog):
             "checks": True,
             "retry_count": 0
         }
+        self.cmd_names = []
 
 
-    async def start_pray_curse(self, cmd=None, startup=False):
+    async def start_pray_curse(self, startup=False):
+        cmd = random.choice(self.cmd_names)
         if cmd not in ["pray", "curse"]:
             raise ValueError("Invalid cmd argument, must be 'pray' or 'curse'.")
         if self.bot.config_dict["commands"][cmd]["enabled"]:
@@ -83,10 +85,16 @@ class Pray(commands.Cog):
                 except ExtensionNotLoaded:
                     pass
             else:
+                if self.bot.config_dict["commands"]["pray"]["enabled"] and self.bot.config_dict["commands"]["curse"]["enabled"]:
+                    self.cmd_names = ["pray", "curse"]
                 if self.bot.config_dict["commands"]["pray"]["enabled"]:
-                    asyncio.create_task(self.start_pray_curse("pray", startup=True))
+                    asyncio.create_task(self.start_pray_curse(startup=True))
+                    if not self.cmd_names:
+                        self.cmd_names = ["pray"]
                 else:
-                    asyncio.create_task(self.start_pray_curse("curse", startup=True))
+                    asyncio.create_task(self.start_pray_curse(startup=True))
+                    if not self.cmd_names:
+                        self.cmd_names = ["curse"]
         except Exception as e:
             print(e)
     
@@ -105,13 +113,13 @@ class Pray(commands.Cog):
             or "Slow down and try the command again" in message.content) and
             self.bot.config_dict['commands']['pray']['enabled']):
                 self.bot.log("recieved pray", "green")
-                await self.start_pray_curse("pray")
+                await self.start_pray_curse()
             """curse"""
             if ((f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.config_dict['commands']['curse']['userid']}>**!" in message.content
             or f"<@{self.bot.user.id}>** is now cursed." in message.content 
             or "Slow down and try the command again" in message.content) and
             self.bot.config_dict['commands']['curse']['enabled']):
-                await self.start_pray_curse("curse")
+                await self.start_pray_curse()
                 
                 
                 
