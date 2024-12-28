@@ -18,15 +18,14 @@ import json
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
+
 
 quotes_url = "https://favqs.com/api/qotd"
 
-def generate_random_string():
+def generate_random_string(min, max):
     """something like a list?"""
     characters = string.ascii_lowercase + ' '
-    length = random.randint(config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
+    length = random.randint(min,max)
     random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
 
@@ -53,11 +52,11 @@ class Level(commands.Cog):
 
     async def start_level_grind(self):
         try:
-            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["lvlGrind"]["cooldown"]))
-            if config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["lvlGrind"]["cooldown"]))
+            if self.bot.config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
                 fetch_quotes(self.bot.session)
             else:
-                self.last_level_grind_message = generate_random_string()
+                self.last_level_grind_message = generate_random_string(config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
             self.cmd["cmd_name"] = self.last_level_grind_message
 
             await self.bot.put_queue(self.cmd)
@@ -67,7 +66,7 @@ class Level(commands.Cog):
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not config_dict["commands"]["lvlGrind"]["enabled"]:
+        if not self.bot.config_dict["commands"]["lvlGrind"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.level")
             except ExtensionNotLoaded:

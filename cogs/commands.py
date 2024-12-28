@@ -18,9 +18,6 @@ from discord.ext import commands, tasks
 from datetime import datetime, timezone, timedelta
 
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
-
 
 class Commands(commands.Cog):
     def __init__(self, bot):
@@ -28,8 +25,8 @@ class Commands(commands.Cog):
         self.bot.checks = []
         self.calc_time = timedelta(0)
 
-    async def start_commands(self, waitTime=config_dict["defaultCooldowns"]["briefCooldown"]):
-        await asyncio.sleep(self.bot.random_float(waitTime))
+    async def start_commands(self):
+        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
         self.send_commands.start()
         self.monitor_checks.start()
 

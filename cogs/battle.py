@@ -16,27 +16,25 @@ import json
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
 
-cmd = {
-    "cmd_name": "b" if config_dict["commands"]["hunt"]["useShortForm"] else "battle",
-    "prefix": True,
-    "checks": True,
-    "retry_count": 0
-}
 
 class Battle(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.cmd = {
+            "cmd_name": "b" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "battle",
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0
+        }
     
     async def cog_load(self):
-        if not config_dict["commands"]["battle"]["enabled"]:
+        if not self.bot.config_dict["commands"]["battle"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.battle")
             except:
                 pass
-        await self.bot.put_queue(cmd)
+        await self.bot.put_queue(self.cmd)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -47,14 +45,14 @@ class Battle(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
-                            self.bot.remove_queue(cmd)
+                            self.bot.remove_queue(self.cmd)
                             self.bot.log(f"Removed battle from checks from main","cornflower_blue")
-                            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
+                            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
                             """
                             self.bot.checks.remove((command, timestamp))
                             is not used to prevent valueerror and better error management
                             """
-                            await self.bot.put_queue(cmd)
+                            await self.bot.put_queue(self.cmd)
                             self.bot.log(f"Added battle to queue again from main","cornflower_blue")
         except Exception as e:
             print(e)

@@ -16,28 +16,27 @@ import json
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
 
-cmd = {
-    "cmd_name": "h" if config_dict["commands"]["hunt"]["useShortForm"] else "hunt",
-    "prefix": True,
-    "checks": True,
-    "retry_count": 0
-}
+
 
 class Hunt(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.cmd = {
+            "cmd_name": "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt",
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0
+        }
 
     async def cog_load(self):
-        if not config_dict["commands"]["hunt"]["enabled"]:
+        if not self.bot.config_dict["commands"]["hunt"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.hunt")
             except ExtensionNotLoaded:
                 pass
         else:
-            await self.bot.put_queue(cmd)
+            await self.bot.put_queue(self.cmd)
             self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
 
     @commands.Cog.listener()
@@ -45,10 +44,10 @@ class Hunt(commands.Cog):
         try:
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
-                    self.bot.remove_queue(cmd)
+                    self.bot.remove_queue(self.cmd)
                     self.bot.log(f"Removed hunt from checks from main","cornflower_blue")
-                    await asyncio.sleep(self.bot.random_float(config_dict["commands"]["hunt"]["cooldown"]))
-                    await self.bot.put_queue(cmd)
+                    await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
+                    await self.bot.put_queue(self.cmd)
                     self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
         except Exception as e:
             print(e)

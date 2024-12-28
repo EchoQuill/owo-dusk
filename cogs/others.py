@@ -48,9 +48,6 @@ def get_emoji_names(text, emoji_dict=emoji_dict):
     return emoji_names
 
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
-
 class Others(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -74,17 +71,17 @@ class Others(commands.Cog):
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
-                if config_dict["autoUse"]["crate"]:
+                if self.bot.config_dict["autoUse"]["crate"]:
                     await self.bot.put_queue(crate_cmd)
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
-                if config_dict["autoUse"]["lootbox"]:
+                if self.bot.config_dict["autoUse"]["lootbox"]:
                     await self.bot.put_queue(lootbox_cmd)
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:
                 self.bot.state = False
-                await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
+                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
                 await self.bot.send("zoo", bypass=True)
 
             elif "s zoo! **" in message.content:

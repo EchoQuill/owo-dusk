@@ -28,19 +28,18 @@ def load_dict():
     global accounts_dict
     accounts_dict = load_json_dict()
 load_dict()
-config_dict = load_json_dict("config.json")
 
-cmd = {
-    "cmd_name": "cookie",
-    "cmd_arguments": f"<@{config_dict['commands']['cookie']['userid']}>" if config_dict["commands"]["cookie"]["pingUser"] else "",
-    "prefix": True,
-    "checks": True,
-    "retry_count": 0
-}
 
 class Cookie(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.cmd = {
+            "cmd_name": "cookie",
+            "cmd_arguments": f"<@{self.bot.config_dict['commands']['cookie']['userid']}>" if self.bot.config_dict["commands"]["cookie"]["pingUser"] else "",
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0
+        }
     
     """change to conver times"""
     def time_in_seconds(self, time_to_convert=None):
@@ -62,8 +61,8 @@ class Cookie(commands.Cog):
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
-            await self.bot.put_queue(cmd, priority=True)
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.put_queue(self.cmd, priority=True)
             self.bot.log("put to queue - cookie", "honeydew2")
 
             with lock:
@@ -73,7 +72,7 @@ class Cookie(commands.Cog):
                     json.dump(accounts_dict, f, indent=4)
 
     async def cog_load(self):
-        if not config_dict["commands"]["cookie"]["enabled"]:
+        if not self.bot.config_dict["commands"]["cookie"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.cookie")
             except ExtensionNotLoaded:
@@ -85,11 +84,11 @@ class Cookie(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "You got a cookie from" in message.content or "Nu! You need to wait" in message.content:
-                self.bot.remove_queue(cmd)
+                self.bot.remove_queue(self.cmd)
 
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                await self.bot.put_queue(cmd, priority=True)
+                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await self.bot.put_queue(self.cmd, priority=True)
                 self.bot.log("put to queue - cookie", "honeydew2")
                 with lock:
                     load_dict()

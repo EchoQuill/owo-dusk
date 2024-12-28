@@ -18,8 +18,7 @@ import random
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
+
 
 """
 Ok so technically,
@@ -45,7 +44,7 @@ class Coinflip(commands.Cog):
 
 
     async def cog_load(self):
-        if not config_dict["gamble"]["coinflip"]["enabled"]:
+        if not self.bot.config_dict["gamble"]["coinflip"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.coinflip")
             except ExtensionNotLoaded:
@@ -56,16 +55,16 @@ class Coinflip(commands.Cog):
     async def start_cf(self, startup=False):
         try:
             if startup:
-                await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             else:
                 """self.bot.remove_queue(self.cmd)
                 self.bot.log("queue removed - cf", "purple")"""
-                await asyncio.sleep(self.bot.random_float(config_dict["gamble"]["coinflip"]["cooldown"]))
+                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["coinflip"]["cooldown"]))
             
 
-            self.cmd["cmd_arguments"] = str(config_dict["gamble"]["coinflip"]["startValue"]*(config_dict["gamble"]["coinflip"]["multiplierOnLose"]**self.turns_lost))
-            if config_dict["gamble"]["coinflip"]["options"]:
-                self.cmd["cmd_arguments"]+=f" {random.choice(config_dict["gamble"]["coinflip"]["options"])}"
+            self.cmd["cmd_arguments"] = str(self.bot.config_dict["gamble"]["coinflip"]["startValue"]*(self.bot.config_dict["gamble"]["coinflip"]["multiplierOnLose"]**self.turns_lost))
+            if self.bot.config_dict["gamble"]["coinflip"]["options"]:
+                self.cmd["cmd_arguments"]+=f" {random.choice(self.bot.config_dict["gamble"]["coinflip"]["options"])}"
             await self.bot.put_queue(self.cmd)
             self.bot.log("queue put cf", "purple")
         except Exception as e:

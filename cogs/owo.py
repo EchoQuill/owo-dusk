@@ -16,8 +16,7 @@ import json
 from discord.ext import commands, tasks
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
+
 
 cmd = {
     "cmd_name": "owo",
@@ -34,11 +33,11 @@ class Owo(commands.Cog):
     async def send_owo(self):
         if not self.bot.captcha and self.bot.state:
             await self.bot.put_queue(cmd)
-            await asyncio.sleep(self.bot.random_float(config_dict["commands"]["owo"]["cooldown"]))
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["owo"]["cooldown"]))
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not config_dict["commands"]["owo"]["enabled"]:
+        if not self.bot.config_dict["commands"]["owo"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.owo")
             except ExtensionNotLoaded:

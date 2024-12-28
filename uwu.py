@@ -179,7 +179,16 @@ class MyClient(commands.Bot):
         self.captcha = False
         self.balance = 0
         self.queue = asyncio.Queue()
+        self.config_dict = None
+        self.update_config()
 
+
+
+    """Update config.json"""
+    def update_config(self):
+        with open("config.json", "r") as config_file:
+            # Read the JSON data directly
+            self.config_dict = json.load(config_file)
 
 
         

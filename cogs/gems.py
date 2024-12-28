@@ -17,8 +17,6 @@ import re
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
 
 """
 REF :- 
@@ -66,7 +64,7 @@ def find_gems_available(message):
         available_gems[item[0]] = convert_small_numbers(item[1])
     return available_gems
 
-def get_gems_group(available_gems):
+def get_gems_group(available_gems, config_dict):
     gem_type = {
         0: "huntGem",
         1: "empoweredGem",
@@ -148,7 +146,7 @@ class Gems(commands.Cog):
         }
 
     async def cog_load(self):
-        if not config_dict["commands"]["hunt"]["enabled"] or not config_dict["autoUse"]["gems"]["enabled"]:
+        if not self.bot.config_dict["commands"]["hunt"]["enabled"] or not self.bot.config_dict["autoUse"]["gems"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.gems")
             except ExtensionNotLoaded:
@@ -167,13 +165,12 @@ class Gems(commands.Cog):
             self.bot.remove_queue(self.inv_cmd)
             if not self.available_gems:
                 self.available_gems = find_gems_available(message.content)
-            self.grouped_gems = get_gems_group(self.available_gems)
+            self.grouped_gems = get_gems_group(self.available_gems, config_dict=self.bot.config_dict)
             for i in self.grouped_gems[0]:
                 self.gem_cmd["cmd_arguments"]+=f" {i}"
             await self.bot.put_queue(self.gem_cmd, priority=True)
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["briefCooldown"]))
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
             self.bot.state = True
 
 async def setup(bot):
     await bot.add_cog(Gems(bot))
-

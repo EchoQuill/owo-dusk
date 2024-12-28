@@ -18,8 +18,6 @@ import random
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
 
 """
 Ok so technically,
@@ -45,7 +43,7 @@ class Slots(commands.Cog):
 
 
     async def cog_load(self):
-        if not config_dict["gamble"]["slots"]["enabled"]:
+        if not self.bot.config_dict["gamble"]["slots"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.slots")
             except ExtensionNotLoaded:
@@ -56,14 +54,14 @@ class Slots(commands.Cog):
     async def start_slots(self, startup=False):
         try:
             if startup:
-                await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             else:
                 self.bot.remove_queue(self.cmd)
                 self.bot.log("queue removed - slots", "purple")
-                await asyncio.sleep(self.bot.random_float(config_dict["gamble"]["slots"]["cooldown"]))
+                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["slots"]["cooldown"]))
             
 
-            self.cmd["cmd_arguments"] = str(config_dict["gamble"]["slots"]["startValue"]*(config_dict["gamble"]["slots"]["multiplierOnLose"]**self.turns_lost))
+            self.cmd["cmd_arguments"] = str(self.bot.config_dict["gamble"]["slots"]["startValue"]*(self.bot.config_dict["gamble"]["slots"]["multiplierOnLose"]**self.turns_lost))
             await self.bot.put_queue(self.cmd)
             self.bot.log("queue put slots", "purple")
         except Exception as e:
@@ -97,7 +95,7 @@ class Slots(commands.Cog):
                     except Exception as e:
                         print(e)
                         print("failed to fetch cf value, falling back!")
-                        match = config_dict["gamble"]["coinflip"]["startValue"]*2 #the 
+                        match = self.bot.config_dict["gamble"]["coinflip"]["startValue"]*2 #the 
                     self.bot.log(f"won slots by {match}", "green")
                     self.turns_lost = 0
                     await self.start_slots()

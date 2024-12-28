@@ -29,20 +29,21 @@ def load_dict():
     global accounts_dict
     accounts_dict = load_json_dict()
 load_dict()
-config_dict = load_json_dict("config.json")
 
-cmd = {
-    "cmd_name": "lottery",
-    "cmd_arguments": config_dict['commands']['lottery']['amount'],
-    "prefix": True,
-    "checks": True,
-    "retry_count": 0
-}
+
 
 
 class Lottery(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        cmd = {
+            "cmd_name": "lottery",
+            "cmd_arguments": self.bot.config_dict['commands']['lottery']['amount'],
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0
+        }
     
     """change to conver times"""
     def time_in_seconds(self, time_to_convert=None):
@@ -63,9 +64,9 @@ class Lottery(commands.Cog):
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
-            #self.bot.queue.put(["lottery", f" {config_dict["commands"]["lottery"]["amount"]}"])
-            await self.bot.put_queue(cmd)
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            #self.bot.queue.put(["lottery", f" {self.bot.config_dict["commands"]["lottery"]["amount"]}"])
+            await self.bot.put_queue(self.cmd)
             self.bot.log("put to queue - lottry", "honeydew2")
 
             with lock:
@@ -76,7 +77,7 @@ class Lottery(commands.Cog):
 
     async def cog_load(self):
         self.bot.log(f"lottery - start", "purple")
-        if not config_dict["commands"]["lottery"]["enabled"]:
+        if not self.bot.config_dict["commands"]["lottery"]["enabled"]:
             try:
                 await self.bot.unload_extension("cogs.lottery")
             except ExtensionNotLoaded:
@@ -90,10 +91,10 @@ class Lottery(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
-                        self.bot.remove_queue(cmd)
+                        self.bot.remove_queue(self.cmd)
                         await asyncio.sleep(self.bot.calc_time())
-                        await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
-                        await self.bot.put_queue(cmd)
+                        await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                        await self.bot.put_queue(self.cmd)
                         self.bot.log("put to queue - Lottery", "honeydew2")
                         with lock:
                             load_dict()

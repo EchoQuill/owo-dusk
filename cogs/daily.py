@@ -35,7 +35,7 @@ def load_dict():
     global accounts_dict
     accounts_dict = load_json_dict()
 load_dict()
-config_dict = load_json_dict("config.json")
+
 
 
 class Daily(commands.Cog):
@@ -61,7 +61,7 @@ class Daily(commands.Cog):
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(config_dict["defaultCooldowns"]["shortCooldown"]))
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             await self.bot.put_queue(cmd, priority=True)
             self.bot.state = False
             self.bot.log("put to queue - Daily", "honeydew2")
@@ -74,7 +74,7 @@ class Daily(commands.Cog):
                 
 
     async def cog_load(self):
-        if not config_dict["autoDaily"]:
+        if not self.bot.config_dict["autoDaily"]:
             try:
                 await self.bot.unload_extension("cogs.daily")
             except ExtensionNotLoaded:
@@ -90,7 +90,7 @@ class Daily(commands.Cog):
                 self.bot.remove_queue(cmd)
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 self.bot.state = False
                 self.bot.log("put to queue - Daily", "honeydew2")
@@ -105,7 +105,7 @@ class Daily(commands.Cog):
                 self.bot.remove_queue(cmd)
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 self.bot.state = False
                 self.bot.log("put to queue - Daily", "honeydew2")
