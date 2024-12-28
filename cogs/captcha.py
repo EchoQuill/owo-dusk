@@ -18,6 +18,7 @@ import os
 
 from discord.ext import commands
 from discord import DMChannel
+from tkinter import messagebox
 
 
 with open("config.json", "r") as config_file:
@@ -25,6 +26,8 @@ with open("config.json", "r") as config_file:
 
 list_captcha = ["human", "captcha", "link", "letterword"]
 
+def show_popup():
+    messagebox.showinfo("OwO-Dusk notifier", "Captcha Detected!")
 
 def clean(msg):
     return re.sub(r"[^a-zA-Z]", "", msg)
@@ -67,29 +70,36 @@ def run_system_command(command, timeout, retry=False, delay=5):
         if retry:
             print(f"-system[0] Retrying '{command}' after {delay}s")
             time.sleep(delay)
-            run_system_command(command, timeout, retry=False)
+            run_system_command(command, timeout)
 
 def get_channel_name(channel):
     if isinstance(channel, DMChannel):
         return "owo DMs"
     return channel.name
 
+def console_handler(captcha=True):
+    if config_dict["console"]["runConsoleCommandOnCaptcha"] and captcha:
+        run_system_command(config_dict["console"]["commandToRunOnCaptcha"], timeout=5)
+    elif config_dict["console"]["runConsoleCommandOnBan"] and not captcha:
+        run_system_command(config_dict["console"]["commandToRunOnBan"], timeout=5)
+
 def captcha_handler(channel, username, captcha_type):
     
     channel_name = get_channel_name(channel)
+    content = 'captchaContent' if not captcha_type=="Ban" else 'bannedContent'
     """Notifications"""
     if config_dict["captcha"]["notifications"]["enabled"]:
         try:
             if on_mobile:
                 run_system_command(
-                    f"termux-notification -c '{config_dict['captcha']['notifications']['captchaContent'].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
+                    f"termux-notification -c '{config_dict['captcha']['notifications'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
                     timeout=5, 
                     retry=True
                     )
             else:
                 notification.notify(
                     title=f'{username} DETECTED CAPTCHA',
-                    message=config_dict["captcha"]["notifications"]["captchaContent"].format(username=username,channelname=channel_name,captchatype=captcha_type),
+                    message=config_dict['captcha']['notifications'][content].format(username=username,channelname=channel_name,captchatype=captcha_type),
                     app_icon=None,
                     timeout=15
                     )
@@ -115,7 +125,7 @@ def captcha_handler(channel, username, captcha_type):
         try:
             if on_mobile:
                 run_system_command(
-                    f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} '{config_dict['captcha']['toastOrPopup']['captchaContent'].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
+                    f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} '{config_dict['captcha']['toastOrPopup'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
                     timeout=5,
                     retry=True
                     )
@@ -141,7 +151,7 @@ def captcha_handler(channel, username, captcha_type):
         try:
             if on_mobile:
                 run_system_command(
-                        f"termux-tts-speak {config_dict['captcha']['termux']['textToSpeech']['content']}",
+                        f"termux-tts-speak {config_dict['captcha']['termux']['textToSpeech'][content]}",
                         timeout=7,
                         retry=False
                     )
@@ -156,19 +166,13 @@ class Captcha(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if (
-            message.channel.id == self.bot.dm.id
-            and message.author.id == self.bot.owo_bot_id
-        ):
+        if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
                 self.bot.captcha = False
                 self.bot.log(f"captcha solved! - {self.bot.user}", "chartreuse3")
                 return
 
-        if (
-            message.channel.id in {self.bot.dm.id, self.bot.cm.id}
-            and message.author.id == self.bot.owo_bot_id
-        ):
+        if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
             """sets may be faster than list..? maybe.."""
             if (
                 (
@@ -196,6 +200,15 @@ class Captcha(commands.Cog):
                 self.bot.captcha = True
                 self.bot.log(f"captcha detected! - {self.bot.user}", "indian_red")
                 captcha_handler(message.channel, self.bot.user, "Link")
+                console_handler()
+
+            elif "**☠ |** You have been banned" in message.content:
+                self.bot.captcha = True
+                captcha_handler(message.channel, self.bot.user, "Ban")
+                console_handler(captcha=False)
+
+            
+        
 
 
 async def setup(bot):
