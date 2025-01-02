@@ -19,13 +19,6 @@ from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
 
-"""
-Ok so technically,
-2*2 =4 = 2*(2)
-4*2 = 8 = 2*(2*2)
-8*2 = 16 = 2*(2*2*2)
-"""
-
 won_pattern = r"and won <:cowoncy:\d+> ([\d,]+)"
 
 

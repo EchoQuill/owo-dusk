@@ -33,24 +33,6 @@ class Commands(commands.Cog):
     async def cog_load(self):
         """Run join_previous_giveaways when bot is ready"""
         asyncio.create_task(self.start_commands())
-
-    """@tasks.loop()
-    async def send_commands(self):
-        while not self.bot.queue.empty():
-            try:
-                if not self.bot.captcha:
-                    cmd = await self.bot.queue.get()
-                    #print(list(self.bot.queue._queue))
-                    await self.bot.send(self.bot.construct_command(cmd))
-                    if cmd.get("checks"):
-                        self.bot.checks.append((cmd, datetime.now(timezone.utc)))
-                    await asyncio.sleep(random.uniform(0.7, 1.2))
-                else:
-                    await asyncio.sleep(random.uniform(0.7, 1.2))
-            except Exception as e:
-                print(f"Error in send_commands loop: {e}")
-                await asyncio.sleep(random.uniform(0.7, 1.2))
-                break"""
     
     """send commands"""
     @tasks.loop()

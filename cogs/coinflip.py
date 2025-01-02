@@ -19,14 +19,6 @@ from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
 
-
-"""
-Ok so technically,
-2*2 =4 = 2*(2)
-4*2 = 8 = 2*(2*2)
-8*2 = 16 = 2*(2*2*2)
-"""
-
 won_pattern = r"you won \*\*<:cowoncy:\d+> ([\d,]+)"
 
 
@@ -46,7 +38,6 @@ class Coinflip(commands.Cog):
     async def cog_load(self):
         if not self.bot.config_dict["gamble"]["coinflip"]["enabled"]:
             try:
-                print("unloading coinflip")
                 asyncio.create_task(self.bot.unload_cog("cogs.coinflip"))
             except ExtensionNotLoaded as e:
                 print(e)

@@ -56,7 +56,7 @@ class Level(commands.Cog):
             if self.bot.config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
                 fetch_quotes(self.bot.session)
             else:
-                self.last_level_grind_message = generate_random_string(config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
+                self.last_level_grind_message = generate_random_string(self.bot.config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], self.bot.config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
             self.cmd["cmd_name"] = self.last_level_grind_message
 
             await self.bot.put_queue(self.cmd)

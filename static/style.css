@@ -1,0 +1,649 @@
+/*
+This file is part of owo-dusk.
+
+Copyright (c) 2024-present EchoQuill
+
+Portions of this file are based on code by EchoQuill, licensed under the
+GNU General Public License v3.0 (GPL-3.0).
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Website originally created by TheNabbu (https://github.com/TheNabbu)
+for the project Slashy (https://github.com/TahaGorme/slashy), licensed
+under the MIT License. For details, see:
+https://github.com/TahaGorme/slashy/blob/main/LICENSE
+
+This file has been modified for OwO-Dusk, under permission and in
+compliance with the MIT License.
+
+Modified version licensed under GPL-3.0.
+*/
+
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/*
+I am aware that I am still using names from slashy for containers and stuff
+I'll rename them to  a suitable name when I have time
+*/
+
+* {
+  padding: 0;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background-color: #000000;
+  color: #fff;
+}
+
+.logo,
+nav {
+  align-items: center;
+}
+
+nav {
+  width: 100%;
+  height: 57px;
+  display: flex;
+}
+.logo {
+  display: grid;
+  grid-template-columns: 42px 91px 198px;
+  grid-template-rows: 80px;
+  gap: 0 0;
+  grid-auto-flow: row;
+  grid-template-areas: ". . .";
+}
+.icon {
+  width: 42px;
+  margin-left: 8px;
+}
+
+.lt,
+.ss {
+  color: #ff79c3;
+}
+
+.lt {
+  font-size: 20px;
+  width: 91px;
+  margin-left: 15px;
+}
+
+.ss {
+  height: 45px;
+  width: 160px;
+  background-color: #080808;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.support {
+  position: absolute;
+  right: 8px;
+}
+.login {
+  position: absolute;
+  right: 8px;
+}
+
+.container {
+  display: grid;
+  margin-top: 20px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px 15px;
+  grid-auto-flow: row;
+  grid-template-areas: "main cmds cd adds" "balance cmds cd extra";
+}
+
+.main {
+  grid-area: main;
+  background-color: #040404;
+  border: 2px solid purple;
+  border-radius: 10px;
+}
+
+.adds,
+.balance,
+.cd,
+.cmds,
+.extra {
+  grid-area: balance;
+  background-color: #040404;
+  border: 2px solid purple;
+  border-radius: 10px;
+}
+
+.cmdArea {
+  background-color: #040404;
+  border: 2px solid purple;
+  border-radius: 10px;
+}
+
+.balance {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.balance::-webkit-scrollbar {
+  /* WebKit */
+  width: 0;
+  height: 0;
+}
+.adds,
+.cd,
+.cmds,
+.extra {
+  grid-area: cmds;
+  border: 2px solid purple;
+}
+
+.adds,
+.cd,
+.extra {
+  grid-area: cd;
+  border: 2px solid purple;
+}
+
+.adds,
+.extra {
+  grid-area: adds;
+}
+
+.extra {
+  grid-area: extra;
+}
+
+.ht {
+  color: #ffffff;
+  width: 100%;
+  font-size: 20px;
+  text-align: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.tgl {
+  display: none;
+}
+
+.tgl,
+.tgl *,
+.tgl :after,
+.tgl :before,
+.tgl + .tgl-btn,
+.tgl:after,
+.tgl:before {
+  box-sizing: border-box;
+}
+
+.tgl ::selection,
+.tgl :after::selection,
+.tgl :before::selection,
+.tgl + .tgl-btn::selection,
+.tgl::selection,
+.tgl:after::selection,
+.tgl:before::selection {
+  background: 0 0;
+}
+
+.tgl + .tgl-btn {
+  outline: 0;
+  display: block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tgl + .tgl-btn:after {
+  display: block;
+}
+
+.tgl + .tgl-btn:after,
+.tgl + .tgl-btn:before {
+  position: relative;
+  content: "";
+  width: 50%;
+  height: 100%;
+}
+
+.tgl + .tgl-btn:after {
+  left: 0;
+}
+
+.tgl + .tgl-btn:before {
+  display: none;
+}
+
+.tgl:checked + .tgl-btn:after {
+  left: 50%;
+}
+
+.tgl-ios + .tgl-btn {
+  background: #2e2f30;
+  border-radius: 2em;
+  padding: 2px;
+  transition: all 0.4s ease;
+  border: 1px solid #4d4d4d;
+}
+
+.tgl-ios + .tgl-btn:after {
+  border-radius: 2em;
+  background: #1d1d1d;
+  transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    padding 0.3s ease, margin 0.3s ease;
+  box-shadow: 0 0 0 1px rgba(150, 0, 250, 0.247),
+    0 4px 0 rgba(150, 0, 250, 0.123);
+}
+
+.tgl-ios + .tgl-btn:hover:after {
+  will-change: padding;
+}
+
+.tgl-ios + .tgl-btn:active {
+  box-shadow: inset 0 0 0 2em #0c0c0c;
+}
+
+.tgl-ios + .tgl-btn:active:after {
+  padding-right: 0.8em;
+}
+
+.tgl-ios:checked + .tgl-btn {
+  background: #b060b3f3;
+}
+
+.tgl-ios:checked + .tgl-btn:active {
+  box-shadow: none;
+}
+
+.tgl-ios:checked + .tgl-btn:active:after {
+  margin-left: -0.8em;
+}
+
+.tgl + .tgl-btn {
+  width: 50px;
+  height: 25px;
+}
+
+.ms {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto;
+  gap: 0 0;
+  grid-template-areas: "mst mstg";
+  padding-bottom: 8px;
+}
+
+.mst,
+.mstg {
+  display: flex;
+  align-items: center;
+}
+
+.mst {
+  justify-content: flex-start;
+  padding-left: 8px;
+  grid-area: mst;
+}
+
+.mstg {
+  justify-content: flex-end;
+  padding-right: 8px;
+  grid-area: mstg;
+}
+
+.container {
+  margin-right: 8px;
+  margin-left: 8px;
+}
+
+.nb {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: 35px;
+  gap: 0 0;
+  grid-auto-flow: row;
+  grid-template-areas: "an ab anw";
+}
+
+.an {
+  padding-left: 8px;
+  grid-area: an;
+}
+
+.ab {
+  grid-area: ab;
+}
+.anw {
+  grid-area: anw;
+}
+
+.cmd {
+  color: #fff;
+}
+
+.cda {
+  font-size: 15px;
+  color: #8a8a8a;
+}
+
+.cda:hover {
+  /* underline */
+  text-decoration: underline;
+  color: #ae00d1;
+}
+
+.cmdp {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 0 0;
+  grid-auto-flow: row;
+  grid-template-areas: "cmd cmdtg" "cd .";
+  padding-bottom: 10px;
+}
+
+.cmd {
+  justify-content: flex-start;
+  padding-left: 8px;
+  grid-area: cmd;
+}
+
+.cda,
+.cmd,
+.cmdtg {
+  display: flex;
+  align-items: center;
+}
+
+.cda {
+  justify-content: flex-start;
+  padding-left: 8px;
+  grid-area: cd;
+}
+
+.cmdtg {
+  justify-content: flex-end;
+  padding-right: 8px;
+  grid-area: cmdtg;
+}
+
+.coold {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto;
+  gap: 0 0;
+  grid-auto-flow: row;
+  grid-template-areas: "cdn cdr";
+  padding-bottom: 25px;
+}
+
+.cdn,
+.cdr {
+  display: flex;
+  align-items: center;
+}
+
+.cdn {
+  justify-content: flex-start;
+  padding-left: 8px;
+  grid-area: cdn;
+}
+
+.cdr {
+  justify-content: flex-end;
+  padding-right: 8px;
+  color: #8a8a8a;
+  grid-area: cdr;
+}
+
+.search {
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto;
+  gap: 0 0;
+  grid-auto-flow: row;
+  grid-template-areas: "searcht" "searchl";
+}
+
+.searchl,
+.searcht {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 8px;
+  grid-area: searcht;
+}
+
+.searchl {
+  color: #8a8a8a;
+  grid-area: searchl;
+}
+
+.re,
+.sase {
+  color: #141414;
+  height: 45px;
+  width: 160px;
+  background-color: #f750ac;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.re {
+  background-color: #f750ac;
+}
+
+.sys {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto;
+  gap: 0 10px;
+  grid-auto-flow: row;
+  grid-template-areas: "sase re";
+  font-size: 35px;
+}
+
+.sase {
+  grid-area: sase;
+}
+
+.re {
+  grid-area: re;
+}
+#logContainer {
+  margin-top: 12px;
+  height: 200px;
+  overflow-y: scroll;
+  overflow: hidden;
+}
+#logContainer > p {
+  padding-bottom: 6px;
+}
+.cda {
+  cursor: pointer;
+}
+@media screen and (max-width: 768px) {
+  /* Styles for screens with a maximum width of 768px */
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "main"
+      "cmds"
+      "cd"
+      "adds"
+      "balance"
+      "extra";
+  }
+
+  .logo {
+    grid-template-columns: 42px auto;
+    grid-template-rows: auto;
+  }
+
+  .lt {
+    margin-left: 10px;
+    font-size: 18px;
+  }
+
+  .support,
+  .login {
+    position: relative;
+    right: unset;
+    margin-top: 10px;
+  }
+
+  .ss {
+    width: 140px;
+    font-size: 14px;
+  }
+
+  .main,
+  .cmds,
+  .cd,
+  .adds,
+  .balance,
+  .extra {
+    margin-bottom: 20px;
+  }
+}
+
+/* Additional media queries for other screen sizes or devices */
+@media screen and (max-width: 480px) {
+  /* Styles for screens with a maximum width of 480px */
+  .lt {
+    margin-left: 5px;
+    font-size: 16px;
+  }
+
+  .ss {
+    width: 120px;
+    font-size: 12px;
+  }
+
+  .ht {
+    font-size: 18px;
+  }
+}
+
+#balance {
+  /* font-family: Arial, Helvetica, sans-serif; */
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#balance td,
+#balance th {
+  /* border: 1px solid #202020; */
+  padding: 8px;
+}
+
+#balance td {
+  /* make it so that the text in it is not more than 10 characters */
+  max-width: 10ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#balance tr:nth-child(even) {
+  background-color: #202020;
+}
+
+#balance tr:hover {
+  background-color: #303030;
+}
+
+#balance th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  /* background-color: #04aa6d; */
+  color: white;
+}
+.ltm {
+  color: #686868;
+  font-size: 14px;
+  margin-left: 20px;
+  padding-top: 7px;
+}
+
+.ct {
+  cursor: pointer;
+}
+
+.ct:hover {
+  text-decoration: underline;
+  color: #ae00d1;
+}
+
+
+/* Popup modal background */
+.popup-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Transparent dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Make sure it's above all other content */
+}
+
+/* Popup content box */
+.popup-content {
+  background-color: rgb(0, 0, 0);
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;  /* Ensures it doesn't overflow on small screens */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid #44087c;
+}
+
+/* Form elements and buttons */
+.popup-content input[type="url"],
+.popup-content input[type="number"],
+.popup-content input[type="checkbox"] {
+  margin: 10px 0;
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.popup-content button {
+  background-color: #44087c; /* Green */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.popup-content button:hover {
+  background-color: #4c1068;
+}
+
+.popup-content button#cancelInput {
+  background-color: #3f0400; /* Red */
+}
+
+.popup-content button#cancelInput:hover {
+  background-color: #6b1919; /* Darker red on hover */
+}

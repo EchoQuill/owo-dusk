@@ -11,13 +11,22 @@
 # (at your option) any later version.
 
 
+"""
+fix pray.curse
+fix commands disabled not stopping
+add gamble, shop blah blah
+recolour, if possible rename!
+"""
+
 from datetime import datetime, timedelta, timezone
-from discord.ext import commands
+from discord.ext import commands, tasks
 from rich.console import Console
 from threading import Thread
 from rich.panel import Panel
 from rich.align import Align
 from datetime import datetime
+from flask import Flask, render_template, request, jsonify
+import json
 import discord
 import asyncio
 import logging
@@ -65,6 +74,102 @@ owoArt = r"""
 owoPanel = Panel(Align.center(owoArt), style="purple on black", highlight=False)
 version = "2.0.0-alpha"
 debug_print = True
+
+
+
+"""FLASK APP"""
+
+app = Flask(__name__)
+website_logs = []
+config_updated = False
+
+def merge_dicts(main, small):
+    """Recursively merge two dictionaries."""
+    for key, value in small.items():
+        if key in main and isinstance(main[key], dict) and isinstance(value, dict):
+            # Recursively merge dictionaries
+            merge_dicts(main[key], value)
+        else:
+            # Overwrite or add new key-value pairs
+            main[key] = value
+
+@app.route("/")
+async def home():
+    return render_template("index.html", version=version)
+
+
+@app.route("/api/saveThings", methods=["POST"])
+async def save_things():
+    global config_updated
+    try:
+        # Get the JSON data from the request
+        data = request.get_json()
+        print(data)
+        if not data:
+            return jsonify({"status": "error", "message": "Invalid or missing JSON data"}), 400
+
+        # Load the existing main configuration file
+        with open("config.json", "r") as main_config:
+            main_data = json.load(main_config)
+
+        # Merge the received data into the main configuration
+        merge_dicts(main_data, data)
+
+        # Save the updated configuration back to the file with custom formatting
+        with open("config.json", "w") as main_config:
+            json.dump(main_data, main_config, indent=4)
+        print('saved successfully!')
+        config_updated = True
+
+        return jsonify({"status": "success", "message": "Data received and saved successfully"}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while saving data"}), 500
+    
+@app.route('/api/config', methods=['GET'])
+async def get_config():
+    # Check for 'password' in the headers
+    password = request.headers.get('password')
+    if not password or password != "password":  # Replace "expected_password" with your actual check
+        return jsonify({"error": "Unauthorized"}), 401
+    with open("config.json", "r") as file:
+        config_data = json.load(file)
+    # Return the configuration data as JSON
+    return jsonify(config_data)
+
+
+@app.route('/api/console', methods=['GET'])
+def get_console_logs():
+    try:
+        
+        # Join logs with newline character to make it similar to JS response
+        log_string = '\n'.join(website_logs)
+        
+        return log_string  # Send logs as plain text response
+        
+    except Exception as e:
+        print(f"Error fetching logs: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while fetching logs"}), 500
+    
+
+def web_start():
+    flaskLog = logging.getLogger("werkzeug")
+    flaskLog.disabled = True
+    cli = sys.modules["flask.cli"]
+    cli.show_server_banner = lambda *x: None
+    try:
+        app.run(debug=False, use_reloader=False, port=1200)
+    except Exception as e:
+        print(e)
+
+try:
+    web_thread = threading.Thread(target=web_start)
+    web_thread.start()
+except Exception as e:
+    print(e)
+
+""""""
 
 def printBox(text, color, title=None):
     test_panel = Panel(text, style=color, title=title)
@@ -161,6 +266,7 @@ if config_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 
+
 class MyClient(commands.Bot):
     
     def __init__(self, token, channel_id, *args, **kwargs):
@@ -180,21 +286,66 @@ class MyClient(commands.Bot):
         self.balance = 0
         self.queue = asyncio.Queue()
         self.config_dict = None
-        self.update_config()
+        self.commands_dict = {}
+
+    @tasks.loop(seconds=5)
+    async def config_update_checker(self):
+        global config_updated
+        if config_updated:
+            await self.update_config()
+            config_updated = False
 
 
+    async def start_cogs(self):
+        for filename in os.listdir(resource_path("./cogs")):
+            if filename.endswith(".py"):
+                extension = f"cogs.{filename[:-3]}"
+                if extension in self.extensions:
+                    """skip if already loaded"""
+                    self.refresh_commands_dict()
+                    if not self.commands_dict[str(filename[:-3])]:
+                        await self.unload_cog(extension)
+                        print(f"disabled {extension}")
+                    continue
+                try:
+                    await self.load_extension(extension)
+                    print(f"Loaded extension: {extension}")
+                except Exception as e:
+                    print(f"Failed to load extension {extension}: {e}")
 
-    """Update config.json"""
-    def update_config(self):
+    async def update_config(self):
+        print("task received")
+
         with open("config.json", "r") as config_file:
-            # Read the JSON data directly
             self.config_dict = json.load(config_file)
+
+        await self.start_cogs()
 
     async def unload_cog(self, cog_name):
         try:
             await self.unload_extension(cog_name)
         except Exception as e:
             print(e)
+
+    def refresh_commands_dict(self):
+        self.commands_dict = {
+            "battle": self.config_dict["commands"]["battle"]["enabled"],
+            "captcha": True,
+            "coinflip": self.config_dict["gamble"]["coinflip"]["enabled"],
+            "commands": True,
+            "cookie": self.config_dict["commands"]["cookie"]["enabled"],
+            "daily": self.config_dict["autoDaily"],
+            "gems": self.config_dict["autoUse"]["gems"]["enabled"],
+            "giveaway": self.config_dict["giveawayJoiner"]["enabled"],
+            "hunt": self.config_dict["commands"]["hunt"]["enabled"],
+            "level": self.config_dict["commands"]["lvlGrind"]["enabled"],
+            "lottery": self.config_dict["commands"]["lottery"]["enabled"],
+            "others": True,
+            "owo": self.config_dict["commands"]["owo"]["enabled"],
+            "pray": self.config_dict["commands"]["pray"]["enabled"],
+            "sell": self.config_dict["commands"]["sell"]["enabled"],
+            "slots": self.config_dict["gamble"]["slots"]["enabled"]
+        }
         
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
@@ -241,6 +392,7 @@ class MyClient(commands.Bot):
 
 
     def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"]):
+        global website_logs
         style = f"{color} on black"
         if debug:
             # Get the stack trace and the caller frame info
@@ -256,6 +408,7 @@ class MyClient(commands.Bot):
 
         else:
             console.print(text.center(console_width - 2), style=style)
+        website_logs.append(f"<p>{self.user}| {text}")
 
 
 
@@ -352,12 +505,8 @@ class MyClient(commands.Bot):
                 print(f"Default values added for bot ID: {self.user.id}")
 
         # Load cogs
-        for filename in os.listdir(resource_path("./cogs")):
-            if filename.endswith(".py"):
-                await self.load_extension(f"cogs.{filename[:-3]}")
-                #print(filename)
-        #self.log(f'{self.user}[+] ran hunt', 'purple')
-
+        self.config_update_checker.start()
+        await self.update_config()
         
 
 #----------STARTING BOT----------#                 
@@ -390,3 +539,4 @@ if __name__ == "__main__":
     console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1 on black")
     console.rule(style="navy_blue")
     run_bots(tokens_and_channels)
+    

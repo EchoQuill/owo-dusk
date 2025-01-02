@@ -18,6 +18,13 @@ from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
 
+'''
+NOTE:-
+When adding website support, make pray and curse
+work as they are dded to list during cog_load just once..
+
+'''
+
 
 def cmd_argument(userid, ping):
     if userid:
