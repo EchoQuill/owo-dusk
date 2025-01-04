@@ -18,7 +18,6 @@ import os
 
 from discord.ext import commands
 from discord import DMChannel
-from tkinter import messagebox
 
 
 with open("config.json", "r") as config_file:
@@ -47,6 +46,7 @@ on_mobile = is_termux()
 
 if not on_mobile:
     #desktop
+    from tkinter import messagebox
     from plyer import notification
     from playsound3 import playsound
     
