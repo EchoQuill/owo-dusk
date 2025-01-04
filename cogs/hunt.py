@@ -26,7 +26,8 @@ class Hunt(commands.Cog):
             "cmd_name": "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt",
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "hunt"
         }
 
     async def cog_load(self):
@@ -38,6 +39,9 @@ class Hunt(commands.Cog):
         else:
             await self.bot.put_queue(self.cmd)
             self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="hunt")
 
     @commands.Cog.listener()
     async def on_message(self, message):

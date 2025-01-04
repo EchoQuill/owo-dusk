@@ -136,13 +136,15 @@ class Gems(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": False,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "gems"
         }
         self.inv_cmd = {
             "cmd_name": "inv",
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "gems"
         }
 
     async def cog_load(self):
@@ -151,6 +153,9 @@ class Gems(commands.Cog):
                 asyncio.create_task(self.bot.unload_cog("cogs.gems"))
             except ExtensionNotLoaded:
                 pass
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="gems")
 
 
     @commands.Cog.listener()

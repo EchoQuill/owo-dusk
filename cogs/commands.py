@@ -40,7 +40,7 @@ class Commands(commands.Cog):
         try:
             cmd = await self.bot.queue.get()
             await self.bot.send(self.bot.construct_command(cmd))
-            if cmd.get("checks"):
+            if cmd.get("checks") and not cmd.get("removed", False):
                 self.bot.checks.append((cmd, datetime.now(timezone.utc)))
             await asyncio.sleep(random.uniform(0.7, 1.2))
         except Exception as e:
@@ -53,36 +53,22 @@ class Commands(commands.Cog):
     async def monitor_checks(self):
         try:
             current_time = datetime.now(timezone.utc)
-            """
-            The [:] creates a new list containing all the same items as the original list.
-            Using it directly may lead to issues if its removed meanwhile
-            Like when owobot lags.
-            """
             if not self.bot.captcha and self.bot.state:
-                for command, timestamp in self.bot.checks[
-                    :
-                ]:  # Loop through a copy to avoid modification issues
-                    if (current_time+self.calc_time - timestamp).total_seconds() > 7:
-                        """Put the command back to the queue
-                        Not using any sleeps here as the delay should randomize it enough."""
-                        # self.bot.queue.put(command)
+                for command, timestamp in self.bot.checks[:]:  # Work on a copy to avoid issues
+                    if command.get("removed"):  # Skip if marked as removed
+                        self.bot.log(f"Skipping removed command: {command}", "yellow")
+                        self.bot.checks.remove((command, timestamp))  # Remove it permanently
+                        continue
+
+                    if (current_time - timestamp).total_seconds() > 7:
                         await self.bot.put_queue(command)
-                        self.bot.log(f"added {command} from cmd", "cornflower_blue")
-                        try:
-                            self.bot.checks.remove((command, timestamp))
-                            self.bot.log(
-                                f"removed {command} from cmd, from checks", "cornflower_blue"
-                            )
-                        except:
-                            pass
-                self.calc_time = timedelta(0)
+                        self.bot.log(f"Added {command} back to queue", "cornflower_blue")
+                        self.bot.checks.remove((command, timestamp))  # Remove processed command
             else:
-                if hasattr(self, 'last_check_time'):
-                    self.calc_time += current_time - self.last_check_time
-                self.last_check_time = current_time
+                self.calc_time += current_time - getattr(self, "last_check_time", current_time)
+            self.last_check_time = current_time
         except Exception as e:
-            print(e)
-            print("^ at command monitor")
+            print(f"Error in monitor_checks: {e}")
 
 
 

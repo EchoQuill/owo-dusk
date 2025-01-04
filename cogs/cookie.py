@@ -38,7 +38,8 @@ class Cookie(commands.Cog):
             "cmd_arguments": f"<@{self.bot.config_dict['commands']['cookie']['userid']}>" if self.bot.config_dict["commands"]["cookie"]["pingUser"] else "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "cookie"
         }
     
     """change to conver times"""
@@ -79,6 +80,9 @@ class Cookie(commands.Cog):
                 pass
         else:
             asyncio.create_task(self.start_cookie())
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="cookie")
 
     @commands.Cog.listener()
     async def on_message(self, message):

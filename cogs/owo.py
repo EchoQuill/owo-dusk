@@ -22,7 +22,8 @@ cmd = {
     "cmd_name": "owo",
     "prefix": False,
     "checks": False,
-    "retry_count": 0
+    "retry_count": 0,
+    "id": "owo"
 }
 
 class Owo(commands.Cog):
@@ -44,6 +45,10 @@ class Owo(commands.Cog):
                 pass
         else:
             self.send_owo.start()
+
+    async def cog_unload(self):
+        self.send_owo.stop()
+
 
                 
                 

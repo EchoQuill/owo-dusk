@@ -14,8 +14,6 @@ import asyncio
 import json
 
 from discord.ext import commands
-from discord.ext.commands import ExtensionNotLoaded
-
 
 
 class Battle(commands.Cog):
@@ -25,7 +23,8 @@ class Battle(commands.Cog):
             "cmd_name": "b" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "battle",
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "battle"
         }
     
     async def cog_load(self):
@@ -34,7 +33,14 @@ class Battle(commands.Cog):
                 asyncio.create_task(self.bot.unload_cog("cogs.battle"))
             except:
                 pass
-        await self.bot.put_queue(self.cmd)
+        else:
+            await self.bot.put_queue(self.cmd)
+            print("put battle to queue")
+
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="battle")
+        print("battle removed")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -45,13 +51,10 @@ class Battle(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
+                            print("battle detected")
                             self.bot.remove_queue(self.cmd)
                             self.bot.log(f"Removed battle from checks from main","cornflower_blue")
                             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
-                            """
-                            self.bot.checks.remove((command, timestamp))
-                            is not used to prevent valueerror and better error management
-                            """
                             await self.bot.put_queue(self.cmd)
                             self.bot.log(f"Added battle to queue again from main","cornflower_blue")
         except Exception as e:
@@ -62,3 +65,4 @@ class Battle(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Battle(bot))
+    

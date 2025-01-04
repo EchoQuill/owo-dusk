@@ -30,7 +30,8 @@ class Coinflip(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "coinflip"
         }
         self.turns_lost = 0
 
@@ -45,6 +46,9 @@ class Coinflip(commands.Cog):
                 print(e)
         else:
             asyncio.create_task(self.start_cf(startup=True))
+            
+    async def cog_unload(self):
+        self.bot.remove_queue(id="coinflip")
 
     async def start_cf(self, startup=False):
         try:

@@ -21,6 +21,10 @@ from discord.ext.commands import ExtensionNotLoaded
 
 won_pattern = r"and won <:cowoncy:\d+> ([\d,]+)"
 
+"""
+NOTE:
+fix it spamming "won nothing"
+"""
 
 class Slots(commands.Cog):
     def __init__(self, bot):
@@ -30,7 +34,8 @@ class Slots(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "slots"
         }
         self.turns_lost = 0
 
@@ -43,6 +48,10 @@ class Slots(commands.Cog):
                 pass
         else:
             asyncio.create_task(self.start_slots(startup=True))
+
+    async def cog_unload(self):
+        print("unloading slots")
+        self.bot.remove_queue(id="slots")
 
     async def start_slots(self, startup=False):
         try:

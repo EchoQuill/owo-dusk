@@ -35,7 +35,8 @@ class Sell(commands.Cog):
             "cmd_arguments": " ".join(self.bot.config_dict["commands"]["sell"]["rarity"]),
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "sell"
         }
 
         self.sac_cmd = {
@@ -43,7 +44,8 @@ class Sell(commands.Cog):
             "cmd_arguments": " ".join(self.bot.config_dict["commands"]["sac"]["rarity"]),
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "sell"
         }
 
     async def sell_sac_queue(self, cmd, cooldown):
@@ -66,6 +68,9 @@ class Sell(commands.Cog):
                 asyncio.create_task(self.sell_sac_queue(self.sell_cmd, self.bot.config_dict["commands"]["sell"]["cooldown"]))
             else:
                 asyncio.create_task(self.sell_sac_queue(self.sac_cmd, self.bot.config_dict["commands"]["sac"]["cooldown"]))
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="sell")
     
     @commands.Cog.listener()
     async def on_message(self, message):

@@ -94,12 +94,12 @@ def merge_dicts(main, small):
             main[key] = value
 
 @app.route("/")
-async def home():
+def home():
     return render_template("index.html", version=version)
 
 
 @app.route("/api/saveThings", methods=["POST"])
-async def save_things():
+def save_things():
     global config_updated
     try:
         # Get the JSON data from the request
@@ -128,7 +128,7 @@ async def save_things():
         return jsonify({"status": "error", "message": "An error occurred while saving data"}), 500
     
 @app.route('/api/config', methods=['GET'])
-async def get_config():
+def get_config():
     # Check for 'password' in the headers
     password = request.headers.get('password')
     if not password or password != "password":  # Replace "expected_password" with your actual check
@@ -379,15 +379,38 @@ class MyClient(commands.Bot):
             print(e)
             print("^ at put_queue")
     
-    def remove_queue(self, cmd_data, **kwargs):
+    def remove_queue(self, cmd_data=None, id=None , **kwargs):
+        print("request recieved")
+        if not cmd_data and not id:
+            print("invalid id/cmd_data")
+            return
         try:
-            self.checks = [
-                check for check in self.checks 
-                if check[0] != cmd_data
-            ]
+            """if cmd_data:
+                self.checks = [
+                    check for check in self.checks 
+                    if check[0] != cmd_data
+                ]
+            
+            if id:
+                self.checks = [
+                    check for check in self.checks 
+                    if check[0]["id"] != id
+                ]"""
+            for index, (command, _) in enumerate(self.checks):
+                if cmd_data:
+                    if command == cmd_data:
+                        self.checks[index][0]["removed"] = True
+                        print(f"Marked {command} as removed using cmd_data")
+                else:
+                    if command.get("id", None) == id:
+                        self.checks[index][0]["removed"] = True
+                        print(f"Marked {command} as removed using id")
+
+            print(cmd_data)
+            print(self.checks)
         except Exception as e:
-            print(e)
-            print("^ at remove_queue")
+                print(e)
+                print("^ at remove_queue")
 
 
 

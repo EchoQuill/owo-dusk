@@ -43,7 +43,8 @@ class Pray(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 2,
+            "id": "pray"
         }
 
         self.curse_cmd = {
@@ -51,7 +52,8 @@ class Pray(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 2,
+            "id": "pray" #using pray as id for curse to make it easier to close
         }
         self.cmd_names = []
 
@@ -104,6 +106,9 @@ class Pray(commands.Cog):
                         self.cmd_names = ["curse"]
         except Exception as e:
             print(e)
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="pray")
     
 
 

@@ -27,7 +27,8 @@ cmd = {
     "cmd_name": "daily",
     "prefix": True,
     "checks": True,
-    "retry_count": 0
+    "retry_count": 0,
+    "id": "daily"
 }
 
 lock = threading.Lock()
@@ -81,6 +82,8 @@ class Daily(commands.Cog):
                 pass
         else:
             asyncio.create_task(self.start_daily())
+    async def cog_unload(self):
+        self.bot.remove_queue(id="daily")
 
     @commands.Cog.listener()
     async def on_message(self, message):

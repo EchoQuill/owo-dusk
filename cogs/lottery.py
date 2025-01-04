@@ -37,12 +37,13 @@ class Lottery(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        cmd = {
+        self.cmd = {
             "cmd_name": "lottery",
             "cmd_arguments": self.bot.config_dict['commands']['lottery']['amount'],
             "prefix": True,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "lottery"
         }
     
     """change to conver times"""
@@ -84,6 +85,9 @@ class Lottery(commands.Cog):
                 pass
         else:
             asyncio.create_task(self.start_lottery())
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="lottery")
 
     @commands.Cog.listener()
     async def on_message(self, message):

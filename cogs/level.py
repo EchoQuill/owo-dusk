@@ -47,7 +47,8 @@ class Level(commands.Cog):
             "cmd_name": None,
             "prefix": False,
             "checks": True,
-            "retry_count": 0
+            "retry_count": 0,
+            "id": "level"
         }
 
     async def start_level_grind(self):
@@ -73,6 +74,9 @@ class Level(commands.Cog):
                 pass
         else:
             asyncio.create_task(self.start_level_grind())
+
+    async def cog_unload(self):
+        self.bot.remove_queue(id="level")
 
     @commands.Cog.listener()
     async def on_message(self, message):
