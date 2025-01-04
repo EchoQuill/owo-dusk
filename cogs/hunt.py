@@ -37,6 +37,7 @@ class Hunt(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
+            self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
             await self.bot.put_queue(self.cmd)
             self.bot.log(f"Added Hunt to queue again from main","cornflower_blue")
 
