@@ -57,6 +57,10 @@ var autoDailyC = document.getElementById("cb14");
 var lotteryC = document.getElementById("cb15");
 var giveawayJoinerC = document.getElementById("cb16");
 
+// Gamble 
+var coinflipC = document.getElementById("cb17");
+var slotsC = document.getElementById("cb18");
+
 // Cooldowns
 var longCooldownMinC = document.getElementById("b1");
 var longCooldownMaxC = document.getElementById("b2");
@@ -79,6 +83,8 @@ var curse = {};
 var cookie = {};
 var lottery = {};
 var giveawayJoiner = {};
+var coinflip = {};
+var slots = {};
 
 // Save and send as JSON
 
@@ -146,25 +152,14 @@ document.addEventListener("DOMContentLoaded", () => {
             briefCooldownMinC.innerText = config.defaultCooldowns.briefCooldown[0];
             briefCooldownMaxC.innerText = config.defaultCooldowns.briefCooldown[1];
 
+            //  Gamble
+            coinflipC.checked = config.gamble.coinflip?.enabled || false;
+            slotsC.checked = config.gamble.slots?.enabled || false;
+
+
             /*Rest (Settings)*/
 
             // set1 - Webhooks
-
-            /*
-    set1 = webhook
-    set2 = gems
-    set3 = hunt
-    set4 = battle
-    set5 = owo
-    set6 = level grind
-    set7 = pray//curse
-    set 8 = curse
-    set9 = cookie
-    set10 = lottery
-    set11 = giveaway
-    */
-            
-            /* TASK:-   Make global! */
 
             webhook = {
                 "webhookUselessLog": config.webhook.webhookUselessLog,
@@ -181,7 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 "cooldown": config.commands.hunt.cooldown,
                 "useShortForm": config.commands.hunt.useShortForm,
             };
-            console.log(hunt);
 
             // set4 - battle
             battle = {
@@ -231,6 +225,21 @@ document.addEventListener("DOMContentLoaded", () => {
             giveawayJoiner = {
                 "cooldown": config.giveawayJoiner.cooldown,
             };
+
+            // set12 - cf
+            coinflip = {
+                "startValue": config.gamble.coinflip.startValue,
+                "multiplierOnLose": config.gamble.coinflip.multiplierOnLose,
+                "cooldown": config.gamble.coinflip.cooldown,
+            };
+
+            // set13 - slots
+            slots = {
+                "startValue": config.gamble.slots.startValue,
+                "multiplierOnLose": config.gamble.slots.multiplierOnLose,
+                "cooldown": config.gamble.slots.cooldown,
+            };
+
 
         })
         .catch((error) => {
@@ -362,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (elementName === 'set9') {
                 inputContent = `
                     <label for="inp24">User to give cookie:</label>
-                    <input type="number" id="inp24" placeholder="leave it as is if none.">
+                    <input type="text" id="inp24" placeholder="Leave it as 0 if none." pattern="\\d*">
                     <label for="inp25">Ping user while sending command:</label>
                     <input type="checkbox" id="inp25">
                     `;
@@ -377,6 +386,38 @@ document.addEventListener("DOMContentLoaded", () => {
                     <input type="number" id="inp27" placeholder="Enter a valid number(seconds)">
                     <label for="inp28">Maximum Cooldown:</label>
                     <input type="number" id="inp28" placeholder="Enter a valid number(seconds)">
+                    `;
+            } else if (elementName == 'set12') {
+                inputContent = `
+                    <label for="inp29">Minimum Cooldown:</label>
+                    <input type="number" id="inp29" placeholder="Enter a valid number(seconds)">
+                    <label for="inp30">Maximum Cooldown:</label>
+                    <input type="number" id="inp30" placeholder="Enter a valid number(seconds)">
+                    <label for="inp31">Start Value:</label>
+                    <input type="number" id="inp31" placeholder="Enter a valid number">
+                    <label for="inp32">Multiplier on lose:</label>
+                    <input type="number" id="inp32" placeholder="Enter a valid number">
+                    `;
+            } else if (elementName == 'set13') {
+                inputContent = `
+                    <label for="inp33">Minimum Cooldown:</label>
+                    <input type="number" id="inp33" placeholder="Enter a valid number(seconds)">
+                    <label for="inp34">Maximum Cooldown:</label>
+                    <input type="number" id="inp34" placeholder="Enter a valid number(seconds)">
+                    <label for="inp35">Start Value:</label>
+                    <input type="number" id="inp35" placeholder="Enter a valid number">
+                    <label for="inp36">Multiplier on lose:</label>
+                    <input type="number" id="inp36" placeholder="Enter a valid number">
+                    `;
+            } else if (elementName == 'set14') {
+                /*
+                BLACKJACK!
+                */
+                inputContent = `
+                    <label for="inp37">Minimum Cooldown:</label>
+                    <input type="number" id="inp37" placeholder="Enter a valid number(seconds)">
+                    <label for="inp38">Maximum Cooldown:</label>
+                    <input type="number" id="inp38" placeholder="Enter a valid number(seconds)">
                     `;
             } else {
                 inputContent = "<p>Invalid Element</p>";
@@ -456,6 +497,18 @@ document.addEventListener("DOMContentLoaded", () => {
             setValues("inp27", giveawayJoiner?.cooldown?.[0]);
             setValues("inp28", giveawayJoiner?.cooldown?.[1]);
 
+            // coinflip (set12)
+            setValues("inp29", coinflip?.cooldown?.[0]);
+            setValues("inp30", coinflip?.cooldown?.[1]);
+            setValues("inp31", coinflip?.startValue);
+            setValues("inp32", coinflip?.multiplierOnLose);
+            //slots (set12)
+            setValues("inp33", slots?.cooldown?.[0]);
+            setValues("inp34", slots?.cooldown?.[1]);
+            setValues("inp35", slots?.startValue);
+            setValues("inp36", slots?.multiplierOnLose);
+            
+
             const convert_float = (min, max) => {
                 // why doesn't js have a way to send two data without arrays ;(
                 return [parseFloat(min), parseFloat(max)];
@@ -463,7 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const validate_float = (min, max) => {
                 if (!isNaN(min) && !isNaN(max)) {
-                    if (min < max) {
+                    if ((min < max) && min >=0 && max >= 0) {
                         return true;
                     }
                 }
@@ -471,12 +524,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const validate_int = (int1, int2) => {
-                if (!isNaN(int1) && !isNaN(int2)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+                return !isNaN(int1) && !isNaN(int2) && int1 >= 0 && int2 >= 0;
+            };
 
 
             // Save and cancel event listeners
@@ -581,7 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
                     lvlGrind.useQuoteInstead = document.getElementById("inp17").checked;  // use quotes
-                    save_data({commands: { lvlGrind }})
+                    save_data({commands: { lvlGrind }});
             
                     console.log("Level Grind Settings Saved:");
                     console.log("Minimum Cooldown:", lvlGrind.cooldown[0]);
@@ -597,7 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         pray.cooldown[0] = minCooldown;  // min cd
                         pray.cooldown[1] = maxCooldown;  // max cd
                         pray.pingUser = document.getElementById("inp20").checked;  // ping user   
-                        save_data({commands: { pray }})
+                        save_data({commands: { pray }});
                         
                         console.log("Pray Settings Saved:");
                         console.log("Minimum Cooldown:", pray.cooldown[0]);
@@ -614,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         curse.cooldown[0] = minCooldown;  // min cd
                         curse.cooldown[1] = maxCooldown;  // max cd
                         curse.pingUser = document.getElementById("inp23").checked;  // ping user    
-                        save_data({commands: { curse }})
+                        save_data({commands: { curse }});
                         
                         console.log("Curse Settings Saved:");
                         console.log("Minimum Cooldown:", curse.cooldown[0]);
@@ -627,9 +676,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 else if (elementName === 'set9') {  // cookie
                     const userid = parseInt(document.getElementById("inp24").value);
                     if (!isNaN(userid)) {
-                        cookie.userid = userid
+                        if (userid==0) {
+                            cookie.userid = null;
+                        } else {
+                            cookie.userid = userid;
+                        }
                         cookie.pingUser = document.getElementById("inp25").checked;
-                        save_data({commands: { cookie }})
+                        save_data({commands: { cookie }});
                         console.log("Cookie Settings Saved:");
                         console.log("User ID:", cookie.userid);
                         console.log("Ping User:", cookie.pingUser);
@@ -641,7 +694,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const amount = parseInt(document.getElementById("inp26").value);
                     if (!isNaN(amount)) {
                         lottery.amount = amount
-                        save_data({commands: { lottery }})
+                        save_data({commands: { lottery }});
                         console.log("Lottery Settings Saved:");
                         console.log("Amount:", lottery.amount);
                     } else {
@@ -654,12 +707,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (validate_float(minCooldown, maxCooldown)) {
                         giveawayJoiner.cooldown = [minCooldown, maxCooldown];
-                        save_data(giveawayJoiner)
+                        save_data(giveawayJoiner);
                         console.log("Giveaway Settings Saved:");
                         console.log("Minimum Cooldown:", giveawayJoiner.cooldown[0]);
                         console.log("Maximum Cooldown:", giveawayJoiner.cooldown[1]);
                     } else {
                         alert("Invalid cooldown values. Please ensure they are numbers and min < max.");
+                    }
+                }                else if (elementName === 'set12') {  // cf
+                    const minCooldown = parseFloat(document.getElementById("inp29").value);
+                    const maxCooldown = parseFloat(document.getElementById("inp30").value);
+                    const startValue = parseInt(document.getElementById("inp31").value);
+                    const multiplierOnLose = parseFloat(document.getElementById("inp32").value);
+
+                    if (validate_float(minCooldown, maxCooldown)) {
+                        coinflip.cooldown = [minCooldown, maxCooldown];
+                    } else {
+                        alert("Invalid cooldown values. Please ensure they are numbers and min < max.");
+                        return;
+                    }
+                    if (validate_int(startValue, multiplierOnLose)) {
+                        coinflip.startValue = startValue;
+                        coinflip.multiplierOnLose = multiplierOnLose;
+                        save_data({gamble: {coinflip} });
+
+                    }
+                }
+                else if (elementName === 'set13') {  // slots
+                    const minCooldown = parseFloat(document.getElementById("inp33").value);
+                    const maxCooldown = parseFloat(document.getElementById("inp34").value);
+                    const startValue = parseInt(document.getElementById("inp35").value);
+                    const multiplierOnLose = parseFloat(document.getElementById("inp36").value);
+
+                    if (validate_float(minCooldown, maxCooldown)) {
+                        slots.cooldown = [minCooldown, maxCooldown];
+                    } else {
+                        alert("Invalid cooldown values. Please ensure they are numbers and min < max.");
+                        return;
+                    }
+                    if (validate_int(startValue, multiplierOnLose)) {
+                        slots.startValue = startValue;
+                        slots.multiplierOnLose = multiplierOnLose;
+                        save_data({gamble: {slots} });
+
                     }
                 }
                 // Show confirmation and remove modal
@@ -707,8 +797,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     cookie: {enabled: cookieC.checked,},
                     lottery: {enabled: lotteryC.checked,},
                 },
+                gamble: {
+                    coinflip: {enabled: coinflipC.checked,},
+                    slots: {enabled: slotsC.checked,},
+                },
                 autoDaily: autoDailyC.checked,
                 giveawayJoiner: {enabled: giveawayJoinerC.checked,},
+
                 defaultCooldowns: {
                     longCooldown: [Number(longCooldownMinC.innerText), Number(longCooldownMaxC.innerText)],
                     moderateCooldown: [Number(moderateCooldownMinC.innerText), Number(moderateCooldownMaxC.innerText)],
@@ -753,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 logContainer.scrollTop = logContainer.scrollHeight;
             })
             .catch((error) => console.error("Error fetching logs:", error));
-    }, 130);
+    }, 500);
 
 });
 //

@@ -34,21 +34,23 @@ Modified version licensed under GPL-3.0.
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="shortcut icon"
-      href="{{ url_for('static', filename='imgs/logo.png') }}"
+      href="{{ url_for('static', filename='logo.png') }}"
       type="image/x-icon"
     />
     
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="../static/style.css">
 
     <title>OwO-Dusk - {{version}}</title>
   </head>
 
   <body>
     <nav>
+      <!--Navigation links-->
       <div class="logo">
         <img
           class="icon"
-          src="{{ url_for('static', filename='imgs/logo.png') }}"
+          src="{{ url_for('static', filename='logo.png') }}"
           alt="OwO-Dusk Logo"
         />
         <span class="lt">OwO-Dusk</span>
@@ -71,7 +73,7 @@ Modified version licensed under GPL-3.0.
     </nav>
     <!---->
     <div class="container">
-      <div class="main">
+      <div class="misc">
         <div class="ht">Misc Settings</div>
         <div class="tab">
           <div class="ms">
@@ -122,16 +124,12 @@ Modified version licensed under GPL-3.0.
       </div>
 
       <div class="balance" style="overflow-y: scroll; max-height: 300px">
-        <div class="ht">
-          Balance
-          <a
-            href="/balance"
-            style="text-decoration: none; color: #b3b3b3; font-size: 15px"
-            >(Show All)</a
-          >
-        </div>
+        <div class="ht">Balance</div>
         <div class="tab">
-          <table style="width: 100%" id="balance"></table>
+          <table style="width: 100%" id="balance">
+            <tr><th>work in progress</th></tr>
+            <tr><td>or maybe I am just lazy to remove this lol</td></tr>
+          </table>
         </div>
       </div>
       <!--Commands category-->
@@ -264,6 +262,35 @@ Modified version licensed under GPL-3.0.
               <p id="b8" class="ct">2.7</p>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="gamble">
+        <div class="ht">Gamble</div>
+        <div class="tab">
+          <div class="cmdp">
+            <div class="cmd">Coinflip</div>
+            <div class="cda" id="set12">Settings</div>
+            <div class="cmdtg">
+              <input class="tgl tgl-ios" id="cb17" type="checkbox" />
+              <label class="tgl-btn" for="cb17"></label>
+            </div>
+          </div>
+          <div class="cmdp">
+            <div class="cmd">Slots</div>
+            <div class="cda" id="set13">Settings</div>
+            <div class="cmdtg">
+              <input class="tgl tgl-ios" id="cb18" type="checkbox" />
+              <label class="tgl-btn" for="cb18"></label>
+            </div>
+          </div>
+          <!--<div class="cmdp">
+            <div class="cmd">Blackjack</div>
+            <div class="cda" id="set14">Settings</div>
+            <div class="cmdtg">
+              <input class="tgl tgl-ios" id="cb19" type="checkbox" />
+              <label class="tgl-btn" for="cb19"></label>
+            </div>
+          </div>-->
         </div>
       </div>
 

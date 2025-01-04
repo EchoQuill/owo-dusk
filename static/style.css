@@ -31,6 +31,7 @@ I'll rename them to  a suitable name when I have time
 */
 
 * {
+  /*global css*/
   padding: 0;
   margin: 0;
   font-family: "Inter", sans-serif;
@@ -53,9 +54,9 @@ nav {
 }
 .logo {
   display: grid;
-  grid-template-columns: 42px 91px 198px;
+  grid-template-columns: 42px 91px 198px; /*width of three items*/
   grid-template-rows: 80px;
-  gap: 0 0;
+  gap: 0 0; /* No Gap between items*/
   grid-auto-flow: row;
   grid-template-areas: ". . .";
 }
@@ -70,12 +71,14 @@ nav {
 }
 
 .lt {
+  /*'owo-dusk' text*/
   font-size: 20px;
   width: 91px;
   margin-left: 15px;
 }
 
 .ss {
+  /*support server button*/
   height: 45px;
   width: 160px;
   background-color: #080808;
@@ -100,67 +103,62 @@ nav {
   grid-template-rows: 1fr 1fr;
   gap: 15px 15px;
   grid-auto-flow: row;
-  grid-template-areas: "main cmds cd adds" "balance cmds cd extra";
+  grid-template-areas: "misc cmds cd adds" "balance cmds gamble extra"; /*"misc cmds cd adds" "balance cmds cd extra";*/
 }
 
-.main {
-  grid-area: main;
+.misc {
+  grid-area: misc;
   background-color: #040404;
   border: 2px solid purple;
   border-radius: 10px;
 }
 
-.adds,
-.balance,
-.cd,
-.cmds,
-.extra {
-  grid-area: balance;
+.gamble {
+  grid-area: gamble;
   background-color: #040404;
   border: 2px solid purple;
   border-radius: 10px;
 }
 
-.cmdArea {
+/**/
+.adds {
+  grid-area: adds;
   background-color: #040404;
   border: 2px solid purple;
   border-radius: 10px;
 }
 
 .balance {
+  grid-area: balance;
+  background-color: #040404;
+  border: 2px solid purple;
+  border-radius: 10px;
   overflow-y: scroll;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-.balance::-webkit-scrollbar {
-  /* WebKit */
-  width: 0;
-  height: 0;
-}
-.adds,
-.cd,
-.cmds,
-.extra {
-  grid-area: cmds;
-  border: 2px solid purple;
-}
-
-.adds,
-.cd,
-.extra {
+.cd {
   grid-area: cd;
+  background-color: #040404;
   border: 2px solid purple;
+  border-radius: 10px;
 }
 
-.adds,
-.extra {
-  grid-area: adds;
+.cmds {
+  grid-area: cmds;
+  background-color: #040404;
+  border: 2px solid purple;
+  border-radius: 10px;
 }
 
 .extra {
   grid-area: extra;
+  background-color: #040404;
+  border: 2px solid purple;
+  border-radius: 10px;
 }
+
 
 .ht {
   color: #ffffff;
@@ -338,7 +336,7 @@ nav {
 .cda:hover {
   /* underline */
   text-decoration: underline;
-  color: #ae00d1;
+  color: #d763ee;
 }
 
 .cmdp {
@@ -478,9 +476,10 @@ nav {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
     grid-template-areas:
-      "main"
+      "misc"
       "cmds"
       "cd"
+      "gamble"
       "adds"
       "balance"
       "extra";
@@ -508,7 +507,8 @@ nav {
     font-size: 14px;
   }
 
-  .main,
+  .misc,
+  .gamble,
   .cmds,
   .cd,
   .adds,
@@ -583,41 +583,41 @@ nav {
 
 .ct:hover {
   text-decoration: underline;
-  color: #ae00d1;
+  color: #d763ee;
 }
 
 
-/* Popup modal background */
+/* Popup modal */
 .popup-modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Transparent dark background */
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Make sure it's above all other content */
+  z-index: 9999;
 }
 
-/* Popup content box */
+
 .popup-content {
   background-color: rgb(0, 0, 0);
   padding: 20px;
   border-radius: 8px;
   width: 400px;
-  max-width: 90%;  /* Ensures it doesn't overflow on small screens */
+  max-width: 80%;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   border-radius: 6px;
-  border: 1px solid #44087c;
+  border: 1px solid #37273f;
 }
 
-/* Form elements and buttons */
 .popup-content input[type="url"],
 .popup-content input[type="number"],
-.popup-content input[type="checkbox"] {
+.popup-content input[type="checkbox"],
+.popup-content input[type="text"] {
   margin: 10px 0;
   width: 100%;
   padding: 8px;
@@ -626,7 +626,7 @@ nav {
 }
 
 .popup-content button {
-  background-color: #44087c; /* Green */
+  background-color: #44087c;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -641,9 +641,9 @@ nav {
 }
 
 .popup-content button#cancelInput {
-  background-color: #3f0400; /* Red */
+  background-color: #3f0400;
 }
 
 .popup-content button#cancelInput:hover {
-  background-color: #6b1919; /* Darker red on hover */
+  background-color: #6b1919;
 }
