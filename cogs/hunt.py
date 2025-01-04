@@ -23,7 +23,7 @@ class Hunt(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt",
+            "cmd_name": "",
             "prefix": True,
             "checks": True,
             "retry_count": 0,
@@ -48,6 +48,7 @@ class Hunt(commands.Cog):
         try:
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
+                    self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
                     self.bot.remove_queue(self.cmd)
                     self.bot.log(f"Removed hunt from checks from main","cornflower_blue")
                     await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))

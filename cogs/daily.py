@@ -43,15 +43,10 @@ class Daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    """change to conver times"""
-    def time_in_seconds(self, time_to_convert=None):
-        if time_to_convert is None:
-            time_to_convert = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
-        return time_to_convert.timestamp()
     
     async def start_daily(self):
         if str(self.bot.user.id) in accounts_dict:
-            self.current_time_seconds = self.time_in_seconds()
+            self.current_time_seconds = self.bot.time_in_seconds()
             self.last_daily_time = accounts_dict[str(self.bot.user.id)].get("daily", 0)
 
             # Time difference calculation
@@ -99,7 +94,7 @@ class Daily(commands.Cog):
                 self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
                     load_dict()
-                    accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
+                    accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 
@@ -114,7 +109,7 @@ class Daily(commands.Cog):
                 self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
                     load_dict()
-                    accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
+                    accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 

@@ -46,15 +46,10 @@ class Lottery(commands.Cog):
             "id": "lottery"
         }
     
-    """change to conver times"""
-    def time_in_seconds(self, time_to_convert=None):
-        if time_to_convert is None:
-            time_to_convert = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
-        return time_to_convert.timestamp()
 
     async def start_lottery(self):
         if str(self.bot.user.id) in accounts_dict:
-            self.current_time_seconds = self.time_in_seconds()
+            self.current_time_seconds = self.bot.time_in_seconds()
             self.last_lottery_time = accounts_dict[str(self.bot.user.id)].get("lottery", 0)
 
             # Time difference calculation
@@ -72,7 +67,7 @@ class Lottery(commands.Cog):
 
             with lock:
                 load_dict()
-                accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()
+                accounts_dict[str(self.bot.user.id)]["lottery"] = self.bot.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
 
@@ -102,7 +97,7 @@ class Lottery(commands.Cog):
                         self.bot.log("put to queue - Lottery", "honeydew2")
                         with lock:
                             load_dict()
-                            accounts_dict[str(self.bot.user.id)]["lottery"] = self.time_in_seconds()
+                            accounts_dict[str(self.bot.user.id)]["lottery"] = self.bot.time_in_seconds()
                             with open("utils/stats.json", "w") as f:
                                 json.dump(accounts_dict, f, indent=4)
                 

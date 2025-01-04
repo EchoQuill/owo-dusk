@@ -83,7 +83,7 @@ class Level(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if self.last_level_grind_message == message.content:
                 self.bot.log(f"lvlgrind msg detected from {message.author.name}.","cornflower_blue")
-                self.bot.remove_queue(self.cmd)
+                self.bot.remove_queue(id="level")
                 await self.start_level_grind()
                 
 

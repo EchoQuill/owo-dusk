@@ -35,7 +35,7 @@ class Cookie(commands.Cog):
         self.bot = bot
         self.cmd = {
             "cmd_name": "cookie",
-            "cmd_arguments": f"<@{self.bot.config_dict['commands']['cookie']['userid']}>" if self.bot.config_dict["commands"]["cookie"]["pingUser"] else "",
+            "cmd_arguments": "",
             "prefix": True,
             "checks": True,
             "retry_count": 0,
@@ -43,15 +43,12 @@ class Cookie(commands.Cog):
         }
     
     """change to conver times"""
-    def time_in_seconds(self, time_to_convert=None):
-        if time_to_convert is None:
-            time_to_convert = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
-        return time_to_convert.timestamp()
+    
 
     async def start_cookie(self):
         if str(self.bot.user.id) in accounts_dict:
             self.bot.log("cookie - 0", "honeydew2")
-            self.current_time_seconds = self.time_in_seconds()
+            self.current_time_seconds = self.bot.time_in_seconds()
             self.last_cookie_time = accounts_dict[str(self.bot.user.id)].get("cookie", 0)
 
             # Time difference calculation
@@ -63,12 +60,13 @@ class Cookie(commands.Cog):
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            self.cmd["cmd_arguments"] = f"<@{self.bot.config_dict['commands']['cookie']['userid']}>" if self.bot.config_dict["commands"]["cookie"]["pingUser"] else "",
             await self.bot.put_queue(self.cmd, priority=True)
             self.bot.log("put to queue - cookie", "honeydew2")
 
             with lock:
                 load_dict()
-                accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()
+                accounts_dict[str(self.bot.user.id)]["cookie"] = self.bot.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
 
@@ -88,7 +86,11 @@ class Cookie(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "You got a cookie from" in message.content or "Nu! You need to wait" in message.content:
-                self.bot.remove_queue(self.cmd)
+                """
+                'Nu! You need to wait' will get triggered unlike slow down one
+                as the actual command slowdown is different from this.
+                """
+                self.bot.remove_queue(id="cookie")
 
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
@@ -96,7 +98,7 @@ class Cookie(commands.Cog):
                 self.bot.log("put to queue - cookie", "honeydew2")
                 with lock:
                     load_dict()
-                    accounts_dict[str(self.bot.user.id)]["cookie"] = self.time_in_seconds()
+                    accounts_dict[str(self.bot.user.id)]["cookie"] = self.bot.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 

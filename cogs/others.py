@@ -99,7 +99,7 @@ class Others(commands.Cog):
                         }
                     await self.bot.put_queue(zoo_cmd)
                     await asyncio.sleep(random.uniform(1.5,2.3))
-                self.bot.log("","orchid1")
+                self.bot.log("put pets to queue - auto team","orchid1")
                 self.bot.state = True
 
 async def setup(bot):

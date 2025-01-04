@@ -50,9 +50,5 @@ class Owo(commands.Cog):
         self.send_owo.stop()
 
 
-                
-                
-
-
 async def setup(bot):
     await bot.add_cog(Owo(bot))

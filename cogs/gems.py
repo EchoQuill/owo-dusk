@@ -24,6 +24,9 @@ gem code - https://github.com/ChristopherBThai/Discord-OwO-Bot/blob/master/src/c
 small numbers - https://github.com/ChristopherBThai/Discord-OwO-Bot/blob/master/src/commands/commandList/shop/util/shopUtil.js
 """
 
+"""
+check with website
+"""
 
 
 gem_tiers = {

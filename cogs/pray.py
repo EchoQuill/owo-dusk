@@ -59,32 +59,33 @@ class Pray(commands.Cog):
 
 
     async def start_pray_curse(self, startup=False):
-        cmd = random.choice(self.cmd_names)
-        if cmd not in ["pray", "curse"]:
-            raise ValueError("Invalid cmd argument, must be 'pray' or 'curse'.")
-        if self.bot.config_dict["commands"][cmd]["enabled"]:
-            if not startup:
-                self.bot.state = True
-                self.bot.log("set pray to true again", "green")
-                self.bot.remove_queue(self.__dict__[f"{cmd}_cmd"])
-                self.bot.log(f"Removed {cmd} from checks from main", "cornflower_blue")
-                """
-                REDUCE COOLDOWN AND CHECK STUCK IN PUT_QUEUE ERROR!
-                """
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"][cmd]["cooldown"]))
-            else:
-                self.bot.log("what are we doing here?", "red")
-                #self.bot.state = True
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
-                
-            cmd_argument_data = cmd_argument(
-                self.bot.config_dict['commands'][cmd]['userid'], self.bot.config_dict['commands'][cmd]['pingUser']
-            )
-            self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
-            self.bot.state = False
-            self.bot.log("put pray state to False", "red")
-            await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
-            self.bot.log("pray appended to queue", "purple")
+        cmds = []
+        if self.bot.config_dict['commands']['pray']['enabled']:
+            cmds.append("pray")
+        if self.bot.config_dict['commands']['curse']['enabled']:
+            cmds.append("curse")
+        cmd = random.choice(cmds)
+        if not startup:
+            self.bot.state = True
+            self.bot.log("set pray to true again", "green")
+            self.bot.remove_queue(id="pray")
+            self.bot.log(f"Removed {cmd} from checks from main", "cornflower_blue")
+            """
+            REDUCE COOLDOWN AND CHECK STUCK IN PUT_QUEUE ERROR!
+            """
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"][cmd]["cooldown"]))
+        else:
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            
+        cmd_argument_data = cmd_argument(
+            self.bot.config_dict['commands'][cmd]['userid'], self.bot.config_dict['commands'][cmd]['pingUser']
+        )
+
+        self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
+        self.bot.state = False
+        self.bot.log("put pray state to False", "red")
+        await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
+        self.bot.log("pray appended to queue", "purple")
 
     async def cog_load(self):
         try:
@@ -94,16 +95,7 @@ class Pray(commands.Cog):
                 except ExtensionNotLoaded:
                     pass
             else:
-                if self.bot.config_dict["commands"]["pray"]["enabled"] and self.bot.config_dict["commands"]["curse"]["enabled"]:
-                    self.cmd_names = ["pray", "curse"]
-                if self.bot.config_dict["commands"]["pray"]["enabled"]:
-                    asyncio.create_task(self.start_pray_curse(startup=True))
-                    if not self.cmd_names:
-                        self.cmd_names = ["pray"]
-                else:
-                    asyncio.create_task(self.start_pray_curse(startup=True))
-                    if not self.cmd_names:
-                        self.cmd_names = ["curse"]
+                asyncio.create_task(self.start_pray_curse(startup=True))
         except Exception as e:
             print(e)
 
