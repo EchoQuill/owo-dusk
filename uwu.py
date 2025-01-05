@@ -277,6 +277,7 @@ class MyClient(commands.Bot):
         self.queue = asyncio.Queue()
         self.config_dict = None
         self.commands_dict = {}
+        self.lock = asyncio.Lock()
 
     @tasks.loop(seconds=5)
     async def config_update_checker(self):
@@ -365,23 +366,27 @@ class MyClient(commands.Bot):
                     await self.queue.put(cmd_data)
                     return
                 await asyncio.sleep(random.uniform(1.4,2.9))
+                self.log(f"stuck {cmd_data}", "#d787ff")
             await self.queue.put(cmd_data)
         except Exception as e:
             print(e)
             print("^ at put_queue")
     
-    def remove_queue(self, cmd_data=None, id=None , **kwargs):
+    async def remove_queue(self, cmd_data=None, id=None):
         if not cmd_data and not id:
             print("invalid id/cmd_data")
             return
         try:
             for index, (command, _) in enumerate(self.checks):
-                if cmd_data:
-                    if command == cmd_data:
-                        self.checks[index][0]["removed"] = True
-                else:
-                    if command.get("id", None) == id:
-                        self.checks[index][0]["removed"] = True
+                async with self.lock:
+                    if cmd_data:
+                        if command == cmd_data:
+                            self.checks[index][0]["removed"] = True
+                            self.log(f"removing {cmd_data}", "#d787ff")
+                    else:
+                        if command.get("id", None) == id:
+                            self.checks[index][0]["removed"] = True
+                            self.log(f"removing {id}", "#d787ff")
         except Exception as e:
             print(e)
 

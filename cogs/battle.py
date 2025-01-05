@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import json
 
 from discord.ext import commands
 
@@ -24,7 +23,8 @@ class Battle(commands.Cog):
             "prefix": True,
             "checks": True,
             "retry_count": 0,
-            "id": "battle"
+            "id": "battle",
+            "removed": False
         }
     
     async def cog_load(self):
@@ -39,7 +39,7 @@ class Battle(commands.Cog):
 
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="battle")
+        await self.bot.remove_queue(id="battle")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -50,15 +50,12 @@ class Battle(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
-                            self.bot.remove_queue(id="battle")
+                            await self.bot.remove_queue(id="battle")
                             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
                             self.cmd["cmd_name"] = "b" if self.bot.config_dict["commands"]["battle"]["useShortForm"] else "battle"
                             await self.bot.put_queue(self.cmd)
         except Exception as e:
             print(e)
-                
-                
-
 
 async def setup(bot):
     await bot.add_cog(Battle(bot))

@@ -51,14 +51,14 @@ class Slots(commands.Cog):
 
     async def cog_unload(self):
         print("unloading slots")
-        self.bot.remove_queue(id="slots")
+        await self.bot.remove_queue(id="slots")
 
     async def start_slots(self, startup=False):
         try:
             if startup:
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             else:
-                self.bot.remove_queue(self.cmd)
+                await self.bot.remove_queue(self.cmd)
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["slots"]["cooldown"]))
             
 

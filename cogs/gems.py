@@ -158,7 +158,7 @@ class Gems(commands.Cog):
                 pass
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="gems")
+        await self.bot.remove_queue(id="gems")
 
 
     @commands.Cog.listener()
@@ -170,7 +170,7 @@ class Gems(commands.Cog):
         elif "caught" in message.content:
             await self.bot.put_queue(self.inv_cmd, priority=True)
         elif "'s Inventory ======**" in message.content:
-            self.bot.remove_queue(self.inv_cmd)
+            await self.bot.remove_queue(self.inv_cmd)
             if not self.available_gems:
                 self.available_gems = find_gems_available(message.content)
             self.grouped_gems = get_gems_group(self.available_gems, config_dict=self.bot.config_dict)

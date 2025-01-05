@@ -39,13 +39,13 @@ class Shop(commands.Cog):
             asyncio.create_task(self.send_buy(startup=True))
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="shop")
+        await self.bot.remove_queue(id="shop")
 
     async def send_buy(self, startup=False):
         if startup:
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
         else:
-            self.bot.remove_queue(id="shop")
+            await self.bot.remove_queue(id="shop")
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["shop"]["cooldown"]))
         self.cmd["cmd_arguments"] = random.choice(self.bot.config_dict["commands"]["shop"]["itemsToBuy"])
         await self.bot.put_queue(self.cmd)

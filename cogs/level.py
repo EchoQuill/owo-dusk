@@ -76,13 +76,13 @@ class Level(commands.Cog):
             asyncio.create_task(self.start_level_grind())
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="level")
+        await self.bot.remove_queue(id="level")
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if self.last_level_grind_message == message.content:
-                self.bot.remove_queue(id="level")
+                await self.bot.remove_queue(id="level")
                 await self.start_level_grind()
                 
 

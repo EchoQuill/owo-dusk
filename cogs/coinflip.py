@@ -48,7 +48,7 @@ class Coinflip(commands.Cog):
             asyncio.create_task(self.start_cf(startup=True))
             
     async def cog_unload(self):
-        self.bot.remove_queue(id="coinflip")
+        await self.bot.remove_queue(id="coinflip")
 
     async def start_cf(self, startup=False):
         try:
@@ -73,7 +73,7 @@ class Coinflip(commands.Cog):
             return
         
         if "and chose" in message.content:
-            self.bot.remove_queue(self.cmd)
+            await self.bot.remove_queue(self.cmd)
 
 
     @commands.Cog.listener()

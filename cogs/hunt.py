@@ -27,7 +27,8 @@ class Hunt(commands.Cog):
             "prefix": True,
             "checks": True,
             "retry_count": 0,
-            "id": "hunt"
+            "id": "hunt",
+            "removed": False
         }
 
     async def cog_load(self):
@@ -41,7 +42,7 @@ class Hunt(commands.Cog):
             await self.bot.put_queue(self.cmd)
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="hunt")
+        await self.bot.remove_queue(id="hunt")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -49,7 +50,7 @@ class Hunt(commands.Cog):
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
                     self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
-                    self.bot.remove_queue(id="hunt")
+                    await self.bot.remove_queue(id="hunt")
                     await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
                     await self.bot.put_queue(self.cmd)
         except Exception as e:

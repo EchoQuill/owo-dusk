@@ -77,7 +77,7 @@ class Cookie(commands.Cog):
             asyncio.create_task(self.start_cookie())
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="cookie")
+        await self.bot.remove_queue(id="cookie")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -87,7 +87,7 @@ class Cookie(commands.Cog):
                 'Nu! You need to wait' will get triggered unlike slow down one
                 as the actual command slowdown is different from this.
                 """
-                self.bot.remove_queue(id="cookie")
+                await self.bot.remove_queue(id="cookie")
 
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))

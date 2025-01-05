@@ -81,7 +81,7 @@ class Lottery(commands.Cog):
             asyncio.create_task(self.start_lottery())
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="lottery")
+        await self.bot.remove_queue(id="lottery")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -89,7 +89,7 @@ class Lottery(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
-                        self.bot.remove_queue(self.cmd)
+                        await self.bot.remove_queue(self.cmd)
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                         await self.bot.put_queue(self.cmd)

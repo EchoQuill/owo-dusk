@@ -77,14 +77,14 @@ class Daily(commands.Cog):
         else:
             asyncio.create_task(self.start_daily())
     async def cog_unload(self):
-        self.bot.remove_queue(id="daily")
+        await self.bot.remove_queue(id="daily")
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
-                self.bot.remove_queue(cmd)
+                await self.bot.remove_queue(cmd)
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
@@ -97,7 +97,7 @@ class Daily(commands.Cog):
                         json.dump(accounts_dict, f, indent=4)
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
-                self.bot.remove_queue(cmd)
+                await self.bot.remove_queue(cmd)
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))

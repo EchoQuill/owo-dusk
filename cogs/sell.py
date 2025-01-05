@@ -70,13 +70,13 @@ class Sell(commands.Cog):
                 asyncio.create_task(self.sell_sac_queue(sac_cmd, self.bot.config_dict["commands"]["sac"]["cooldown"]))
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="sell")
+        await self.bot.remove_queue(id="sell")
     
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
-                self.bot.remove_queue(id="sell")
+                await self.bot.remove_queue(id="sell")
 
                 try:
                     self.bot.balance += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
@@ -88,7 +88,7 @@ class Sell(commands.Cog):
                     await self.sell_sac_queue(sell_cmd, self.bot.config_dict["commands"]["sell"]["cooldown"])
 
             elif "sacrificed" in message.content and "for a total of" in message.content.lower():
-                self.bot.remove_queue(id="sell")
+                await self.bot.remove_queue(id="sell")
                 if self.bot.config_dict["commands"]["sell"]["enabled"]:
                     await self.sell_sac_queue(sell_cmd, self.bot.config_dict["commands"]["sell"]["cooldown"])
                 else:

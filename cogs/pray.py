@@ -67,7 +67,7 @@ class Pray(commands.Cog):
         cmd = random.choice(cmds)
         if not startup:
             self.bot.state = True
-            self.bot.remove_queue(id="pray")
+            await self.bot.remove_queue(id="pray")
             """
             REDUCE COOLDOWN AND CHECK STUCK IN PUT_QUEUE ERROR!
             """
@@ -96,7 +96,7 @@ class Pray(commands.Cog):
             print(e)
 
     async def cog_unload(self):
-        self.bot.remove_queue(id="pray")
+        await self.bot.remove_queue(id="pray")
     
 
 

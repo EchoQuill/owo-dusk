@@ -39,32 +39,39 @@ class Commands(commands.Cog):
     async def send_commands(self):
         try:
             cmd = await self.bot.queue.get()
-            self.bot.log(cmd, "#5f5f87")
+            print(list(self.bot.queue._queue))
             await self.bot.send(self.bot.construct_command(cmd))
             self.bot.log(f"Sent - {self.bot.construct_command(cmd)}", "#afafff")
             if cmd.get("checks"):
-                self.bot.checks.append((cmd, datetime.now(timezone.utc)))
-                #self.bot.log(f"{cmd['cmd_name']} added to queue", "#5f5f87")
+                async with self.bot.lock:
+                    cmd["removed"] = cmd.get("removed", False)
+                    self.bot.log(cmd, "#5f5f87")
+                    self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+                    self.bot.log(f"{cmd}\n added to queue", "#5f5f87")
             await asyncio.sleep(random.uniform(0.7, 1.2))
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
             await asyncio.sleep(random.uniform(0.7, 1.2))
 
     """TASK: check monitor"""
-
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
             current_time = datetime.now(timezone.utc)
             if not self.bot.captcha and self.bot.state:
-                for command, timestamp in self.bot.checks[:]:
-                    if command.get("removed"):
-                        self.bot.checks.remove((command, timestamp))
-                        continue
+                async with self.bot.lock:
+                    for index, (command, timestamp) in enumerate(self.bot.checks[:]):
+                        if command.get("removed"):
+                            self.bot.checks.remove((command, timestamp))
+                            self.bot.log(f"removed {command} - monitor", "#5f5f87")
+                            self.bot.log(self.bot.checks,"#5f5f87")
+                            continue
 
-                    if (current_time - timestamp).total_seconds() > 7:
-                        await self.bot.put_queue(command)
-                        self.bot.checks.remove((command, timestamp))
+                        if (current_time - timestamp).total_seconds() > 7:
+                            await self.bot.put_queue(command)
+                            print(f"put {command} to queue - monitor")
+                            self.bot.checks[index] = (command, timestamp+timedelta(seconds=2))
+                            #self.bot.checks.remove((command, timestamp))
             else:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             self.last_check_time = current_time
