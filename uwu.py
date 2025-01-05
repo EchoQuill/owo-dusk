@@ -71,7 +71,7 @@ owoArt = r"""
 (  O )\ /\ /(  O )(___)) D () \/ (\___ \ )  ( 
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
-owoPanel = Panel(Align.center(owoArt), style="purple on black", highlight=False)
+owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
 version = "2.0.0-alpha"
 debug_print = True
 
@@ -84,13 +84,10 @@ website_logs = []
 config_updated = False
 
 def merge_dicts(main, small):
-    """Recursively merge two dictionaries."""
     for key, value in small.items():
         if key in main and isinstance(main[key], dict) and isinstance(value, dict):
-            # Recursively merge dictionaries
             merge_dicts(main[key], value)
         else:
-            # Overwrite or add new key-value pairs
             main[key] = value
 
 @app.route("/")
@@ -102,20 +99,13 @@ def home():
 def save_things():
     global config_updated
     try:
-        # Get the JSON data from the request
         data = request.get_json()
         print(data)
         if not data:
             return jsonify({"status": "error", "message": "Invalid or missing JSON data"}), 400
-
-        # Load the existing main configuration file
         with open("config.json", "r") as main_config:
             main_data = json.load(main_config)
-
-        # Merge the received data into the main configuration
         merge_dicts(main_data, data)
-
-        # Save the updated configuration back to the file with custom formatting
         with open("config.json", "w") as main_config:
             json.dump(main_data, main_config, indent=4)
         print('saved successfully!')
@@ -159,15 +149,15 @@ def web_start():
     cli = sys.modules["flask.cli"]
     cli.show_server_banner = lambda *x: None
     try:
-        app.run(debug=False, use_reloader=False, port=1200)
+        app.run(debug=False, use_reloader=False, port=config_dict["website"]["port"])
     except Exception as e:
         print(e)
-
-try:
-    web_thread = threading.Thread(target=web_start)
-    web_thread.start()
-except Exception as e:
-    print(e)
+if config_dict["website"]["enabled"]:
+    try:
+        web_thread = threading.Thread(target=web_start)
+        web_thread.start()
+    except Exception as e:
+        print(e)
 
 """"""
 
@@ -230,13 +220,13 @@ def batteryCheckFunc():
                 except Exception as e:
                     console.print(
                         f"""-system[0] Battery check failed!!""".center(console_width - 2),
-                        style="red on black",
+                        style="red ",
                     )
                 battery_data = json.loads(battery_status)
                 percentage = battery_data["percentage"]
                 console.print(
                     f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                    style="blue on black",
+                    style="blue ",
                 )
                 if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
                     break
@@ -249,14 +239,14 @@ def batteryCheckFunc():
                         percentage = int(battery.percent)
                         console.print(
                             f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                            style="blue on black",
+                            style="blue ",
                         )
                         if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
                             break
                 except Exception as e:
                     console.print(
                         f"""-system[0] Battery check failed!!.""".center(console_width - 2),
-                        style="red on black",
+                        style="red ",
                     )
     except Exception as e:
         print("battery check", e)
@@ -380,61 +370,43 @@ class MyClient(commands.Bot):
             print("^ at put_queue")
     
     def remove_queue(self, cmd_data=None, id=None , **kwargs):
-        print("request recieved")
         if not cmd_data and not id:
             print("invalid id/cmd_data")
             return
         try:
-            """if cmd_data:
-                self.checks = [
-                    check for check in self.checks 
-                    if check[0] != cmd_data
-                ]
-            
-            if id:
-                self.checks = [
-                    check for check in self.checks 
-                    if check[0]["id"] != id
-                ]"""
             for index, (command, _) in enumerate(self.checks):
                 if cmd_data:
                     if command == cmd_data:
                         self.checks[index][0]["removed"] = True
-                        print(f"Marked {command} as removed using cmd_data")
                 else:
                     if command.get("id", None) == id:
                         self.checks[index][0]["removed"] = True
-                        print(f"Marked {command} as removed using id")
-
-            print(cmd_data)
-            print(self.checks)
         except Exception as e:
-                print(e)
-                print("^ at remove_queue")
+            print(e)
 
 
 
-    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=True):
+    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=config_dict["website"]["enabled"]):
         global website_logs
-        style = f"{color} on black"
+        style = f"{color} "
         if debug:
-            # Get the stack trace and the caller frame info
             frame_info = traceback.extract_stack()[-2]
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
             current_time = datetime.now().strftime("%H:%M:%S")
             content_to_print = f"[{current_time}] {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=style, markup=False)
-            if save_log:
-                with open("logs.txt", "a") as log:  # Open in append mode
-                    log.write(f"{text}\n")
+            with lock:
+                if save_log:
+                    with open("logs.txt", "a") as log:
+                        log.write(f"{content_to_print}\n")
         else:
             console.print(text.center(console_width - 2), style=style)
         if web_log:
             with lock:
                 website_logs.append(f"<p style='color: {color};'>{self.user}| {text}</p>")
                 if len(website_logs) > 10:
-                    website_logs.pop(0) 
+                    website_logs.pop(0)
 
 
 
@@ -482,7 +454,7 @@ class MyClient(commands.Bot):
         if self.session is None:
             self.session = aiohttp.ClientSession()
         await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold royal_blue1 on black' )
+        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold royal_blue1 ' )
         listUserIds.append(self.user.id)
 
         try:
@@ -558,18 +530,20 @@ def run_bot(token, channel_id):
 if __name__ == "__main__":
     console.print(owoPanel)
     console.rule(f"[bold blue1]version - {version}", style="navy_blue")
-    printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30 on black' )
-    #printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4 on black' )
+    printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30' )
+    #printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4' )
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
-    printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta on black' )
+    printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
+    if config_dict["website"]["enabled"]:
+        printBox(f'Website Dashboard: http://localhost:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
     try:
         news_json = requests.get(f"{owo_dusk_api}/news.json").json()
         if news_json["available"]:
-            printBox(f'{news_json["content"]}'.center(console_width - 2 ),'bold aquamarine1 on black', title=news_json["title"] )
+            printBox(f'{news_json["content"]}'.center(console_width - 2 ),'bold aquamarine1', title=news_json["title"] )
     except Exception as e:
         print(e)
-    console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1 on black")
+    console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
     console.rule(style="navy_blue")
     run_bots(tokens_and_channels)
     

@@ -39,10 +39,12 @@ class Commands(commands.Cog):
     async def send_commands(self):
         try:
             cmd = await self.bot.queue.get()
+            self.bot.log(cmd, "#5f5f87")
             await self.bot.send(self.bot.construct_command(cmd))
             self.bot.log(f"Sent - {self.bot.construct_command(cmd)}", "#afafff")
-            if cmd.get("checks") and not cmd.get("removed", False):
+            if cmd.get("checks"):
                 self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+                #self.bot.log(f"{cmd['cmd_name']} added to queue", "#5f5f87")
             await asyncio.sleep(random.uniform(0.7, 1.2))
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
@@ -55,14 +57,14 @@ class Commands(commands.Cog):
         try:
             current_time = datetime.now(timezone.utc)
             if not self.bot.captcha and self.bot.state:
-                for command, timestamp in self.bot.checks[:]:  # Work on a copy to avoid issues
-                    if command.get("removed"):  # Skip if marked as removed
-                        self.bot.checks.remove((command, timestamp))  # Remove it permanently
+                for command, timestamp in self.bot.checks[:]:
+                    if command.get("removed"):
+                        self.bot.checks.remove((command, timestamp))
                         continue
 
                     if (current_time - timestamp).total_seconds() > 7:
                         await self.bot.put_queue(command)
-                        self.bot.checks.remove((command, timestamp))  # Remove processed command
+                        self.bot.checks.remove((command, timestamp))
             else:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             self.last_check_time = current_time
