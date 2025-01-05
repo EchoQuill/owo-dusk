@@ -55,8 +55,6 @@ class Coinflip(commands.Cog):
             if startup:
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             else:
-                """self.bot.remove_queue(self.cmd)
-                self.bot.log("queue removed - cf", "purple")"""
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["coinflip"]["cooldown"]))
             
 
@@ -64,7 +62,6 @@ class Coinflip(commands.Cog):
             if self.bot.config_dict["gamble"]["coinflip"]["options"]:
                 self.cmd["cmd_arguments"]+=f" {random.choice(self.bot.config_dict["gamble"]["coinflip"]["options"])}"
             await self.bot.put_queue(self.cmd)
-            self.bot.log("queue put cf", "purple")
         except Exception as e:
             print(e)
 
@@ -77,7 +74,6 @@ class Coinflip(commands.Cog):
         
         if "and chose" in message.content:
             self.bot.remove_queue(self.cmd)
-            self.bot.log("queue removed - cf", "purple")
 
 
     @commands.Cog.listener()
@@ -90,7 +86,6 @@ class Coinflip(commands.Cog):
         if "chose" in after.content.lower():
             try:
                 if "and you lost it all... :c" in after.content.lower():
-                    self.bot.log("lost cf", "purple")
                     self.turns_lost+=1
                     await self.start_cf()
                 else:
@@ -100,7 +95,6 @@ class Coinflip(commands.Cog):
                         print(e)
                     self.turns_lost = 0
                     await self.start_cf()
-                    self.bot.log(f"won cf by {match}", "purple")
                     self.bot.balance+=int(match)
             except Exception as e:
                 print(e)

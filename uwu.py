@@ -414,7 +414,7 @@ class MyClient(commands.Bot):
 
 
 
-    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"]):
+    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=True):
         global website_logs
         style = f"{color} on black"
         if debug:
@@ -428,10 +428,13 @@ class MyClient(commands.Bot):
             if save_log:
                 with open("logs.txt", "a") as log:  # Open in append mode
                     log.write(f"{text}\n")
-
         else:
             console.print(text.center(console_width - 2), style=style)
-        website_logs.append(f"<p>{self.user}| {text}")
+        if web_log:
+            with lock:
+                website_logs.append(f"<p style='color: {color};'>{self.user}| {text}</p>")
+                if len(website_logs) > 10:
+                    website_logs.pop(0) 
 
 
 
@@ -465,6 +468,13 @@ class MyClient(commands.Bot):
         total_seconds = time_until_12am_pst.total_seconds() # turn that time to seconds
         # 12am = 00:00, I might need this the next time I take a look here.
         return total_seconds
+    
+    def time_in_seconds(self):
+        """
+        timestamp is basically seconds passed after 1970 jan 1st
+        """
+        time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
+        return time_now.timestamp()
 
     async def on_ready(self):
         #self.on_ready_dn = False

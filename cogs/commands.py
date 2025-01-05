@@ -40,6 +40,7 @@ class Commands(commands.Cog):
         try:
             cmd = await self.bot.queue.get()
             await self.bot.send(self.bot.construct_command(cmd))
+            self.bot.log(f"Sent - {self.bot.construct_command(cmd)}", "#afafff")
             if cmd.get("checks") and not cmd.get("removed", False):
                 self.bot.checks.append((cmd, datetime.now(timezone.utc)))
             await asyncio.sleep(random.uniform(0.7, 1.2))
@@ -56,13 +57,11 @@ class Commands(commands.Cog):
             if not self.bot.captcha and self.bot.state:
                 for command, timestamp in self.bot.checks[:]:  # Work on a copy to avoid issues
                     if command.get("removed"):  # Skip if marked as removed
-                        self.bot.log(f"Skipping removed command: {command}", "yellow")
                         self.bot.checks.remove((command, timestamp))  # Remove it permanently
                         continue
 
                     if (current_time - timestamp).total_seconds() > 7:
                         await self.bot.put_queue(command)
-                        self.bot.log(f"Added {command} back to queue", "cornflower_blue")
                         self.bot.checks.remove((command, timestamp))  # Remove processed command
             else:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)

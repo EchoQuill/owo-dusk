@@ -67,9 +67,7 @@ class Pray(commands.Cog):
         cmd = random.choice(cmds)
         if not startup:
             self.bot.state = True
-            self.bot.log("set pray to true again", "green")
             self.bot.remove_queue(id="pray")
-            self.bot.log(f"Removed {cmd} from checks from main", "cornflower_blue")
             """
             REDUCE COOLDOWN AND CHECK STUCK IN PUT_QUEUE ERROR!
             """
@@ -83,9 +81,7 @@ class Pray(commands.Cog):
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
         self.bot.state = False
-        self.bot.log("put pray state to False", "red")
         await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
-        self.bot.log("pray appended to queue", "purple")
 
     async def cog_load(self):
         try:
@@ -116,7 +112,6 @@ class Pray(commands.Cog):
             or f"<@{self.bot.user.id}>** prays..." in message.content
             or "Slow down and try the command again" in message.content) and
             self.bot.config_dict['commands']['pray']['enabled']):
-                self.bot.log("recieved pray", "green")
                 await self.start_pray_curse()
             """curse"""
             if ((f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.config_dict['commands']['curse']['userid']}>**!" in message.content

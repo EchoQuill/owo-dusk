@@ -59,13 +59,11 @@ class Slots(commands.Cog):
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             else:
                 self.bot.remove_queue(self.cmd)
-                self.bot.log("queue removed - slots", "purple")
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["slots"]["cooldown"]))
             
 
             self.cmd["cmd_arguments"] = str(self.bot.config_dict["gamble"]["slots"]["startValue"]*(self.bot.config_dict["gamble"]["slots"]["multiplierOnLose"]**self.turns_lost))
             await self.bot.put_queue(self.cmd)
-            self.bot.log("queue put slots", "purple")
         except Exception as e:
             print(e)
 
@@ -81,7 +79,6 @@ class Slots(commands.Cog):
             if "and won nothing... :c" in after.content:
                 """Lose cash"""
                 self.turns_lost+=1
-                self.bot.log(f"lost slots", "green")
                 await self.start_slots()
             else:
                 if ("<:eggplant:417475705719226369>" in after.content.lower()
@@ -89,7 +86,6 @@ class Slots(commands.Cog):
                     
                     """Didn't lose case but earned nothing"""
                     await self.start_slots()
-                    self.bot.log(f"won nothing", "green")
                 elif "and won" in after.content.lower():
                     """won cash"""
                     try:
@@ -98,7 +94,6 @@ class Slots(commands.Cog):
                         print(e)
                         print("failed to fetch cf value, falling back!")
                         match = self.bot.config_dict["gamble"]["coinflip"]["startValue"]*2 #the 
-                    self.bot.log(f"won slots by {match}", "green")
                     self.turns_lost = 0
                     await self.start_slots()
 

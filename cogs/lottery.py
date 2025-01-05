@@ -63,7 +63,6 @@ class Lottery(commands.Cog):
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             #self.bot.queue.put(["lottery", f" {self.bot.config_dict["commands"]["lottery"]["amount"]}"])
             await self.bot.put_queue(self.cmd)
-            self.bot.log("put to queue - lottry", "honeydew2")
 
             with lock:
                 load_dict()
@@ -72,7 +71,7 @@ class Lottery(commands.Cog):
                     json.dump(accounts_dict, f, indent=4)
 
     async def cog_load(self):
-        self.bot.log(f"lottery - start", "purple")
+
         if not self.bot.config_dict["commands"]["lottery"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.lottery"))
@@ -94,7 +93,6 @@ class Lottery(commands.Cog):
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                         await self.bot.put_queue(self.cmd)
-                        self.bot.log("put to queue - Lottery", "honeydew2")
                         with lock:
                             load_dict()
                             accounts_dict[str(self.bot.user.id)]["lottery"] = self.bot.time_in_seconds()

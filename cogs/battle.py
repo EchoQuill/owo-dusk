@@ -36,12 +36,10 @@ class Battle(commands.Cog):
         else:
             self.cmd["cmd_name"] = "b" if self.bot.config_dict["commands"]["battle"]["useShortForm"] else "battle"
             await self.bot.put_queue(self.cmd)
-            print("put battle to queue")
 
 
     async def cog_unload(self):
         self.bot.remove_queue(id="battle")
-        print("battle removed")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -52,13 +50,10 @@ class Battle(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
-                            print("battle detected")
                             self.bot.remove_queue(id="battle")
-                            self.bot.log(f"Removed battle from checks from main","cornflower_blue")
                             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
                             self.cmd["cmd_name"] = "b" if self.bot.config_dict["commands"]["battle"]["useShortForm"] else "battle"
                             await self.bot.put_queue(self.cmd)
-                            self.bot.log(f"Added battle to queue again from main","cornflower_blue")
         except Exception as e:
             print(e)
                 

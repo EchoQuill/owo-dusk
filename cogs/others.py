@@ -61,13 +61,11 @@ class Others(commands.Cog):
                 await asyncio.sleep(random.uniform(0.6,1.7))
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:
                     await message.components[0].children[0].click()
-                self.bot.log(f"-{self.user}[+] Accepted OwO bot rules","spring_green1")
 
             # Cash Check
             elif "you currently have **__" in message.content:
                 """task: add checks for cash at ready."""
                 self.bot.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
-                self.bot.log(f"{self.bot.user}[+] Checked for cash - {self.bot.balance} cowoncy!", "cyan3")
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
@@ -99,7 +97,6 @@ class Others(commands.Cog):
                         }
                     await self.bot.put_queue(zoo_cmd)
                     await asyncio.sleep(random.uniform(1.5,2.3))
-                self.bot.log("put pets to queue - auto team","orchid1")
                 self.bot.state = True
 
 async def setup(bot):

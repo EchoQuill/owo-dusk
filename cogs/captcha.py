@@ -169,7 +169,7 @@ class Captcha(commands.Cog):
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
                 self.bot.captcha = False
-                self.bot.log(f"captcha solved! - {self.bot.user}", "chartreuse3")
+                self.bot.log(f"Captcha solved! - {self.bot.user}", "#5fd700")
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
@@ -198,12 +198,13 @@ class Captcha(commands.Cog):
                 or any(b in clean(message.content) for b in list_captcha)
             ):
                 self.bot.captcha = True
-                self.bot.log(f"captcha detected! - {self.bot.user}", "indian_red")
+                self.bot.log(f"Captcha detected!", "#d70000")
                 captcha_handler(message.channel, self.bot.user, "Link")
                 console_handler()
 
             elif "**☠ |** You have been banned" in message.content:
                 self.bot.captcha = True
+                self.bot.log(f"Ban detected!", "#d70000")
                 captcha_handler(message.channel, self.bot.user, "Ban")
                 console_handler(captcha=False)
 

@@ -60,7 +60,6 @@ class Daily(commands.Cog):
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             await self.bot.put_queue(cmd, priority=True)
             self.bot.state = False
-            self.bot.log("put to queue - Daily", "honeydew2")
 
             with lock:
                 load_dict()
@@ -91,7 +90,6 @@ class Daily(commands.Cog):
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 self.bot.state = False
-                self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
                     load_dict()
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
@@ -99,14 +97,12 @@ class Daily(commands.Cog):
                         json.dump(accounts_dict, f, indent=4)
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
-                self.bot.log("Nu - Daily", "honeydew2")
                 self.bot.remove_queue(cmd)
                 self.bot.state = True
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 self.bot.state = False
-                self.bot.log("put to queue - Daily", "honeydew2")
                 with lock:
                     load_dict()
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()

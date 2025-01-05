@@ -47,7 +47,6 @@ class Cookie(commands.Cog):
 
     async def start_cookie(self):
         if str(self.bot.user.id) in accounts_dict:
-            self.bot.log("cookie - 0", "honeydew2")
             self.current_time_seconds = self.bot.time_in_seconds()
             self.last_cookie_time = accounts_dict[str(self.bot.user.id)].get("cookie", 0)
 
@@ -62,8 +61,6 @@ class Cookie(commands.Cog):
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
             self.cmd["cmd_arguments"] = f"<@{self.bot.config_dict['commands']['cookie']['userid']}>" if self.bot.config_dict["commands"]["cookie"]["pingUser"] else "",
             await self.bot.put_queue(self.cmd, priority=True)
-            self.bot.log("put to queue - cookie", "honeydew2")
-
             with lock:
                 load_dict()
                 accounts_dict[str(self.bot.user.id)]["cookie"] = self.bot.time_in_seconds()
@@ -95,7 +92,6 @@ class Cookie(commands.Cog):
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(self.cmd, priority=True)
-                self.bot.log("put to queue - cookie", "honeydew2")
                 with lock:
                     load_dict()
                     accounts_dict[str(self.bot.user.id)]["cookie"] = self.bot.time_in_seconds()
