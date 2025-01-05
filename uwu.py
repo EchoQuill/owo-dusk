@@ -334,6 +334,7 @@ class MyClient(commands.Bot):
             "owo": self.config_dict["commands"]["owo"]["enabled"],
             "pray": self.config_dict["commands"]["pray"]["enabled"],
             "sell": self.config_dict["commands"]["sell"]["enabled"],
+            "shop": self.config_dict["commands"]["shop"]["enabled"],
             "slots": self.config_dict["gamble"]["slots"]["enabled"]
         }
         
