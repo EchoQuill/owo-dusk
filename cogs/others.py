@@ -51,6 +51,7 @@ def get_emoji_names(text, emoji_dict=emoji_dict):
 class Others(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.zoo = False
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -79,10 +80,11 @@ class Others(commands.Cog):
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:
                 self.bot.state = False
+                self.zoo = True
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
                 await self.bot.send("zoo", bypass=True)
 
-            elif "s zoo! **" in message.content:
+            elif "s zoo! **" in message.content and self.zoo:
                 animals = get_emoji_names(message.content)
                 animals.reverse()
                 await asyncio.sleep(random.uniform(1.5,2.3))
@@ -97,6 +99,8 @@ class Others(commands.Cog):
                         }
                     await self.bot.put_queue(zoo_cmd)
                     await asyncio.sleep(random.uniform(1.5,2.3))
+
+                self.zoo = False
                 self.bot.state = True
 
 async def setup(bot):
