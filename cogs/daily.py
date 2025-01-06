@@ -63,7 +63,7 @@ class Daily(commands.Cog):
 
             with lock:
                 load_dict()
-                accounts_dict[str(self.bot.user.id)]["daily"] = self.time_in_seconds()
+                accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
                 
