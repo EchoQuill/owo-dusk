@@ -43,11 +43,16 @@ class Commands(commands.Cog):
             await self.bot.send(self.bot.construct_command(cmd))
             self.bot.log(f"Sent - {self.bot.construct_command(cmd)}", "#afafff")
             if cmd.get("checks"):
-                async with self.bot.lock:
-                    #cmd["removed"] = cmd.get("removed", False)
-                    self.bot.log(cmd, "#5f5f87")
-                    self.bot.checks.append((cmd, datetime.now(timezone.utc)))
-                    self.bot.log(f"{cmd}\n added to queue", "#5f5f87")
+                if cmd.get("id"):
+                    in_queue = await self.bot.search_checks(id=cmd["id"])
+                    if not in_queue:
+                        async with self.bot.lock:
+                            #cmd["removed"] = cmd.get("removed", False)
+                            self.bot.log(cmd, "#5f5f87")
+                            self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+                            self.bot.log(f"{cmd}\n added to queue", "#5f5f87")
+                    else:
+                        self.bot.log("{cmd['id']} on queue alr", "#5f5f87")
             await asyncio.sleep(random.uniform(1.7, 2.3))
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
