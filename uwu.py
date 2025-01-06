@@ -86,7 +86,7 @@ debug_print = True
 
 app = Flask(__name__)
 website_logs = []
-config_updated = False
+config_updated = None
 
 def merge_dicts(main, small):
     for key, value in small.items():
@@ -114,7 +114,8 @@ def save_things():
         with open("config.json", "w") as main_config:
             json.dump(main_data, main_config, indent=4)
         print('saved successfully!')
-        config_updated = True
+        config_updated = time.time()
+
 
         return jsonify({"status": "success", "message": "Data received and saved successfully"}), 200
 
@@ -287,9 +288,9 @@ class MyClient(commands.Bot):
     @tasks.loop(seconds=5)
     async def config_update_checker(self):
         global config_updated
-        if config_updated:
+        if config_updated is not None and (time.time() - config_updated < 6):
             await self.update_config()
-            config_updated = False
+            #config_updated = False
 
 
     async def start_cogs(self):
