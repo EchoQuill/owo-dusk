@@ -12,10 +12,15 @@
 
 
 """
-fix pray.curse
-fix commands disabled not stopping
-add gamble, shop blah blah
 recolour, if possible rename!
+fix huntbot
+fix gems
+add webhook
+add slashcmds
+add popup
+add offline status and remove it from website
+add cashcheck + gamble
+maybe add huntbot to website dashboard
 """
 
 from datetime import datetime, timedelta, timezone
@@ -322,6 +327,7 @@ class MyClient(commands.Bot):
         self.commands_dict = {
             "battle": self.config_dict["commands"]["battle"]["enabled"],
             "captcha": True,
+            "chat": True,
             "coinflip": self.config_dict["gamble"]["coinflip"]["enabled"],
             "commands": True,
             "cookie": self.config_dict["commands"]["cookie"]["enabled"],
@@ -329,6 +335,7 @@ class MyClient(commands.Bot):
             "gems": self.config_dict["autoUse"]["gems"]["enabled"],
             "giveaway": self.config_dict["giveawayJoiner"]["enabled"],
             "hunt": self.config_dict["commands"]["hunt"]["enabled"],
+            "huntbot": self.config_dict["commands"]["autoHuntBot"]["enabled"],
             "level": self.config_dict["commands"]["lvlGrind"]["enabled"],
             "lottery": self.config_dict["commands"]["lottery"]["enabled"],
             "others": True,
@@ -364,6 +371,7 @@ class MyClient(commands.Bot):
             while not self.state or self.captcha:
                 if priority:
                     await self.queue.put(cmd_data)
+                    self.log(f"{cmd_data} put to queue", "#d787ff")
                     return
                 await asyncio.sleep(random.uniform(1.4,2.9))
                 self.log(f"stuck {cmd_data}", "#d787ff")
@@ -459,7 +467,6 @@ class MyClient(commands.Bot):
         self.owo_bot_id = 408785106942164992
         if self.session is None:
             self.session = aiohttp.ClientSession()
-        await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
         printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold royal_blue1 ' )
         listUserIds.append(self.user.id)
 
@@ -517,6 +524,7 @@ class MyClient(commands.Bot):
 
         # Load cogs
         self.config_update_checker.start()
+        await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
         await self.update_config()
         
 
