@@ -285,6 +285,19 @@ class MyClient(commands.Bot):
         self.commands_dict = {}
         self.lock = asyncio.Lock()
 
+    @tasks.loop(seconds=30)
+    async def presence(self):
+        if self.status != discord.Status.invisible:
+            try:
+                await self.change_presence(
+                status=discord.Status.invisible, activity=self.activity
+            )
+                self.presence.stop()
+            except:
+                pass
+        else:
+            self.presence.stop()
+
     @tasks.loop(seconds=5)
     async def config_update_checker(self):
         global config_updated
@@ -527,6 +540,8 @@ class MyClient(commands.Bot):
         self.config_update_checker.start()
         await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
         await self.update_config()
+        if self.config_dict["offlineStatus"]:
+            self.presence.start()
         
 
 #----------STARTING BOT----------#                 
