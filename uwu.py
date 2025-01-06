@@ -31,6 +31,7 @@ from rich.panel import Panel
 from rich.align import Align
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
+from copy import deepcopy
 import json
 import discord
 import asyncio
@@ -384,12 +385,12 @@ class MyClient(commands.Bot):
         try:
             while not self.state or self.captcha:
                 if priority:
-                    await self.queue.put(cmd_data)
+                    await self.queue.put(deepcopy(cmd_data))
                     self.log(f"{cmd_data} put to queue", "#d787ff")
                     return
-                await asyncio.sleep(random.uniform(1.4,2.9))
+                await asyncio.sleep(random.uniform(1.4, 2.9))
                 self.log(f"stuck {cmd_data}", "#d787ff")
-            await self.queue.put(cmd_data)
+            await self.queue.put(deepcopy(cmd_data))
         except Exception as e:
             print(e)
             print("^ at put_queue")
