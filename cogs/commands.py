@@ -44,14 +44,14 @@ class Commands(commands.Cog):
             self.bot.log(f"Sent - {self.bot.construct_command(cmd)}", "#afafff")
             if cmd.get("checks"):
                 async with self.bot.lock:
-                    cmd["removed"] = cmd.get("removed", False)
+                    #cmd["removed"] = cmd.get("removed", False)
                     self.bot.log(cmd, "#5f5f87")
                     self.bot.checks.append((cmd, datetime.now(timezone.utc)))
                     self.bot.log(f"{cmd}\n added to queue", "#5f5f87")
-            await asyncio.sleep(random.uniform(0.7, 1.2))
+            await asyncio.sleep(random.uniform(1.7, 2.3))
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
-            await asyncio.sleep(random.uniform(0.7, 1.2))
+            await asyncio.sleep(random.uniform(1.7, 2.3))
 
     """TASK: check monitor"""
     @tasks.loop(seconds=1)
@@ -70,7 +70,7 @@ class Commands(commands.Cog):
                         if (current_time - timestamp).total_seconds() > 7:
                             await self.bot.put_queue(command)
                             print(f"put {command} to queue - monitor")
-                            self.bot.checks[index] = (command, timestamp+timedelta(seconds=2))
+                            self.bot.checks[index] = (command, timestamp+timedelta(seconds=4))
                             #self.bot.checks.remove((command, timestamp))
             else:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)

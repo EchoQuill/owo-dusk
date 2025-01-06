@@ -69,11 +69,11 @@ class Others(commands.Cog):
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
-                if self.bot.config_dict["autoUse"]["crate"]:
+                if self.bot.config_dict["autoUse"]["autoCrate"]:
                     await self.bot.put_queue(crate_cmd)
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
-                if self.bot.config_dict["autoUse"]["lootbox"]:
+                if self.bot.config_dict["autoUse"]["autoLootbox"]:
                     await self.bot.put_queue(lootbox_cmd)
 
             # Add animals to team

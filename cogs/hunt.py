@@ -40,6 +40,7 @@ class Hunt(commands.Cog):
         else:
             self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
             await self.bot.put_queue(self.cmd)
+            self.bot.log(f"{self.cmd} attempting put queue", "#875f5f" )
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="hunt")
@@ -51,8 +52,10 @@ class Hunt(commands.Cog):
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
                     self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
                     await self.bot.remove_queue(id="hunt")
+                    self.bot.log(f"{self.cmd} attempting remove queue", "#875f5f" )
                     await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
                     await self.bot.put_queue(self.cmd)
+                    self.bot.log(f"{self.cmd} attempting put queue", "#875f5f" )
         except Exception as e:
             print(e)
 
