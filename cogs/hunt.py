@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import json
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
@@ -28,6 +27,7 @@ class Hunt(commands.Cog):
             "checks": True,
             "retry_count": 0,
             "id": "hunt",
+            "slash_cmd_name": "hunt",
             "removed": False
         }
 
@@ -40,7 +40,6 @@ class Hunt(commands.Cog):
         else:
             self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
             await self.bot.put_queue(self.cmd)
-            self.bot.log(f"{self.cmd} attempting put queue", "#875f5f" )
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="hunt")
@@ -50,12 +49,10 @@ class Hunt(commands.Cog):
         try:
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
-                    self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
                     await self.bot.remove_queue(id="hunt")
-                    self.bot.log(f"{self.cmd} attempting remove queue", "#875f5f" )
                     await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
+                    self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
                     await self.bot.put_queue(self.cmd)
-                    self.bot.log(f"{self.cmd} attempting put queue", "#875f5f" )
         except Exception as e:
             print(e)
 

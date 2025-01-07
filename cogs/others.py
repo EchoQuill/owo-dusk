@@ -21,14 +21,16 @@ lootbox_cmd = {
     "cmd_name": "lb",
     "prefix": True,
     "checks": False,
-    "retry_count": 0
+    "retry_count": 0,
+    "slash_cmd_name": "lootbox"
 }
 
 crate_cmd = {
     "cmd_name": "wc",
     "prefix": True,
     "checks": False,
-    "retry_count": 0
+    "retry_count": 0,
+    "slash_cmd_name": "crate"
 }
 
 try:

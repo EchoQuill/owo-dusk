@@ -1,220 +1,299 @@
 {
-  "setprefix": "w",
-  "typingIndicator": true,
-  "offlineStatus": false,
-  "useSlashCommands": false,
-  "silentTextMessages": false,
-  "website": {
-    "enabled": false,
-    "port": 1200,
-    "refreshInterval": 15
-  },
-  "account": {
-    "startupDelay": [0.5, 3]
-  },
-  "commands": {
-    "hunt": {
-      "enabled": true,
-      "useReactionBotCooldowns": false,
-      "cooldown": [15, 17],
-      "useShortForm": false
+    "setprefix": "w",
+    "typingIndicator": true,
+    "offlineStatus": false,
+    "useSlashCommands": true,
+    "silentTextMessages": false,
+    "website": {
+        "enabled": true,
+        "port": 1200,
+        "refreshInterval": 15
     },
-    "battle": {
-      "enabled": true,
-      "useReactionBotCooldowns": false,
-      "cooldown": [15, 17],
-      "useShortForm": false
+    "account": {
+        "startupDelay": [
+            0.5,
+            3
+        ]
     },
-    "sell": {
-      "enabled": false,
-      "cooldown": [410, 500],
-      "rarity": ["c", "u", "r", "e", "m", "l", "g"]
+    "commands": {
+        "hunt": {
+            "enabled": true,
+            "useReactionBotCooldowns": false,
+            "cooldown": [
+                15,
+                17
+            ],
+            "useShortForm": true
+        },
+        "battle": {
+            "enabled": true,
+            "useReactionBotCooldowns": false,
+            "cooldown": [
+                15,
+                17
+            ],
+            "useShortForm": true
+        },
+        "sell": {
+            "enabled": false,
+            "cooldown": [
+                410,
+                500
+            ],
+            "rarity": [
+                "c",
+                "u",
+                "r",
+                "e",
+                "m",
+                "l",
+                "g"
+            ]
+        },
+        "sac": {
+            "enabled": false,
+            "cooldown": [
+                410,
+                500
+            ],
+            "rarity": [
+                "c",
+                "u",
+                "r",
+                "e",
+                "m",
+                "l",
+                "g"
+            ]
+        },
+        "pray": {
+            "enabled": false,
+            "cooldown": [
+                310,
+                400
+            ],
+            "userid": [],
+            "pingUser": false
+        },
+        "curse": {
+            "enabled": false,
+            "cooldown": [
+                310,
+                400
+            ],
+            "userid": [],
+            "pingUser": false
+        },
+        "lottery": {
+            "enabled": false,
+            "amount": 1
+        },
+        "lvlGrind": {
+            "enabled": false,
+            "cooldown": [
+                5,
+                10
+            ],
+            "useQuoteInstead": false,
+            "minLengthForRandomString": 5,
+            "maxLengthForRandomString": 20
+        },
+        "cookie": {
+            "enabled": false,
+            "userid": 408785106942164992,
+            "pingUser": true
+        },
+        "shop": {
+            "enabled": false,
+            "itemsToBuy": [
+                1
+            ],
+            "cooldown": [
+                10,
+                16
+            ]
+        },
+        "owo": {
+            "enabled": true,
+            "useReactionBotCooldowns": false,
+            "cooldown": [
+                10,
+                13
+            ]
+        },
+        "autoHuntBot": {
+            "enabled": false,
+            "cashToSpend": 10
+        }
     },
-    "sac": {
-      "enabled": false,
-      "cooldown": [410, 500],
-      "rarity": ["c", "u", "r", "e", "m", "l", "g"]
+    "gamble": {
+        "allottedAmount": 100000,
+        "coinflip": {
+            "enabled": false,
+            "startValue": 200,
+            "multiplierOnLose": 2,
+            "cooldown": [
+                16,
+                18
+            ],
+            "options": [
+                "h",
+                "t"
+            ]
+        },
+        "slots": {
+            "enabled": false,
+            "startValue": 1,
+            "multiplierOnLose": 3,
+            "cooldown": [
+                16,
+                18
+            ]
+        },
+        "blackjack": {}
     },
-    "pray": {
-      "enabled": true,
-      "cooldown": [310, 400],
-      "userid": [],
-      "pingUser": false
-    },
-    "curse": {
-      "enabled": false,
-      "cooldown": [310, 400],
-      "userid": [],
-      "pingUser": false
-    },
-    "lottery": {
-      "enabled": false,
-      "amount": 1
-    },
-    "lvlGrind": {
-      "enabled": false,
-      "cooldown": [5, 10],
-      "useQuoteInstead": false,
-      "minLengthForRandomString": 5,
-      "maxLengthForRandomString": 20
-    },
-    "cookie": {
-      "enabled": false,
-      "userid": 408785106942164992,
-      "pingUser": true
-    },
-    "shop": {
-      "enabled": false,
-      "itemsToBuy": [1, 2, 3],
-      "cooldown": [10, 16]
-    },
-    "owo": {      
-      "enabled": false,
-      "useReactionBotCooldowns": false,
-      "cooldown": [10, 13]
-    },
-    "autoHuntBot": {
-      "enabled": false,
-      "cashToSpend": 10000
-    }
-  },
-  "gamble": {
-    "allottedAmount": 100000,
-    "coinflip": {
-      "enabled": false,
-      "startValue": 200,
-      "multiplierOnLose": 2,
-      "cooldown": [16,18],
-      "options": ["h","t"]
-    },
-    "slots": {
-      "enabled": true,
-      "startValue": 1,
-      "multiplierOnLose": 2,
-      "cooldown": [16,18]
-    },
-    "blackjack": {
-
-    }
-  },
-  "giveawayJoiner": {
-    "enabled": false,
-    "channelsToJoin": [1099453684691243098, 1168797748343099444, 1168797827464429618],
-    "cooldown": [40, 100]
-  },
-  "sleep": {
-    "enabled": false,
-    "frequencyPercentage": 12,
-    "minTime": 1,
-    "maxTime": 10
-  },
-  "autoDaily": true,
-  "defaultCooldowns": {
-    "longCooldown": [400, 600],
-    "moderateCooldown": [70, 200],
-    "shortCooldown": [10, 60],
-    "briefCooldown": [0.7, 2.7]
-  },
-  "delayCheck": {
-    "useOwobotApi": false,
-    "minPing": 60,
-    "minDelayBetweenRecheck": 5,
-    "maxDelayBetweenRecheck": 9,
-    "minSleepTime": 200.83,
-    "maxSleepTime": 447.83
-  },
-  "textCommands": {
-    "prefix": ".",
-    "commandToStopUser": "stop",
-    "commandToStartUser": "start",
-    "allowedUsers": []
-  },
-  "logs": {
-    "rareHuntAnimalCatches": false,
-    "gettingOrOpeningLootboxs": false,
-    "gettingOrOpeningCrates": false
-  },
-  "autoUse": {
-    "gems": {
-      "enabled": true,
-      "order": {
-        "lowestToHighest": true
-      },
-      "tiers": {
-        "common": true,
-        "uncommon": true,
-        "rare": true,
-        "epic": true,
-        "mythical": true,
-        "legendary": false,
-        "fabled": false
-      },
-      "gemsToUse": {
-        "huntGem": true,
-        "empoweredGem": true,
-        "luckyGem": true,
-        "specialGem": false
-      }
-    },
-    "lootbox": true,
-    "crate": true
-  },
-  "customCommands": {
-    "enabled": false,
-    "commands": ["command1", "command2", "command3"],
-    "cooldowns": [1, 2, 3]
-  },
-  "webhook": {
-    "enabled": false,
-    "webhookUselessLog": false,
-    "webhookUrl": "webhook url here",
-    "webhookCaptchaUrl": null,
-    "webhookUserIdToPingOnCaptcha": 1
-  },
-  "console": {
-    "runConsoleCommandOnCaptcha": false,
-    "commandToRunOnCaptcha": "command to run goes here",
-    "runConsoleCommandOnBan": false,
-    "commandToRunOnBan": "command to run goes here"
-  },
-  "captcha": {
-    "notifications": {
-      "enabled": true,
-      "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
-      "bannedContent": "{username} Banned from OwO!"
-    },
-    "playAudio": {
-      "enabled": false,
-      "path": "path/filename.extension (e.g., 'audiofile.mp3' within the owo-dusk folder)"
-    },
-    "toastOrPopup": {
-      "enabled": false,
-      "captchaContent": "Captcha Detected! {username}",
-      "bannedContent": "{username} Banned from OwO!",
-      "termuxToast": {
-        "backgroundColour": "black",
-        "textColour": "red"
-      }
-    },
-    "termux": {
-      "vibrate": {
+    "giveawayJoiner": {
         "enabled": false,
-        "time": 5
-      },
-      "textToSpeech": {
+        "channelsToJoin": [
+            1099453684691243098,
+            1168797748343099444,
+            1168797827464429618
+        ],
+        "cooldown": [
+            40,
+            100
+        ]
+    },
+    "sleep": {
         "enabled": false,
-        "content": "Captcha detected! owo"
-      },
-      "openCaptchaWebsite": false
+        "frequencyPercentage": 12,
+        "minTime": 1,
+        "maxTime": 10
+    },
+    "autoDaily": true,
+    "defaultCooldowns": {
+        "longCooldown": [
+            400,
+            600
+        ],
+        "moderateCooldown": [
+            70,
+            200
+        ],
+        "shortCooldown": [
+            10,
+            60
+        ],
+        "briefCooldown": [
+            0.7,
+            2.7
+        ]
+    },
+    "delayCheck": {
+        "useOwobotApi": false,
+        "minPing": 60,
+        "minDelayBetweenRecheck": 5,
+        "maxDelayBetweenRecheck": 9,
+        "minSleepTime": 200.83,
+        "maxSleepTime": 447.83
+    },
+    "textCommands": {
+        "prefix": ".",
+        "commandToStopUser": "stop",
+        "commandToStartUser": "start",
+        "allowedUsers": []
+    },
+    "autoUse": {
+        "gems": {
+            "enabled": false,
+            "order": {
+                "lowestToHighest": true
+            },
+            "tiers": {
+                "common": true,
+                "uncommon": true,
+                "rare": true,
+                "epic": true,
+                "mythical": true,
+                "legendary": false,
+                "fabled": false
+            },
+            "gemsToUse": {
+                "huntGem": true,
+                "empoweredGem": true,
+                "luckyGem": true,
+                "specialGem": false
+            }
+        },
+        "autoLootbox": false,
+        "autoCrate": false,
+        "autoGem": false
+    },
+    "customCommands": {
+        "enabled": false,
+        "commands": [
+            "command1",
+            "command2",
+            "command3"
+        ],
+        "cooldowns": [
+            1,
+            2,
+            3
+        ]
+    },
+    "webhook": {
+        "enabled": false,
+        "webhookUselessLog": false,
+        "webhookUrl": "webhook url here",
+        "webhookCaptchaUrl": null,
+        "webhookUserIdToPingOnCaptcha": 1
+    },
+    "console": {
+        "runConsoleCommandOnCaptcha": false,
+        "commandToRunOnCaptcha": "command to run goes here",
+        "runConsoleCommandOnBan": false,
+        "commandToRunOnBan": "command to run goes here"
+    },
+    "captcha": {
+        "notifications": {
+            "enabled": true,
+            "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
+            "bannedContent": "{username} Banned from OwO!"
+        },
+        "playAudio": {
+            "enabled": false,
+            "path": "path/filename.extension (e.g., 'audiofile.mp3' within the owo-dusk folder)"
+        },
+        "toastOrPopup": {
+            "enabled": false,
+            "captchaContent": "Captcha Detected! {username}",
+            "bannedContent": "{username} Banned from OwO!",
+            "termuxToast": {
+                "backgroundColour": "black",
+                "textColour": "red"
+            }
+        },
+        "termux": {
+            "vibrate": {
+                "enabled": false,
+                "time": 5
+            },
+            "textToSpeech": {
+                "enabled": false,
+                "captchaContent": "Captcha detected! owo",
+                "bannedContent": "Banned from OwO!"
+            },
+            "openCaptchaWebsite": false
+        }
+    },
+    "debug": {
+        "enabled": true,
+        "logInTextFile": true
+    },
+    "batteryCheck": {
+        "enabled": false,
+        "minPercentage": 15,
+        "refreshInterval": 120
     }
-  },
-  "debug": {
-    "enabled": true,
-    "logInTextFile": false
-  },
-  "batteryCheck": {
-    "enabled": false,
-    "minPercentage": 15,
-    "refreshInterval": 120
-  }
 }

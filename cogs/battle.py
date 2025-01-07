@@ -24,6 +24,7 @@ class Battle(commands.Cog):
             "checks": True,
             "retry_count": 0,
             "id": "battle",
+            "slash_cmd_name": "battle",
             "removed": False
         }
     

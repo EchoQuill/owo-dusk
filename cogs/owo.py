@@ -33,8 +33,8 @@ class Owo(commands.Cog):
     @tasks.loop(seconds=1)
     async def send_owo(self):
         if not self.bot.captcha and self.bot.state:
-            await self.bot.put_queue(cmd)
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["owo"]["cooldown"]))
+            await self.bot.put_queue(cmd)
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):

@@ -13,14 +13,14 @@
 
 """
 recolour, if possible rename!
-fix huntbot
 fix gems
 add webhook
 add slashcmds
 add popup
-add offline status and remove it from website
+offline status remove from website
 add cashcheck + gamble
 maybe add huntbot to website dashboard
+merge lvlgrind+owo
 """
 
 from datetime import datetime, timedelta, timezone
@@ -308,7 +308,9 @@ class MyClient(commands.Bot):
 
 
     async def start_cogs(self):
-        for filename in os.listdir(resource_path("./cogs")):
+        files = os.listdir(resource_path("./cogs"))  # Get the list of files
+        random.shuffle(files)
+        for filename in files:
             if filename.endswith(".py"):
                 extension = f"cogs.{filename[:-3]}"
                 if extension in self.extensions:
@@ -316,17 +318,13 @@ class MyClient(commands.Bot):
                     self.refresh_commands_dict()
                     if not self.commands_dict[str(filename[:-3])]:
                         await self.unload_cog(extension)
-                        print(f"disabled {extension}")
                     continue
                 try:
                     await self.load_extension(extension)
-                    print(f"Loaded extension: {extension}")
                 except Exception as e:
                     print(f"Failed to load extension {extension}: {e}")
 
     async def update_config(self):
-        print("task received")
-
         with open("config.json", "r") as config_file:
             self.config_dict = json.load(config_file)
 
@@ -364,18 +362,7 @@ class MyClient(commands.Bot):
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
         return random.uniform(cooldown_list[0],cooldown_list[1])
-    
-    """
-    DATA EXAMPLE:
-    command_data = {
-        "cmd_name": "sell",
-        "cmd_arguments": rarity_value,
-        "prefix": True,
-        "checks": True,
-        "retry_count": 0
-}
-    """
-    
+        
     def construct_command(self, data):
         prefix = config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
@@ -386,10 +373,8 @@ class MyClient(commands.Bot):
             while not self.state or self.captcha:
                 if priority:
                     await self.queue.put(deepcopy(cmd_data))
-                    self.log(f"{cmd_data} put to queue", "#d787ff")
                     return
                 await asyncio.sleep(random.uniform(1.4, 2.9))
-                self.log(f"stuck {cmd_data}", "#d787ff")
             await self.queue.put(deepcopy(cmd_data))
         except Exception as e:
             print(e)
@@ -400,64 +385,70 @@ class MyClient(commands.Bot):
             print("invalid id/cmd_data")
             return
         try:
-            for index, (command, _) in enumerate(self.checks):
-                async with self.lock:
+            async with self.lock:
+                for index, (command, _) in enumerate(self.checks):
                     if cmd_data:
                         if command == cmd_data:
                             self.checks[index][0]["removed"] = True
-                            self.log(f"removing {cmd_data}", "#d787ff")
                     else:
                         if command.get("id", None) == id:
                             self.checks[index][0]["removed"] = True
-                            self.log(f"removing {id}", "#d787ff")
         except Exception as e:
             print(e)
+
+    async def search_checks(self, id):
+        async with self.lock:
+            for command, _ in self.checks:
+                if command.get("id", None) == id:
+                    return True
+            return False
+
 
 
 
     def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=config_dict["website"]["enabled"]):
         global website_logs
         style = f"{color} "
+        current_time = datetime.now().strftime("%H:%M:%S")
         if debug:
             frame_info = traceback.extract_stack()[-2]
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
-            current_time = datetime.now().strftime("%H:%M:%S")
-            content_to_print = f"[{current_time}] {text} | [{filename}:{lineno}]"
+            
+            content_to_print = f"[{current_time}] {self.user} - {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=style, markup=False)
             with lock:
                 if save_log:
                     with open("logs.txt", "a") as log:
                         log.write(f"{content_to_print}\n")
         else:
-            console.print(text.center(console_width - 2), style=style)
+            console.print(f"{self.user}| {text}".center(console_width - 2), style=style)
         if web_log:
             with lock:
-                website_logs.append(f"<p style='color: {color};'>{self.user}| {text}</p>")
+                website_logs.append(f"<p style='color: {color};'>[{current_time}] {self.user}| {text}</p>")
                 if len(website_logs) > 10:
                     website_logs.pop(0)
 
 
 
     # send commands
-    async def send(self, message, bypass=False, channel=None, slash_command=False, slash_command_arg=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
+    async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
         if not self.captcha or bypass:
             if typingIndicator:
                 async with channel.typing():
                     await channel.send(message, silent=silent)
-                    if slash_command:
-                        self.slashCommandSender(message)
             else:
                 await channel.send(message, silent=silent)
-                if slash_command:
-                    self.slashCommandSender(message)
+            self.log(f"Ran: {message}", "#5432a8")
+
     async def slashCommandSender(self, msg, **kwargs):
         try:
-            for command in self.commands:
+            for command in self.slash_commands:
                 if command.name == msg:
                     await command(**kwargs)
+                    self.log(f"Ran: /{msg}", "#5432a8")
         except Exception as e:
             print(e)
 
@@ -534,8 +525,6 @@ class MyClient(commands.Bot):
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
                 accounts_dict = load_accounts_dict()
-
-                print(f"Default values added for bot ID: {self.user.id}")
 
         # Load cogs
         self.config_update_checker.start()
