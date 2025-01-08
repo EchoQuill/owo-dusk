@@ -92,7 +92,7 @@ def captcha_handler(channel, username, captcha_type):
         try:
             if on_mobile:
                 run_system_command(
-                    f"termux-notification -c '{config_dict['captcha']['notifications'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
+                    f"termux-notification -t '{username} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
                     timeout=5, 
                     retry=True
                     )
@@ -125,7 +125,7 @@ def captcha_handler(channel, username, captcha_type):
         try:
             if on_mobile:
                 run_system_command(
-                    f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} '{config_dict['captcha']['toastOrPopup'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
+                    f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
                     timeout=5,
                     retry=True
                     )
