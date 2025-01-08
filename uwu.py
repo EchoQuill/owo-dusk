@@ -47,7 +47,14 @@ import sys
 import os
 import time
 import requests
+import signal
 
+def handle_sigint(signal_number, frame):
+    print("\nCtrl+C detected. stopping code!")
+    os._exit(0)
+
+# Register the signal handler
+signal.signal(signal.SIGINT, handle_sigint)
 
 def clear():
     os.system('cls') if os.name == 'nt' else os.system('clear')
@@ -467,6 +474,11 @@ class MyClient(commands.Bot):
         """
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_now.timestamp()
+    
+    async def on_disconnect(self):
+        self.log(f"disconnected {self.user}..", "#5432a8")
+
+
 
     async def on_ready(self):
         #self.on_ready_dn = False
