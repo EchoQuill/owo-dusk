@@ -55,7 +55,7 @@ class Commands(commands.Cog):
             await asyncio.sleep(random.uniform(1.7, 2.3))
 
     """TASK: check monitor"""
-    @tasks.loop(seconds=1)
+    """@tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
             current_time = datetime.now(timezone.utc)
@@ -72,7 +72,29 @@ class Commands(commands.Cog):
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             self.last_check_time = current_time
         except Exception as e:
+            print(f"Error in monitor_checks: {e}")"""
+
+    @tasks.loop(seconds=1)
+    async def monitor_checks(self):
+        try:
+            current_time = datetime.now(timezone.utc)
+            if not self.bot.state or self.bot.captcha:
+                self.calc_time += current_time - getattr(self, "last_check_time", current_time)
+            else:
+                async with self.bot.lock:
+                    for index, (command, timestamp) in enumerate(self.bot.checks[:]):
+                        if command.get("removed"):
+                            self.bot.checks.remove((command, timestamp))
+                            continue
+                        adjusted_time = timestamp + self.calc_time
+                        if (current_time - adjusted_time).total_seconds() > 7:
+                            await self.bot.put_queue(command)
+                            self.bot.checks.remove((command, timestamp))
+                self.calc_time = timedelta(0)
+            self.last_check_time = current_time
+        except Exception as e:
             print(f"Error in monitor_checks: {e}")
+
 
 
 
