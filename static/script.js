@@ -70,6 +70,8 @@ var shortCooldownMinC = document.getElementById("b5");
 var shortCooldownMaxC = document.getElementById("b6");
 var briefCooldownMinC = document.getElementById("b7");
 var briefCooldownMaxC = document.getElementById("b8");
+var captchaRestartMinC = document.getElementById("b9");
+var captchaRestartMaxC = document.getElementById("b10");
 
 // Initialize these outside func to make it global
 var webhook = {};
@@ -151,6 +153,8 @@ document.addEventListener("DOMContentLoaded", () => {
             shortCooldownMaxC.innerText = config.defaultCooldowns.shortCooldown[1];
             briefCooldownMinC.innerText = config.defaultCooldowns.briefCooldown[0];
             briefCooldownMaxC.innerText = config.defaultCooldowns.briefCooldown[1];
+            captchaRestartMinC.innerText = config.defaultCooldowns.captchaRestart[0];
+            captchaRestartMaxC.innerText = config.defaultCooldowns.captchaRestart[1];
 
             //  Gamble
             coinflipC.checked = config.gamble.coinflip?.enabled || false;
@@ -809,6 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     moderateCooldown: [Number(moderateCooldownMinC.innerText), Number(moderateCooldownMaxC.innerText)],
                     shortCooldown: [Number(shortCooldownMinC.innerText), Number(shortCooldownMaxC.innerText)],
                     briefCooldown: [Number(briefCooldownMinC.innerText), Number(briefCooldownMaxC.innerText)],
+                    captchaRestart: [Number(captchaRestartMinC.innerText), Number(captchaRestartMaxC.innerText)],
                 },
             })
         });

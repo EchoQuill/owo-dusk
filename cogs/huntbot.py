@@ -95,7 +95,7 @@ class Huntbot(commands.Cog):
 
         if "Please include your password!" in message.content:
             total_seconds_hb = int(re.findall(password_reset_regex, message.content)[0]) * 60
-            self.bot.log(f"HB {total_seconds_hb} sp - pass", "#afaf87")
+            await self.bot.log(f"HB {total_seconds_hb} sp - pass", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
         if "I WILL BE BACK IN" in message.content:
@@ -108,17 +108,17 @@ class Huntbot(commands.Cog):
                     total_seconds_hb += int(amount) * 3600
                 elif unit == 'D':
                     total_seconds_hb += int(amount) * 86400
-            self.bot.log(f"HB {total_seconds_hb} sp - BACKIN", "#afaf87")
+            await self.bot.log(f"HB {total_seconds_hb} sp - BACKIN", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
         if "I AM BACK WITH" in message.content:
             await self.send_ah(timeToSleep=1)
-            self.bot.log(f"HB 1 sp - BACKWITH", "#afaf87")
+            await self.bot.log(f"HB 1 sp - BACKWITH", "#afaf87")
 
         if "Here is your password!" in message.content:
             ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
             print(ans)
-            self.bot.log(f"HB 1 sp - {ans}", "#afaf87")
+            await self.bot.log(f"HB 1 sp - {ans}", "#afaf87")
             await self.send_ah(timeToSleep=1, ans=ans)
 
 

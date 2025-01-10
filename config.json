@@ -99,7 +99,7 @@
             "maxLengthForRandomString": 20
         },
         "cookie": {
-            "enabled": false,
+            "enabled": true,
             "userid": 408785106942164992,
             "pingUser": true
         },
@@ -187,6 +187,10 @@
         "briefCooldown": [
             0.7,
             2.7
+        ],
+        "captchaRestart": [
+            0.8,
+            2.7
         ]
     },
     "delayCheck": {
@@ -245,7 +249,7 @@
     "webhook": {
         "enabled": false,
         "webhookUselessLog": false,
-        "webhookUrl": "webhook url here",
+        "webhookUrl": "https://discord.com/api/webhooks/.....",
         "webhookCaptchaUrl": null,
         "webhookUserIdToPingOnCaptcha": 1
     },
@@ -266,17 +270,18 @@
             "path": "path/filename.extension (e.g., 'audiofile.mp3' within the owo-dusk folder)"
         },
         "toastOrPopup": {
-            "enabled": false,
+            "enabled": true,
             "captchaContent": "Captcha Detected! {username}",
             "bannedContent": "{username} Banned from OwO!",
             "termuxToast": {
                 "backgroundColour": "black",
-                "textColour": "red"
+                "textColour": "red",
+                "position": "middle"
             }
         },
         "termux": {
             "vibrate": {
-                "enabled": false,
+                "enabled": true,
                 "time": 5
             },
             "textToSpeech": {

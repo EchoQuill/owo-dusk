@@ -81,7 +81,7 @@ class Sell(commands.Cog):
                 try:
                     self.bot.balance += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
                 except:
-                    self.bot.log(f"{self.bot.user}[+] failed to fetch cowoncy from sales,", "#af0087")
+                    await self.bot.log(f"{self.bot.user}[+] failed to fetch cowoncy from sales,", "#af0087")
                 if self.bot.config_dict["commands"]["sac"]["enabled"]:
                     await self.sell_sac_queue(sac_cmd, self.bot.config_dict["commands"]["sac"]["cooldown"])
                 else:

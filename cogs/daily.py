@@ -51,13 +51,17 @@ class Daily(commands.Cog):
 
             # Time difference calculation
             self.time_diff = self.current_time_seconds - self.last_daily_time
+            print(self.time_diff, f"{self.current_time_seconds} - {self.last_daily_time}")
 
             if self.time_diff < 0:
                 self.last_daily_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
+                print(f"seleeping {self.bot.calc_time()}")
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
+                
+            print("daily successfull")
 
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
             await self.bot.put_queue(cmd, priority=True)
             self.bot.state = False
 

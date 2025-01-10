@@ -413,9 +413,8 @@ class MyClient(commands.Bot):
 
 
 
-    def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=config_dict["website"]["enabled"]):
+    async def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
         global website_logs
-        style = f"{color} "
         current_time = datetime.now().strftime("%H:%M:%S")
         if debug:
             frame_info = traceback.extract_stack()[-2]
@@ -423,18 +422,54 @@ class MyClient(commands.Bot):
             lineno = frame_info.lineno
             
             content_to_print = f"[{current_time}] {self.user} - {text} | [{filename}:{lineno}]"
-            console.print(content_to_print, style=style, markup=False)
+            console.print(content_to_print, style=color, markup=False)
             with lock:
                 if save_log:
                     with open("logs.txt", "a") as log:
                         log.write(f"{content_to_print}\n")
         else:
-            console.print(f"{self.user}| {text}".center(console_width - 2), style=style)
+            console.print(f"{self.user}| {text}".center(console_width - 2), style=color)
         if web_log:
             with lock:
                 website_logs.append(f"<p style='color: {color};'>[{current_time}] {self.user}| {text}</p>")
                 if len(website_logs) > 10:
                     website_logs.pop(0)
+        if webhook_useless_log:
+            await self.webhookSender(footer=f"[{current_time}] {self.user} - {text}")
+
+    async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None):
+        try:
+            if colors:
+                if isinstance(colors, str) and colors.startswith("#"):
+                    """Convert to hexadecimal value"""
+                    color = discord.Color(int(colors.lstrip("#"), 16))
+                else:
+                    color = discord.Color(colors)
+            else:
+                color = discord.Color(0x412280)
+
+            emb = discord.Embed(
+                title=msg,
+                description=desc,
+                color=color
+            )
+            if footer:
+                emb.set_footer(text=footer)
+            if img_url:
+                emb.set_thumbnail(url=img_url)
+            if author_img_url:
+                emb.set_author(name=self.user, icon_url=author_img_url)
+            webhook = discord.Webhook.from_url(self.config_dict["webhook"]["webhookUrl"], session=self.session)
+            if plain_text:
+                await webhook.send(content=plain_text, embed=emb, username='OwO-Dusk')
+            else:
+                await webhook.send(embed=emb, username='OwO-Dusk')
+        except discord.Forbidden as e:
+            print("Bot does not have permission to execute this command:", e)
+        except discord.NotFound as e:
+            print("The specified command was not found:", e)
+        except Exception as e:
+            print(e)
 
 
 
@@ -448,14 +483,14 @@ class MyClient(commands.Bot):
                     await channel.send(message, silent=silent)
             else:
                 await channel.send(message, silent=silent)
-            self.log(f"Ran: {message}", "#5432a8")
+            await self.log(f"Ran: {message}", "#5432a8")
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
             for command in self.slash_commands:
                 if command.name == msg:
                     await command(**kwargs)
-                    self.log(f"Ran: /{msg}", "#5432a8")
+                    await self.log(f"Ran: /{msg}", "#5432a8")
         except Exception as e:
             print(e)
 
@@ -476,7 +511,7 @@ class MyClient(commands.Bot):
         return time_now.timestamp()
     
     async def on_disconnect(self):
-        self.log(f"disconnected {self.user}..", "#5432a8")
+        await self.log(f"disconnected {self.user}..", "#5432a8")
 
 
 
