@@ -324,6 +324,7 @@ class MyClient(commands.Bot):
         self.lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
+        
 
     @tasks.loop(seconds=30)
     async def presence(self):
@@ -441,7 +442,6 @@ class MyClient(commands.Bot):
             return False
 
     def add_popup_queue(self, channel_name, captcha_type=None):
-        popup_queue()
         with lock:
             popup_queue.put(
                 (
