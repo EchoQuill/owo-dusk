@@ -26,8 +26,6 @@ with open("config.json", "r") as config_file:
 
 list_captcha = ["human", "captcha", "link", "letterword"]
 
-def show_popup():
-    messagebox.showinfo("OwO-Dusk notifier", "Captcha Detected!")
 
 def clean(msg):
     return re.sub(r"[^a-zA-Z]", "", msg)
@@ -47,9 +45,9 @@ on_mobile = is_termux()
 
 if not on_mobile:
     #desktop
-    from tkinter import messagebox
     from plyer import notification
     from playsound3 import playsound
+
     
 def run_system_command(command, timeout, retry=False, delay=5):
     def target():
@@ -84,86 +82,87 @@ def console_handler(captcha=True):
     elif config_dict["console"]["runConsoleCommandOnBan"] and not captcha:
         run_system_command(config_dict["console"]["commandToRunOnBan"], timeout=5)
 
-def captcha_handler(channel, username, captcha_type):
-    
-    channel_name = get_channel_name(channel)
-    content = 'captchaContent' if not captcha_type=="Ban" else 'bannedContent'
-    """Notifications"""
-    if config_dict["captcha"]["notifications"]["enabled"]:
-        try:
-            if on_mobile:
-                run_system_command(
-                    f"termux-notification -t '{username} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
-                    timeout=5, 
-                    retry=True
-                    )
-            else:
-                notification.notify(
-                    title=f'{username} DETECTED CAPTCHA',
-                    message=config_dict['captcha']['notifications'][content].format(username=username,channelname=channel_name,captchatype=captcha_type),
-                    app_icon=None,
-                    timeout=15
-                    )
-        except Exception as e:
-            print(f"{e} - at notifs")
-    """Play audio file"""
-    """
-    TASK: add two checks, check the path for the file in both outside utils folder
-    and in owo-dusk folder
-    +
-    better error handling for missing PATH
-    """
-    if config_dict["captcha"]["playAudio"]["enabled"]:
-        try:
-            if on_mobile:
-                run_system_command(f"termux-media-player play {config_dict['playAudio']['path']}", timeout=5, retry=True)
-            else:
-                playsound(config_dict["playAudio"]["path"], block=False)
-        except Exception as e:
-            print(f"{e} - at audio")
-    """Toast/Popup"""
-    if config_dict["captcha"]["toastOrPopup"]["enabled"]:
-        try:
-            if on_mobile:
-                run_system_command(
-                    f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=username,channelname=channel_name,captchatype=captcha_type)}'",
-                    timeout=5,
-                    retry=True
-                    )
-            else:
-                pass
-        except Exception as e:
-            print(f"{e} - at Toast/Popup")
-    """Termux - Vibrate"""
-    if config_dict["captcha"]["termux"]["vibrate"]["enabled"]:
-        try:
-            if on_mobile:
-                run_system_command(
-                    f"termux-vibrate -f -d {config_dict['captcha']['termux']['vibrate']['time']*1000}",
-                    timeout=5,
-                    retry=True,
-                )
-            else:
-                pass
-        except Exception as e:
-            print(f"{e} - at Toast/Popup")
-    """Termux - TTS"""
-    if config_dict["captcha"]["termux"]["textToSpeech"]["enabled"]:
-        try:
-            if on_mobile:
-                run_system_command(
-                        f"termux-tts-speak {config_dict['captcha']['termux']['textToSpeech'][content]}",
-                        timeout=7,
-                        retry=False
-                    )
-            else:
-                pass
-        except Exception as e:
-            print(f"{e} - at Toast/Popup")
 
 class Captcha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    def captcha_handler(self, channel, captcha_type):
+        channel_name = get_channel_name(channel)
+        content = 'captchaContent' if not captcha_type=="Ban" else 'bannedContent'
+        """Notifications"""
+        if config_dict["captcha"]["notifications"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(
+                        f"termux-notification -t '{self.bot.user} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username={self.bot.user},channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
+                        timeout=5, 
+                        retry=True
+                        )
+                else:
+                    notification.notify(
+                        title=f'{self.bot.user} DETECTED CAPTCHA',
+                        message=config_dict['captcha']['notifications'][content].format(username={self.bot.user},channelname=channel_name,captchatype=captcha_type),
+                        app_icon=None,
+                        timeout=15
+                        )
+            except Exception as e:
+                print(f"{e} - at notifs")
+        """Play audio file"""
+        """
+        TASK: add two checks, check the path for the file in both outside utils folder
+        and in owo-dusk folder
+        +
+        better error handling for missing PATH
+        """
+        if config_dict["captcha"]["playAudio"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(f"termux-media-player play {config_dict['playAudio']['path']}", timeout=5, retry=True)
+                else:
+                    playsound(config_dict["playAudio"]["path"], block=False)
+            except Exception as e:
+                print(f"{e} - at audio")
+        """Toast/Popup"""
+        if config_dict["captcha"]["toastOrPopup"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(
+                        f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=self.bot.user,channelname=channel_name,captchatype=captcha_type)}'",
+                        timeout=5,
+                        retry=True
+                        )
+                else:
+                    self.bot.add_popup_queue(channel_name, captcha_type)
+            except Exception as e:
+                print(f"{e} - at Toast/Popup")
+        """Termux - Vibrate"""
+        if config_dict["captcha"]["termux"]["vibrate"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(
+                        f"termux-vibrate -f -d {config_dict['captcha']['termux']['vibrate']['time']*1000}",
+                        timeout=5,
+                        retry=True,
+                    )
+                else:
+                    pass
+            except Exception as e:
+                print(f"{e} - at Toast/Popup")
+        """Termux - TTS"""
+        if config_dict["captcha"]["termux"]["textToSpeech"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(
+                            f"termux-tts-speak {config_dict['captcha']['termux']['textToSpeech'][content]}",
+                            timeout=7,
+                            retry=False
+                        )
+                else:
+                    pass
+            except Exception as e:
+                print(f"{e} - at Toast/Popup")
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -201,13 +200,13 @@ class Captcha(commands.Cog):
             ):
                 self.bot.captcha = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
-                captcha_handler(message.channel, self.bot.user, "Link")
+                self.captcha_handler(message.channel, "Link")
                 console_handler()
 
             elif "**☠ |** You have been banned" in message.content:
                 self.bot.captcha = True
                 await self.bot.log(f"Ban detected!", "#d70000")
-                captcha_handler(message.channel, self.bot.user, "Ban")
+                self.captcha_handler(message.channel, "Ban")
                 console_handler(captcha=False)
 
             

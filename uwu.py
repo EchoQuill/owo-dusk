@@ -72,7 +72,6 @@ with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
 
-
 console.rule("[bold blue1]:>", style="navy_blue")
 console_width = console.size.width
 listUserIds = []
@@ -88,7 +87,6 @@ owoArt = r"""
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
 version = "2.0.0-alpha"
 debug_print = True
-
 
 
 """FLASK APP"""
@@ -131,7 +129,7 @@ def save_things():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"status": "error", "message": "An error occurred while saving data"}), 500
-    
+
 @app.route('/api/config', methods=['GET'])
 def get_config():
     # Check for 'password' in the headers
@@ -156,7 +154,7 @@ def get_console_logs():
     except Exception as e:
         print(f"Error fetching logs: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching logs"}), 500
-    
+
 
 def web_start():
     flaskLog = logging.getLogger("werkzeug")
@@ -188,19 +186,6 @@ def resource_path(relative_path):
 def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
 
-def try_import_or_install(package_name):
-    try:
-        __import__(package_name)
-        print(f"Module {package_name} imported successfully.")
-    except ImportError:
-        print(f"{package_name} is not installed, attempting to install automatically...")
-        try:
-            install_package(package_name)
-            __import__(package_name)
-            print(f"{package_name} installed and imported successfully.")
-        except Exception as e:
-            print(f"Failed to install {package_name}. Please run 'pip install {package_name}' and run the script again. Error: {e}")
-
 def is_termux():
     termux_prefix = os.environ.get("PREFIX")
     termux_home = os.environ.get("HOME")
@@ -211,15 +196,15 @@ def is_termux():
         return True
     else:
         return os.path.isdir("/data/data/com.termux")
-    
+
 on_mobile = is_termux()
 
 if not on_mobile:
-    try_import_or_install("psutil")
     try:
         import psutil
-
-        print("psutil imported successfully")
+        import tkinter as tk
+        from tkinter import PhotoImage
+        from queue import Queue
     except Exception as e:
         print(f"ImportError: {e}")
 
@@ -271,13 +256,57 @@ if config_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 
+def show_popup_thread():
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+    
+    while True:
+        msg, username, channelname, captchatype = popup_queue.get()
+
+        popup = tk.Toplevel(root)
+        # Set custom icon
+        icon_path = "static/imgs/logo.png"  # Path to your icon image file
+        icon = tk.PhotoImage(file=icon_path)
+        popup.iconphoto(True, icon)
+        # Dark mode style
+        popup.configure(bg="#000000")
+        # Determine screen dimensions
+        screen_width = popup.winfo_screenwidth()
+        screen_height = popup.winfo_screenheight()
+        # Calculate popup window position
+        popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
+        popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
+        x_position = (screen_width - popup_width) // 2
+        y_position = (screen_height - popup_height) // 2
+        # Set geometry and position
+        popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
+        popup.title("OwO-dusk - Notifs")
+        # Message label
+        label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+        label = tk.Label(popup, text=label_text, wraplength=popup_width - 40, justify="left", padx=20, pady=20, bg="#000000", fg="#be7dff")
+        label.pack(fill="both", expand=True)
+        # OK button
+        button = tk.Button(popup, text="OK", command=popup.destroy)
+        button.pack(pady=10)
+        # Make the popup window appear on top and grab focus
+        popup.grab_set()
+        popup.focus_set()
+        popup.lift()
+        # Wait for the popup window to be destroyed before continuing
+        popup.wait_window()
+
+if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
+    popup_queue = Queue()
+    popup_thread = threading.Thread(target=show_popup_thread)
+    popup_thread.daemon = True  # Ensure the thread exits when the main program does
+    popup_thread.start()
 
 class MyClient(commands.Bot):
-    
+
     def __init__(self, token, channel_id, *args, **kwargs):
         """The self_bot here makes sure the inbuild command `help`
         doesn't get executed by other users."""
-        
+
         super().__init__(command_prefix="-", self_bot=True, *args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
@@ -295,7 +324,6 @@ class MyClient(commands.Bot):
         self.lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
-
 
     @tasks.loop(seconds=30)
     async def presence(self):
@@ -315,8 +343,7 @@ class MyClient(commands.Bot):
         global config_updated
         if config_updated is not None and (time.time() - config_updated < 6):
             await self.update_config()
-            #config_updated = False
-
+            # config_updated = False
 
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
@@ -369,15 +396,14 @@ class MyClient(commands.Bot):
             "shop": self.config_dict["commands"]["shop"]["enabled"],
             "slots": self.config_dict["gamble"]["slots"]["enabled"]
         }
-        
+
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
         return random.uniform(cooldown_list[0],cooldown_list[1])
-        
+
     def construct_command(self, data):
         prefix = config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
-
 
     async def put_queue(self, cmd_data, priority=False):
         try:
@@ -390,7 +416,7 @@ class MyClient(commands.Bot):
         except Exception as e:
             print(e)
             print("^ at put_queue")
-    
+
     async def remove_queue(self, cmd_data=None, id=None):
         if not cmd_data and not id:
             print("invalid id/cmd_data")
@@ -414,8 +440,21 @@ class MyClient(commands.Bot):
                     return True
             return False
 
-
-
+    def add_popup_queue(self, channel_name, captcha_type=None):
+        popup_queue()
+        with lock:
+            popup_queue.put(
+                (
+                    (
+                        config_dict["captcha"]["toastOrPopup"]["captchaContent"]
+                        if captcha_type
+                        else config_dict["captcha"]["toastOrPopup"]["bannedContent"]
+                    ),
+                    self.user.name,
+                    channel_name,
+                    captcha_type,
+                )
+            )
 
     async def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
         global website_logs
@@ -424,7 +463,7 @@ class MyClient(commands.Bot):
             frame_info = traceback.extract_stack()[-2]
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
-            
+
             content_to_print = f"[{current_time}] {self.user} - {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=color, markup=False)
             with lock:
@@ -475,8 +514,6 @@ class MyClient(commands.Bot):
         except Exception as e:
             print(e)
 
-
-
     # send commands
     async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
@@ -506,21 +543,19 @@ class MyClient(commands.Bot):
         total_seconds = time_until_12am_pst.total_seconds() # turn that time to seconds
         # 12am = 00:00, I might need this the next time I take a look here.
         return total_seconds
-    
+
     def time_in_seconds(self):
         """
         timestamp is basically seconds passed after 1970 jan 1st
         """
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_now.timestamp()
-    
+
     async def on_disconnect(self):
         await self.log(f"disconnected {self.user}..", "#5432a8")
 
-
-
     async def on_ready(self):
-        #self.on_ready_dn = False
+        # self.on_ready_dn = False
         self.owo_bot_id = 408785106942164992
         if self.session is None:
             self.session = aiohttp.ClientSession()
@@ -595,11 +630,9 @@ class MyClient(commands.Bot):
                 }
             )
             print("put cash to quue")
-            
 
-        
 
-#----------STARTING BOT----------#                 
+# ----------STARTING BOT----------#
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
@@ -631,4 +664,3 @@ if __name__ == "__main__":
     console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
     console.rule(style="navy_blue")
     run_bots(tokens_and_channels)
-    
