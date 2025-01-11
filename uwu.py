@@ -252,9 +252,54 @@ if config_dict["batteryCheck"]["enabled"]:
 def show_popup_thread():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
+    
+    while True:
+        msg, username, channelname, captchatype = popup_queue.get()
+
+        popup = tk.Toplevel(root)
+        # Set custom icon
+        icon_path = "static/imgs/logo.png"  # Path to your icon image file
+        icon = tk.PhotoImage(file=icon_path)
+        popup.iconphoto(True, icon)
+        # Dark mode style
+        popup.configure(bg="#000000")
+        # Determine screen dimensions
+        screen_width = popup.winfo_screenwidth()
+        screen_height = popup.winfo_screenheight()
+        # Calculate popup window position
+        popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
+        popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
+        x_position = (screen_width - popup_width) // 2
+        y_position = (screen_height - popup_height) // 2
+        # Set geometry and position
+        popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
+        popup.title("OwO-dusk - Notifs")
+        # Message label
+        label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+        label = tk.Label(popup, text=label_text, wraplength=popup_width - 40, justify="left", padx=20, pady=20, bg="#000000", fg="#be7dff")
+        label.pack(fill="both", expand=True)
+        # OK button
+        button = tk.Button(popup, text="OK", command=popup.destroy)
+        button.pack(pady=10)
+        # Make the popup window appear on top and grab focus
+        try:
+            popup.grab_set()
+        except:
+            print("Grab failed, releasing previous grabs...")
+            popup.grab_release()
+            popup.grab_set()
+        popup.focus_set()
+        popup.lift()
+        # Wait for the popup window to be destroyed before continuing
+        #popup.wait_window()
+
+def show_popup_thread():
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
 
     while True:
         msg, username, channelname, captchatype = popup_queue.get()
+        print(msg, username, channelname, captchatype)
         # Create a new popup window
         popup = tk.Toplevel(root)
         popup.configure(bg="#000000")
@@ -296,7 +341,7 @@ def show_popup_thread():
             popup.focus_set()  # Ensure the popup has focus
             popup.lift()  # Bring the popup to the top
 
-        #popup.wait_window()
+        popup.wait_window()
 
 
 if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
