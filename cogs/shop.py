@@ -12,10 +12,22 @@
 
 import asyncio
 import random
+import re
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
+cash_regex = r"/for \*\*(\d+)\*\* <:cowoncy:/gm"
+
+cash_required = {
+    1:10,
+    2:100,
+    3:1000,
+    4:10000,
+    5:100000,
+    6:1000000,
+    7:10000000
+}
 
 class Shop(commands.Cog):
     def __init__(self, bot):
@@ -42,13 +54,18 @@ class Shop(commands.Cog):
         await self.bot.remove_queue(id="shop")
 
     async def send_buy(self, startup=False):
+        item = random.choice(self.bot.config_dict["commands"]["shop"]["itemsToBuy"])
         if startup:
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
         else:
             await self.bot.remove_queue(id="shop")
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["shop"]["cooldown"]))
-        self.cmd["cmd_arguments"] = random.choice(self.bot.config_dict["commands"]["shop"]["itemsToBuy"])
-        await self.bot.put_queue(self.cmd)
+        if cash_required[item] <= self.bot.balance:
+            self.cmd["cmd_arguments"] = item
+            await self.bot.put_queue(self.cmd)
+        else:
+            await self.send_buy()
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -56,6 +73,7 @@ class Shop(commands.Cog):
         🛒 **| user**, you bought a <:cring:590393333331918859> **Common Ring** for **10** <:cowoncy:416043450337853441>!
         """
         if "**, you bought a " in message.content:
+            self.bot.balance-=int(re.search(cash_regex, message.content).group(1))
             await self.send_buy()
 
 

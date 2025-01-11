@@ -69,6 +69,8 @@ class Others(commands.Cog):
             elif "you currently have **__" in message.content:
                 """task: add checks for cash at ready."""
                 self.bot.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
+                await self.bot.log(f"Has {self.bot.balance} cowoncy!", "#d787d7")
+                await self.bot.remove_queue(id="cash")
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:

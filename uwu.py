@@ -15,12 +15,13 @@
 recolour, if possible rename!
 fix gems
 add webhook
-add slashcmds
 add popup
 offline status remove from website
 add cashcheck + gamble
 maybe add huntbot to website dashboard
 merge lvlgrind+owo
+add cash check
+fix gamble not working
 """
 
 from datetime import datetime, timedelta, timezone
@@ -292,6 +293,9 @@ class MyClient(commands.Bot):
         self.config_dict = None
         self.commands_dict = {}
         self.lock = asyncio.Lock()
+        self.cash_check = False
+        self.gain_or_lose = 0
+
 
     @tasks.loop(seconds=30)
     async def presence(self):
@@ -579,6 +583,20 @@ class MyClient(commands.Bot):
         await self.update_config()
         if self.config_dict["offlineStatus"]:
             self.presence.start()
+        if self.config_dict["cashCheck"]:
+            await self.put_queue(
+                {
+                    "cmd_name": "cash",
+                    "prefix": True,
+                    "checks": True,
+                    "retry_count": 0,
+                    "id": "cash",
+                    "removed": False
+                }
+            )
+            print("put cash to quue")
+            
+
         
 
 #----------STARTING BOT----------#                 
