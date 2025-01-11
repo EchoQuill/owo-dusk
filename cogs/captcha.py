@@ -40,7 +40,7 @@ def is_termux():
         return True
     else:
         return os.path.isdir("/data/data/com.termux")
-    
+
 on_mobile = is_termux()
 
 if not on_mobile:
@@ -48,7 +48,7 @@ if not on_mobile:
     from plyer import notification
     from playsound3 import playsound
 
-    
+
 def run_system_command(command, timeout, retry=False, delay=5):
     def target():
         try:
@@ -163,7 +163,6 @@ class Captcha(commands.Cog):
             except Exception as e:
                 print(f"{e} - at Toast/Popup")
 
-
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
@@ -201,6 +200,20 @@ class Captcha(commands.Cog):
                 self.bot.captcha = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
                 self.captcha_handler(message.channel, "Link")
+                if self.bot.config_dict["webhook"]["enabled"]:
+                    await self.webhookSender(
+                        msg=f"-{self.user} [+] CAPTCHA Detected",
+                        desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                        colors="#00FFAF",
+                        img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                        plain_text_msg=(
+                            f"<@{self.bot.config_dict["webhook"]["webhookPingId"]}>"
+                            if self.bot.config_dict["webhook"]["webhookPingId"]
+                            else None
+                        ),
+                        webhook_url=self.bot.config_dict["webhook"].get("webhookCaptchaUrl", None),
+                    )
                 console_handler()
 
             elif "**☠ |** You have been banned" in message.content:
@@ -208,9 +221,20 @@ class Captcha(commands.Cog):
                 await self.bot.log(f"Ban detected!", "#d70000")
                 self.captcha_handler(message.channel, "Ban")
                 console_handler(captcha=False)
-
-            
-        
+                if self.bot.config_dict["webhook"]["enabled"]:
+                    await self.webhookSender(
+                        msg=f"-{self.user} [+] BAN Detected",
+                        desc=f"**User** : <@{self.user.id}>\n**Link** : [Ban Message]({message.jump_url})",
+                        colors="#00FFAF",
+                        img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                        plain_text_msg=(
+                            f"<@{self.bot.config_dict["webhook"]["webhookPingId"]}>"
+                            if self.bot.config_dict["webhook"]["webhookPingId"]
+                            else None
+                        ),
+                        webhook_url=self.bot.config_dict["webhook"].get("webhookCaptchaUrl", None),
+                    )
 
 
 async def setup(bot):

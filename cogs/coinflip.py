@@ -97,9 +97,9 @@ class Coinflip(commands.Cog):
                     match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     self.turns_lost = 0
                     await self.start_cf()
-                    await self.bot.log(f"won {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     self.bot.balance+=match
                     self.bot.gain_or_lose+=match
+                    await self.bot.log(f"won {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
             except Exception as e:
                 print(e)
 

@@ -12,16 +12,9 @@
 
 
 """
-recolour, if possible rename!
 fix gems
-add webhook
-add popup
-offline status remove from website
-add cashcheck + gamble
-maybe add huntbot to website dashboard
 merge lvlgrind+owo
-add cash check
-fix gamble not working
+fix extra cash being added to net profit
 """
 
 from datetime import datetime, timedelta, timezone
@@ -259,41 +252,52 @@ if config_dict["batteryCheck"]["enabled"]:
 def show_popup_thread():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
-    
+
     while True:
         msg, username, channelname, captchatype = popup_queue.get()
-
+        # Create a new popup window
         popup = tk.Toplevel(root)
-        # Set custom icon
-        icon_path = "static/imgs/logo.png"  # Path to your icon image file
-        icon = tk.PhotoImage(file=icon_path)
-        popup.iconphoto(True, icon)
-        # Dark mode style
         popup.configure(bg="#000000")
+        try:
+            icon_path = "static/imgs/logo.png"  # Path to your icon image file
+            icon = tk.PhotoImage(file=icon_path)
+            popup.iconphoto(True, icon)
+        except Exception as e:
+            print(f"Failed to load icon: {e}")
         # Determine screen dimensions
         screen_width = popup.winfo_screenwidth()
         screen_height = popup.winfo_screenheight()
-        # Calculate popup window position
+        # Calculate popup window position and size
         popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
         popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
         x_position = (screen_width - popup_width) // 2
         y_position = (screen_height - popup_height) // 2
-        # Set geometry and position
         popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
         popup.title("OwO-dusk - Notifs")
-        # Message label
         label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
-        label = tk.Label(popup, text=label_text, wraplength=popup_width - 40, justify="left", padx=20, pady=20, bg="#000000", fg="#be7dff")
+        label = tk.Label(
+            popup, 
+            text=label_text, 
+            wraplength=popup_width - 40, 
+            justify="left", 
+            padx=20, 
+            pady=20, 
+            bg="#000000", 
+            fg="#be7dff"
+        )
         label.pack(fill="both", expand=True)
-        # OK button
         button = tk.Button(popup, text="OK", command=popup.destroy)
         button.pack(pady=10)
-        # Make the popup window appear on top and grab focus
-        popup.grab_set()
-        popup.focus_set()
-        popup.lift()
-        # Wait for the popup window to be destroyed before continuing
-        popup.wait_window()
+        try:
+            popup.grab_set()  # Restrict input focus to the popup
+        except tk.TclError as e:
+            print(f"Grab failed: {e}")
+        finally:
+            popup.focus_set()  # Ensure the popup has focus
+            popup.lift()  # Bring the popup to the top
+
+        #popup.wait_window()
+
 
 if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
     popup_queue = Queue()
@@ -447,7 +451,7 @@ class MyClient(commands.Bot):
                 (
                     (
                         config_dict["captcha"]["toastOrPopup"]["captchaContent"]
-                        if captcha_type
+                        if captcha_type != "Ban"
                         else config_dict["captcha"]["toastOrPopup"]["bannedContent"]
                     ),
                     self.user.name,
@@ -478,9 +482,9 @@ class MyClient(commands.Bot):
                 if len(website_logs) > 10:
                     website_logs.pop(0)
         if webhook_useless_log:
-            await self.webhookSender(footer=f"[{current_time}] {self.user} - {text}")
+            await self.webhookSender(footer=f"[{current_time}] {self.user} - {text}", colors=color)
 
-    async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None):
+    async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None, webhook_url=None):
         try:
             if colors:
                 if isinstance(colors, str) and colors.startswith("#"):
@@ -502,7 +506,7 @@ class MyClient(commands.Bot):
                 emb.set_thumbnail(url=img_url)
             if author_img_url:
                 emb.set_author(name=self.user, icon_url=author_img_url)
-            webhook = discord.Webhook.from_url(self.config_dict["webhook"]["webhookUrl"], session=self.session)
+            webhook = discord.Webhook.from_url(self.config_dict["webhook"]["webhookUrl"] if not webhook_url else webhook_url, session=self.session)
             if plain_text:
                 await webhook.send(content=plain_text, embed=emb, username='OwO-Dusk')
             else:
