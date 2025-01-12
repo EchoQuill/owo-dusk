@@ -1,7 +1,16 @@
-import aiohttp
+# This file is part of owo-dusk.
+#
+# Copyright (c) 2024-present EchoQuill
+#
+# Portions of this file are based on code by EchoQuill, licensed under the
+# GNU General Public License v3.0 (GPL-3.0).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 
-# import asyncio
-# import json
+import aiohttp
 
 url = "https://owobot.com/api/status"
 
@@ -33,21 +42,14 @@ def get_shard_id(server_id, total_shards):
     first two charactrer is removed since it starts with prefix '0b'
     """
     binary_str = bin(e)[2:]
-    # print(f"Binary string: {binary_str}")
     if len(binary_str) > 22:
         sliced_binary_str = binary_str[:-22]
     else:
-        sliced_binary_str = "0"  # this will never be executed.
-    # print(f"Sliced binary string: {sliced_binary_str}")
-    sliced_int = int(sliced_binary_str, 2)  # the ,2) makes it back into integer
-    # print(f"Sliced integer: {sliced_int}")
-    shard_id = (
-        sliced_int % total_shards
-    )  # the final modulus (i hope thats what its called) calc.
+        sliced_binary_str = '0' #this will never be executed.
+    sliced_int = int(sliced_binary_str, 2) # the ,2) makes it back into integer
+    shard_id = sliced_int % total_shards # the final modulus (i hope thats what its called) calc.
     return shard_id
 
-
-# server_id = '420104212895104355044'
 
 
 # Calculate and print the shard ID
@@ -61,11 +63,7 @@ async def delaycheck(session, server_id):
     except aiohttp.ClientError as e:
         print(f"An error occurred: {e}")
 
-    # json_data = []
     shard_id = get_shard_id(server_id, get_max_shards(json_data))
-    # print(f"Shard ID: {shard_id}")
-
-    # print("\n\n ----------------------------------")
 
     for item in json_data:
         if "shards" in item:
@@ -74,6 +72,7 @@ async def delaycheck(session, server_id):
                 if i["shard"] == shard_id:
                     return i
     return None
+
 
 
 # delaycheck(None, server_id)

@@ -1,9 +1,29 @@
+# This file includes code originally authored by realphandat.
+# Source: "phandat-selfbot" (https://github.com/realphandat/phandat-selfbot)
+# This file is licensed under the GNU General Public License v3.0 (GPL-3.0).
+# 
+# This project as a whole is also licensed under the GNU General Public License v3.0.
+
+# This file is part of owo-dusk.
+#
+# Copyright (c) 2024-present EchoQuill
+#
+# Portions of this file are based on code by EchoQuill, licensed under the
+# GNU General Public License v3.0 (GPL-3.0).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+
 import glob
 import os
 import numpy as np
 import aiohttp
 import io
 from PIL import Image
+import requests
 
 """
 Made with the help of https://github.com/realphandat/phandat-selfbot/blob/main/owo/modules.py
@@ -16,8 +36,8 @@ async def solveHbCaptcha(captcha_url, session):
     """
     I tried my best to make these work without folder seperation but uhh failed lol.
      ill think of a way later but hey, it works somehow with folder seperation
-    """
-    check_images = glob.glob("imgs/corpus/**/*.png")
+    """ 
+    check_images = glob.glob("static/imgs/corpus/**/*.png")
     for check_image in sorted(check_images):
         img = Image.open(check_image)
         checks.append((img, img.size, os.path.basename(check_image).split(".")[0]))
@@ -34,6 +54,7 @@ async def solveHbCaptcha(captcha_url, session):
             else:
                 print("Failed to fetch a valid image.")
                 return ""
+
     except Exception as e:
         print(f"Error fetching the captcha image: {e}")
         return ""

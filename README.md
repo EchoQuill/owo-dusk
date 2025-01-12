@@ -1,5 +1,5 @@
 <div align="center">
-  <center><img src="imgs/logo.png" width="150"></center>
+  <center><img src="static/imgs/logo.png" width="150"></center>
   <br>
   <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Pacifico&size=40&pause=1000&color=802DF7&center=true&vCenter=true&random=false&width=425&lines=Owo+Dusk" alt="Typing SVG" />
   <br/>
@@ -16,50 +16,26 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 
 > [!IMPORTANT]
 > ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in pricate servers, And not openly sharing the fact that you use selfbot to grind owo.
+
+
 ---
+# Basic installation
+---
+* Computer
+  ```
+  git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py
+  ```
+  > make sure git and python is installed and that terminal is open in `Desktop` for easier access
+* Termux
+  ```
+  pkg update && pkg upgrade -y && termux-setup-storage && pkg install python -y && pkg install git -y && pkg install termux-api -y && cd storage/downloads && git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py
+  ```
+  > Make sure to install termux and termux:api app from fdroid or github.
+  
+  after the above is done, do the steps setup.py asks you to.
+
 > [!TIP]
 > For help with setup, please join our discord server(or send `echoquill` a friend request) and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutoriales for it laters!
-
-> [!NOTE]
-> OwO-Dusk is currently under the process of a complete re-write, but v1 will be maintained till its done.
-
----
-# 🌟 Features
----
-* Multi-Account Support!!
-* auto **HuntBot** Solver! O-O (free)
-* Supports reaction bot cooldowns (enable through the config).
-* Supports both mobile and desktop/laptop!
-* Cool website for solving captchas in one place [allows solving of image captchas there] (localhost) with a 10-minute timer!
-* Customizable sleep system.
-* Optional reaction bot cooldown support, making OwO-dusk more human-like.
-* Auto hunt.
-* Auto battle.
-* Auto pray.
-* Auto curse.
-* Auto OwO top.
-* Auto daily.
-* Auto lottery.
-* Automate shop purchases (buying rings, etc.).
-* Automatically join OwO giveaways.
-* Captcha detection (not a solver!). (restarts automaticall after user manually solves captcha!)
-* Level grind.
-* Ban detection.
-* Auto cookie.
-* Auto slots.
-* Auto coinflip.
-* ~~Auto blackjack~~ [in progress].
-* Custom commands: add commands not currently listed with your own cooldowns. :>
-* Battery check.
-* Auto quest.
-* Auto sell/sacrifice.
-* Auto buy items (rings, etc. from `owo shop`).
-* Auto use crate.
-* Auto use lootbox.
-* Auto use gems (hunt gem, empowered gem, lucky gem, and special gem).
-* OwO lag check.
-* OwO-dusk provides many ways to customize captcha notifiers to make sure you don't miss any!
-* Automatically accept rules and create battle teams if the user doesn't have one.
 
 
 ---
@@ -67,11 +43,11 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 ---
 
 <div align="center">
-  <center><img src="imgs/desktop_cli.png" width="800" height="500"></center>
+  <center><img src="static/imgs/desktop_cli.png" width="800" height="500"></center>
   <br>
   <p>Desktop CLI screenshot</p>
   <br>
-  <center><img src="imgs/website.png" width="350" height="600"></center>
+  <center><img src="static/imgs/website.png" width="1200" height=600"></center>
   <br>
   <p>Website for captcha logger.</p>
 </div>
