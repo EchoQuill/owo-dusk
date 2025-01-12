@@ -43,12 +43,31 @@ import time
 import requests
 import signal
 
+"""Cntrl+c detect"""
 def handle_sigint(signal_number, frame):
     print("\nCtrl+C detected. stopping code!")
     os._exit(0)
 
-# Register the signal handler
 signal.signal(signal.SIGINT, handle_sigint)
+
+def compare_versions(current_version, latest_version):
+    current_version = current_version.lstrip("v")
+    latest_version = latest_version.lstrip("v")
+
+    current = list(map(int, current_version.split(".")))
+    latest = list(map(int, latest_version.split(".")))
+
+    for c, l in zip(current, latest):
+        if l > c:
+            return True
+        elif l < c:
+            return False
+
+    if len(latest) > len(current):
+        return any(x > 0 for x in latest[len(current):])
+    
+    return False
+
 
 def clear():
     os.system('cls') if os.name == 'nt' else os.system('clear')
@@ -78,7 +97,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.0.0-alpha"
+version = "2.0.0.0"
 debug_print = True
 
 
@@ -698,7 +717,13 @@ if __name__ == "__main__":
     console.print(owoPanel)
     console.rule(f"[bold blue1]version - {version}", style="navy_blue")
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30' )
-    #printBox(f'-Current Version:- {version}'.center(console_width - 2 ),'bold spring_green4' )
+    version_json = requests.get(f"{owo_dusk_api}/version.json").json()
+    if compare_versions(version, version_json["version"]):
+        printBox(f"""Update Detected - {version_json["version"]}
+    Changelog:-
+        {version_json["changelog"]}""",'bold gold3')
+        if version_json["important_update"]:
+            printBox('It is reccomended to update....','bold light_yellow3' )
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
