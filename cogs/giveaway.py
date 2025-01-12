@@ -32,8 +32,9 @@ class Giveaway(commands.Cog):
             channel = self.bot.get_channel(i)
             if not channel:
                 # To prevent giving error if channel id is invalid
+                await self.bot.log(f"giveaway channel seems to be invalid", "#ff5f00")
                 continue
-            async for message in channel.history(limit=6):
+            async for message in channel.history(limit=self.bot.config_dict["defaultCooldowns"]["messageRangeToCheck"]):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
