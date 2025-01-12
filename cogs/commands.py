@@ -49,30 +49,10 @@ class Commands(commands.Cog):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
                 await self.bot.send(self.bot.construct_command(cmd))
-            await asyncio.sleep(random.uniform(1.7, 2.3))
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"]))
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
-            await asyncio.sleep(random.uniform(1.7, 2.3))
-
-    """TASK: check monitor"""
-    """@tasks.loop(seconds=1)
-    async def monitor_checks(self):
-        try:
-            current_time = datetime.now(timezone.utc)
-            if not self.bot.captcha and self.bot.state:
-                async with self.bot.lock:
-                    for index, (command, timestamp) in enumerate(self.bot.checks[:]):
-                        if command.get("removed"):
-                            self.bot.checks.remove((command, timestamp))
-                            continue
-                        if (current_time - timestamp).total_seconds() > 7:
-                            await self.bot.put_queue(command)
-                            #self.bot.checks.remove((command, timestamp))
-            else:
-                self.calc_time += current_time - getattr(self, "last_check_time", current_time)
-            self.last_check_time = current_time
-        except Exception as e:
-            print(f"Error in monitor_checks: {e}")"""
+            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"]))
 
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
@@ -87,7 +67,7 @@ class Commands(commands.Cog):
                             self.bot.checks.remove((command, timestamp))
                             continue
                         adjusted_time = timestamp + self.calc_time
-                        if (current_time - adjusted_time).total_seconds() > 7:
+                        if (current_time - adjusted_time).total_seconds() > self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]:
                             await self.bot.put_queue(command)
                             self.bot.checks.remove((command, timestamp))
                 self.calc_time = timedelta(0)
