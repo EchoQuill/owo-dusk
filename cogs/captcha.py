@@ -95,14 +95,14 @@ class Captcha(commands.Cog):
             try:
                 if on_mobile:
                     run_system_command(
-                        f"termux-notification -t '{self.bot.user} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username={self.bot.user},channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
+                        f"termux-notification -t '{self.bot.user.name} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
                         timeout=5, 
                         retry=True
                         )
                 else:
                     notification.notify(
-                        title=f'{self.bot.user} DETECTED CAPTCHA',
-                        message=config_dict['captcha']['notifications'][content].format(username={self.bot.user},channelname=channel_name,captchatype=captcha_type),
+                        title=f'{self.bot.user.name} DETECTED CAPTCHA',
+                        message=config_dict['captcha']['notifications'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type),
                         app_icon=None,
                         timeout=15
                         )
@@ -128,7 +128,7 @@ class Captcha(commands.Cog):
             try:
                 if on_mobile:
                     run_system_command(
-                        f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=self.bot.user,channelname=channel_name,captchatype=captcha_type)}'",
+                        f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type)}'",
                         timeout=5,
                         retry=True
                         )
@@ -169,7 +169,7 @@ class Captcha(commands.Cog):
             if "I have verified that you are human! Thank you! :3" in message.content:
                 await asyncio.sleep(self.bot.random_float(config_dict['defaultCooldowns']['captchaRestart']))
                 self.bot.captcha = False
-                await self.bot.log(f"Captcha solved! - {self.bot.user}", "#5fd700")
+                await self.bot.log(f"Captcha solved! - {self.bot.user.name}", "#5fd700")
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
@@ -201,15 +201,15 @@ class Captcha(commands.Cog):
                 await self.bot.log(f"Captcha detected!", "#d70000")
                 self.captcha_handler(message.channel, "Link")
                 if self.bot.config_dict["webhook"]["enabled"]:
-                    await self.webhookSender(
-                        msg=f"-{self.user} [+] CAPTCHA Detected",
-                        desc=f"**User** : <@{self.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
+                    await self.bot.webhookSender(
+                        msg=f"-{self.bot.user} [+] CAPTCHA Detected",
+                        desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
                         colors="#00FFAF",
                         img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text_msg=(
-                            f"<@{self.bot.config_dict["webhook"]["webhookPingId"]}>"
-                            if self.bot.config_dict["webhook"]["webhookPingId"]
+                        plain_text=(
+                            f"<@{self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]}>"
+                            if self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]
                             else None
                         ),
                         webhook_url=self.bot.config_dict["webhook"].get("webhookCaptchaUrl", None),
@@ -222,15 +222,15 @@ class Captcha(commands.Cog):
                 self.captcha_handler(message.channel, "Ban")
                 console_handler(captcha=False)
                 if self.bot.config_dict["webhook"]["enabled"]:
-                    await self.webhookSender(
-                        msg=f"-{self.user} [+] BAN Detected",
-                        desc=f"**User** : <@{self.user.id}>\n**Link** : [Ban Message]({message.jump_url})",
+                    await self.bot.webhookSender(
+                        msg=f"-{self.bot.user} [+] BAN Detected",
+                        desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [Ban Message]({message.jump_url})",
                         colors="#00FFAF",
                         img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text_msg=(
-                            f"<@{self.bot.config_dict["webhook"]["webhookPingId"]}>"
-                            if self.bot.config_dict["webhook"]["webhookPingId"]
+                        plain_text=(
+                            f"<@{self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]}>"
+                            if self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]
                             else None
                         ),
                         webhook_url=self.bot.config_dict["webhook"].get("webhookCaptchaUrl", None),
