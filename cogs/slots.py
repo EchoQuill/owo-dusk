@@ -29,7 +29,7 @@ class Slots(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "slots",
+            "cmd_name": "s",
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
@@ -100,11 +100,13 @@ class Slots(commands.Cog):
 
                 elif "and won" in after.content.lower():
                     """won cash"""
-                    match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
-                    self.bot.balance+=match
-                    self.bot.gain_or_lose+=match
+                    won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
+                    lose_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
+                    profit = won_match-lose_match
+                    self.bot.balance+=profit
+                    self.bot.gain_or_lose+=profit
                     self.turns_lost = 0
-                    await self.bot.log(f"won {match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    await self.bot.log(f"won {won_match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_slots()
 
 

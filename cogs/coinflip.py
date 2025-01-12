@@ -26,7 +26,7 @@ class Coinflip(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "coinflip",
+            "cmd_name": "cf",
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
@@ -49,7 +49,6 @@ class Coinflip(commands.Cog):
             asyncio.create_task(self.start_cf(startup=True))
             
     async def cog_unload(self):
-        print("cf-end")
         await self.bot.remove_queue(id="coinflip")
 
     async def start_cf(self, startup=False):
@@ -94,11 +93,13 @@ class Coinflip(commands.Cog):
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
                 else:
-                    match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
+                    won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
+                    lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
                     self.turns_lost = 0
-                    self.bot.balance+=match
-                    self.bot.gain_or_lose+=match
-                    await self.bot.log(f"won {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    profit = won_match-lose_match
+                    self.bot.balance+=profit
+                    self.bot.gain_or_lose+=profit
+                    await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
             except Exception as e:
                 print(e)
