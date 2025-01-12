@@ -18,7 +18,6 @@
     "commands": {
         "hunt": {
             "enabled": true,
-            "useReactionBotCooldowns": false,
             "cooldown": [
                 15,
                 17
@@ -27,7 +26,6 @@
         },
         "battle": {
             "enabled": true,
-            "useReactionBotCooldowns": false,
             "cooldown": [
                 15,
                 17
@@ -91,15 +89,15 @@
         "lvlGrind": {
             "enabled": false,
             "cooldown": [
-                5,
-                10
+                10,
+                15
             ],
-            "useQuoteInstead": false,
+            "useQuoteInstead": true,
             "minLengthForRandomString": 5,
             "maxLengthForRandomString": 20
         },
         "cookie": {
-            "enabled": true,
+            "enabled": false,
             "userid": 408785106942164992,
             "pingUser": true
         },
@@ -114,8 +112,7 @@
             ]
         },
         "owo": {
-            "enabled": true,
-            "useReactionBotCooldowns": false,
+            "enabled": false,
             "cooldown": [
                 10,
                 13
@@ -127,22 +124,21 @@
         }
     },
     "gamble": {
-        "allottedAmount": 10,
+        "allottedAmount": 30000,
         "coinflip": {
             "enabled": true,
-            "startValue": 5,
+            "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
                 16,
                 18
             ],
             "options": [
-                "h",
                 "t"
             ]
         },
         "slots": {
-            "enabled": true,
+            "enabled": false,
             "startValue": 1,
             "multiplierOnLose": 3,
             "cooldown": [
@@ -153,7 +149,7 @@
         "blackjack": {}
     },
     "giveawayJoiner": {
-        "enabled": true,
+        "enabled": false,
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
@@ -165,12 +161,12 @@
         ]
     },
     "sleep": {
-        "enabled": false,
-        "frequencyPercentage": 12,
-        "minTime": 1,
-        "maxTime": 10
+        "enabled": true,
+        "frequencyPercentage": 80,
+        "checkTime": [10,20],
+        "sleeptime": [1,10]
     },
-    "autoDaily": true,
+    "autoDaily": false,
     "cashCheck": true,
     "defaultCooldowns": {
         "longCooldown": [
@@ -194,14 +190,6 @@
             2.7
         ]
     },
-    "delayCheck": {
-        "useOwobotApi": false,
-        "minPing": 60,
-        "minDelayBetweenRecheck": 5,
-        "maxDelayBetweenRecheck": 9,
-        "minSleepTime": 200.83,
-        "maxSleepTime": 447.83
-    },
     "textCommands": {
         "prefix": ".",
         "commandToStopUser": "stop",
@@ -210,7 +198,7 @@
     },
     "autoUse": {
         "gems": {
-            "enabled": false,
+            "enabled": true,
             "order": {
                 "lowestToHighest": true
             },
@@ -234,23 +222,10 @@
         "autoCrate": true,
         "autoGem": false
     },
-    "customCommands": {
-        "enabled": false,
-        "commands": [
-            "command1",
-            "command2",
-            "command3"
-        ],
-        "cooldowns": [
-            1,
-            2,
-            3
-        ]
-    },
     "webhook": {
         "enabled": false,
         "webhookUselessLog": false,
-        "webhookUrl": "webhook here",
+        "webhookUrl": "https://discord.com/api/webhooks/....",
         "webhookCaptchaUrl": null,
         "webhookUserIdToPingOnCaptcha": 1
     },

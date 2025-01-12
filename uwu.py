@@ -413,6 +413,16 @@ class MyClient(commands.Bot):
         if config_updated is not None and (time.time() - config_updated < 6):
             await self.update_config()
             # config_updated = False
+    @tasks.loop(seconds=1)
+    async def random_sleep(self):
+        await asyncio.sleep(self.random_float(self.config_dict["sleep"]["checkTime"]))
+        if random.randint(1, 100) > (100 - self.config_dict["sleep"]["frequencyPercentage"]):
+            self.state = False
+            sleep_time = self.random_float(self.config_dict["sleep"]["checkTime"])
+            await self.log("sleeping for {sleep_time}", "#87af87")
+            await asyncio.sleep(sleep_time)
+            self.state = True
+            await self.log("sleeping finished!", "#87af87")
 
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
@@ -697,7 +707,8 @@ class MyClient(commands.Bot):
                     "removed": False
                 }
             )
-            print("put cash to quue")
+        if self.config_dict["sleep"]["enabled"]:
+            self.random_sleep.start()
 
 
 # ----------STARTING BOT----------#
