@@ -89,7 +89,7 @@ class Lottery(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
-                        await self.bot.remove_queue(self.cmd)
+                        await self.bot.remove_queue(id="lottery")
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                         await self.bot.put_queue(self.cmd)
@@ -98,6 +98,18 @@ class Lottery(commands.Cog):
                             accounts_dict[str(self.bot.user.id)]["lottery"] = self.bot.time_in_seconds()
                             with open("utils/stats.json", "w") as f:
                                 json.dump(accounts_dict, f, indent=4)
+
+            if "You can only bet up to 250,000 cowoncy!" in message.content:
+                await self.bot.remove_queue(id="lottery")
+                await asyncio.sleep(self.bot.calc_time())
+                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await self.bot.put_queue(self.cmd)
+                with lock:
+                    load_dict()
+                    accounts_dict[str(self.bot.user.id)]["lottery"] = self.bot.time_in_seconds()
+                    with open("utils/stats.json", "w") as f:
+                        json.dump(accounts_dict, f, indent=4)
+
                 
 async def setup(bot):
     await bot.add_cog(Lottery(bot))
