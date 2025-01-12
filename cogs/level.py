@@ -13,7 +13,6 @@
 import asyncio
 import string
 import random
-import json
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
@@ -55,7 +54,7 @@ class Level(commands.Cog):
         try:
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["lvlGrind"]["cooldown"]))
             if self.bot.config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
-                fetch_quotes(self.bot.session)
+                self.last_level_grind_message = await fetch_quotes(self.bot.session)
             else:
                 self.last_level_grind_message = generate_random_string(self.bot.config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], self.bot.config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
             self.cmd["cmd_name"] = self.last_level_grind_message
