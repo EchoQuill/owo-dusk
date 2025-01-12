@@ -125,8 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Configuration loaded:", config);
 
             // Misc
-            autoLootboxC.checked = config.autoUse?.lootbox || false;
-            autoCrateC.checked = config.autoUse?.crate || false;
+            autoLootboxC.checked = config.autoUse?.autoLootbox || false;
+            autoCrateC.checked = config.autoUse?.autoCrate || false;
             useSlashCommandsC.checked = config?.useSlashCommands|| false;
             offlineStatusC.checked = config?.offlineStatus|| false;
             webhookC.checked = config.webhook?.enabled || false;
