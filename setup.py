@@ -12,6 +12,7 @@
 
 import os
 import sys
+import json
 import subprocess
 try:
     os.system('cls') if os.name == 'nt' else os.system('clear')
@@ -92,7 +93,7 @@ if scratchSetup:
         else:
             print("\033[1;36minstalling normally...\033[m")
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow"])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer"])
                 print("\033[1;36m[0]Installed numpy and PIL successfully!\033[m")
             except Exception as e:
                 print(f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m")
@@ -106,20 +107,21 @@ if scratchSetup:
     import asyncio
     #version check
     def compare_versions(current_version, latest_version):
-        #current_version = current_version[1:]
-        #latest_version = latest_version[1:]
-        current = list(map(int, current_version.split('.')))
-        latest = list(map(int, latest_version.split('.')))
-        """
-        example output:
-        current = [1,5,0]
-        """
+        current_version = current_version.lstrip("v")
+        latest_version = latest_version.lstrip("v")
+
+        current = list(map(int, current_version.split(".")))
+        latest = list(map(int, latest_version.split(".")))
+
         for c, l in zip(current, latest):
             if l > c:
                 return True
             elif l < c:
-                return False 
-        # If all parts are equal, return False (no new version)
+                return False
+
+        if len(latest) > len(current):
+            return any(x > 0 for x in latest[len(current):])
+        
         return False
     #---CHECK VERSIONS---#
     
@@ -128,11 +130,9 @@ if scratchSetup:
     try:
         import requests
         print('\033[1;36m[0]--imported requests module\033[m')
-        #ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
-        ver_check = requests.get("https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt").text.strip()
+        ver_check = requests.get("https://echoquill.github.io/owo-dusk-api/version.json").json()["version"]
         print(f'\033[1;36m[0]--recieved current latest version for owo-dusk on github - v{ver_check}\033[m')
-        with open("version.txt", "r") as file:
-            version = file.readline().strip()
+        version = "2.0.0"
         print(f'\033[1;36m[0]current version of owo-dusk - {version}')
 
         if compare_versions(version, ver_check):

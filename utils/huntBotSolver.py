@@ -23,6 +23,7 @@ import numpy as np
 import aiohttp
 import io
 from PIL import Image
+import requests
 
 """
 Made with the help of https://github.com/realphandat/phandat-selfbot/blob/main/owo/modules.py
@@ -34,7 +35,7 @@ async def solveHbCaptcha(captcha_url, session):
     I tried my best to make these work without folder seperation but uhh failed lol.
      ill think of a way later but hey, it works somehow with folder seperation
     """ 
-    check_images = glob.glob("imgs/corpus/**/*.png")
+    check_images = glob.glob("static/imgs/corpus/**/*.png")
     for check_image in sorted(check_images):
         img = Image.open(check_image)
         checks.append((img, img.size, os.path.basename(check_image).split(".")[0]))
@@ -51,6 +52,7 @@ async def solveHbCaptcha(captcha_url, session):
             else:
                 print("Failed to fetch a valid image.")
                 return ""
+
     except Exception as e:
         print(f"Error fetching the captcha image: {e}")
         return ""
