@@ -419,7 +419,7 @@ class MyClient(commands.Bot):
         if random.randint(1, 100) > (100 - self.config_dict["sleep"]["frequencyPercentage"]):
             self.state = False
             sleep_time = self.random_float(self.config_dict["sleep"]["checkTime"])
-            await self.log("sleeping for {sleep_time}", "#87af87")
+            await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
             self.state = True
             await self.log("sleeping finished!", "#87af87")
@@ -743,7 +743,7 @@ if __name__ == "__main__":
     try:
         news_json = requests.get(f"{owo_dusk_api}/news.json").json()
         if news_json["available"]:
-            printBox(f'{news_json["content"]}'.center(console_width - 2 ),'bold aquamarine1', title=news_json["title"] )
+            printBox(f'{news_json["content"]}'.center(console_width - 2 ),f"bold {news_json['color']}", title=news_json["title"] )
     except Exception as e:
         print(e)
     console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
