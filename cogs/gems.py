@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import json
 import re
 
 from discord.ext import commands
@@ -22,10 +21,6 @@ from discord.ext.commands import ExtensionNotLoaded
 REF :- 
 gem code - https://github.com/ChristopherBThai/Discord-OwO-Bot/blob/master/src/commands/commandList/shop/inventory.js
 small numbers - https://github.com/ChristopherBThai/Discord-OwO-Bot/blob/master/src/commands/commandList/shop/util/shopUtil.js
-"""
-
-"""
-check with website
 """
 
 
@@ -48,14 +43,15 @@ def convert_small_numbers(small_number):
 
 
 def find_gems_available(message):
+
     available_gems = {
-        "057": 0, "071": 0, "078": 0, "085": 0, # fabled
-        "056": 0, "070": 0, "077": 0, "084": 0, # legendary
-        "055": 0, "069": 0, "076": 0, "083": 0, # mythical
-        "054": 0, "068": 0, "075": 0, "082": 0, # epic
-        "053": 0, "067": 0, "074": 0, "081": 0, # rare
-        "052": 0, "066": 0, "073": 0, "080": 0, # uncommon
-        "051": 0, "065": 0, "072": 0, "079": 0, # common
+        "fabled": {"057": 0, "071": 0, "078": 0, "085": 0}, # fabled
+        "legendary": {"056": 0, "070": 0, "077": 0, "084": 0}, # legendary
+        "mythical": {"055": 0, "069": 0, "076": 0, "083": 0}, # mythical
+        "epic": {"054": 0, "068": 0, "075": 0, "082": 0}, # epic
+        "rare": {"053": 0, "067": 0, "074": 0, "081": 0}, # rare
+        "uncommon": {"052": 0, "066": 0, "073": 0, "080": 0}, # uncommon
+        "common": {"051": 0, "065": 0, "072": 0, "079": 0}, # common
         # hunt, emp, luck, special
     }
     """
@@ -63,70 +59,14 @@ def find_gems_available(message):
     [('050', '⁰⁷'), ('051', '⁰³')]
     """
     inv_numbers = re.findall(r"`(\d+)`.*?([⁰¹²³⁴⁵⁶⁷⁸⁹]+)", message)
-    for item in inv_numbers:
-        available_gems[item[0]] = convert_small_numbers(item[1])
+    for gem_id, small_number in inv_numbers:
+        gem_count = convert_small_numbers(small_number)
+        
+        for rarity, gems in available_gems.items():
+            if gem_id in gems:
+                gems[gem_id] = gem_count
+                break
     return available_gems
-
-def get_gems_group(available_gems, config_dict):
-    gem_type = {
-        0: "huntGem",
-        1: "empoweredGem",
-        2: "luckyGem",
-        3: "specialGem"
-    }
-    # Determine tier order
-    tiers_ordered = list(gem_tiers.keys())
-    print(tiers_ordered)
-    if config_dict["autoUse"]["gems"]["order"]["lowestToHighest"]:
-        tiers_ordered.reverse()
-    
-    gems_int = 0
-    for i in config_dict["autoUse"]["gems"]["gemsToUse"].values():
-        if i:
-            print(i)
-            gems_int+=1
-
-
-    filtered_gems = []
-    for tier in tiers_ordered:
-        if config_dict["autoUse"]["gems"]["tiers"][tier]:
-            for index, gem in enumerate(gem_tiers[tier]):
-                if config_dict["autoUse"]["gems"]["gemsToUse"][gem_type[index]] and available_gems[gem] > 0:
-                    
-                    print(config_dict["autoUse"]["gems"]["gemsToUse"][gem_type[index]])
-                    filtered_gems.append((tier, gem, available_gems[gem]))
-    
-    # Group gems by tier with a max size of 4
-    grouped_gems = []
-    current_group = []
-    current_tier = None
-    
-    """Here _ is the count."""
-    for tier, gem, _ in filtered_gems:
-        if current_tier is None or current_tier == tier:
-            print(current_group, " curr_group")
-            print(gem, " gem")
-            current_group.append(gem)
-            current_tier = tier
-            print(f"set current tier to {tier}")
-        else:
-            if len(current_group) < gems_int:
-                print("current_group less than 4")
-                current_group.append(gem)
-                print(f"appended {gem} to current_group")
-                print(current_group)
-            if len(current_group) == gems_int:
-                grouped_gems.append(current_group)
-                print(f"appended current_group to grouped_gems")
-                print(grouped_gems)
-                current_group = [gem]
-                current_tier = tier
-    
-    """Add the last group if it's not empty"""
-    if current_group:
-        grouped_gems.append(current_group)
-    
-    return grouped_gems
 
 
 class Gems(commands.Cog):
@@ -147,8 +87,54 @@ class Gems(commands.Cog):
             "prefix": True,
             "checks": True,
             "retry_count": 0,
-            "id": "gems"
+            "id": "inv"
         }
+
+    def find_gems_to_use(self, available_gems):
+        gem_type = {
+            0: "huntGem",
+            1: "empoweredGem",
+            2: "luckyGem",
+            3: "specialGem"
+        }
+        tier_order = ['fabled', 'legendary', 'mythical', 'epic', 'rare', 'uncommon', 'common']
+        if self.bot.config_dict["autoUse"]["gems"]["order"]["lowestToHighest"]:
+            tier_order.reverse()
+
+        grouped_gem_list = []
+
+        for tier in tier_order:
+            if not self.bot.config_dict["autoUse"]["gems"]["tiers"][tier]:
+                continue
+
+            current_group = []
+            for gem_id in gem_tiers[tier]:
+                gem_index = gem_tiers[tier].index(gem_id)
+                gem_type_key = gem_type[gem_index]
+                if self.bot.config_dict["autoUse"]["gems"]["gemsToUse"].get(gem_type_key) and available_gems[tier].get(gem_id, 0) > 0:
+                    current_group.append(gem_id)
+
+            if current_group:
+                grouped_gem_list.append(current_group)
+
+        return self.process_result(grouped_gem_list)
+
+
+    def process_result(self, result):
+        print(f"Resulting gem groups: {result}")
+        
+        # Find the group with the highest number of items
+        max_group = max(result, key=len, default=None)
+        
+        if max_group:
+            print(f"Selected group with the highest count: {max_group}")
+        else:
+            print("No groups found.")
+        print(max_group)
+        
+        return max_group
+
+
 
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["hunt"]["enabled"] or not self.bot.config_dict["autoUse"]["gems"]["enabled"]:
@@ -165,17 +151,19 @@ class Gems(commands.Cog):
     async def on_message(self, message):
         if message.channel.id != self.bot.channel_id or message.author.id != self.bot.owo_bot_id:
             return
-        #if "You found:" in message.content:
-            #pass
         elif "caught" in message.content:
+            self.bot.state = False
             await self.bot.put_queue(self.inv_cmd, priority=True)
         elif "'s Inventory ======**" in message.content:
-            await self.bot.remove_queue(self.inv_cmd)
+            await self.bot.remove_queue(id="inv")
             if not self.available_gems:
                 self.available_gems = find_gems_available(message.content)
-            self.grouped_gems = get_gems_group(self.available_gems, config_dict=self.bot.config_dict)
-            for i in self.grouped_gems[0]:
-                self.gem_cmd["cmd_arguments"]+=f" {i}"
+            gems_list = self.find_gems_to_use(self.available_gems)
+            print(self.available_gems)
+            print(gems_list)
+            self.gem_cmd["cmd_arguments"]=""
+            for i in gems_list:
+                self.gem_cmd["cmd_arguments"]+=f"{i} "
             await self.bot.put_queue(self.gem_cmd, priority=True)
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
             self.bot.state = True
