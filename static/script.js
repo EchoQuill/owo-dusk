@@ -789,7 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 autoUse: {
                     autoLootbox: autoLootboxC.checked,
                     autoCrate: autoCrateC.checked,
-                    autoGem: autoGemC.checked,
+                    gems: {enabled: autoGemC.checked},
                 },
                 commands: {
                     hunt: {enabled: huntC.checked,},

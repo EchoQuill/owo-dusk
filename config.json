@@ -233,9 +233,8 @@
             }
         },
         "autoLootbox": false,
-        "autoCrate": false,
-        "autoGem": false
-    },
+        "autoCrate": false
+},
     "webhook": {
         "enabled": false,
         "webhookUselessLog": false,
