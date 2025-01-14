@@ -418,7 +418,7 @@ class MyClient(commands.Bot):
         await asyncio.sleep(self.random_float(self.config_dict["sleep"]["checkTime"]))
         if random.randint(1, 100) > (100 - self.config_dict["sleep"]["frequencyPercentage"]):
             self.state = False
-            sleep_time = self.random_float(self.config_dict["sleep"]["checkTime"])
+            sleep_time = self.random_float(self.config_dict["sleep"]["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
             self.state = True
