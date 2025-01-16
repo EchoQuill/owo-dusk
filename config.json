@@ -193,8 +193,8 @@
             2.7
         ],
         "captchaRestart": [
-            0.7,
-            2.7
+            1.7,
+            3.7
         ],
         "commandHandler": {
             "betweenCommands": [
