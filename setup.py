@@ -96,7 +96,7 @@ if scratchSetup:
         else:
             print("\033[1;36minstalling normally...\033[m")
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer"])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer", "psutil"])
                 print("\033[1;36m[0]Installed numpy and PIL successfully!\033[m")
             except Exception as e:
                 print(f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m")
