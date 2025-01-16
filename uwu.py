@@ -213,10 +213,8 @@ on_mobile = is_termux()
 
 if not on_mobile:
     try:
-        import psutil
-        import tkinter as tk
-        from tkinter import PhotoImage
-        from queue import Queue
+        if config_dict["batteryCheck"]["enabled"]:
+            import psutil
     except Exception as e:
         print(f"ImportError: {e}")
 
@@ -320,6 +318,13 @@ def show_popup_thread():
 
 
 if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
+    try:
+        import tkinter as tk
+        from tkinter import PhotoImage
+        from queue import Queue
+    except Exception as e:
+        print(f"ImportError: {e}")
+        
     popup_queue = Queue()
     popup_thread = threading.Thread(target=show_popup_thread)
     popup_thread.daemon = True  # Ensure the thread exits when the main program does
