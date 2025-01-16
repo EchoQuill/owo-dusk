@@ -130,7 +130,7 @@ if scratchSetup:
 
     # ---CHECK VERSIONS---#
 
-    print("\033[1;36m[0]attempting to check versions\033[m")
+    """print("\033[1;36m[0]attempting to check versions\033[m")
     try:
         import requests
         print('\033[1;36m[0]--imported requests module\033[m')
@@ -162,7 +162,7 @@ if scratchSetup:
                         "\033[1;33m[!]Please enter 'c' for continue or 's' for stop.\033[m"
                     )
     except Exception as e:
-        print(f"\033[1;31m[x]error when trying to check versions:-\n {e}\033[m")
+        print(f"\033[1;31m[x]error when trying to check versions:-\n {e}\033[m")"""
 
     # ---EDIT TOKENS.TXT---#
     while True:
