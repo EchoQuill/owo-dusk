@@ -60,7 +60,7 @@ class Slots(commands.Cog):
                 await self.bot.remove_queue(id="slots")
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["slots"]["cooldown"]))
 
-            amount_to_gamble = self.bot.config_dict["gamble"]["slots"]["startValue"]*(self.bot.config_dict["gamble"]["slots"]["multiplierOnLose"]**self.turns_lost)
+            amount_to_gamble = int(self.bot.config_dict["gamble"]["slots"]["startValue"]*(self.bot.config_dict["gamble"]["slots"]["multiplierOnLose"]**self.turns_lost))
             if (amount_to_gamble <= self.bot.balance) and (not self.bot.gain_or_lose+self.bot.config_dict["gamble"]["allottedAmount"] <=0 ):
                 if amount_to_gamble > 250000:
                     self.exceeded_max_amount = True
