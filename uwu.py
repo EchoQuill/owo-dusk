@@ -698,7 +698,7 @@ if __name__ == "__main__":
         printBox(f'Website Dashboard: http://localhost:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
     try:
         news_json = requests.get(f"{owo_dusk_api}/news.json").json()
-        if news_json["available"]:
+        if news_json["available"] and config_dict["news"]:
             printBox(f'{news_json["content"]}'.center(console_width - 2 ),f"bold {news_json['color']}", title=news_json["title"] )
     except Exception as e:
         print(e)

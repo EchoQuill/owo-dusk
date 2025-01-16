@@ -289,5 +289,6 @@
         "enabled": false,
         "minPercentage": 15,
         "refreshInterval": 120
-    }
+    },
+    "news": true
 }
