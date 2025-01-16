@@ -47,21 +47,19 @@ class Huntbot(commands.Cog):
     async def cog_unload(self):
         await self.bot.remove_queue(id="huntbot")
 
-    async def send_ah(self, startup=False, timeToSleep=0, ans=None):
+    async def send_ah(self, startup=False, timeToSleep=[], ans=None):
         if startup:
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
         else:
             await self.bot.remove_queue(id="huntbot")
-            await asyncio.sleep(self.bot.random_float([
-                timeToSleep+self.bot.config_dict["defaultCooldowns"]["shortCooldown"][0],
-                timeToSleep+self.bot.config_dict["defaultCooldowns"]["shortCooldown"][1]
-            ]))
+            await asyncio.sleep(self.bot.random_float(timeToSleep))
         
         """send the cmd"""
         self.cmd["cmd_arguments"] = str(self.bot.config_dict["commands"]["autoHuntBot"]["cashToSpend"])
         if ans:
             self.cmd["cmd_arguments"]+=f" {ans}"
             print(self.cmd["cmd_arguments"])
+
         await self.bot.put_queue(self.cmd)
 
     @commands.Cog.listener()
@@ -101,7 +99,6 @@ class Huntbot(commands.Cog):
         if "I WILL BE BACK IN" in message.content:
             total_seconds_hb = 0
             for amount, unit in re.findall(huntbot_time_regex, message.content):
-                
                 if unit == 'M':
                     total_seconds_hb += int(amount) * 60
                 elif unit == 'H':
@@ -109,17 +106,17 @@ class Huntbot(commands.Cog):
                 elif unit == 'D':
                     total_seconds_hb += int(amount) * 86400
             await self.bot.log(f"HB {total_seconds_hb} sp - BACKIN", "#afaf87")
-            await self.send_ah(timeToSleep=total_seconds_hb)
+            await self.send_ah(timeToSleep=[total_seconds_hb+10, total_seconds_hb+20])
 
         if "I AM BACK WITH" in message.content:
-            await self.send_ah(timeToSleep=1)
+            await self.send_ah(timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
             await self.bot.log(f"HB 1 sp - BACKWITH", "#afaf87")
 
         if "Here is your password!" in message.content:
             ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
             print(ans)
             await self.bot.log(f"HB 1 sp - {ans}", "#afaf87")
-            await self.send_ah(timeToSleep=1, ans=ans)
+            await self.send_ah(timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"], ans=ans)
 
 
 
