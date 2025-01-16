@@ -90,7 +90,8 @@ class Huntbot(commands.Cog):
 **<:blank:427371936482328596> |** `7 ESSENCE, AND 0 EXPERIENCE` 
 <:uncommon:416520056269176842> **|** :rooster:¹"""
 
-
+        if message.channel.id != self.bot.cm.id:
+            return
         if "Please include your password!" in message.content:
             total_seconds_hb = int(re.findall(password_reset_regex, message.content)[0]) * 60
             await self.bot.log(f"HB {total_seconds_hb} sp - pass", "#afaf87")
