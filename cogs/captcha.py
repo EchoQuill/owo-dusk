@@ -211,8 +211,8 @@ class Captcha(commands.Cog):
                         img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                         plain_text=(
-                            f"<@{self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]}>"
-                            if self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]
+                            f"<@{self.bot.config_dict['webhook']['webhookUserIdToPingOnCaptcha']}>"
+                            if self.bot.config_dict['webhook']['webhookUserIdToPingOnCaptcha']
                             else None
                         ),
                         webhook_url=self.bot.config_dict["webhook"].get("webhookCaptchaUrl", None),
@@ -232,7 +232,7 @@ class Captcha(commands.Cog):
                         img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                         plain_text=(
-                            f"<@{self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]}>"
+                            f"<@{self.bot.config_dict['webhook']['webhookUserIdToPingOnCaptcha']}>"
                             if self.bot.config_dict["webhook"]["webhookUserIdToPingOnCaptcha"]
                             else None
                         ),
