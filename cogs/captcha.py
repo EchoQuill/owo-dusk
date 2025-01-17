@@ -162,6 +162,9 @@ class Captcha(commands.Cog):
                     pass
             except Exception as e:
                 print(f"{e} - at Toast/Popup")
+        """Termux - open captcha website"""
+        if config_dict["captcha"]["termux"]["openCaptchaWebsite"] and on_mobile:
+            run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
 
     @commands.Cog.listener()
     async def on_message(self, message):
