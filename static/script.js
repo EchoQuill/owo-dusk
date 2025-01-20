@@ -133,13 +133,15 @@ document.addEventListener("DOMContentLoaded", () => {
             autoGemC.checked = config.autoUse.gems?.enabled || false;
 
 
-            // Main (MISSING PRAY!)
+            // Main
             huntC.checked = config.commands.hunt?.enabled || false;
             battleC.checked = config.commands.battle?.enabled || false;
             owoC.checked = config.commands.owo?.enabled || false;
             lvlGrindC.checked = config.commands.lvlGrind?.enabled || false;
             cookieC.checked = config.commands.cookie?.enabled || false;
             lotteryC.checked = config.commands.lottery?.enabled || false;
+            prayC.checked = config.commands.pray?.enabled || false;
+            curseC.checked = config.commands.curse?.enabled || false;
 
             autoDailyC.checked = config?.autoDaily || false;
             giveawayJoinerC.checked = config.giveawayJoiner?.enabled || false;
