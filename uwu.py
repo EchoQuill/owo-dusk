@@ -353,6 +353,7 @@ class MyClient(commands.Bot):
         self.lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
+        self.checks = []
         
 
     @tasks.loop(seconds=30)
@@ -388,8 +389,10 @@ class MyClient(commands.Bot):
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
         random.shuffle(files)
+        print(files)
         for filename in files:
             if filename.endswith(".py"):
+                
                 extension = f"cogs.{filename[:-3]}"
                 if extension in self.extensions:
                     """skip if already loaded"""
@@ -398,14 +401,15 @@ class MyClient(commands.Bot):
                         await self.unload_cog(extension)
                     continue
                 try:
+                    await asyncio.sleep(self.random_float(self.config_dict["account"]["commandsStartDelay"]))
                     await self.load_extension(extension)
+                    print(f"loaded extenstion {extension}")
                 except Exception as e:
                     print(f"Failed to load extension {extension}: {e}")
 
     async def update_config(self):
         with open("config.json", "r") as config_file:
             self.config_dict = json.load(config_file)
-
         await self.start_cogs()
 
     async def unload_cog(self, cog_name):
@@ -479,6 +483,18 @@ class MyClient(commands.Bot):
                 if command.get("id", None) == id:
                     return True
             return False
+        
+    async def shuffle_queue(self):
+        async with self.lock:
+            items = []
+            while not self.queue.empty():
+                items.append(await self.queue.get())
+            
+            random.shuffle(items)
+            
+            for item in items:
+                await self.queue.put(item)
+            print(f"Shuffled queue: {list(self.queue._queue)}")
 
     def add_popup_queue(self, channel_name, captcha_type=None):
         with lock:
@@ -657,7 +673,10 @@ class MyClient(commands.Bot):
         await self.update_config()
         if self.config_dict["offlineStatus"]:
             self.presence.start()
+        if self.config_dict["sleep"]["enabled"]:
+            self.random_sleep.start()
         if self.config_dict["cashCheck"]:
+            await asyncio.sleep(random.uniform(4.5,6.4))
             await self.put_queue(
                 {
                     "cmd_name": "cash",
@@ -668,8 +687,7 @@ class MyClient(commands.Bot):
                     "removed": False
                 }
             )
-        if self.config_dict["sleep"]["enabled"]:
-            self.random_sleep.start()
+        
 
 
 # ----------STARTING BOT----------#

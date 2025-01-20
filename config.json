@@ -13,6 +13,14 @@
         "startupDelay": [
             0.5,
             3
+        ],
+        "commandsStartDelay": [
+            0.1,
+            0.2
+        ],
+        "commandsHandlerStartDelay": [
+            2.3,
+            4.6
         ]
     },
     "commands": {
@@ -33,7 +41,7 @@
             "useShortForm": true
         },
         "sell": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 410,
                 500
@@ -49,7 +57,7 @@
             ]
         },
         "sac": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 410,
                 500
@@ -119,14 +127,14 @@
             ]
         },
         "autoHuntBot": {
-            "enabled": false,
-            "cashToSpend": 10
+            "enabled": true,
+            "cashToSpend": 1000
         }
     },
     "gamble": {
         "allottedAmount": 30000,
         "coinflip": {
-            "enabled": false,
+            "enabled": true,
             "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
@@ -234,7 +242,7 @@
         },
         "autoLootbox": false,
         "autoCrate": false
-},
+    },
     "webhook": {
         "enabled": false,
         "webhookUselessLog": false,
