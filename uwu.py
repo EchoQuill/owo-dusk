@@ -97,7 +97,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.0.0.2"
+version = "2.0.0.3"
 debug_print = True
 
 
