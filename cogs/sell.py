@@ -10,7 +10,6 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-import json
 import re
 import asyncio
 
@@ -53,7 +52,7 @@ class Sell(commands.Cog):
 
     async def sell_sac_queue(self, cmd, cooldown):
         await asyncio.sleep(self.bot.random_float(cooldown))
-        cmd["cmd_arguments"] = self.fetch_arguments(cmd)
+        cmd["cmd_arguments"] = self.fetch_arguments(cmd["cmd_name"])
         await self.bot.put_queue(cmd)
 
     async def cog_load(self):
