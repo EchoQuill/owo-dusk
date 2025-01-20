@@ -156,8 +156,8 @@ class Gems(commands.Cog):
             await self.bot.put_queue(self.inv_cmd, priority=True)
         elif "'s Inventory ======**" in message.content:
             await self.bot.remove_queue(id="inv")
-            if not self.available_gems:
-                self.available_gems = find_gems_available(message.content)
+            #if not self.available_gems:
+            self.available_gems = find_gems_available(message.content)
             gems_list = self.find_gems_to_use(self.available_gems)
             print(self.available_gems)
             print(gems_list)
