@@ -18,6 +18,7 @@ from time import sleep
 
 console = Console()
 
+# Load the previous config
 with open("config.json", "r") as config_file:
     prev_config_dict = json.load(config_file)
 
@@ -32,31 +33,47 @@ def write_tokens_file(content):
     with open("tokens.txt", "w") as tokens_file:
         tokens_file.write(content)
 
-def merge_json(sub_file=prev_config_dict):
-    with open("config.json", 'r') as main:
-        main_data = json.load(main)
-    
-    for key in main_data:
-        if key in prev_config_dict:
-            main_data[key] = prev_config_dict[key]
-    
-    with open("config.json", 'w') as output:
-        json.dump(main_data, output, indent=4)
+def deep_merge_carry_over(base, new):
+    result = {}
+
+    for key, value in new.items():
+        if key in base:
+            if isinstance(value, dict) and isinstance(base[key], dict):
+                result[key] = deep_merge_carry_over(base[key], value)
+            else:
+                # Use the existing value from base
+                result[key] = base[key]
+        else:
+            # Use the default value from new
+            result[key] = value
+
+    return result
+
+def merge_json_carry_over():
+    with open("config.json", 'r') as main_file:
+        main_data = json.load(main_file)
+
+    updated_data = deep_merge_carry_over(prev_config_dict, main_data)
+
+    with open("config.json", 'w') as output_file:
+        json.dump(updated_data, output_file, indent=4)
 
 def pull_latest_changes_git():
     previous_tokens = read_tokens_file()
     repo_dir = "."
     os.chdir(repo_dir)
 
+    # Check for uncommitted changes
     with console.status("[bold green]Checking for uncommitted changes...") as status:
         status_result = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
-    
+
     if status_result.stdout:
         console.log("[yellow]Uncommitted changes detected. Stashing changes...")
         with console.status("[bold yellow]Stashing changes...") as status:
             subprocess.run(['git', 'stash'])
             sleep(1)
 
+    # Check for untracked files
     with console.status("[bold cyan]Checking for untracked files...") as status:
         untracked_files = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard'], capture_output=True, text=True)
 
@@ -66,15 +83,18 @@ def pull_latest_changes_git():
             subprocess.run(['git', 'clean', '-f', "-d"])
             sleep(1)
 
+    # Pull the latest changes
     with console.status("[bold green]Pulling the latest changes from origin/main...") as status:
         subprocess.run(['git', 'checkout', 'main'])
         subprocess.run(['git', 'pull', 'origin', 'main'])
         sleep(1)
 
+    # Merge configuration and restore tokens
     console.log("[bold green]Update complete!")
     console.log("[bold green]Attempting to merge previous config with the updated config...")
-    merge_json()
+    merge_json_carry_over()
     write_tokens_file(previous_tokens)
     console.log("[bold green]Previous tokens content restored to tokens.txt!")
 
+# Run the update process
 pull_latest_changes_git()
