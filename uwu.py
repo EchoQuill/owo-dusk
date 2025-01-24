@@ -354,6 +354,7 @@ class MyClient(commands.Bot):
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
+        self.dm, self.cm = None,None
         
 
     @tasks.loop(seconds=30)
@@ -386,6 +387,13 @@ class MyClient(commands.Bot):
             self.state = True
             await self.log("sleeping finished!", "#87af87")
 
+    async def monitor_connection(self):
+        while True:
+            ws_status = self.ws.state if self.ws else "No WebSocket"
+            print(f"WebSocket State: {ws_status}")
+            await asyncio.sleep(3)
+
+
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
         random.shuffle(files)
@@ -408,15 +416,18 @@ class MyClient(commands.Bot):
                     print(f"Failed to load extension {extension}: {e}")
 
     async def update_config(self):
-        with open("config.json", "r") as config_file:
-            self.config_dict = json.load(config_file)
-        await self.start_cogs()
+        async with self.lock:
+            with open("config.json", "r") as config_file:
+                self.config_dict = json.load(config_file)
+            await self.start_cogs()
 
     async def unload_cog(self, cog_name):
         try:
-            await self.unload_extension(cog_name)
+            if cog_name in self.extensions:
+                await self.unload_extension(cog_name)
+                print(f"Unloaded cog: {cog_name}")
         except Exception as e:
-            print(e)
+            print(f"Failed to unload cog {cog_name}: {e}")
 
     def refresh_commands_dict(self):
         self.commands_dict = {
@@ -608,48 +619,83 @@ class MyClient(commands.Bot):
 
     async def on_disconnect(self):
         await self.log(f"disconnected {self.user}..", "#5432a8")
+        """await self.close()
+        await self.start(self.token)"""
+
+    async def on_resume(self):
+        await self.log(f"resuming {self.user}..", "#5432a8")
+        """for cog in list(self.extensions.keys()):
+            try:
+                await self.unload_extension(cog)
+                print(f"Unloaded cog: {cog}")
+            except Exception as e:
+                print(f"Failed to unload cog {cog}: {e}")
+        await self.update_config()"""
+
+    async def on_connect(self):
+        await self.log(f"connected {self.user}..", "#5432a8")
 
     async def on_ready(self):
-        # self.on_ready_dn = False
-        self.owo_bot_id = 408785106942164992
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2 ),'bold royal_blue1 ' )
-        listUserIds.append(self.user.id)
-
-        try:
-            self.cm = self.get_channel(self.channel_id)
-        except Exception as e:
-            print(e)
-        """
-        NOTE:- Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
-        Hopefully the above gets fixed soon.
-        for now we will send `owo ping` command in the grind channel to get owo bot's message through the channels history.
-        then we will use that instead to create the dm
-        """
+        # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
         try:
             self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
-            if self.dm == None:
-                self.dm = await (self.fetch_user(self.owo_bot_id)).create_dm()
+
+            if self.dm is None:
+                print("h")
+                self.dm = await self.fetch_user(self.owo_bot_id).create_dm()
+
         except discord.Forbidden as e:
             print(e)
-            print(f"attempting to get user with the help of {self.cm}")
+            print(f"Attempting to get user with the help of {self.cm}")
             await self.cm.send(f"{config_dict['setprefix']}ping")
+
             async for message in self.cm.history(limit=10):
                 if message.author.id == self.owo_bot_id:
                     break
-            await asyncio.sleep(random.uniform(0.5,0.9))
+
+            await asyncio.sleep(random.uniform(0.5, 0.9))
             self.dm = await message.author.create_dm()
+
         except Exception as e:
             print(e)
 
-        """Fetch slash commands in self.cm"""
+        print(self.dm)
+        
+
+    async def setup_hook(self):
+        self.owo_bot_id = 408785106942164992
+
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+
+        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2), 'bold royal_blue1 ')
+        listUserIds.append(self.user.id)
+
+        # Fetch the channel
+        self.cm = self.get_channel(self.channel_id)
+        if not self.cm:
+            try:
+                self.cm = await self.fetch_channel(self.channel_id)
+            except discord.NotFound:
+                print(f"Channel with ID {self.channel_id} does not exist.")
+                return
+            except discord.Forbidden:
+                print(f"Bot lacks permissions to access channel {self.channel_id}.")
+                return
+            except discord.HTTPException as e:
+                print(f"Failed to fetch channel {self.channel_id}: {e}")
+                return
+        print(self.cm)
+
+        
+
+        # Fetch slash commands in self.cm
         self.slash_commands = []
         for command in await self.cm.application_commands():
-            if command.application.id == 408785106942164992:
+            if command.application.id == self.owo_bot_id:
                 self.slash_commands.append(command)
 
-        """add account to stat.json"""
+        # Add account to stats.json
         self.default_config = {
             self.user.id: {
                 "daily": 0,
@@ -659,24 +705,27 @@ class MyClient(commands.Bot):
                 "giveaways": 0
             }
         }
+
         with lock:
             accounts_dict = load_accounts_dict()
             if str(self.user.id) not in accounts_dict:
                 accounts_dict.update(self.default_config)
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-                accounts_dict = load_accounts_dict()
 
-        # Load cogs
+        # Start various tasks and updates
         self.config_update_checker.start()
         await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
         await self.update_config()
+
         if self.config_dict["offlineStatus"]:
             self.presence.start()
+
         if self.config_dict["sleep"]["enabled"]:
             self.random_sleep.start()
+
         if self.config_dict["cashCheck"]:
-            await asyncio.sleep(random.uniform(4.5,6.4))
+            await asyncio.sleep(random.uniform(4.5, 6.4))
             await self.put_queue(
                 {
                     "cmd_name": "cash",
@@ -687,6 +736,7 @@ class MyClient(commands.Bot):
                     "removed": False
                 }
             )
+
         
 
 
