@@ -97,7 +97,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.0.0.3"
+version = "2.0.0.4"
 debug_print = True
 
 
@@ -354,7 +354,13 @@ class MyClient(commands.Bot):
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
+        self.connected = False
         self.dm, self.cm = None,None
+        
+    async def connection_wait(self):
+        await self.wait_until_ready()
+        while not self.connected:
+            await asyncio.sleep(0.5)
         
 
     @tasks.loop(seconds=30)
@@ -376,6 +382,7 @@ class MyClient(commands.Bot):
         if config_updated is not None and (time.time() - config_updated < 6):
             await self.update_config()
             # config_updated = False
+
     @tasks.loop(seconds=1)
     async def random_sleep(self):
         await asyncio.sleep(self.random_float(self.config_dict["sleep"]["checkTime"]))
@@ -386,13 +393,6 @@ class MyClient(commands.Bot):
             await asyncio.sleep(sleep_time)
             self.state = True
             await self.log("sleeping finished!", "#87af87")
-
-    async def monitor_connection(self):
-        while True:
-            ws_status = self.ws.state if self.ws else "No WebSocket"
-            print(f"WebSocket State: {ws_status}")
-            await asyncio.sleep(3)
-
 
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
@@ -411,7 +411,6 @@ class MyClient(commands.Bot):
                 try:
                     await asyncio.sleep(self.random_float(self.config_dict["account"]["commandsStartDelay"]))
                     await self.load_extension(extension)
-                    print(f"loaded extenstion {extension}")
                 except Exception as e:
                     print(f"Failed to load extension {extension}: {e}")
 
@@ -425,7 +424,6 @@ class MyClient(commands.Bot):
         try:
             if cog_name in self.extensions:
                 await self.unload_extension(cog_name)
-                print(f"Unloaded cog: {cog_name}")
         except Exception as e:
             print(f"Failed to unload cog {cog_name}: {e}")
 
@@ -585,6 +583,7 @@ class MyClient(commands.Bot):
         if not channel:
             channel = self.cm
         if not self.captcha or bypass:
+            await self.connection_wait()
             if typingIndicator:
                 async with channel.typing():
                     await channel.send(message, silent=silent)
@@ -596,6 +595,7 @@ class MyClient(commands.Bot):
         try:
             for command in self.slash_commands:
                 if command.name == msg:
+                    await self.connection_wait()
                     await command(**kwargs)
                     await self.log(f"Ran: /{msg}", "#5432a8")
         except Exception as e:
@@ -619,29 +619,22 @@ class MyClient(commands.Bot):
 
     async def on_disconnect(self):
         await self.log(f"disconnected {self.user}..", "#5432a8")
-        """await self.close()
-        await self.start(self.token)"""
-
+        self.connected = False
+   
     async def on_resume(self):
         await self.log(f"resuming {self.user}..", "#5432a8")
-        """for cog in list(self.extensions.keys()):
-            try:
-                await self.unload_extension(cog)
-                print(f"Unloaded cog: {cog}")
-            except Exception as e:
-                print(f"Failed to unload cog {cog}: {e}")
-        await self.update_config()"""
+        self.connected = True
 
     async def on_connect(self):
         await self.log(f"connected {self.user}..", "#5432a8")
-
+        self.connected = True
+        
     async def on_ready(self):
         # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
         try:
             self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
 
             if self.dm is None:
-                print("h")
                 self.dm = await self.fetch_user(self.owo_bot_id).create_dm()
 
         except discord.Forbidden as e:
@@ -658,8 +651,7 @@ class MyClient(commands.Bot):
 
         except Exception as e:
             print(e)
-
-        print(self.dm)
+        self.connected = True
         
 
     async def setup_hook(self):
