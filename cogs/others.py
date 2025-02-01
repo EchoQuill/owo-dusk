@@ -41,11 +41,11 @@ except FileNotFoundError:
 except json.JSONDecodeError:
     print("Failed to decode JSON from the file.")
 
+
 def get_emoji_names(text, emoji_dict=emoji_dict):
-    # Extract all emojis and custom emoji strings from the text
-    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
+    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
     emojis = pattern.findall(text)
-    # Get names of the extracted emojis
+    #print(emojis)
     emoji_names = [emoji_dict[char] for char in emojis if char in emoji_dict]
     return emoji_names
 
@@ -85,8 +85,14 @@ class Others(commands.Cog):
             elif "Create a team with the command `owo team add {animal}`" in message.content:
                 self.bot.state = False
                 self.zoo = True
+                team_cmd = {
+                            "cmd_name": "zoo",
+                            "prefix": True,
+                            "checks": False,
+                            "retry_count": 0
+                        }
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
-                await self.bot.send("zoo", bypass=True)
+                await self.bot.put_queue(team_cmd, priority=True)
 
             elif "s zoo! **" in message.content and self.zoo:
                 animals = get_emoji_names(message.content)
@@ -101,7 +107,7 @@ class Others(commands.Cog):
                             "checks": False,
                             "retry_count": 0
                         }
-                    await self.bot.put_queue(zoo_cmd)
+                    await self.bot.put_queue(zoo_cmd, priority=True)
                     await asyncio.sleep(random.uniform(1.5,2.3))
 
                 self.zoo = False
