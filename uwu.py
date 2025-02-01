@@ -97,7 +97,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.0.0.4"
+version = "2.0.0.5"
 debug_print = True
 
 
@@ -354,13 +354,11 @@ class MyClient(commands.Bot):
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
-        self.connected = False
         self.dm, self.cm = None,None
+        self.sleep = False
+        with open("alias.json", "r") as config_file:
+            self.alias = json.load(config_file)
         
-    async def connection_wait(self):
-        await self.wait_until_ready()
-        while not self.connected:
-            await asyncio.sleep(0.5)
         
 
     @tasks.loop(seconds=30)
@@ -460,7 +458,7 @@ class MyClient(commands.Bot):
 
     async def put_queue(self, cmd_data, priority=False):
         try:
-            while not self.state or self.captcha:
+            while not self.state or self.sleep or self.captcha:
                 if priority:
                     await self.queue.put(deepcopy(cmd_data))
                     return
@@ -583,7 +581,7 @@ class MyClient(commands.Bot):
         if not channel:
             channel = self.cm
         if not self.captcha or bypass:
-            await self.connection_wait()
+            await self.wait_until_ready()
             if typingIndicator:
                 async with channel.typing():
                     await channel.send(message, silent=silent)
@@ -617,17 +615,14 @@ class MyClient(commands.Bot):
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_now.timestamp()
 
-    async def on_disconnect(self):
+    """async def on_disconnect(self):
         await self.log(f"disconnected {self.user}..", "#5432a8")
-        self.connected = False
    
     async def on_resume(self):
         await self.log(f"resuming {self.user}..", "#5432a8")
-        self.connected = True
 
     async def on_connect(self):
-        await self.log(f"connected {self.user}..", "#5432a8")
-        self.connected = True
+        await self.log(f"connected {self.user}..", "#5432a8")"""
         
     async def on_ready(self):
         # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
@@ -651,7 +646,6 @@ class MyClient(commands.Bot):
 
         except Exception as e:
             print(e)
-        self.connected = True
         
 
     async def setup_hook(self):
@@ -720,7 +714,7 @@ class MyClient(commands.Bot):
             await asyncio.sleep(random.uniform(4.5, 6.4))
             await self.put_queue(
                 {
-                    "cmd_name": "cash",
+                    "cmd_name": self.alias["cash"]["normal"],
                     "prefix": True,
                     "checks": True,
                     "retry_count": 0,

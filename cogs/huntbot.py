@@ -25,7 +25,7 @@ class Huntbot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "ah",
+            "cmd_name": self.bot.alias["huntbot"]["normal"],
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
@@ -54,7 +54,7 @@ class Huntbot(commands.Cog):
             )
         else:
             await self.bot.remove_queue(id="huntbot")
-            if type(timeToSleep, "list"):
+            if isinstance(timeToSleep, list):
                 await asyncio.sleep(self.bot.random_float(timeToSleep))
             else:
                 await asyncio.sleep(

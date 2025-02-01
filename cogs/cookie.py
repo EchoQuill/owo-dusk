@@ -34,7 +34,7 @@ class Cookie(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "cookie",
+            "cmd_name": self.bot.alias["cookie"]["normal"],
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,

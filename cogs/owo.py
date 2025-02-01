@@ -17,24 +17,23 @@ from discord.ext import commands, tasks
 from discord.ext.commands import ExtensionNotLoaded
 
 
-
-cmd = {
-    "cmd_name": "owo",
-    "prefix": False,
-    "checks": False,
-    "retry_count": 0,
-    "id": "owo"
-}
-
 class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        self.cmd = {
+            "cmd_name": self.bot.alias["owo"]["normal"],
+            "prefix": False,
+            "checks": False,
+            "retry_count": 0,
+            "id": "owo"
+        }
 
     @tasks.loop(seconds=1)
     async def send_owo(self):
         if not self.bot.captcha and self.bot.state:
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["owo"]["cooldown"]))
-            await self.bot.put_queue(cmd)
+            await self.bot.put_queue(self.cmd)
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):

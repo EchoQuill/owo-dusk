@@ -26,7 +26,7 @@ class Coinflip(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "cf",
+            "cmd_name": self.bot.alias["coinflip"]["normal"],
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,

@@ -35,7 +35,12 @@ class Battle(commands.Cog):
             except:
                 pass
         else:
-            self.cmd["cmd_name"] = "b" if self.bot.config_dict["commands"]["battle"]["useShortForm"] else "battle"
+
+            self.cmd["cmd_name"] = (
+                self.bot.alias["battle"]["shortform"] 
+                if self.bot.config_dict["commands"]["battle"]["useShortForm"] 
+                else self.bot.alias["battle"]["alias"]
+            )
             await self.bot.put_queue(self.cmd)
 
 
@@ -53,7 +58,11 @@ class Battle(commands.Cog):
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
                             await self.bot.remove_queue(id="battle")
                             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
-                            self.cmd["cmd_name"] = "b" if self.bot.config_dict["commands"]["battle"]["useShortForm"] else "battle"
+                            self.cmd["cmd_name"] = (
+                                self.bot.alias["battle"]["shortform"] 
+                                if self.bot.config_dict["commands"]["battle"]["useShortForm"] 
+                                else self.bot.alias["battle"]["alias"]
+                            )
                             await self.bot.put_queue(self.cmd)
         except Exception as e:
             print(e)

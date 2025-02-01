@@ -38,7 +38,11 @@ class Hunt(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
+            self.cmd["cmd_name"] = (
+                self.bot.alias["hunt"]["shortform"] 
+                if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 
+                else self.bot.alias["hunt"]["alias"]
+            )
             await self.bot.put_queue(self.cmd)
 
     async def cog_unload(self):
@@ -51,7 +55,11 @@ class Hunt(commands.Cog):
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
                     await self.bot.remove_queue(id="hunt")
                     await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
-                    self.cmd["cmd_name"] = "h" if self.bot.config_dict["commands"]["hunt"]["useShortForm"] else "hunt"
+                    self.cmd["cmd_name"] = (
+                        self.bot.alias["hunt"]["shortform"] 
+                        if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 
+                        else self.bot.alias["hunt"]["alias"]
+                    )
                     await self.bot.put_queue(self.cmd)
         except Exception as e:
             print(e)

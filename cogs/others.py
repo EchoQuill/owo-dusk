@@ -17,21 +17,7 @@ import re
 
 from discord.ext import commands
 
-lootbox_cmd = {
-    "cmd_name": "lb",
-    "prefix": True,
-    "checks": False,
-    "retry_count": 0,
-    "slash_cmd_name": "lootbox"
-}
 
-crate_cmd = {
-    "cmd_name": "wc",
-    "prefix": True,
-    "checks": False,
-    "retry_count": 0,
-    "slash_cmd_name": "crate"
-}
 
 try:
     with open("utils/emojis.json", 'r', encoding="utf-8") as file:
@@ -54,6 +40,21 @@ class Others(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.zoo = False
+        self.lootbox_cmd = {
+            "cmd_name": self.bot.alias["lootbox"]["normal"],
+            "prefix": True,
+            "checks": False,
+            "retry_count": 0,
+            "slash_cmd_name": "lootbox"
+        }
+
+        self.crate_cmd = {
+            "cmd_name": self.bot.alias["crate"]["normal"],
+            "prefix": True,
+            "checks": False,
+            "retry_count": 0,
+            "slash_cmd_name": "crate"
+        }
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -75,22 +76,22 @@ class Others(commands.Cog):
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
                 if self.bot.config_dict["autoUse"]["autoCrate"]:
-                    await self.bot.put_queue(crate_cmd)
+                    await self.bot.put_queue(self.crate_cmd)
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
                 if self.bot.config_dict["autoUse"]["autoLootbox"]:
-                    await self.bot.put_queue(lootbox_cmd)
+                    await self.bot.put_queue(self.lootbox_cmd)
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:
                 self.bot.state = False
                 self.zoo = True
                 team_cmd = {
-                            "cmd_name": "zoo",
-                            "prefix": True,
-                            "checks": False,
-                            "retry_count": 0
-                        }
+                    "cmd_name": self.bot.alias["zoo"]["normal"],
+                    "prefix": True,
+                    "checks": False,
+                    "retry_count": 0
+                }
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
                 await self.bot.put_queue(team_cmd, priority=True)
 
@@ -101,12 +102,12 @@ class Others(commands.Cog):
                 three_animals = min(len(animals), 3) #int
                 for i in range(three_animals):
                     zoo_cmd = {
-                            "cmd_name": "team",
-                            "cmd_arguments": f"add {animals[i]}",
-                            "prefix": True,
-                            "checks": False,
-                            "retry_count": 0
-                        }
+                        "cmd_name": "team",
+                        "cmd_arguments": f"add {animals[i]}",
+                        "prefix": True,
+                        "checks": False,
+                        "retry_count": 0
+                    }
                     await self.bot.put_queue(zoo_cmd, priority=True)
                     await asyncio.sleep(random.uniform(1.5,2.3))
 

@@ -75,7 +75,7 @@ class Gems(commands.Cog):
         self.grouped_gems = None
         self.available_gems = None
         self.gem_cmd = {
-            "cmd_name": "use",
+            "cmd_name": self.bot.alias["use"]["normal"],
             "cmd_arguments": "",
             "prefix": True,
             "checks": False,
@@ -83,7 +83,7 @@ class Gems(commands.Cog):
             "id": "gems"
         }
         self.inv_cmd = {
-            "cmd_name": "inv",
+            "cmd_name": self.bot.alias["inv"]["normal"],
             "prefix": True,
             "checks": True,
             "retry_count": 0,

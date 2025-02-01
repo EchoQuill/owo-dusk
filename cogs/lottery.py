@@ -38,7 +38,7 @@ class Lottery(commands.Cog):
         self.bot = bot
 
         self.cmd = {
-            "cmd_name": "lottery",
+            "cmd_name": self.bot.alias["lottery"]["normal"],
             "cmd_arguments": self.bot.config_dict['commands']['lottery']['amount'],
             "prefix": True,
             "checks": True,

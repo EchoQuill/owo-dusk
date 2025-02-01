@@ -29,7 +29,7 @@ class Slots(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cmd = {
-            "cmd_name": "s",
+            "cmd_name": self.bot.alias["slots"]["normal"],
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
