@@ -23,11 +23,11 @@ class Chat(commands.Cog):
         if message.author.id in [self.bot.user.id, 1209017744696279041] + self.bot.config_dict["textCommands"]["allowedUsers"]:
             if f"{self.bot.config_dict['textCommands']['prefix']}{self.bot.config_dict['textCommands']['commandToStopUser']}" in message.content.lower():
                 await self.bot.log("stopping owo-dusk..","#87875f")
-                self.bot.state=False
+                self.bot.sleep=True
 
             elif f"{self.bot.config_dict['textCommands']['prefix']}{self.bot.config_dict['textCommands']['commandToStartUser']}" in message.content.lower():
                 await self.bot.log("starting owo-dusk..","#87875f")
-                self.bot.state=True
+                self.bot.sleep=False
 
 
 async def setup(bot):

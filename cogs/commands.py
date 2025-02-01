@@ -11,8 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import random
-import json
 
 from discord.ext import commands, tasks
 from datetime import datetime, timezone, timedelta
@@ -60,7 +58,7 @@ class Commands(commands.Cog):
     async def monitor_checks(self):
         try:
             current_time = datetime.now(timezone.utc)
-            if not self.bot.state or self.bot.captcha:
+            if not self.bot.state or self.bot.sleep or self.bot.captcha:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             else:
                 async with self.bot.lock:
