@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import random
 import re
 
 from discord.ext import commands
@@ -20,7 +19,6 @@ from utils.huntBotSolver import solveHbCaptcha
 
 password_reset_regex = r"(?<=Password will reset in )(\d+)"
 huntbot_time_regex = r"(\d+)([DHM])"
-
 
 
 class Huntbot(commands.Cog):
@@ -32,7 +30,7 @@ class Huntbot(commands.Cog):
             "prefix": True,
             "checks": True,
             "retry_count": 0,
-            "id": "huntbot"
+            "id": "huntbot",
         }
 
     async def cog_load(self):
@@ -47,24 +45,34 @@ class Huntbot(commands.Cog):
     async def cog_unload(self):
         await self.bot.remove_queue(id="huntbot")
 
-    async def send_ah(self, startup=False, timeToSleep=[], ans=None):
+    async def send_ah(self, startup=False, timeToSleep=None, ans=None):
         if startup:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+            await asyncio.sleep(
+                self.bot.random_float(
+                    self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+                )
+            )
         else:
             await self.bot.remove_queue(id="huntbot")
-            await asyncio.sleep(self.bot.random_float(timeToSleep))
-        
+            if type(timeToSleep, "list"):
+                await asyncio.sleep(self.bot.random_float(timeToSleep))
+            else:
+                await asyncio.sleep(
+                    self.bot.random_float([timeToSleep + 10, timeToSleep + 20])
+                )
+
         """send the cmd"""
-        self.cmd["cmd_arguments"] = str(self.bot.config_dict["commands"]["autoHuntBot"]["cashToSpend"])
+        self.cmd["cmd_arguments"] = str(
+            self.bot.config_dict["commands"]["autoHuntBot"]["cashToSpend"]
+        )
         if ans:
-            self.cmd["cmd_arguments"]+=f" {ans}"
+            self.cmd["cmd_arguments"] += f" {ans}"
             print(self.cmd["cmd_arguments"])
 
         await self.bot.put_queue(self.cmd)
 
     @commands.Cog.listener()
     async def on_message(self, message):
-
         """Fail"""
 
         """**🚫 | user**, Please include your password! The command is `owo autohunt 4 {password}`!
@@ -93,40 +101,39 @@ class Huntbot(commands.Cog):
         if message.channel.id != self.bot.cm.id:
             return
         if "Please include your password!" in message.content:
-            total_seconds_hb = int(re.findall(password_reset_regex, message.content)[0]) * 60
+            total_seconds_hb = (
+                int(re.findall(password_reset_regex, message.content)[0]) * 60
+            )
             await self.bot.log(f"HB {total_seconds_hb} sp - pass", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
         if "I WILL BE BACK IN" in message.content:
             total_seconds_hb = 0
             for amount, unit in re.findall(huntbot_time_regex, message.content):
-                if unit == 'M':
+                if unit == "M":
                     total_seconds_hb += int(amount) * 60
-                elif unit == 'H':
+                elif unit == "H":
                     total_seconds_hb += int(amount) * 3600
-                elif unit == 'D':
+                elif unit == "D":
                     total_seconds_hb += int(amount) * 86400
             await self.bot.log(f"HB {total_seconds_hb} sp - BACKIN", "#afaf87")
-            await self.send_ah(timeToSleep=[total_seconds_hb+10, total_seconds_hb+20])
+            await self.send_ah(timeToSleep=total_seconds_hb)
 
         if "I AM BACK WITH" in message.content:
-            await self.send_ah(timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
+            await self.send_ah(
+                timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+            )
             await self.bot.log(f"HB 1 sp - BACKWITH", "#afaf87")
 
         if "Here is your password!" in message.content:
             ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
             print(ans)
             await self.bot.log(f"HB 1 sp - {ans}", "#afaf87")
-            await self.send_ah(timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"], ans=ans)
-
-
-
-
-        
+            await self.send_ah(
+                timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"],
+                ans=ans,
+            )
 
 
 async def setup(bot):
     await bot.add_cog(Huntbot(bot))
-
-
-
