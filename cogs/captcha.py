@@ -170,13 +170,15 @@ class Captcha(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
-                await asyncio.sleep(self.bot.random_float(config_dict['defaultCooldowns']['captchaRestart']))
+                time_to_sleep = self.bot.random_float(config_dict['defaultCooldowns']['captchaRestart'])
+                await self.bot.log(f"Captcha solved! - sleeping {time_to_sleep}s before restart.", "#5fd700")
+                await asyncio.sleep(time_to_sleep)
                 self.bot.captcha = False
-                await self.bot.log(f"Captcha solved! - {self.bot.user.name}", "#5fd700")
+                
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
-            """sets may be faster than list..? maybe.."""
+            """Handle normally expected captcha"""
             if (
                 (
                     message.components
@@ -238,7 +240,30 @@ class Captcha(commands.Cog):
                         ),
                         webhook_url=self.bot.config_dict["webhook"].get("webhookCaptchaUrl", None),
                     )
+            elif message.embeds:
+                for embed in message.embeds:
+                    items = {
+                        embed.title if embed.title else "",
+                        embed.author.name if embed.author else "",
+                        embed.footer.text if embed.footer else "",
+                    }
+                    for i in items:
+                        if any(b in clean(i) for b in list_captcha):
+                            """clean function cleans the captcha message of unwanted symbols etc"""
+                            self.captcha = True
+                            await self.bot.log(f"Captcha detected...?", "#d70000")
+                            break
 
+                    if embed.fields:
+                        for field in embed.fields:
+                            if field.name and any(b in clean(field.name) for b in list_captcha):
+                                self.captcha = True
+                                await self.bot.log(f"Captcha detected...?", "#d70000")
+                                break
+                            if field.value and any(b in clean(field.value) for b in list_captcha):
+                                self.captcha = True
+                                await self.bot.log(f"Captcha detected...?", "#d70000")
+                                break
 
 async def setup(bot):
     await bot.add_cog(Captcha(bot))
