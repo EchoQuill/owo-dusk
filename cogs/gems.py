@@ -74,6 +74,7 @@ class Gems(commands.Cog):
         self.bot = bot
         self.grouped_gems = None
         self.available_gems = None
+        self.inventory_check = False
         self.gem_cmd = {
             "cmd_name": self.bot.alias["use"]["normal"],
             "cmd_arguments": "",
@@ -153,20 +154,23 @@ class Gems(commands.Cog):
             return
         elif "caught" in message.content:
             self.bot.state = False
+            self.inventory_check = True
             await self.bot.put_queue(self.inv_cmd, priority=True)
         elif "'s Inventory ======**" in message.content:
-            await self.bot.remove_queue(id="inv")
-            #if not self.available_gems:
-            self.available_gems = find_gems_available(message.content)
-            gems_list = self.find_gems_to_use(self.available_gems)
-            print(self.available_gems)
-            print(gems_list)
-            self.gem_cmd["cmd_arguments"]=""
-            for i in gems_list:
-                self.gem_cmd["cmd_arguments"]+=f"{i} "
-            await self.bot.put_queue(self.gem_cmd, priority=True)
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
-            self.bot.state = True
+            if self.inventory_check:
+                await self.bot.remove_queue(id="inv")
+                #if not self.available_gems:
+                self.available_gems = find_gems_available(message.content)
+                gems_list = self.find_gems_to_use(self.available_gems)
+                print(self.available_gems)
+                print(gems_list)
+                self.gem_cmd["cmd_arguments"]=""
+                for i in gems_list:
+                    self.gem_cmd["cmd_arguments"]+=f"{i} "
+                await self.bot.put_queue(self.gem_cmd, priority=True)
+                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                self.bot.state = True
+                self.inventory_check = False
 
 async def setup(bot):
     await bot.add_cog(Gems(bot))
