@@ -580,20 +580,25 @@ class MyClient(commands.Bot):
     async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
+        msg = message
+        if self.config_dict["misspell"]["enabled"]:
+            if random.uniform(0,100) < self.config_dict["misspell"]["frequencyPercentage"]:
+                char = random.choice(message)
+                # left off here!
         if not self.captcha or bypass:
             await self.wait_until_ready()
             if typingIndicator:
                 async with channel.typing():
-                    await channel.send(message, silent=silent)
+                    await channel.send(msg, silent=silent)
             else:
-                await channel.send(message, silent=silent)
-            await self.log(f"Ran: {message}", "#5432a8")
+                await channel.send(msg, silent=silent)
+            await self.log(f"Ran: {msg}", "#5432a8")
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
             for command in self.slash_commands:
                 if command.name == msg:
-                    await self.connection_wait()
+                    await self.wait_until_ready()
                     await command(**kwargs)
                     await self.log(f"Ran: /{msg}", "#5432a8")
         except Exception as e:
