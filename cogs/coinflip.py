@@ -35,6 +35,7 @@ class Coinflip(commands.Cog):
         }
         self.turns_lost = 0
         self.exceeded_max_amount = False
+        self.goal_reached = False
 
 
     async def cog_load(self):
@@ -60,16 +61,27 @@ class Coinflip(commands.Cog):
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["coinflip"]["cooldown"]))
             
             amount_to_gamble = int(self.bot.config_dict["gamble"]["coinflip"]["startValue"]*(self.bot.config_dict["gamble"]["coinflip"]["multiplierOnLose"]**self.turns_lost))
-            if (amount_to_gamble <= self.bot.balance) and (not self.bot.gain_or_lose+self.bot.config_dict["gamble"]["allottedAmount"] <=0 ):
-                if amount_to_gamble > 250000:
-                    self.exceeded_max_amount = True
-                else:
-                    self.cmd["cmd_arguments"] = str(amount_to_gamble)
-                    if self.bot.config_dict["gamble"]["coinflip"]["options"]:
-                        self.cmd["cmd_arguments"]+=f" {random.choice(self.bot.config_dict['gamble']['coinflip']['options'])}"
-                    await self.bot.put_queue(self.cmd)
+            if self.bot.config_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > self.bot.config_dict["gamble"]["goalSystem"]["amount"]:
+                if not self.goal_reached:
+                    self.goal_reached = True
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{self.bot.config_dict["gamble"]["goalSystem"]["amount"]}, stopping coinflip!", "#ffd7af")
+
+                return await self.start_cf()
             else:
-                await self.start_cf()
+                # ensure goal amount change does not prevent goal recieved message (website dashboard)
+                self.goal_reached = False
+
+            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+self.bot.config_dict["gamble"]["allottedAmount"] <=0):
+                return await self.start_cf()
+            
+            if amount_to_gamble > 250000:
+                self.exceeded_max_amount = True
+            else:
+                self.cmd["cmd_arguments"] = str(amount_to_gamble)
+                if self.bot.config_dict["gamble"]["coinflip"]["options"]:
+                    self.cmd["cmd_arguments"]+=f" {random.choice(self.bot.config_dict['gamble']['coinflip']['options'])}"
+                await self.bot.put_queue(self.cmd)
+
         except Exception as e:
             print(e)
 

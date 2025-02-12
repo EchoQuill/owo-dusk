@@ -41,7 +41,7 @@
             "useShortForm": true
         },
         "sell": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 410,
                 500
@@ -57,7 +57,7 @@
             ]
         },
         "sac": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 410,
                 500
@@ -128,11 +128,15 @@
         },
         "autoHuntBot": {
             "enabled": true,
-            "cashToSpend": 1000
+            "cashToSpend": 10000
         }
     },
     "gamble": {
         "allottedAmount": 30000,
+        "goalSystem": {
+            "enabled": true,
+            "amount": 300
+        },
         "coinflip": {
             "enabled": true,
             "startValue": 200,
@@ -146,8 +150,8 @@
             ]
         },
         "slots": {
-            "enabled": false,
-            "startValue": 200,
+            "enabled": true,
+            "startValue": 2,
             "multiplierOnLose": 2,
             "cooldown": [
                 16,
@@ -157,7 +161,7 @@
         "blackjack": {}
     },
     "giveawayJoiner": {
-        "enabled": false,
+        "enabled": true,
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
@@ -181,7 +185,19 @@
             10
         ]
     },
-    "autoDaily": false,
+    "misspell": {
+        "enabled": false,
+        "frequencyPercentage": 1,
+        "badeDelay": [
+            0.03,
+            0.07
+        ],
+        "errorRectificationTimePerLetter": [
+            0.04,
+            0.09
+        ]
+    },
+    "autoDaily": true,
     "cashCheck": true,
     "defaultCooldowns": {
         "longCooldown": [
@@ -201,8 +217,8 @@
             2.7
         ],
         "captchaRestart": [
-            1.7,
-            3.7
+            3.7,
+            5.6
         ],
         "commandHandler": {
             "betweenCommands": [
@@ -220,7 +236,7 @@
     },
     "autoUse": {
         "gems": {
-            "enabled": false,
+            "enabled": true,
             "order": {
                 "lowestToHighest": true
             },
@@ -240,8 +256,8 @@
                 "specialGem": false
             }
         },
-        "autoLootbox": false,
-        "autoCrate": false
+        "autoLootbox": true,
+        "autoCrate": true
     },
     "webhook": {
         "enabled": false,
