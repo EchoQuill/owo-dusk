@@ -25,15 +25,17 @@ class Giveaway(commands.Cog):
     """Join previous giveaways"""
     async def join_previous_giveaways(self):
         await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+        await self.bot.wait_until_ready()
         self.bot.state = False
         # Using briefcooldown here as using the long cooldown of giveaway joiner might look weird here.
         await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
         for i in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
-            channel = self.bot.get_channel(i)
+            channel = await self.bot.fetch_channel(i)
             if not channel:
                 # To prevent giving error if channel id is invalid
                 await self.bot.log(f"giveaway channel seems to be invalid", "#ff5f00")
                 continue
+            print(channel)
             async for message in channel.history(limit=self.bot.config_dict["giveawayJoiner"]["messageRangeToCheck"]):
                 if message.embeds:
                     for embed in message.embeds:

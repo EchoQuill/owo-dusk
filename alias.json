@@ -64,5 +64,9 @@
     "inv": {
         "normal": "inv",
         "alias": ["inv", "inventory"]
+    },
+    "upgrade": {
+        "normal": "upg",
+        "alias": ["upg", "upgrade"]
     }
 }
