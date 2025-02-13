@@ -119,14 +119,14 @@ class Huntbot(commands.Cog):
 
     def get_experience(self, embed):
         for field in embed.fields:
-            for trait in {"efficiency", "duration", "cost", "gain", "experience", "radar"}:
+            for trait in {"efficiency", "duration", "cost", "gain", "exp", "radar"}:
                 if trait in field.name.lower():
                     level,essence = fetch_level_and_progress(field.value)
                     self.upgrade_details[trait]["current_level"] = level
                     self.upgrade_details[trait]["invested"] = essence
                     print(f"{trait}: level {level}, {essence}")
                     break
-            if "essence" in field.name.lower():
+            if "animal essence" in field.name.lower():
                 self.upgrade_details[trait]["current_level"] = fetch_essence(field.name)
 
 
