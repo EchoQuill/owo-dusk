@@ -26,6 +26,7 @@ from rich.align import Align
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from copy import deepcopy
+from utils.misspell import misspell_word
 import json
 import discord
 import asyncio
@@ -395,7 +396,6 @@ class MyClient(commands.Bot):
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
         random.shuffle(files)
-        print(files)
         for filename in files:
             if filename.endswith(".py"):
                 
@@ -501,7 +501,6 @@ class MyClient(commands.Bot):
             
             for item in items:
                 await self.queue.put(item)
-            print(f"Shuffled queue: {list(self.queue._queue)}")
 
     def add_popup_queue(self, channel_name, captcha_type=None):
         with lock:
@@ -576,14 +575,23 @@ class MyClient(commands.Bot):
         except Exception as e:
             print(e)
 
+    def calculate_correction_time(self, command):
+        command = command.replace(" ", "")  # Remove spaces for accurate timing
+        base_delay = self.random_float(self.config_dict["misspell"]["badeDelay"]) 
+        rectification_time = sum(self.random_float(self.config_dict["misspell"]["errorRectificationTimePerLetter"]) for _ in command)  
+        total_time = base_delay + rectification_time
+        return total_time
+
     # send commands
     async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
         msg = message
+        misspelled = False
         if self.config_dict["misspell"]["enabled"]:
-            if random.uniform(0,100) < self.config_dict["misspell"]["frequencyPercentage"]:
-                char = random.choice(message)
+            if random.uniform(1,100) < self.config_dict["misspell"]["frequencyPercentage"]:
+                msg = misspell_word(message)
+                misspelled = True
                 # left off here!
         if not self.captcha or bypass:
             await self.wait_until_ready()
@@ -593,6 +601,17 @@ class MyClient(commands.Bot):
             else:
                 await channel.send(msg, silent=silent)
             await self.log(f"Ran: {msg}", "#5432a8")
+            if misspelled:
+                self.sleep = True
+                time = self.calculate_correction_time(message)
+                await self.log(f"correcting: {msg} -> {message} in {time}s", "#5432a8")
+                await asyncio.sleep(time)
+                if typingIndicator:
+                    async with channel.typing():
+                        await channel.send(message, silent=silent)
+                else:
+                    await channel.send(message, silent=silent)
+
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
@@ -676,7 +695,6 @@ class MyClient(commands.Bot):
             except discord.HTTPException as e:
                 print(f"Failed to fetch channel {self.channel_id}: {e}")
                 return
-        print(self.cm)
 
         
 
@@ -703,6 +721,7 @@ class MyClient(commands.Bot):
                 accounts_dict.update(self.default_config)
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
+
 
         # Start various tasks and updates
         self.config_update_checker.start()

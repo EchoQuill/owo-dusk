@@ -41,7 +41,7 @@ def fetch_essence(name):
 class Huntbot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        #self.upgrade_event = asyncio.Event()
+        self.upgrade_event = asyncio.Event()
         self.cmd = {
             "cmd_name": self.bot.alias["huntbot"]["normal"],
             "cmd_arguments": "",
