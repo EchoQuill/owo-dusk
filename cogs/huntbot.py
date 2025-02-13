@@ -16,14 +16,32 @@ import re
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 from utils.huntBotSolver import solveHbCaptcha
+from utils.hbCalc import allocate_essence
 
 password_reset_regex = r"(?<=Password will reset in )(\d+)"
 huntbot_time_regex = r"(\d+)([DHM])"
+
+def fetch_level_and_progress(value):
+    """Fetch level and essence investment from the given field.value"""
+    pattern = r"Lvl (\d+) \[(\d+)\/\d+\]"
+    match = re.search(pattern, value)
+    """
+    1: level
+    2: essence investment
+    """
+    return int(match.group(1)), int(match.group(2))
+
+def fetch_essence(name):
+    """Fetch essence from the given field.name"""
+    pattern = r"Animal Essence - `(\d{1,3}(?:,\d{3})*)`"
+    match = re.search(pattern, name)
+    return int(match.group(1).replace(",", ""))
 
 
 class Huntbot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        #self.upgrade_event = asyncio.Event()
         self.cmd = {
             "cmd_name": self.bot.alias["huntbot"]["normal"],
             "cmd_arguments": "",
@@ -32,6 +50,30 @@ class Huntbot(commands.Cog):
             "retry_count": 0,
             "id": "huntbot",
         }
+
+        self.upgrade_cmd = {
+            "cmd_name": self.bot.alias["upgrade"]["normal"],
+            "cmd_arguments": "",
+            "prefix": True,
+            "checks": True,
+            "retry_count": 0,
+            "id": "upgrade",
+        }
+
+        self.upgrade_details = {
+            "essence": 0,
+            "efficiency": {"enabled": False, "current_level": 0, "invested": 0},
+            "duration": {"enabled": False, "current_level": 0, "invested": 0},
+            "cost": {"enabled": False, "current_level": 0, "invested": 0},
+            "gain": {"enabled": False, "current_level": 0, "invested": 0},
+            "exp": {"enabled": False, "current_level": 0, "invested": 0},
+            "radar": {"enabled": False, "current_level": 0, "invested": 0},
+        }
+
+        for trait, value in self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["traits"].items():
+            if value:
+                self.upgrade_details[trait]["enabled"] = True
+
 
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["autoHuntBot"]["enabled"]:
@@ -67,37 +109,29 @@ class Huntbot(commands.Cog):
         )
         if ans:
             self.cmd["cmd_arguments"] += f" {ans}"
-            print(self.cmd["cmd_arguments"])
 
         await self.bot.put_queue(self.cmd)
 
+    async def upgrade_confirmation(self):
+        await self.upgrade_event.wait()
+        self.upgrade_event.clear()
+        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+
+    def get_experience(self, embed):
+        for field in embed.fields:
+            for trait in {"efficiency", "duration", "cost", "gain", "experience", "radar"}:
+                if trait in field.name.lower():
+                    level,essence = fetch_level_and_progress(field.value)
+                    self.upgrade_details[trait]["current_level"] = level
+                    self.upgrade_details[trait]["invested"] = essence
+                    print(f"{trait}: level {level}, {essence}")
+                    break
+            if "essence" in field.name.lower():
+                self.upgrade_details[trait]["current_level"] = fetch_essence(field.name)
+
+
     @commands.Cog.listener()
     async def on_message(self, message):
-        """Fail"""
-
-        """**🚫 | user**, Please include your password! The command is `owo autohunt 4 {password}`!
-**<:blank:427371936482328596> |** Password will reset in 9 minutes"""
-        """**🚫 | user**, Wrong password! The command is `owo autohunt 4 {password}`!
-**<:blank:427371936482328596> |** Password will reset in 10 minutes"""
-
-        """Pass and wait"""
-
-        """**<:cbot:459996048379609098> |** `BEEP BOOP. `**`user`**`, YOU SPENT 0 cowoncy`
-**<:blank:427371936482328596> |** `I WILL BE BACK IN 0M WITH 0 ANIMALS,`
-**<:blank:427371936482328596> |** `0 ESSENCE, AND 0 EXPERIENCE`"""
-
-        """in progress"""
-
-        """**<:cbot:459996048379609098> |** `BEEP BOOP. I AM STILL HUNTING. I WILL BE BACK IN 3M`
-**<:blank:427371936482328596> |** `0% DONE | 0 ANIMALS CAPTURED`
-**<:blank:427371936482328596> |** `[□□□□□□□□□□□□□□□□□□□□□□□□□]`"""
-
-        """pass redo"""
-
-        """**<:cbot:459996048379609098> |** `BEEP BOOP. I AM BACK WITH 1 ANIMALS,`
-**<:blank:427371936482328596> |** `7 ESSENCE, AND 0 EXPERIENCE` 
-<:uncommon:416520056269176842> **|** :rooster:¹"""
-
         if message.channel.id != self.bot.cm.id:
             return
         if "Please include your password!" in message.content:
@@ -107,7 +141,7 @@ class Huntbot(commands.Cog):
             await self.bot.log(f"HB {total_seconds_hb} sp - pass", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
-        if "I WILL BE BACK IN" in message.content:
+        elif "I WILL BE BACK IN" in message.content:
             total_seconds_hb = 0
             for amount, unit in re.findall(huntbot_time_regex, message.content):
                 if unit == "M":
@@ -119,20 +153,47 @@ class Huntbot(commands.Cog):
             await self.bot.log(f"HB {total_seconds_hb} sp - BACKIN", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
-        if "I AM BACK WITH" in message.content:
-            await self.send_ah(
-                timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
-            )
-            await self.bot.log(f"HB 1 sp - BACKWITH", "#afaf87")
+        elif "I AM BACK WITH" in message.content:
+            if self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["enabled"]:
+                self.cmd["cmd_arguments"] = ""
+                await self.bot.put_queue(self.cmd)
+                await self.bot.log(f"huntbot back! attempting to upgrade huntbot..", "#afaf87")
+            else:
+                await self.send_ah(
+                    timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+                )
+                await self.bot.log(f"huntbot back! sending next huntbot command.", "#afaf87")
 
-        if "Here is your password!" in message.content:
+        elif "Here is your password!" in message.content:
             ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
-            print(ans)
             await self.bot.log(f"HB 1 sp - {ans}", "#afaf87")
             await self.send_ah(
                 timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"],
                 ans=ans,
             )
+
+        elif "You successfully upgraded" in message.content:
+            self.upgrade_event.set()
+
+        elif message.embeds:
+            for embed in message.embeds:
+                if embed.author and "'s huntbot" in embed.author.name.lower():
+                    self.bot.state = False
+                    print("lets go, upgrading")
+                    await self.bot.remove_queue(id="huntbot")
+                    if embed.fields:
+                        print("field available")
+                        self.get_experience(embed)
+                        data = allocate_essence(self.upgrade_details)
+                        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"]))
+                        for trait, essence_alloc in data.items():
+                            self.upgrade_cmd["cmd_arguments"] = f"{trait} {essence_alloc}"
+                            await self.bot.put_queue(self.upgrade_cmd)
+                            await self.upgrade_confirmation()
+                        self.bot.state = True
+                    await self.send_ah(
+                        timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+                    )
 
 
 async def setup(bot):
