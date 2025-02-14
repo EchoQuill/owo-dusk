@@ -84,7 +84,7 @@ class Others(commands.Cog):
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:
-                self.bot.state = False
+                await self.bot.set_stat(False)
                 self.zoo = True
                 team_cmd = {
                     "cmd_name": self.bot.alias["zoo"]["normal"],
@@ -112,7 +112,7 @@ class Others(commands.Cog):
                     await asyncio.sleep(random.uniform(1.5,2.3))
 
                 self.zoo = False
-                self.bot.state = True
+                await self.bot.set_stat(True)
 
 async def setup(bot):
     await bot.add_cog(Others(bot))

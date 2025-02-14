@@ -26,7 +26,6 @@ class Commands(commands.Cog):
     async def start_commands(self):
         await asyncio.sleep(self.bot.random_float(self.bot.config_dict["account"]["commandsHandlerStartDelay"]))
         await self.bot.shuffle_queue()
-        print("shuffle done!")
         self.send_commands.start()
         self.monitor_checks.start()
 

@@ -153,7 +153,7 @@ class Gems(commands.Cog):
         if message.channel.id != self.bot.channel_id or message.author.id != self.bot.owo_bot_id:
             return
         elif "caught" in message.content:
-            self.bot.state = False
+            await self.bot.set_stat(False)
             self.inventory_check = True
             await self.bot.put_queue(self.inv_cmd, priority=True)
         elif "'s Inventory ======**" in message.content:
@@ -169,7 +169,7 @@ class Gems(commands.Cog):
                     self.gem_cmd["cmd_arguments"]+=f"{i} "
                 await self.bot.put_queue(self.gem_cmd, priority=True)
                 await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
-                self.bot.state = True
+                await self.bot.set_stat(True)
                 self.inventory_check = False
 
 async def setup(bot):

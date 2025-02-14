@@ -38,7 +38,7 @@ class Giveaway(commands.Cog):
                 # To prevent giving error if channel id is invalid
                 await self.bot.log(f"giveaway channel seems to be invalid", "#ff5f00")
                 continue
-            self.bot.state = False
+            await self.bot.set_stat(False)
             async for message in channel.history(limit=self.bot.config_dict["giveawayJoiner"]["messageRangeToCheck"]):
                 if message.embeds:
                     for embed in message.embeds:
@@ -48,7 +48,7 @@ class Giveaway(commands.Cog):
                                 await message.components[0].children[0].click()
                                 await self.bot.log(f"{self.bot.user}[+] giveaway joined in {message.channel.name}", "#00d7af")
 
-            self.bot.state = True
+            await self.bot.set_stat(True)
 
     """gets executed when the cog is first loaded"""
     async def cog_load(self):

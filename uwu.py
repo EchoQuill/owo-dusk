@@ -346,6 +346,7 @@ class MyClient(commands.Bot):
         and `self.captcha` for captchas to prevent anything unexpected causing the code to run
         even after captcha..."""
         self.state = True
+        self.state_event = asyncio.Event()
         self.captcha = False
         self.balance = 0
         self.queue = asyncio.Queue()
@@ -357,10 +358,19 @@ class MyClient(commands.Bot):
         self.checks = []
         self.dm, self.cm = None,None
         self.sleep = False
+        
         with open("alias.json", "r") as config_file:
             self.alias = json.load(config_file)
-        
-        
+
+    async def set_stat(self, value):
+        if value:
+            self.state = True
+            self.state_event.set()
+        else:
+            if not self.state:
+                await self.event.wait()
+            self.state = False
+            self.state_event.clear()
 
     @tasks.loop(seconds=30)
     async def presence(self):
@@ -386,12 +396,23 @@ class MyClient(commands.Bot):
     async def random_sleep(self):
         await asyncio.sleep(self.random_float(self.config_dict["sleep"]["checkTime"]))
         if random.randint(1, 100) > (100 - self.config_dict["sleep"]["frequencyPercentage"]):
-            self.state = False
+            await self.set_stat(False)
             sleep_time = self.random_float(self.config_dict["sleep"]["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
-            self.state = True
+            await self.set_stat(True)
             await self.log("sleeping finished!", "#87af87")
+
+    @tasks.loop(seconds=7)
+    async def safety_check_loop(self):
+        safety_check = requests.get(f"{owo_dusk_api}/safety_check.json").json()
+        latest_version = requests.get(f"{owo_dusk_api}/safety_check.json").json()
+        
+        if compare_versions(version, safety_check["version"]):
+            self.captcha = True
+            await self.log(f"There seems to be something wrong...\nStopping code for reason: {safety_check['reason']}\n(This was triggered by {safety_check['author']})", "#5c0018")
+            if compare_versions(latest_version["version"], safety_check["version"]):
+                await self.log(f"please update to: v{latest_version['version']}", "#33245e")
 
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
@@ -602,7 +623,7 @@ class MyClient(commands.Bot):
                 await channel.send(msg, silent=silent)
             await self.log(f"Ran: {msg}", "#5432a8")
             if misspelled:
-                self.sleep = True
+                await self.set_stat(False)
                 time = self.calculate_correction_time(message)
                 await self.log(f"correcting: {msg} -> {message} in {time}s", "#5432a8")
                 await asyncio.sleep(time)
@@ -611,7 +632,7 @@ class MyClient(commands.Bot):
                         await channel.send(message, silent=silent)
                 else:
                     await channel.send(message, silent=silent)
-
+                await self.set_stat(True)
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
@@ -674,7 +695,7 @@ class MyClient(commands.Bot):
 
     async def setup_hook(self):
         self.owo_bot_id = 408785106942164992
-
+        self.safety_check_loop.start()
         if self.session is None:
             self.session = aiohttp.ClientSession()
 

@@ -63,7 +63,7 @@ class Daily(commands.Cog):
 
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
             await self.bot.put_queue(cmd, priority=True)
-            self.bot.state = False
+            await self.bot.set_stat(False)
 
             with lock:
                 load_dict()
@@ -89,11 +89,11 @@ class Daily(commands.Cog):
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
                 await self.bot.remove_queue(cmd)
-                self.bot.state = True
+                await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
-                self.bot.state = False
+                await self.bot.set_stat(False)
                 with lock:
                     load_dict()
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
@@ -102,11 +102,11 @@ class Daily(commands.Cog):
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 await self.bot.remove_queue(cmd)
-                self.bot.state = True
+                await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
                 await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
-                self.bot.state = False
+                await self.bot.set_stat(False)
                 with lock:
                     load_dict()
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()

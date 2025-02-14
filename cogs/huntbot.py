@@ -88,7 +88,6 @@ class Huntbot(commands.Cog):
         await self.bot.remove_queue(id="huntbot")
 
     async def send_ah(self, startup=False, timeToSleep=None, ans=None):
-        print("triggerred send_ah")
         if startup:
             await asyncio.sleep(
                 self.bot.random_float(
@@ -181,7 +180,7 @@ class Huntbot(commands.Cog):
             for embed in message.embeds:
                 if embed.author and "'s huntbot" in embed.author.name.lower():
                     await self.bot.remove_queue(id="huntbot")
-                    self.bot.state = False
+                    await self.bot.set_stat(False)
                     if embed.fields:
                         self.get_experience(embed)
                         data = allocate_essence(self.upgrade_details)
@@ -193,7 +192,7 @@ class Huntbot(commands.Cog):
                                 await self.bot.put_queue(self.upgrade_cmd, priority=True)
                                 await self.upgrade_confirmation()
                                 print(self.upgrade_details)
-                        self.bot.state = True
+                        await self.bot.set_stat(True)
                     await self.send_ah(
                         timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
                     )

@@ -16,8 +16,6 @@ from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
 
-
-
 class Hunt(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
