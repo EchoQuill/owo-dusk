@@ -88,6 +88,7 @@ class Huntbot(commands.Cog):
         await self.bot.remove_queue(id="huntbot")
 
     async def send_ah(self, startup=False, timeToSleep=None, ans=None):
+        print("triggerred send_ah")
         if startup:
             await asyncio.sleep(
                 self.bot.random_float(
@@ -124,10 +125,9 @@ class Huntbot(commands.Cog):
                     level,essence = fetch_level_and_progress(field.value)
                     self.upgrade_details[trait]["current_level"] = level
                     self.upgrade_details[trait]["invested"] = essence
-                    print(f"{trait}: level {level}, {essence}")
                     break
             if "animal essence" in field.name.lower():
-                self.upgrade_details[trait]["current_level"] = fetch_essence(field.name)
+                self.upgrade_details["essence"] = fetch_essence(field.name)
 
 
     @commands.Cog.listener()
@@ -138,7 +138,7 @@ class Huntbot(commands.Cog):
             total_seconds_hb = (
                 int(re.findall(password_reset_regex, message.content)[0]) * 60
             )
-            await self.bot.log(f"HB {total_seconds_hb} sp - pass", "#afaf87")
+            await self.bot.log(f"huntbot stuck in password, retrying in {total_seconds_hb}s", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
         elif "I WILL BE BACK IN" in message.content:
@@ -150,11 +150,12 @@ class Huntbot(commands.Cog):
                     total_seconds_hb += int(amount) * 3600
                 elif unit == "D":
                     total_seconds_hb += int(amount) * 86400
-            await self.bot.log(f"HB {total_seconds_hb} sp - BACKIN", "#afaf87")
+            await self.bot.log(f"huntbot will be back in {total_seconds_hb}s", "#afaf87")
             await self.send_ah(timeToSleep=total_seconds_hb)
 
         elif "I AM BACK WITH" in message.content:
             if self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["enabled"]:
+                await self.bot.remove_queue(id="huntbot")
                 self.cmd["cmd_arguments"] = ""
                 await self.bot.put_queue(self.cmd)
                 await self.bot.log(f"huntbot back! attempting to upgrade huntbot..", "#afaf87")
@@ -166,7 +167,7 @@ class Huntbot(commands.Cog):
 
         elif "Here is your password!" in message.content:
             ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
-            await self.bot.log(f"HB 1 sp - {ans}", "#afaf87")
+            await self.bot.log(f"huntbot receieved password, attempting to solve!", "#afaf87")
             await self.send_ah(
                 timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"],
                 ans=ans,
@@ -174,22 +175,24 @@ class Huntbot(commands.Cog):
 
         elif "You successfully upgraded" in message.content:
             self.upgrade_event.set()
+            await self.bot.remove_queue(id="upgrade")
 
         elif message.embeds:
             for embed in message.embeds:
                 if embed.author and "'s huntbot" in embed.author.name.lower():
-                    self.bot.state = False
-                    print("lets go, upgrading")
                     await self.bot.remove_queue(id="huntbot")
+                    self.bot.state = False
                     if embed.fields:
-                        print("field available")
                         self.get_experience(embed)
                         data = allocate_essence(self.upgrade_details)
                         await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"]))
                         for trait, essence_alloc in data.items():
                             self.upgrade_cmd["cmd_arguments"] = f"{trait} {essence_alloc}"
-                            await self.bot.put_queue(self.upgrade_cmd)
-                            await self.upgrade_confirmation()
+                            if essence_alloc > 0:
+                                print(self.upgrade_cmd["cmd_arguments"])
+                                await self.bot.put_queue(self.upgrade_cmd, priority=True)
+                                await self.upgrade_confirmation()
+                                print(self.upgrade_details)
                         self.bot.state = True
                     await self.send_ah(
                         timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
