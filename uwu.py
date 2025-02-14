@@ -367,8 +367,9 @@ class MyClient(commands.Bot):
             self.state = True
             self.state_event.set()
         else:
-            if not self.state:
-                await self.event.wait()
+            while not self.state:
+                """prevents race issues? Doesn't hurt using while instead of if."""
+                await self.state_event.wait()
             self.state = False
             self.state_event.clear()
 
