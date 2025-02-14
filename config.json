@@ -2,7 +2,7 @@
     "setprefix": "w",
     "typingIndicator": true,
     "offlineStatus": false,
-    "useSlashCommands": true,
+    "useSlashCommands": false,
     "silentTextMessages": false,
     "website": {
         "enabled": true,
@@ -127,18 +127,33 @@
             ]
         },
         "autoHuntBot": {
-            "enabled": true,
-            "cashToSpend": 10000
+            "enabled": false,
+            "cashToSpend": 10000,
+            "upgrader": {
+                "enabled": true,
+                "traits": {
+                    "efficiency": true,
+                    "duration": true,
+                    "cost": true,
+                    "gain": true,
+                    "exp": true,
+                    "radar": true
+                },
+                "sleeptime": [
+                    10,
+                    15
+                ]
+            }
         }
     },
     "gamble": {
         "allottedAmount": 30000,
         "goalSystem": {
-            "enabled": true,
+            "enabled": false,
             "amount": 300
         },
         "coinflip": {
-            "enabled": true,
+            "enabled": false,
             "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
@@ -150,8 +165,8 @@
             ]
         },
         "slots": {
-            "enabled": true,
-            "startValue": 2,
+            "enabled": false,
+            "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
                 16,
@@ -161,7 +176,7 @@
         "blackjack": {}
     },
     "giveawayJoiner": {
-        "enabled": true,
+        "enabled": false,
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
