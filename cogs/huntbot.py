@@ -92,7 +92,7 @@ class Huntbot(commands.Cog):
             await asyncio.sleep(
                 self.bot.random_float(
                     self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
-                )
+                )+5
             )
         else:
             await self.bot.remove_queue(id="huntbot")
