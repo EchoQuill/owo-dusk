@@ -379,8 +379,8 @@ class MyClient(commands.Bot):
         with open("misc.json", "r") as config_file:
             self.misc = json.load(config_file)
         if self.misc["debug"]["hideUser"]:
-            x = {"cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"}
-            y = {"123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"}
+            x = ["cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"]
+            y = ["123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"]
             self.username = f"{random.choice(x)}{random.choice(y)}"
 
     async def set_stat(self, value):
