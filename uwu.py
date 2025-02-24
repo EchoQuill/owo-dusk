@@ -84,6 +84,9 @@ def load_accounts_dict(file_path="utils/stats.json"):
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
+with open("misc.json", "r") as config_file:
+    misc_dict = json.load(config_file)
+
 
 console.rule("[bold blue1]:>", style="navy_blue")
 console_width = console.size.width
@@ -358,9 +361,23 @@ class MyClient(commands.Bot):
         self.checks = []
         self.dm, self.cm = None,None
         self.sleep = False
+        self.user_data = {
+            "balance": 0,
+            "essence": 0,
+            "server_id": 0,
+            "animals_caught": 0,
+            "hunts": 0,
+            "battles": 0,
+            "hb": 0,
+            "giveaway": 0,
+            "captchas": 0
+        }
         
         with open("alias.json", "r") as config_file:
             self.alias = json.load(config_file)
+
+        with open("misc.json", "r") as config_file:
+            self.misc = json.load(config_file)
 
     async def set_stat(self, value):
         if value:
@@ -539,10 +556,10 @@ class MyClient(commands.Bot):
                 )
             )
 
-    async def log(self, text, color, bold=False, debug=config_dict["debug"]["enabled"], save_log=config_dict["debug"]["logInTextFile"], web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
+    async def log(self, text, color, bold=False, web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
         global website_logs
         current_time = datetime.now().strftime("%H:%M:%S")
-        if debug:
+        if self.misc["debug"]["enabled"]:
             frame_info = traceback.extract_stack()[-2]
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
@@ -550,7 +567,7 @@ class MyClient(commands.Bot):
             content_to_print = f"[{current_time}] {self.user} - {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=color, markup=False)
             with lock:
-                if save_log:
+                if self.misc["debug"]["logInTextFile"]:
                     with open("logs.txt", "a") as log:
                         log.write(f"{content_to_print}\n")
         else:
@@ -803,7 +820,7 @@ if __name__ == "__main__":
         printBox(f'Website Dashboard: http://localhost:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
     try:
         news_json = requests.get(f"{owo_dusk_api}/news.json").json()
-        if news_json["available"] and config_dict["news"]:
+        if news_json["available"] and misc_dict["news"]:
             printBox(f'{news_json["content"]}'.center(console_width - 2 ),f"bold {news_json['color']}", title=news_json["title"] )
     except Exception as e:
         print(e)
