@@ -378,6 +378,10 @@ class MyClient(commands.Bot):
 
         with open("misc.json", "r") as config_file:
             self.misc = json.load(config_file)
+        if self.misc["debug"]["hideUser"]:
+            x = {"cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"}
+            y = {"123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"}
+            self.username = f"{random.choice(x)}{random.choice(y)}"
 
     async def set_stat(self, value):
         if value:
@@ -557,6 +561,7 @@ class MyClient(commands.Bot):
             )
 
     async def log(self, text, color, bold=False, web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
+        user = self.user if not self.misc["debug"]["hideUser"] else self.username
         global website_logs
         current_time = datetime.now().strftime("%H:%M:%S")
         if self.misc["debug"]["enabled"]:
@@ -564,21 +569,21 @@ class MyClient(commands.Bot):
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
 
-            content_to_print = f"[{current_time}] {self.user} - {text} | [{filename}:{lineno}]"
+            content_to_print = f"[{current_time}] {user} - {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=color, markup=False)
             with lock:
                 if self.misc["debug"]["logInTextFile"]:
                     with open("logs.txt", "a") as log:
                         log.write(f"{content_to_print}\n")
         else:
-            console.print(f"{self.user}| {text}".center(console_width - 2), style=color)
+            console.print(f"{user}| {text}".center(console_width - 2), style=color)
         if web_log:
             with lock:
-                website_logs.append(f"<p style='color: {color};'>[{current_time}] {self.user}| {text}</p>")
+                website_logs.append(f"<p style='color: {color};'>[{current_time}] {user}| {text}</p>")
                 if len(website_logs) > 10:
                     website_logs.pop(0)
         if webhook_useless_log:
-            await self.webhookSender(footer=f"[{current_time}] {self.user} - {text}", colors=color)
+            await self.webhookSender(footer=f"[{current_time}] {user} - {text}", colors=color)
 
     async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None, webhook_url=None):
         try:
