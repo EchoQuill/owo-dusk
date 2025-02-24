@@ -722,7 +722,7 @@ class MyClient(commands.Bot):
         if self.session is None:
             self.session = aiohttp.ClientSession()
 
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2), 'bold royal_blue1 ')
+        printBox(f'-Loaded {self.user.name if not self.misc["debug"]["hideUser"] else self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
         listUserIds.append(self.user.id)
 
         # Fetch the channel

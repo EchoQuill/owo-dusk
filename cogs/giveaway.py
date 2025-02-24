@@ -46,7 +46,7 @@ class Giveaway(commands.Cog):
                             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
                             if message.components[0].children[0] and not message.components[0].children[0].disabled:
                                 await message.components[0].children[0].click()
-                                await self.bot.log(f"{self.bot.user}[+] giveaway joined in {message.channel.name}", "#00d7af")
+                                await self.bot.log(f"giveaway joined in {message.channel.name}", "#00d7af")
 
             await self.bot.set_stat(True)
 
