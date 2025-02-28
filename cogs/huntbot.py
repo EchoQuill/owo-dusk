@@ -183,7 +183,7 @@ class Huntbot(commands.Cog):
                     await self.bot.set_stat(False)
                     if embed.fields:
                         self.get_experience(embed)
-                        data = allocate_essence(self.upgrade_details)
+                        data = allocate_essence(self.upgrade_details, self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["priorities"])
                         await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"]))
                         for trait, essence_alloc in data.items():
                             self.upgrade_cmd["cmd_arguments"] = f"{trait} {essence_alloc}"

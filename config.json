@@ -127,7 +127,7 @@
             ]
         },
         "autoHuntBot": {
-            "enabled": false,
+            "enabled": true,
             "cashToSpend": 10000,
             "upgrader": {
                 "enabled": true,
@@ -142,7 +142,15 @@
                 "sleeptime": [
                     10,
                     15
-                ]
+                ],
+                "priorities": {
+                    "efficiency": 4,
+                    "duration": 2,
+                    "cost": 5,
+                    "gain": 4,
+                    "exp": 3,
+                    "radar": 1
+                }
             }
         }
     },
@@ -153,7 +161,7 @@
             "amount": 300
         },
         "coinflip": {
-            "enabled": false,
+            "enabled": true,
             "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
@@ -166,7 +174,7 @@
         },
         "slots": {
             "enabled": false,
-            "startValue": 200,
+            "startValue": 2,
             "multiplierOnLose": 2,
             "cooldown": [
                 16,
@@ -176,7 +184,7 @@
         "blackjack": {}
     },
     "giveawayJoiner": {
-        "enabled": false,
+        "enabled": true,
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
@@ -320,14 +328,9 @@
             "openCaptchaWebsite": false
         }
     },
-    "debug": {
-        "enabled": true,
-        "logInTextFile": false
-    },
     "batteryCheck": {
         "enabled": false,
         "minPercentage": 15,
         "refreshInterval": 120
-    },
-    "news": true
+    }
 }

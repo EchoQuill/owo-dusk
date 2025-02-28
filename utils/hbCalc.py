@@ -26,24 +26,27 @@ https://www.geeksforgeeks.org/introduction-to-greedy-algorithm-data-structures-a
 """
 
 
-"""
-inc:  The base multiplier for the level cost calculation.
-pow:  The exponent applied to (level+1) to compute cost.
-base: The starting value for the stat.
-upg:  The change in the stat per level (can be negative for improvements like cost reduction).
-max:  The maximum level the trait can reach.
-prio: The priority (set by me) according to what I believe needs to be upgraded first!
-"""
-traits = {
-    "efficiency": {"inc": 10, "pow": 1.748, "base": 25, "upg": 1, "max": 215, "prio": 4},
-    "duration":   {"inc": 10, "pow": 1.7,  "base": 0.5, "upg": 0.1, "max": 235, "prio": 2},
-    "cost":       {"inc": 1000, "pow": 3.4, "base": 10, "upg": -1, "max": 5, "prio": 5},
-    "gain":       {"inc": 10, "pow": 1.8,  "base": 0,  "upg": 25,  "max": 200, "prio": 4},
-    "exp":        {"inc": 10, "pow": 1.8,  "base": 0,  "upg": 35,  "max": 200, "prio": 3},
-    "radar":      {"inc": 50, "pow": 2.5,  "base": 0,  "upg": 0.00000004, "max": 999, "prio": 1}
-}
 
-def allocate_essence(input_data):
+
+def allocate_essence(input_data, prio_dict):
+    """
+    inc:  The base multiplier for the level cost calculation.
+    pow:  The exponent applied to (level+1) to compute cost.
+    base: The starting value for the stat.
+    upg:  The change in the stat per level (can be negative for improvements like cost reduction).
+    max:  The maximum level the trait can reach.
+    prio: The priority (set by me) according to what I believe needs to be upgraded first!
+    """
+    traits = {
+        "efficiency": {"inc": 10, "pow": 1.748, "base": 25, "upg": 1, "max": 215, "prio": 4},
+        "duration":   {"inc": 10, "pow": 1.7,  "base": 0.5, "upg": 0.1, "max": 235, "prio": 2},
+        "cost":       {"inc": 1000, "pow": 3.4, "base": 10, "upg": -1, "max": 5, "prio": 5},
+        "gain":       {"inc": 10, "pow": 1.8,  "base": 0,  "upg": 25,  "max": 200, "prio": 4},
+        "exp":        {"inc": 10, "pow": 1.8,  "base": 0,  "upg": 35,  "max": 200, "prio": 3},
+        "radar":      {"inc": 50, "pow": 2.5,  "base": 0,  "upg": 0.00000004, "max": 999, "prio": 1}
+    }
+    for trait, prio in prio_dict:
+        traits[trait]["prio"] = prio
     """Total essense"""
     available_essence = input_data.get("essence", 0)
 
