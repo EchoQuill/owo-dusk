@@ -45,7 +45,7 @@ def allocate_essence(input_data, prio_dict):
         "exp":        {"inc": 10, "pow": 1.8,  "base": 0,  "upg": 35,  "max": 200, "prio": 3},
         "radar":      {"inc": 50, "pow": 2.5,  "base": 0,  "upg": 0.00000004, "max": 999, "prio": 1}
     }
-    for trait, prio in prio_dict:
+    for trait, prio in prio_dict.items():
         traits[trait]["prio"] = prio
     """Total essense"""
     available_essence = input_data.get("essence", 0)
