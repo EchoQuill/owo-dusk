@@ -15,7 +15,6 @@ from rich.align import Align
 import discord.errors
 import subprocess
 import threading
-import requests
 import asyncio
 import logging
 import discord
@@ -71,14 +70,10 @@ def clean(msg):
 with open(resource_path("config.json")) as file:
     config = json.load(file)
 # ----------OTHER VARIABLES----------#
-version = "1.7.4"
+
 offline = config["offlineStatus"]
-ver_check_url = "https://raw.githubusercontent.com/EchoQuill/owo-dusk/main/version.txt"
-saftey_check_url = "https://echoquill.github.io/owo-dusk-api/saftey_check.json"
-checkForAlert = config["checkForAlerts"]
 stop_code = False
-quotesUrl = "https://favqs.com/api/qotd"  # ["https://thesimpsonsquoteapi.glitch.me/quotes", "https://favqs.com/api/qotd"]
-ver_check = requests.get(ver_check_url).text.strip()
+quotesUrl = "https://favqs.com/api/qotd"
 lock = threading.Lock()
 typingIndicator = config["typingIndicator"]
 list_captcha = ["human", "captcha", "link", "letterword"]
@@ -357,26 +352,6 @@ owoCd = [config["commands"][11]["minCooldown"], config["commands"][11]["maxCoold
 giveawayMaxCooldown = config["commands"][9]["maxCooldown"]
 giveawayMixCooldown = config["commands"][9]["minCooldown"]
 
-
-# version check
-def compare_versions(current_version, latest_version):
-    # current_version = current_version[1:]
-    # latest_version = latest_version[1:]
-    current = list(map(int, current_version.split(".")))
-    latest = list(map(int, latest_version.split(".")))
-    """
-    example output:
-    current = [1,5,0]
-    """
-    for c, l in zip(current, latest):
-        if l > c:
-            return True
-        elif l < c:
-            return False
-    # If all parts are equal, return False (no new version)
-    return False
-
-
 # Box print
 def printBox(text, color):
     test_panel = Panel(text, style=color)
@@ -443,77 +418,10 @@ def batteryCheckFunc():
     os._exit(0)
 
 
-def check_alerts():
-    global stop_code
-    if not stop_code:
-        response = requests.get(saftey_check_url)
-        response.raise_for_status()  # raise exception in case of failute
-        data = response.json()
-        # print(data)
-        if data["enabled"]:
-            if compare_versions(version, data["version"]) or version == data["version"]:
-                stop_code = True
-                printBox(
-                    f"STOPPED CODE FROM SENDING MESSAGES, breaking change detected".center(
-                        console_width - 2
-                    ),
-                    "bold red on black",
-                )
-                printBox(
-                    f"reason: {data['reason']} , author: {data['author']}".center(
-                        console_width - 2
-                    ),
-                    "bold red on black",
-                )
-                if termuxNotificationEnabled:  # 8ln from here
-                    run_system_command(
-                        f"termux-notification -c 'code stopped!'", timeout=5, retry=True
-                    )
-                if termuxToastEnabled:
-                    run_system_command(
-                        f"termux-toast -c green -b black 'code stopped!'",
-                        timeout=5,
-                        retry=True,
-                    )
-                if termuxVibrationEnabled:
-                    run_system_command(
-                        f"termux-vibrate -f -d {termuxVibrationTime}",
-                        timeout=5,
-                        retry=True,
-                    )
-                if termuxAudioPlayer:
-                    run_system_command(
-                        f"termux-media-player play {termuxAudioPlayerPath}",
-                        timeout=5,
-                        retry=True,
-                    )
-                if termuxTtsEnabled:
-                    run_system_command(
-                        f"termux-tts-speak alert", timeout=7, retry=False
-                    )
-                if desktopNotificationEnabled:
-                    notification.notify(
-                        title=f"OWO-DUSK STOPPED!",
-                        message="We have stopped owo-dusk, check console log for more info!",
-                        app_icon=None,
-                        timeout=15,
-                    )
-                if desktopAudioPlayer:
-                    playsound(desktopAudioPlayerPath, block=False)
-            else:
-                pass
-
-    # for user to be able to see why the code was stopped, incase if closing causes console messages to disapear.
-    time.sleep(350)  # 5.5 minutes
-
-
 if mobileBatteryCheckEnabled or desktopBatteryCheckEnabled:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 
-if checkForAlert:
-    loop_thread = threading.Thread(target=check_alerts)
-    loop_thread.start()
 # For emoji names
 try:
     with open("utils/emojis.json", "r", encoding="utf-8") as file:
@@ -724,14 +632,14 @@ def index():
                 return render_template(
                     "index.html",
                     no_captchas=True,
-                    version=version,
+                    version="v1.7-final",
                     refresh_interval=refresh_interval,
                 )
             else:
                 return render_template(
                     "index.html",
                     captchas=captchas,
-                    version=version,
+                    version="v1.7-final",
                     refresh_interval=refresh_interval,
                 )
     except Exception as e:
@@ -4311,12 +4219,11 @@ def run_bot(token, channel_id):
 if __name__ == "__main__":
     console.print(owoPanel)
     print("-" * console_width)
-    printBox(f"-Made by EchoQuill".center(console_width - 2), "bold grey30 on black")
+    printBox(f"-This is the final version of v1. It may or may not be maintained, please consider using v2 which is much more stable and well maintained!", "bold grey30 on black")
     printBox(
-        f"-Current Version:- {version}".center(console_width - 2),
+        f"-Current Version:- v1.7-final :>".center(console_width - 2),
         "bold spring_green4 on black",
     )
-    # printBox(f'Due to a bug in discord.py-self, a temporary patch was enabled in this version. It should work fine but if any bugs let @echoquill know (ignore messages at start)'.center(console_width - 2 ),'bold orange4 on black' )
     if websiteEnabled:
         printBox(
             f"-Website captcha logger:- http://localhost:{websitePort}/".center(
@@ -4324,19 +4231,6 @@ if __name__ == "__main__":
             ),
             "bold blue_violet on black",
         )
-    if compare_versions(version, ver_check):
-        console.print(
-            f"""new update detected (v {ver_check}) (current version:- v {version})...
-please update from -> https://github.com/EchoQuill/owo-dusk""",
-            style="yellow on black",
-        )
-        if desktopNotificationEnabled:
-            notification.notify(
-                title=f"New Update!!, v{ver_check}",
-                message="Update from v{version} to v{version_check} from our github page :>",
-                app_icon=None,
-                timeout=15,
-            )
     if autoPray == True and autoCurse == True:
         console.print(
             "Both autoPray and autoCurse enabled. Only enable one!",
