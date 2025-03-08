@@ -12,9 +12,8 @@
 
 
 """
-fix gems
 merge lvlgrind+owo
-fix extra cash being added to net profit
+redo hidden name in rest of the cogs to ensure everything is in place by setting self.username to the value used for logging and not self.user/selfbot.usr
 """
 
 from datetime import datetime, timedelta, timezone
@@ -693,31 +692,30 @@ class MyClient(commands.Bot):
         await self.log(f"connected {self.user}..", "#5432a8")"""
         
     async def on_ready(self):
-        # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
-        try:
-            self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
+        if not self.dm:
+            # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
+            try:
+                self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
 
-            if self.dm is None:
-                self.dm = await self.fetch_user(self.owo_bot_id).create_dm()
+                if self.dm is None:
+                    self.dm = await self.fetch_user(self.owo_bot_id).create_dm()
 
-        except discord.Forbidden as e:
-            print(e)
-            print(f"Attempting to get user with the help of {self.cm}")
-            await self.cm.send(f"{config_dict['setprefix']}ping")
-
-            async for message in self.cm.history(limit=10):
-                if message.author.id == self.owo_bot_id:
-                    break
-
-            await asyncio.sleep(random.uniform(0.5, 0.9))
-            self.dm = await message.author.create_dm()
-
-        except Exception as e:
-            print(e)
+            except discord.Forbidden as e:
+                print(e)
+                print(f"Attempting to get user with the help of {self.cm}")
+                await self.cm.send(f"{config_dict['setprefix']}ping")
+                async for message in self.cm.history(limit=10):
+                    if message.author.id == self.owo_bot_id:
+                        self.dm = await message.author.create_dm()
+                        break
+                await asyncio.sleep(random.uniform(0.5, 0.9))
+            except Exception as e:
+                print(e)
         
 
     async def setup_hook(self):
         self.owo_bot_id = 408785106942164992
+        self.dm = None
         self.safety_check_loop.start()
         if self.session is None:
             self.session = aiohttp.ClientSession()
@@ -740,7 +738,15 @@ class MyClient(commands.Bot):
                 print(f"Failed to fetch channel {self.channel_id}: {e}")
                 return
 
-        
+        async for message in self.cm.history(limit=10):
+            """
+            Since fetch is failing with d.py-self,
+            This is used to prevent the need for users who grind in same channel
+            to wait till on_ready for self.dm to be ready
+            """
+            if message.author.id == self.owo_bot_id:
+                self.dm = await message.author.create_dm()
+                break
 
         # Fetch slash commands in self.cm
         self.slash_commands = []
