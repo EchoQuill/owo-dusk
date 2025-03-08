@@ -118,9 +118,9 @@ class Captcha(commands.Cog):
         if config_dict["captcha"]["playAudio"]["enabled"]:
             try:
                 if on_mobile:
-                    run_system_command(f"termux-media-player play {config_dict['playAudio']['path']}", timeout=5, retry=True)
+                    run_system_command(f"termux-media-player play {config_dict["captcha"]['playAudio']['path']}", timeout=5, retry=True)
                 else:
-                    playsound(config_dict["playAudio"]["path"], block=False)
+                    playsound(config_dict["captcha"]["playAudio"]["path"], block=False)
             except Exception as e:
                 print(f"{e} - at audio")
         """Toast/Popup"""
