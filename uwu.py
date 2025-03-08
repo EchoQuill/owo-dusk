@@ -803,6 +803,14 @@ class MyClient(commands.Bot):
 
 
 # ----------STARTING BOT----------#
+def fetch_json(url, description="data"):
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        printBox(f"Failed to fetch {description}: {e}", "bold red")
+        return {}
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
@@ -812,14 +820,17 @@ def run_bots(tokens_and_channels):
     for thread in threads:
         thread.join()
 def run_bot(token, channel_id):
-    logging.getLogger("discord.client").setLevel(logging.ERROR)
-    client = MyClient(token, channel_id)
-    client.run(token, log_level=logging.ERROR)
+    try:
+        logging.getLogger("discord.client").setLevel(logging.ERROR)
+        client = MyClient(token, channel_id)
+        client.run(token, log_level=logging.ERROR)
+    except Exception as e:
+        printBox(f"Error starting bot with token {token}...: {e}", "bold red")
 if __name__ == "__main__":
     console.print(owoPanel)
     console.rule(f"[bold blue1]version - {version}", style="navy_blue")
     printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30' )
-    version_json = requests.get(f"{owo_dusk_api}/version.json").json()
+    version_json = fetch_json(f"{owo_dusk_api}/version.json", "version info")
     if compare_versions(version, version_json["version"]):
         printBox(f"""Update Detected - {version_json["version"]}
     Changelog:-
@@ -832,9 +843,13 @@ if __name__ == "__main__":
     if config_dict["website"]["enabled"]:
         printBox(f'Website Dashboard: http://localhost:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
     try:
-        news_json = requests.get(f"{owo_dusk_api}/news.json").json()
-        if news_json["available"] and misc_dict["news"]:
-            printBox(f'{news_json["content"]}'.center(console_width - 2 ),f"bold {news_json['color']}", title=news_json["title"] )
+        news_json = fetch_json(f"{owo_dusk_api}/news.json", "news")
+        if news_json.get("available") and misc_dict.get("news"):
+            printBox(
+                f'{news_json.get("content", "no content found..? this is an error! should be safe to ignore")}'.center(console_width - 2),
+                f"bold {news_json.get('color', 'white')}",
+                title=news_json.get("title", "???")
+            )
     except Exception as e:
         print(e)
     console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
