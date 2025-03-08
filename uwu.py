@@ -10,12 +10,6 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-
-"""
-merge lvlgrind+owo
-redo hidden name in rest of the cogs to ensure everything is in place by setting self.username to the value used for logging and not self.user/selfbot.usr
-"""
-
 from datetime import datetime, timedelta, timezone
 from discord.ext import commands, tasks
 from rich.console import Console
@@ -381,6 +375,8 @@ class MyClient(commands.Bot):
             x = ["cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"]
             y = ["123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"]
             self.username = f"{random.choice(x)}{random.choice(y)}"
+        else:
+            self.username = self.user.name
 
     async def set_stat(self, value):
         if value:
@@ -573,7 +569,6 @@ class MyClient(commands.Bot):
             )
 
     async def log(self, text, color, bold=False, web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
-        user = self.user if not self.misc["debug"]["hideUser"] else self.username
         global website_logs
         current_time = datetime.now().strftime("%H:%M:%S")
         if self.misc["debug"]["enabled"]:
@@ -581,21 +576,21 @@ class MyClient(commands.Bot):
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
 
-            content_to_print = f"[{current_time}] {user} - {text} | [{filename}:{lineno}]"
+            content_to_print = f"[{current_time}] {self.username} - {text} | [{filename}:{lineno}]"
             console.print(content_to_print, style=color, markup=False)
             with lock:
                 if self.misc["debug"]["logInTextFile"]:
                     with open("logs.txt", "a") as log:
                         log.write(f"{content_to_print}\n")
         else:
-            console.print(f"{user}| {text}".center(console_width - 2), style=color)
+            console.print(f"{self.username}| {text}".center(console_width - 2), style=color)
         if web_log:
             with lock:
-                website_logs.append(f"<p style='color: {color};'>[{current_time}] {user}| {text}</p>")
+                website_logs.append(f"<p style='color: {color};'>[{current_time}] {self.username}| {text}</p>")
                 if len(website_logs) > 10:
                     website_logs.pop(0)
         if webhook_useless_log:
-            await self.webhookSender(footer=f"[{current_time}] {user} - {text}", colors=color)
+            await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
 
     async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None, webhook_url=None):
         try:
@@ -618,7 +613,7 @@ class MyClient(commands.Bot):
             if img_url:
                 emb.set_thumbnail(url=img_url)
             if author_img_url:
-                emb.set_author(name=self.user, icon_url=author_img_url)
+                emb.set_author(name=self.username, icon_url=author_img_url)
             webhook = discord.Webhook.from_url(self.config_dict["webhook"]["webhookUrl"] if not webhook_url else webhook_url, session=self.session)
             if plain_text:
                 await webhook.send(content=plain_text, embed=emb, username='OwO-Dusk')
@@ -694,6 +689,19 @@ class MyClient(commands.Bot):
         """
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_now.timestamp()
+    
+    async def check_for_cash(self):
+        await asyncio.sleep(random.uniform(4.5, 6.4))
+        await self.put_queue(
+            {
+                "cmd_name": self.alias["cash"]["normal"],
+                "prefix": True,
+                "checks": True,
+                "retry_count": 0,
+                "id": "cash",
+                "removed": False
+            }
+        )
         
     async def on_ready(self):
         if not self.dm:
@@ -724,7 +732,7 @@ class MyClient(commands.Bot):
         if self.session is None:
             self.session = aiohttp.ClientSession()
 
-        printBox(f'-Loaded {self.user.name if not self.misc["debug"]["hideUser"] else self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
+        printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
         listUserIds.append(self.user.id)
 
         # Fetch the channel
@@ -789,17 +797,7 @@ class MyClient(commands.Bot):
             self.random_sleep.start()
 
         if self.config_dict["cashCheck"]:
-            await asyncio.sleep(random.uniform(4.5, 6.4))
-            await self.put_queue(
-                {
-                    "cmd_name": self.alias["cash"]["normal"],
-                    "prefix": True,
-                    "checks": True,
-                    "retry_count": 0,
-                    "id": "cash",
-                    "removed": False
-                }
-            )
+            asyncio.create_task(self.check_for_cash())
 
         
 
