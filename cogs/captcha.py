@@ -95,14 +95,14 @@ class Captcha(commands.Cog):
             try:
                 if on_mobile:
                     run_system_command(
-                        f"termux-notification -t '{self.bot.user.name} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
+                        f"termux-notification -t '{self.bot.username} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
                         timeout=5, 
                         retry=True
                         )
                 else:
                     notification.notify(
-                        title=f'{self.bot.user.name} DETECTED CAPTCHA',
-                        message=config_dict['captcha']['notifications'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type),
+                        title=f'{self.bot.username} DETECTED CAPTCHA',
+                        message=config_dict['captcha']['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type),
                         app_icon=None,
                         timeout=15
                         )
@@ -128,7 +128,7 @@ class Captcha(commands.Cog):
             try:
                 if on_mobile:
                     run_system_command(
-                        f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type)}'",
+                        f"termux-toast -c {config_dict['captcha']['toastOrPopup']['termuxToast']['textColour']} -b {config_dict['captcha']['toastOrPopup']['termuxToast']['backgroundColour']} -g {config_dict['captcha']['toastOrPopup']['termuxToast']['position']} '{config_dict['captcha']['toastOrPopup'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type)}'",
                         timeout=5,
                         retry=True
                         )
@@ -207,7 +207,7 @@ class Captcha(commands.Cog):
                 self.captcha_handler(message.channel, "Link")
                 if self.bot.config_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        msg=f"-{self.bot.user} [+] CAPTCHA Detected",
+                        msg=f"-{self.bot.username} [+] CAPTCHA Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
                         colors="#00FFAF",
                         img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
@@ -228,7 +228,7 @@ class Captcha(commands.Cog):
                 console_handler(captcha=False)
                 if self.bot.config_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        msg=f"-{self.bot.user} [+] BAN Detected",
+                        msg=f"-{self.bot.username} [+] BAN Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [Ban Message]({message.jump_url})",
                         colors="#00FFAF",
                         img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
