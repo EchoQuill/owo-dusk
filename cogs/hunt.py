@@ -52,7 +52,7 @@ class Hunt(commands.Cog):
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
                     await self.bot.remove_queue(id="hunt")
-                    await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["hunt"]["cooldown"]))
+                    await self.bot.sleep_till(self.bot.config_dict["commands"]["hunt"]["cooldown"])
                     self.cmd["cmd_name"] = (
                         self.bot.alias["hunt"]["shortform"] 
                         if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 

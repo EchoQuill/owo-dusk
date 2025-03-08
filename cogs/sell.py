@@ -52,7 +52,7 @@ class Sell(commands.Cog):
         return " ".join(self.bot.config_dict["commands"][cmd]["rarity"])
 
     async def sell_sac_queue(self, cmd, cooldown):
-        await asyncio.sleep(self.bot.random_float(cooldown))
+        await self.bot.sleep_till(cooldown)
         cmd["cmd_arguments"] = self.fetch_arguments(cmd["cmd_name"])
         await self.bot.put_queue(cmd)
 

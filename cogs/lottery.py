@@ -60,7 +60,7 @@ class Lottery(commands.Cog):
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
             #self.bot.queue.put(["lottery", f" {self.bot.config_dict["commands"]["lottery"]["amount"]}"])
             await self.bot.put_queue(self.cmd)
 

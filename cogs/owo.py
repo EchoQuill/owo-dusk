@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import json
 
 from discord.ext import commands, tasks
 from discord.ext.commands import ExtensionNotLoaded
@@ -32,7 +31,7 @@ class Owo(commands.Cog):
     @tasks.loop(seconds=1)
     async def send_owo(self):
         if not self.bot.captcha and self.bot.state:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["owo"]["cooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["commands"]["owo"]["cooldown"])
             await self.bot.put_queue(self.cmd)
     
     """gets executed when the cog is first loaded"""

@@ -24,7 +24,7 @@ class Commands(commands.Cog):
         self.calc_time = timedelta(0)
 
     async def start_commands(self):
-        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["account"]["commandsHandlerStartDelay"]))
+        await self.bot.sleep_till(self.bot.config_dict["account"]["commandsHandlerStartDelay"])
         await self.bot.shuffle_queue()
         self.send_commands.start()
         self.monitor_checks.start()
@@ -48,10 +48,10 @@ class Commands(commands.Cog):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
                 await self.bot.send(self.bot.construct_command(cmd))
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
 
     @tasks.loop(seconds=1)
     async def monitor_checks(self):

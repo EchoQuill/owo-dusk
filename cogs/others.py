@@ -92,7 +92,7 @@ class Others(commands.Cog):
                     "checks": False,
                     "retry_count": 0
                 }
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
                 await self.bot.put_queue(team_cmd, priority=True)
 
             elif "s zoo! **" in message.content and self.zoo:

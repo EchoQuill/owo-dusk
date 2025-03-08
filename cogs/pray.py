@@ -58,10 +58,10 @@ class Pray(commands.Cog):
         cmd = random.choice(cmds)
         if not self.startup:
             await self.bot.remove_queue(id="pray")
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"][cmd]["cooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["commands"][cmd]["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = False
 
         cmd_argument_data = cmd_argument(
@@ -75,7 +75,7 @@ class Pray(commands.Cog):
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
             before owo-dusk is ran, this check is to fix it getting the code stuck.
             """
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
             if self.startup:
                 self.startup=False
                 await self.start_pray_curse()

@@ -52,7 +52,7 @@ class Level(commands.Cog):
 
     async def start_level_grind(self):
         try:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["lvlGrind"]["cooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["commands"]["lvlGrind"]["cooldown"])
             if self.bot.config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
                 self.last_level_grind_message = await fetch_quotes(self.bot.session)
             else:

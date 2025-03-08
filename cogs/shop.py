@@ -56,10 +56,10 @@ class Shop(commands.Cog):
     async def send_buy(self, startup=False):
         item = random.choice(self.bot.config_dict["commands"]["shop"]["itemsToBuy"])
         if startup:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
         else:
             await self.bot.remove_queue(id="shop")
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["shop"]["cooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["commands"]["shop"]["cooldown"])
         if cash_required[item] <= self.bot.balance:
             self.cmd["cmd_arguments"] = item
             await self.bot.put_queue(self.cmd)

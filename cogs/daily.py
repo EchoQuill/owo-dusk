@@ -61,7 +61,7 @@ class Daily(commands.Cog):
                 
             print("daily successfull")
 
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
             await self.bot.put_queue(cmd, priority=True)
             await self.bot.set_stat(False)
 

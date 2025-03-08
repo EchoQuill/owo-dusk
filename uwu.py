@@ -494,6 +494,19 @@ class MyClient(commands.Bot):
     def random_float(self, cooldown_list):
         return random.uniform(cooldown_list[0],cooldown_list[1])
 
+    async def sleep_till(self, cooldown, cd_list=True, noise=3):
+        if cd_list:
+            await asyncio.sleep(
+                random.uniform(cooldown[0],cooldown[1])
+            )
+        else:
+            await asyncio.sleep(
+                random.uniform(
+                    cooldown,
+                    cooldown + noise
+                )
+            )
+
     def construct_command(self, data):
         prefix = config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
@@ -681,15 +694,6 @@ class MyClient(commands.Bot):
         """
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_now.timestamp()
-
-    """async def on_disconnect(self):
-        await self.log(f"disconnected {self.user}..", "#5432a8")
-   
-    async def on_resume(self):
-        await self.log(f"resuming {self.user}..", "#5432a8")
-
-    async def on_connect(self):
-        await self.log(f"connected {self.user}..", "#5432a8")"""
         
     async def on_ready(self):
         if not self.dm:

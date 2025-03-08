@@ -168,7 +168,7 @@ class Gems(commands.Cog):
                 for i in gems_list:
                     self.gem_cmd["cmd_arguments"]+=f"{i} "
                 await self.bot.put_queue(self.gem_cmd, priority=True)
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
                 await self.bot.set_stat(True)
                 self.inventory_check = False
 

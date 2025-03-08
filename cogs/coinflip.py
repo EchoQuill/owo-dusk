@@ -55,10 +55,10 @@ class Coinflip(commands.Cog):
     async def start_cf(self, startup=False):
         try:
             if startup:
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
             else:
                 await self.bot.remove_queue(id="coinflip")
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["coinflip"]["cooldown"]))
+                await self.bot.sleep_till(self.bot.config_dict["gamble"]["coinflip"]["cooldown"])
             
             amount_to_gamble = int(self.bot.config_dict["gamble"]["coinflip"]["startValue"]*(self.bot.config_dict["gamble"]["coinflip"]["multiplierOnLose"]**self.turns_lost))
             if self.bot.config_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > self.bot.config_dict["gamble"]["goalSystem"]["amount"]:

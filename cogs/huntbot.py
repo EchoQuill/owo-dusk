@@ -97,11 +97,10 @@ class Huntbot(commands.Cog):
         else:
             await self.bot.remove_queue(id="huntbot")
             if isinstance(timeToSleep, list):
-                await asyncio.sleep(self.bot.random_float(timeToSleep))
+                await self.bot.sleep_till(timeToSleep)
             else:
-                await asyncio.sleep(
-                    self.bot.random_float([timeToSleep + 10, timeToSleep + 20])
-                )
+                """Task: add min noise if required"""
+                await self.bot.sleep_till(timeToSleep, cd_list=False, noise=30)
 
         """send the cmd"""
         self.cmd["cmd_arguments"] = str(
@@ -115,7 +114,7 @@ class Huntbot(commands.Cog):
     async def upgrade_confirmation(self):
         await self.upgrade_event.wait()
         self.upgrade_event.clear()
-        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+        await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
 
     def get_experience(self, embed):
         for field in embed.fields:
@@ -184,7 +183,7 @@ class Huntbot(commands.Cog):
                     if embed.fields:
                         self.get_experience(embed)
                         data = allocate_essence(self.upgrade_details, self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["priorities"])
-                        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"]))
+                        await self.bot.sleep_till(self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"])
                         for trait, essence_alloc in data.items():
                             self.upgrade_cmd["cmd_arguments"] = f"{trait} {essence_alloc}"
                             if essence_alloc > 0:

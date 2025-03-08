@@ -24,11 +24,11 @@ class Giveaway(commands.Cog):
 
     """Join previous giveaways"""
     async def join_previous_giveaways(self):
-        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+        await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
         await self.bot.wait_until_ready()
         
         # Using briefcooldown here as using the long cooldown of giveaway joiner might look weird here.
-        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+        await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
         for i in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
             try:
                 channel = await self.bot.fetch_channel(i)
@@ -43,7 +43,7 @@ class Giveaway(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
-                            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
                             if message.components[0].children[0] and not message.components[0].children[0].disabled:
                                 await message.components[0].children[0].click()
                                 await self.bot.log(f"giveaway joined in {message.channel.name}", "#00d7af")
@@ -68,7 +68,7 @@ class Giveaway(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
-                        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["giveawayJoiner"]["cooldown"]))
+                        await self.bot.sleep_till(self.bot.config_dict["giveawayJoiner"]["cooldown"])
                         if message.components[0].children[0] and not message.components[0].children[0].disabled:
                             await message.components[0].children[0].click()
 
