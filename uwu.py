@@ -354,6 +354,7 @@ class MyClient(commands.Bot):
         self.checks = []
         self.dm, self.cm = None,None
         self.sleep = False
+        self.username = None
         self.user_data = {
             "balance": 0,
             "essence": 0,
@@ -375,8 +376,7 @@ class MyClient(commands.Bot):
             x = ["cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"]
             y = ["123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"]
             self.username = f"{random.choice(x)}{random.choice(y)}"
-        else:
-            self.username = self.user.name
+        
 
     async def set_stat(self, value):
         if value:
@@ -726,6 +726,8 @@ class MyClient(commands.Bot):
         
 
     async def setup_hook(self):
+        if not self.username:
+            self.username = self.user.name
         self.owo_bot_id = 408785106942164992
         self.dm = None
         self.safety_check_loop.start()
