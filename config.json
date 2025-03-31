@@ -41,7 +41,7 @@
             "useShortForm": true
         },
         "sell": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 410,
                 500
@@ -57,7 +57,7 @@
             ]
         },
         "sac": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 410,
                 500
@@ -73,7 +73,7 @@
             ]
         },
         "pray": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 310,
                 400

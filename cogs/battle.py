@@ -57,7 +57,7 @@ class Battle(commands.Cog):
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
                             await self.bot.remove_queue(id="battle")
-                            await self.bot.sleep_till(self.bot.config_dict["commands"]["hunt"]["cooldown"])
+                            await self.bot.sleep_till(self.bot.config_dict["commands"]["battle"]["cooldown"])
                             self.cmd["cmd_name"] = (
                                 self.bot.alias["battle"]["shortform"] 
                                 if self.bot.config_dict["commands"]["battle"]["useShortForm"] 

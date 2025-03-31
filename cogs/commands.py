@@ -22,6 +22,7 @@ class Commands(commands.Cog):
         self.bot = bot
         self.bot.checks = []
         self.calc_time = timedelta(0)
+        self.last_cmd_ran = 0
 
     async def start_commands(self):
         await self.bot.sleep_till(self.bot.config_dict["account"]["commandsHandlerStartDelay"])
@@ -38,12 +39,13 @@ class Commands(commands.Cog):
     async def send_commands(self):
         try:
             cmd = await self.bot.queue.get()
-            if cmd.get("checks"):
-                if cmd.get("id"):
-                    in_queue = await self.bot.search_checks(id=cmd["id"])
-                    if not in_queue:
-                        async with self.bot.lock:
-                            self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+            #print(f"current command {cmd["cmd_name"]}, with id {cmd.get("id", "none")}")
+            #print(f"current list: {self.bot.queue._queue}")
+            if cmd.get("checks") and cmd.get("id"):
+                in_queue = await self.bot.search_checks(id=cmd["id"])
+                if not in_queue:
+                    async with self.bot.lock:
+                        self.bot.checks.append((cmd, datetime.now(timezone.utc)))
             if self.bot.config_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
@@ -56,17 +58,20 @@ class Commands(commands.Cog):
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
+            #print(f"current monitor: {self.bot.checks}")
             current_time = datetime.now(timezone.utc)
             if not self.bot.state or self.bot.sleep or self.bot.captcha:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             else:
                 async with self.bot.lock:
                     for index, (command, timestamp) in enumerate(self.bot.checks[:]):
-                        if command.get("removed"):
+                        """if command.get("removed"):
                             self.bot.checks.remove((command, timestamp))
-                            continue
+                            print(f"{command["cmd_name"]} got removed! ({command["id"]})")
+                            continue"""
                         adjusted_time = timestamp + self.calc_time
                         if (current_time - adjusted_time).total_seconds() > self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]:
+                            print(f"{command["cmd_name"]} has been readded to queue ({command["id"]})")
                             await self.bot.put_queue(command)
                             self.bot.checks.remove((command, timestamp))
                 self.calc_time = timedelta(0)

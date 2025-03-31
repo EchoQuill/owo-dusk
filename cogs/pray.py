@@ -45,19 +45,16 @@ class Pray(commands.Cog):
             "prefix": True,
             "checks": True,
             "retry_count": 2,
-            "id": "pray" #using pray as id for curse to make it easier to close
+            "id": "pray" # using pray as id for curse to make it easier to close
         }
         self.cmd_names = []
 
     async def start_pray_curse(self):
-        cmds = []
-        if self.bot.config_dict['commands']['pray']['enabled']:
-            cmds.append("pray")
-        if self.bot.config_dict['commands']['curse']['enabled']:
-            cmds.append("curse")
-        cmd = random.choice(cmds)
+        cmds = [cmd for cmd in ["pray", "curse"] if self.bot.config_dict['commands'][cmd]['enabled']]
+        cmd = random.choice(cmds) # pick a random enabled cmd
         if not self.startup:
             await self.bot.remove_queue(id="pray")
+            await self.bot.log("removed pray from queue", "#d0ff78")
             await self.bot.sleep_till(self.bot.config_dict["commands"][cmd]["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
@@ -70,6 +67,7 @@ class Pray(commands.Cog):
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
         await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
+        await self.bot.log("added pray to queue", "#d0ff78")
         if self.startup:
             """
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
@@ -111,6 +109,7 @@ class Pray(commands.Cog):
                 or f"<@{self.bot.user.id}>** is now cursed." in message.content
                 or "Slow down and try the command again" in message.content
             ):
+                await self.bot.log("prayed successfully!", "#d0ff78")
                 self.startup = False
                 await self.start_pray_curse()
 

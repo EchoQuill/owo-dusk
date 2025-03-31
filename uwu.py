@@ -511,8 +511,7 @@ class MyClient(commands.Bot):
         try:
             while not self.state or self.sleep or self.captcha:
                 if priority:
-                    await self.queue.put(deepcopy(cmd_data))
-                    return
+                    break
                 await asyncio.sleep(random.uniform(1.4, 2.9))
             await self.queue.put(deepcopy(cmd_data))
         except Exception as e:
@@ -528,10 +527,14 @@ class MyClient(commands.Bot):
                 for index, (command, _) in enumerate(self.checks):
                     if cmd_data:
                         if command == cmd_data:
-                            self.checks[index][0]["removed"] = True
+                            #self.checks[index][0]["removed"] = True
+                            print(f"popping {self.checks[index]}")
+                            self.checks.pop(index)
                     else:
                         if command.get("id", None) == id:
-                            self.checks[index][0]["removed"] = True
+                            #self.checks[index][0]["removed"] = True
+                            print(f"popping {self.checks[index]}")
+                            self.checks.pop(index)
         except Exception as e:
             print(e)
 
@@ -704,6 +707,7 @@ class MyClient(commands.Bot):
         )
         
     async def on_ready(self):
+        print(f"odebug: {self.dm}")
         if not self.dm:
             # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
             try:
@@ -760,6 +764,7 @@ class MyClient(commands.Bot):
             """
             if message.author.id == self.owo_bot_id:
                 self.dm = await message.author.create_dm()
+                print(self.dm)
                 break
 
         # Fetch slash commands in self.cm
