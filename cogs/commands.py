@@ -11,6 +11,7 @@
 # (at your option) any later version.
 
 import asyncio
+import time
 
 from discord.ext import commands, tasks
 from datetime import datetime, timezone, timedelta
@@ -22,7 +23,7 @@ class Commands(commands.Cog):
         self.bot = bot
         self.bot.checks = []
         self.calc_time = timedelta(0)
-        self.last_cmd_ran = 0
+        
 
     async def start_commands(self):
         await self.bot.sleep_till(self.bot.config_dict["account"]["commandsHandlerStartDelay"])
@@ -48,9 +49,12 @@ class Commands(commands.Cog):
                         self.bot.checks.append((cmd, datetime.now(timezone.utc)))
             if self.bot.config_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
+                await self.bot.upd_cmd_time()
             else:
                 await self.bot.send(self.bot.construct_command(cmd))
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
+                await self.bot.upd_cmd_time()
+            while (time.time() - self.bot.last_cmd_ran) < self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"][0]:
+                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
         except Exception as e:
             print(f"Error in send_commands loop: {e}")
             await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
@@ -72,8 +76,9 @@ class Commands(commands.Cog):
                         adjusted_time = timestamp + self.calc_time
                         if (current_time - adjusted_time).total_seconds() > self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]:
                             print(f"{command["cmd_name"]} has been readded to queue ({command["id"]})")
-                            await self.bot.put_queue(command)
                             self.bot.checks.remove((command, timestamp))
+                            await self.bot.put_queue(command)
+                            print(f"removed state: {self.bot.checks}")
                 self.calc_time = timedelta(0)
             self.last_check_time = current_time
         except Exception as e:

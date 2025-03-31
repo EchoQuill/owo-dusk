@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import json
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded

@@ -355,6 +355,7 @@ class MyClient(commands.Bot):
         self.dm, self.cm = None,None
         self.sleep = False
         self.username = None
+        self.last_cmd_ran = None
         self.user_data = {
             "balance": 0,
             "essence": 0,
@@ -376,6 +377,8 @@ class MyClient(commands.Bot):
             x = ["cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"]
             y = ["123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"]
             self.username = f"{random.choice(x)}{random.choice(y)}"
+
+    
         
 
     async def set_stat(self, value):
@@ -502,6 +505,10 @@ class MyClient(commands.Bot):
                     cooldown + noise
                 )
             )
+
+    async def upd_cmd_time(self):
+        async with self.lock:
+            self.last_cmd_ran = time.time()
 
     def construct_command(self, data):
         prefix = config_dict['setprefix'] if data.get("prefix") else ""

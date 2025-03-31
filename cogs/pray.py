@@ -107,7 +107,7 @@ class Pray(commands.Cog):
                 or f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.config_dict['commands']['curse']['userid']}>**!"
                 in message.content
                 or f"<@{self.bot.user.id}>** is now cursed." in message.content
-                or "Slow down and try the command again" in message.content
+                #or "Slow down and try the command again" in message.content
             ):
                 await self.bot.log("prayed successfully!", "#d0ff78")
                 self.startup = False
