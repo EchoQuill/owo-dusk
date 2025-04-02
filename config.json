@@ -73,7 +73,7 @@
             ]
         },
         "pray": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 310,
                 400
@@ -120,7 +120,7 @@
             ]
         },
         "owo": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 10,
                 13
@@ -211,7 +211,7 @@
     "misspell": {
         "enabled": false,
         "frequencyPercentage": 1,
-        "badeDelay": [
+        "baseDelay": [
             0.03,
             0.07
         ],
@@ -248,7 +248,18 @@
                 1.7,
                 2.7
             ],
-            "beforeReaddingToQueue": 7
+            "beforeReaddingToQueue": {
+                "baseDelay": 7,
+                "maxDelay": 40,
+                "antiSpamThreshold": 5
+            }
+        },
+        "reactionBot": {
+            "hunt": false,
+            "battle": false,
+            "owo": false,
+            "pray": false,
+            "curse": false
         }
     },
     "textCommands": {

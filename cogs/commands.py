@@ -18,11 +18,14 @@ from datetime import datetime, timezone, timedelta
 
 
 
+
 class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.checks = []
         self.calc_time = timedelta(0)
+        self.retry_spam_count = 0
+        self.last_retry = 0
         
 
     async def start_commands(self):
@@ -34,14 +37,20 @@ class Commands(commands.Cog):
     async def cog_load(self):
         """Run join_previous_giveaways when bot is ready"""
         asyncio.create_task(self.start_commands())
+
+    
+    def fetch_delay(self):
+        cnf = self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
+        delay = min(cnf["baseDelay"] * (2 ** self.retry_spam_count), cnf["maxDelay"])
+        return delay
     
     """send commands"""
     @tasks.loop()
     async def send_commands(self):
         try:
             cmd = await self.bot.queue.get()
-            #print(f"current command {cmd["cmd_name"]}, with id {cmd.get("id", "none")}")
-            #print(f"current list: {self.bot.queue._queue}")
+            await self.bot.log(f"current command {cmd["cmd_name"]}, with id {cmd.get("id", "none")}", "#ffd359")
+            await self.bot.log(f"current list: {self.bot.queue._queue}", "#ffd359")
             if cmd.get("checks") and cmd.get("id"):
                 in_queue = await self.bot.search_checks(id=cmd["id"])
                 if not in_queue:
@@ -63,22 +72,29 @@ class Commands(commands.Cog):
     async def monitor_checks(self):
         try:
             #print(f"current monitor: {self.bot.checks}")
+            cnf = self.bot.config_dict["defaultCooldowns"]["commandHandler"]
+            delay = self.fetch_delay()
             current_time = datetime.now(timezone.utc)
             if not self.bot.state or self.bot.sleep or self.bot.captcha:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             else:
                 async with self.bot.lock:
                     for index, (command, timestamp) in enumerate(self.bot.checks[:]):
-                        """if command.get("removed"):
-                            self.bot.checks.remove((command, timestamp))
-                            print(f"{command["cmd_name"]} got removed! ({command["id"]})")
-                            continue"""
                         adjusted_time = timestamp + self.calc_time
-                        if (current_time - adjusted_time).total_seconds() > self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]:
-                            print(f"{command["cmd_name"]} has been readded to queue ({command["id"]})")
+                        if (current_time - adjusted_time).total_seconds() > delay:
+                            await self.bot.log(f"{command["cmd_name"]} has been readded to queue ({command["id"]})", "#ffd359")
                             self.bot.checks.remove((command, timestamp))
                             await self.bot.put_queue(command)
-                            print(f"removed state: {self.bot.checks}")
+                            await self.bot.log(f"removed state: {self.bot.checks}", "#ffd359")
+                            
+                            current_time = time.time()
+                            if (current_time - self.last_retry) > cnf["beforeReaddingToQueue"]["antiSpamThreshold"]:
+                                self.retry_spam_count = 0
+                            else:
+                                self.retry_spam_count += 1
+                            self.last_retry = current_time
+
+
                 self.calc_time = timedelta(0)
             self.last_check_time = current_time
         except Exception as e:
