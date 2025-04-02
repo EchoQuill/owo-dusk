@@ -356,7 +356,8 @@ class MyClient(commands.Bot):
         self.sleep = False
         self.username = None
         self.last_cmd_ran = None
-        self.user_data = {
+        self.reaction_bot_id = 519287796549156864
+        """self.user_data = {
             "balance": 0,
             "essence": 0,
             "server_id": 0,
@@ -366,7 +367,7 @@ class MyClient(commands.Bot):
             "hb": 0,
             "giveaway": 0,
             "captchas": 0
-        }
+        }"""
         
         with open("alias.json", "r") as config_file:
             self.alias = json.load(config_file)
@@ -535,12 +536,12 @@ class MyClient(commands.Bot):
                     if cmd_data:
                         if command == cmd_data:
                             #self.checks[index][0]["removed"] = True
-                            print(f"popping {self.checks[index]}")
+                            await self.log(f"popping {self.checks[index]}", "#ffd359")
                             self.checks.pop(index)
                     else:
                         if command.get("id", None) == id:
                             #self.checks[index][0]["removed"] = True
-                            print(f"popping {self.checks[index]}")
+                            await self.log(f"popping {self.checks[index]}", "#ffd359")
                             self.checks.pop(index)
         except Exception as e:
             print(e)
@@ -638,7 +639,7 @@ class MyClient(commands.Bot):
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
-        base_delay = self.random_float(self.config_dict["misspell"]["badeDelay"]) 
+        base_delay = self.random_float(self.config_dict["misspell"]["baseDelay"]) 
         rectification_time = sum(self.random_float(self.config_dict["misspell"]["errorRectificationTimePerLetter"]) for _ in command)  
         total_time = base_delay + rectification_time
         return total_time
@@ -714,7 +715,6 @@ class MyClient(commands.Bot):
         )
         
     async def on_ready(self):
-        print(f"odebug: {self.dm}")
         if not self.dm:
             # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
             try:
@@ -802,7 +802,9 @@ class MyClient(commands.Bot):
         # Start various tasks and updates
         self.config_update_checker.start()
         await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
+        print("upd config")
         await self.update_config()
+        print("updated cnfg")
 
         if self.config_dict["offlineStatus"]:
             self.presence.start()
@@ -812,6 +814,7 @@ class MyClient(commands.Bot):
 
         if self.config_dict["cashCheck"]:
             asyncio.create_task(self.check_for_cash())
+        print("---- ed -----")
 
         
 
