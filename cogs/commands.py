@@ -49,7 +49,7 @@ class Commands(commands.Cog):
     async def send_commands(self):
         try:
             cmd = await self.bot.queue.get()
-            await self.bot.log(f"current command {cmd['cmd_name']}, with id {cmd.get("id", "none")}", "#ffd359")
+            await self.bot.log(f"current command {cmd['cmd_name']}, with id {cmd.get('id', 'none')}", "#ffd359")
             await self.bot.log(f"current list: {self.bot.queue._queue}", "#ffd359")
             if cmd.get("checks") and cmd.get("id"):
                 in_queue = await self.bot.search_checks(id=cmd["id"])
