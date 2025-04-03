@@ -1,0 +1,7 @@
+Hello, Put any audio file you have in here then enable playaudio through config.json, put the filename as the audio path.
+This audio file should then play when captcha comes up.
+
+Alternatively, you may copy the full path of the audio file and put it as path instead, incase you don't want to move the file here.
+
+It is reccomended to use smaller audio files, like ones under 30 seconds, 
+as the code will keep playing it even when the captha has been solved.

@@ -26,6 +26,23 @@ with open("config.json", "r") as config_file:
 
 list_captcha = ["human", "captcha", "link", "letterword"]
 
+def get_path(path):
+    cur_dir = os.getcwd()
+    if os.path.isfile(path):
+        """See if complete path"""
+        return path
+    audio_folder_path = os.path.join(cur_dir, "audio", path)
+    if os.path.isfile(audio_folder_path):
+        """See if audio file is in audio folder"""
+        return audio_folder_path
+    file_in_cwd = os.path.join(cur_dir, path)
+    if os.path.isfile(file_in_cwd):
+        """See if audio file is in working directory"""
+        return file_in_cwd
+    """None otherwise"""
+    return None
+
+
 
 def clean(msg):
     return re.sub(r"[^a-zA-Z]", "", msg)
@@ -116,11 +133,12 @@ class Captcha(commands.Cog):
         better error handling for missing PATH
         """
         if config_dict["captcha"]["playAudio"]["enabled"]:
+            path = get_path(config_dict["captcha"]['playAudio']['path'])
             try:
                 if on_mobile:
-                    run_system_command(f"termux-media-player play {config_dict["captcha"]['playAudio']['path']}", timeout=5, retry=True)
+                    run_system_command(f"termux-media-player play {path}", timeout=5, retry=True)
                 else:
-                    playsound(config_dict["captcha"]["playAudio"]["path"], block=False)
+                    playsound(path, block=False)
             except Exception as e:
                 print(f"{e} - at audio")
         """Toast/Popup"""
