@@ -87,12 +87,12 @@ class Commands(commands.Cog):
                             await self.bot.put_queue(command)
                             await self.bot.log(f"removed state: {self.bot.checks}", "#ffd359")
                             
-                            current_time = time.time()
-                            if (current_time - self.last_retry) > cnf["beforeReaddingToQueue"]["antiSpamThreshold"]:
+                            temp_time = time.time()
+                            if (temp_time - self.last_retry) > cnf["beforeReaddingToQueue"]["antiSpamThreshold"]:
                                 self.retry_spam_count = 0
                             else:
                                 self.retry_spam_count += 1
-                            self.last_retry = current_time
+                            self.last_retry = temp_time
 
 
                 self.calc_time = timedelta(0)
