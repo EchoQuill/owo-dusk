@@ -171,7 +171,12 @@ def web_start():
     cli = sys.modules["flask.cli"]
     cli.show_server_banner = lambda *x: None
     try:
-        app.run(debug=False, use_reloader=False, port=config_dict["website"]["port"])
+        app.run(
+            debug=False,
+            use_reloader=False,
+            port=config_dict["website"]["port"],
+            host="0.0.0.0" if config_dict["website"]["enableHost"] else "127.0.0.1",
+        )
     except Exception as e:
         print(e)
 if config_dict["website"]["enabled"]:
@@ -825,8 +830,6 @@ class MyClient(commands.Bot):
             asyncio.create_task(self.check_for_cash())
         print("---- ed -----")
 
-        
-
 
 # ----------STARTING BOT----------#
 def fetch_json(url, description="data"):
@@ -837,7 +840,7 @@ def fetch_json(url, description="data"):
     except requests.RequestException as e:
         printBox(f"Failed to fetch {description}: {e}", "bold red")
         return {}
-    
+
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
