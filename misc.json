@@ -6,8 +6,9 @@
     },
     "news": true,
     "console": {
-        "compactMode": false,
-        "hideStarRepoMessage": false,
-        "disableCommandSendLog": false
-    }
+        "compactMode": true,
+        "hideStarRepoMessage": true,
+        "disableCommandSendLog": true
+    },
+    "hostMode": false
 }

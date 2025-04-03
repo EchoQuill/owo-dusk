@@ -105,6 +105,8 @@ class Captcha(commands.Cog):
         self.bot = bot
 
     def captcha_handler(self, channel, captcha_type):
+        if self.bot.misc["hostMode"]:
+            return
         channel_name = get_channel_name(channel)
         content = 'captchaContent' if not captcha_type=="Ban" else 'bannedContent'
         """Notifications"""

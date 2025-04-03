@@ -211,7 +211,7 @@ def is_termux():
 
 on_mobile = is_termux()
 
-if not on_mobile:
+if not on_mobile and not misc_dict["hostMode"]:
     try:
         if config_dict["batteryCheck"]["enabled"]:
             import psutil
@@ -317,7 +317,7 @@ def show_popup_thread():
         popup.wait_window()
 
 
-if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
+if config_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
     try:
         import tkinter as tk
         from tkinter import PhotoImage
