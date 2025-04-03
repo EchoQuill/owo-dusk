@@ -23,11 +23,11 @@ Modified version licensed under GPL-3.0.
 */
 
 
-/*
+
 var password =
     localStorage.getItem("password") || prompt("Enter Password");
 if (password) localStorage.setItem("password", password);
-*/
+
 
 
 /* Please try to understand that I am not good with javascript,
@@ -95,7 +95,7 @@ const save_data = (json_data) => {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            password: "test",
+            password: password,
         },
         body: JSON.stringify(json_data),
     }).then((response) => {
@@ -113,7 +113,7 @@ const save_data = (json_data) => {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded, attempting to fetch configuration...");
     fetch("/api/config", {
-        headers: { password: "password" },
+        headers: { password: password },
     })
         .then((res) => {
             if (!res.ok) {
@@ -838,24 +838,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     //addLog("test");
     // Initial log fetch
-    fetch("/api/console")
+    fetch("/api/console", {
+        headers: {
+            password: password,
+        },
+    })
         .then((response) => response.text())
-        .then((logs) => {
-            logContainer.innerHTML = logs;  // Display logs in container
-            logContainer.scrollTop = logContainer.scrollHeight;  // Scroll to bottom
-        })
-        .catch((error) => console.error("Error fetching logs:", error));
+        .then(async (logs) => {
+            if (logs.includes("Invalid Password")) {
+                password = prompt("Enter Password");
+                if (password) localStorage.setItem("password", password);
+                //reload page
+                window.location.reload();
+            }
+        });
     
-    // Update logs every 130ms
+    // Update logs every 500ms
     setInterval(() => {
-        fetch("/api/console")
-            .then((response) => response.text())
-            .then((logs) => {
-                logContainer.innerHTML = logs;
-                logContainer.scrollTop = logContainer.scrollHeight;
-            })
-            .catch((error) => console.error("Error fetching logs:", error));
-    }, 500);
+        fetch("/api/console", {
+          headers: {
+            password: password,
+          },
+        })
+          .then((response) => response.text())
+          .then(async (logs) => {
+            logContainer.innerHTML = logs;
+            logContainer.scrollTop = logContainer.scrollHeight;
+          })
+          .catch((error) => console.error(error));
+      }, 500);
 
 });
 //

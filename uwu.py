@@ -118,6 +118,9 @@ def home():
 
 @app.route("/api/saveThings", methods=["POST"])
 def save_things():
+    password = request.headers.get('password')
+    if not password or password != config_dict["website"]["password"]:
+        return "Invalid Password", 401
     global config_updated
     try:
         data = request.get_json()
@@ -141,25 +144,22 @@ def save_things():
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
-    # Check for 'password' in the headers
     password = request.headers.get('password')
-    if not password or password != "password":  # Replace "expected_password" with your actual check
-        return jsonify({"error": "Unauthorized"}), 401
+    if not password or password != config_dict["website"]["password"]:
+        return "Invalid Password", 401
     with open("config.json", "r") as file:
         config_data = json.load(file)
-    # Return the configuration data as JSON
     return jsonify(config_data)
 
 
 @app.route('/api/console', methods=['GET'])
 def get_console_logs():
+    password = request.headers.get('password')
+    if not password or password != config_dict["website"]["password"]:
+        return "Invalid Password", 401
     try:
-        
-        # Join logs with newline character to make it similar to JS response
         log_string = '\n'.join(website_logs)
-        
-        return log_string  # Send logs as plain text response
-        
+        return log_string
     except Exception as e:
         print(f"Error fetching logs: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching logs"}), 500

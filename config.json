@@ -7,7 +7,8 @@
     "website": {
         "enabled": true,
         "port": 1200,
-        "refreshInterval": 15
+        "refreshInterval": 15,
+        "password": "areallylongandsecretpassword"
     },
     "account": {
         "startupDelay": [
@@ -73,7 +74,7 @@
             ]
         },
         "pray": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 310,
                 400
@@ -313,8 +314,8 @@
             "bannedContent": "{username} Banned from OwO!"
         },
         "playAudio": {
-            "enabled": false,
-            "path": "path/filename.extension (e.g., 'audiofile.mp3' within the owo-dusk folder)"
+            "enabled": true,
+            "path": "mm.mp3"
         },
         "toastOrPopup": {
             "enabled": true,
