@@ -49,7 +49,7 @@ class Commands(commands.Cog):
     async def send_commands(self):
         try:
             cmd = await self.bot.queue.get()
-            await self.bot.log(f"current command {cmd["cmd_name"]}, with id {cmd.get("id", "none")}", "#ffd359")
+            await self.bot.log(f"current command {cmd['cmd_name']}, with id {cmd.get("id", "none")}", "#ffd359")
             await self.bot.log(f"current list: {self.bot.queue._queue}", "#ffd359")
             if cmd.get("checks") and cmd.get("id"):
                 in_queue = await self.bot.search_checks(id=cmd["id"])
@@ -82,7 +82,7 @@ class Commands(commands.Cog):
                     for index, (command, timestamp) in enumerate(self.bot.checks[:]):
                         adjusted_time = timestamp + self.calc_time
                         if (current_time - adjusted_time).total_seconds() > delay:
-                            await self.bot.log(f"{command["cmd_name"]} has been readded to queue ({command["id"]})", "#ffd359")
+                            await self.bot.log(f"{command['cmd_name']} has been readded to queue ({command['id']})", "#ffd359")
                             self.bot.checks.remove((command, timestamp))
                             await self.bot.put_queue(command)
                             await self.bot.log(f"removed state: {self.bot.checks}", "#ffd359")

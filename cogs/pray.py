@@ -30,6 +30,8 @@ class Pray(commands.Cog):
         self.pray_cmd_arguement = None
         self.curse_cmd_arguement = None
         self.startup = True
+        # prevents pray/curse from being re-added if it is queued to be queued
+        self.pray_curse_ongoing = False
         self.pray_cmd = {
             "cmd_name": "pray",
             "cmd_arguments": None,
@@ -50,11 +52,12 @@ class Pray(commands.Cog):
         self.cmd_names = []
 
     async def start_pray_curse(self):
+        self.pray_curse_ongoing = True
         cmds = [cmd for cmd in ["pray", "curse"] if self.bot.config_dict['commands'][cmd]['enabled']]
         cmd = random.choice(cmds) # pick a random enabled cmd
         if not self.startup:
             await self.bot.remove_queue(id="pray")
-            await self.bot.log("removed pray from queue", "#d0ff78")
+            await self.bot.log(f"removed {cmd} from queue", "#d0ff78")
             await self.bot.sleep_till(self.bot.config_dict["commands"][cmd]["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
@@ -67,7 +70,8 @@ class Pray(commands.Cog):
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
         await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
-        await self.bot.log("added pray to queue", "#d0ff78")
+        await self.bot.log(f"added {cmd} to queue", "#d0ff78")
+        self.pray_curse_ongoing = False
         if self.startup:
             """
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
@@ -75,8 +79,10 @@ class Pray(commands.Cog):
             """
             await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
             if self.startup:
+                await self.bot.log(f"rmv startup thro func", "#d0ff78")
                 self.startup=False
                 await self.start_pray_curse()
+        
 
     async def cog_load(self):
         try:
@@ -99,7 +105,6 @@ class Pray(commands.Cog):
             """
             **⏱ | user**! Slow down and try the command again **<t:1734943219:R>**
             """
-
             if (
                 f"<@{self.bot.user.id}>** prays for **<@{self.bot.config_dict['commands']['pray']['userid']}>**!"
                 in message.content
@@ -107,11 +112,15 @@ class Pray(commands.Cog):
                 or f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.config_dict['commands']['curse']['userid']}>**!"
                 in message.content
                 or f"<@{self.bot.user.id}>** is now cursed." in message.content
-                #or "Slow down and try the command again" in message.content
+                or "Slow down and try the command again" in message.content
             ):
-                await self.bot.log("prayed successfully!", "#d0ff78")
-                self.startup = False
-                await self.start_pray_curse()
+                if not self.pray_curse_ongoing:
+                    await self.bot.log("prayed/cursed successfully!", "#d0ff78")
+                    self.startup = False
+                    await self.start_pray_curse()
+                else:
+                    await self.bot.log("ongoing pray/curse", "#d0ff78")
+
 
 
 async def setup(bot):

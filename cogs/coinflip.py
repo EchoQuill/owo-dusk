@@ -64,7 +64,7 @@ class Coinflip(commands.Cog):
             if self.bot.config_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > self.bot.config_dict["gamble"]["goalSystem"]["amount"]:
                 if not self.goal_reached:
                     self.goal_reached = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{self.bot.config_dict["gamble"]["goalSystem"]["amount"]}, stopping coinflip!", "#ffd7af")
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{self.bot.config_dict['gamble']['goalSystem']['amount']}, stopping coinflip!", "#ffd7af")
 
                 return await self.start_cf()
             else:
