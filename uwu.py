@@ -185,7 +185,10 @@ if config_dict["website"]["enabled"]:
 
 def printBox(text, color, title=None):
     test_panel = Panel(text, style=color, title=title)
-    console.print(test_panel)
+    if not misc_dict["console"]["compactMode"]:
+        console.print(test_panel)
+    else:
+        console.print(text, style=color)
 
 def resource_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
@@ -648,6 +651,7 @@ class MyClient(commands.Bot):
     async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
         if not channel:
             channel = self.cm
+        disable_log = self.misc["console"]["disableCommandSendLog"]
         msg = message
         misspelled = False
         if self.config_dict["misspell"]["enabled"]:
@@ -655,6 +659,10 @@ class MyClient(commands.Bot):
                 msg = misspell_word(message)
                 misspelled = True
                 # left off here!
+
+        """
+        TASK: remove repition here
+        """
         if not self.captcha or bypass:
             await self.wait_until_ready()
             if typingIndicator:
@@ -662,7 +670,8 @@ class MyClient(commands.Bot):
                     await channel.send(msg, silent=silent)
             else:
                 await channel.send(msg, silent=silent)
-            await self.log(f"Ran: {msg}", "#5432a8")
+            if not disable_log:
+                await self.log(f"Ran: {msg}", "#5432a8")
             if misspelled:
                 await self.set_stat(False)
                 time = self.calculate_correction_time(message)
@@ -828,6 +837,7 @@ def fetch_json(url, description="data"):
     except requests.RequestException as e:
         printBox(f"Failed to fetch {description}: {e}", "bold red")
         return {}
+    
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
@@ -836,6 +846,7 @@ def run_bots(tokens_and_channels):
         threads.append(thread)
     for thread in threads:
         thread.join()
+
 def run_bot(token, channel_id):
     try:
         logging.getLogger("discord.client").setLevel(logging.ERROR)
@@ -843,32 +854,41 @@ def run_bot(token, channel_id):
         client.run(token, log_level=logging.ERROR)
     except Exception as e:
         printBox(f"Error starting bot with token {token}...: {e}", "bold red")
+
 if __name__ == "__main__":
-    console.print(owoPanel)
-    console.rule(f"[bold blue1]version - {version}", style="navy_blue")
-    printBox(f'-Made by EchoQuill'.center(console_width - 2 ),'bold grey30' )
+    if not misc_dict["console"]["compactMode"]:
+        console.print(owoPanel)
+        console.rule(f"[bold blue1]version - {version}", style="navy_blue")
     version_json = fetch_json(f"{owo_dusk_api}/version.json", "version info")
+
     if compare_versions(version, version_json["version"]):
         printBox(f"""Update Detected - {version_json["version"]}
     Changelog:-
         {version_json["changelog"]}""",'bold gold3')
         if version_json["important_update"]:
             printBox('It is reccomended to update....','bold light_yellow3' )
+
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
+
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
+
     if config_dict["website"]["enabled"]:
         printBox(f'Website Dashboard: http://localhost:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
+
     try:
-        news_json = fetch_json(f"{owo_dusk_api}/news.json", "news")
-        if news_json.get("available") and misc_dict.get("news"):
-            printBox(
-                f'{news_json.get("content", "no content found..? this is an error! should be safe to ignore")}'.center(console_width - 2),
-                f"bold {news_json.get('color', 'white')}",
-                title=news_json.get("title", "???")
-            )
+        if misc_dict["news"]:
+            news_json = fetch_json(f"{owo_dusk_api}/news.json", "news")
+            if news_json.get("available"):
+                printBox(
+                    f'{news_json.get("content", "no content found..? this is an error! should be safe to ignore")}'.center(console_width - 2),
+                    f"bold {news_json.get('color', 'white')}",
+                    title=news_json.get("title", "???")
+                )
     except Exception as e:
         print(e)
-    console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
+
+    if not misc_dict["console"]["hideStarRepoMessage"]:
+        console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
     console.rule(style="navy_blue")
     run_bots(tokens_and_channels)
