@@ -36,6 +36,7 @@ import os
 import time
 import requests
 import signal
+import socket
 
 """Cntrl+c detect"""
 def handle_sigint(signal_number, frame):
@@ -830,6 +831,16 @@ class MyClient(commands.Bot):
             asyncio.create_task(self.check_for_cash())
         print("---- ed -----")
 
+def get_local_ip():
+    if not config_dict["website"]["enableHost"]:
+        return 'localhost'
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            """10.255.255.255 is fake"""
+            s.connect(('10.255.255.255', 1))
+            return s.getsockname()[0]
+    except Exception:
+        return 'localhost'
 
 # ----------STARTING BOT----------#
 def fetch_json(url, description="data"):
@@ -877,7 +888,8 @@ if __name__ == "__main__":
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
 
     if config_dict["website"]["enabled"]:
-        printBox(f'Website Dashboard: http://localhost:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
+        ip = get_local_ip()
+        printBox(f'Website Dashboard: http://{ip}:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
 
     try:
         if misc_dict["news"]:
