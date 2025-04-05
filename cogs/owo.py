@@ -19,21 +19,17 @@ from discord.ext.commands import ExtensionNotLoaded
 class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.owo_ongoing = False
 
-        self.cmd = {
-            "cmd_name": self.bot.alias["owo"]["normal"],
-            "prefix": False,
-            "checks": False,
-            "retry_count": 0,
-            "id": "owo"
-        }
-
-    @tasks.loop(seconds=1)
-    async def send_owo(self):
+    async def send_owo(self, startup=False):
         if not self.bot.captcha and self.bot.state:
-            await self.bot.sleep_till(self.bot.config_dict["commands"]["owo"]["cooldown"])
-            await self.bot.send("owo")
+            if not startup:
+                self.owo_ongoing = True
+                await self.bot.sleep_till(self.bot.config_dict["commands"]["owo"]["cooldown"])
+                self.owo_ongoing = False
             await self.bot.upd_cmd_time()
+            await self.bot.send(self.bot.alias["owo"]["normal"])
+            
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
@@ -43,10 +39,19 @@ class Owo(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-            self.send_owo.start()
+            asyncio.create_task(self.send_owo(startup=True))
 
     async def cog_unload(self):
         self.send_owo.stop()
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
+            if message.content in {'owo', 'uwu'}:
+                if not self.owo_ongoing:
+                    await self.send_owo()
+
+
 
 
 async def setup(bot):
