@@ -95,7 +95,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.0.2"
+version = "2.1.0"
 debug_print = True
 
 
@@ -447,6 +447,7 @@ class MyClient(commands.Bot):
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
         random.shuffle(files)
+        self.refresh_commands_dict()
         for filename in files:
             if filename.endswith(".py"):
                 
@@ -477,27 +478,33 @@ class MyClient(commands.Bot):
             print(f"Failed to unload cog {cog_name}: {e}")
 
     def refresh_commands_dict(self):
+        print("wut?")
+        commands_dict = self.config_dict["commands"]
+        reaction_bot_dict = self.config_dict["defaultCooldowns"]["reactionBot"]
+        print(reaction_bot_dict)
         self.commands_dict = {
-            "battle": self.config_dict["commands"]["battle"]["enabled"],
+            "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "captcha": True,
             "chat": True,
             "coinflip": self.config_dict["gamble"]["coinflip"]["enabled"],
             "commands": True,
-            "cookie": self.config_dict["commands"]["cookie"]["enabled"],
+            "cookie": commands_dict["cookie"]["enabled"],
             "daily": self.config_dict["autoDaily"],
             "gems": self.config_dict["autoUse"]["gems"]["enabled"],
             "giveaway": self.config_dict["giveawayJoiner"]["enabled"],
-            "hunt": self.config_dict["commands"]["hunt"]["enabled"],
-            "huntbot": self.config_dict["commands"]["autoHuntBot"]["enabled"],
-            "level": self.config_dict["commands"]["lvlGrind"]["enabled"],
-            "lottery": self.config_dict["commands"]["lottery"]["enabled"],
+            "hunt": commands_dict["hunt"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
+            "huntbot": commands_dict["autoHuntBot"]["enabled"],
+            "level": commands_dict["lvlGrind"]["enabled"],
+            "lottery": commands_dict["lottery"]["enabled"],
             "others": True,
-            "owo": self.config_dict["commands"]["owo"]["enabled"],
-            "pray": self.config_dict["commands"]["pray"]["enabled"],
-            "sell": self.config_dict["commands"]["sell"]["enabled"],
-            "shop": self.config_dict["commands"]["shop"]["enabled"],
-            "slots": self.config_dict["gamble"]["slots"]["enabled"]
+            "owo": commands_dict["owo"]["enabled"] and not reaction_bot_dict["owo"],
+            "pray": commands_dict["pray"]["enabled"] and not reaction_bot_dict["pray_and_curse"],
+            "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
+            "sell": commands_dict["sell"]["enabled"],
+            "shop": commands_dict["shop"]["enabled"],
+            "slots": self.config_dict["gamble"]["slots"]["enabled"]  
         }
+        print(self.commands_dict)
 
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
@@ -519,9 +526,10 @@ class MyClient(commands.Bot):
     async def upd_cmd_time(self):
         async with self.lock:
             self.last_cmd_ran = time.time()
+        
 
     def construct_command(self, data):
-        prefix = config_dict['setprefix'] if data.get("prefix") else ""
+        prefix = self.config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False):
@@ -872,7 +880,7 @@ def run_bot(token, channel_id):
 if __name__ == "__main__":
     if not misc_dict["console"]["compactMode"]:
         console.print(owoPanel)
-        console.rule(f"[bold blue1]version - {version}", style="navy_blue")
+        console.rule(f"[bold blue1]version - {version} beta", style="navy_blue")
     version_json = fetch_json(f"{owo_dusk_api}/version.json", "version info")
 
     if compare_versions(version, version_json["version"]):

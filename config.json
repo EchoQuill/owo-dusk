@@ -257,11 +257,13 @@
             }
         },
         "reactionBot": {
-            "hunt": false,
-            "battle": false,
-            "owo": false,
-            "pray": false,
-            "curse": false
+            "hunt_and_battle": true,
+            "owo": true,
+            "pray_and_curse": true,
+            "cooldown": [
+                0.5,
+                1
+            ]
         }
     },
     "textCommands": {

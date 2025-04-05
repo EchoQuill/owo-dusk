@@ -121,6 +121,8 @@ class Pray(commands.Cog):
                 else:
                     await self.bot.log("ongoing pray/curse", "#d0ff78")
 
+                
+
 
 
 async def setup(bot):
