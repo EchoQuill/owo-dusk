@@ -33,7 +33,7 @@ class Owo(commands.Cog):
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["owo"]["enabled"]:
+        if not self.bot.config_dict["commands"]["owo"]["enabled"] or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["owo"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.owo"))
             except ExtensionNotLoaded:
