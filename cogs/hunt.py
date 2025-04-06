@@ -30,7 +30,7 @@ class Hunt(commands.Cog):
         }
 
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["hunt"]["enabled"]:
+        if not self.bot.config_dict["commands"]["hunt"]["enabled"] or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.hunt"))
             except ExtensionNotLoaded:
@@ -58,6 +58,7 @@ class Hunt(commands.Cog):
                         if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 
                         else self.bot.alias["hunt"]["alias"]
                     )
+                    print("hunt")
                     await self.bot.put_queue(self.cmd)
         except Exception as e:
             print(e)

@@ -29,13 +29,12 @@ class Battle(commands.Cog):
         }
     
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["battle"]["enabled"]:
+        if not self.bot.config_dict["commands"]["battle"]["enabled"] or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.battle"))
             except:
                 pass
         else:
-
             self.cmd["cmd_name"] = (
                 self.bot.alias["battle"]["shortform"] 
                 if self.bot.config_dict["commands"]["battle"]["useShortForm"] 

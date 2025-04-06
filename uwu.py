@@ -397,7 +397,6 @@ class MyClient(commands.Bot):
             self.state_event.set()
         else:
             while not self.state:
-                """prevents race issues? Doesn't hurt using while instead of if."""
                 await self.state_event.wait()
             self.state = False
             self.state_event.clear()
@@ -478,10 +477,8 @@ class MyClient(commands.Bot):
             print(f"Failed to unload cog {cog_name}: {e}")
 
     def refresh_commands_dict(self):
-        print("wut?")
         commands_dict = self.config_dict["commands"]
         reaction_bot_dict = self.config_dict["defaultCooldowns"]["reactionBot"]
-        print(reaction_bot_dict)
         self.commands_dict = {
             "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "captcha": True,
@@ -502,9 +499,8 @@ class MyClient(commands.Bot):
             "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
-            "slots": self.config_dict["gamble"]["slots"]["enabled"]  
+            "slots": self.config_dict["gamble"]["slots"]["enabled"]
         }
-        print(self.commands_dict)
 
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):

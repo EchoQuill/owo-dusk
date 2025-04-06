@@ -23,11 +23,14 @@ class Reactionbot(commands.Cog):
 
     async def send_cmd(self, cmd, cooldown=None, prefix=True):
         await self.bot.sleep_till(cooldown or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
-        if not self.bot.captcha and self.bot.state:
+        if not self.bot.captcha:
             await self.bot.upd_cmd_time()
             await self.bot.send(f"{self.bot.config_dict['setprefix'] if prefix else ''}{cmd}")
 
     async def startup_handler(self):
+        print("yp")
+        await self.bot.set_stat(False)
+        print("np")
         """
         Usually pattern goes like
         owoh
@@ -45,6 +48,7 @@ class Reactionbot(commands.Cog):
         hunt_cmd = self.bot.alias["hunt"]["normal" if not hunt_shortform else "shortform"]
         battle_cmd = self.bot.alias["battle"]["normal" if not battle_shortform else "shortform"]
         owo_cmd = self.bot.alias["owo"]["normal"]
+        print("init")
 
         if reaction_bot_dict["hunt_and_battle"]:
             hunt = commands_dict["hunt"]["enabled"]
@@ -59,6 +63,7 @@ class Reactionbot(commands.Cog):
 
         """Hunt/Battle"""
         if hunt and battle:
+            print("hb rr")
             await self.send_cmd(hunt_cmd)
             await self.send_cmd(battle_cmd)
         else:
@@ -66,17 +71,21 @@ class Reactionbot(commands.Cog):
             await self.send_cmd(cmd)
 
         """OwO/UwU"""
-        await self.bot.sleep_till(reaction_bot_dict["cooldown"])
-        await self.send_cmd(owo_cmd)
+        if reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"]:
+            print("owo")
+            await self.send_cmd(owo_cmd, prefix=False)
 
         """Pray/Curse"""
-        cmds = []
-        if pray:
-            cmds.append("pray")
-        if curse:
-            cmds.append("curse")
+        if pray or curse:
+            print("pray/curse")
+            cmds = []
+            if pray:
+                cmds.append("pray")
+            if curse:
+                cmds.append("curse")
 
-        await self.send_cmd(self.bot.alias[random.choice(cmds)]["normal"])
+            await self.send_cmd(random.choice(cmds))
+        await self.bot.set_stat(True)
 
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
@@ -93,6 +102,7 @@ class Reactionbot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        
         reaction_bot_dict = self.bot.config_dict["defaultCooldowns"]["reactionBot"]
         commands_dict = self.bot.config_dict["commands"]
         owo = reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"]
@@ -113,7 +123,7 @@ class Reactionbot(commands.Cog):
             """
             if "**OwO**" in message.content and owo:
                 await self.bot.sleep_till(reaction_bot_dict["cooldown"])
-                await self.send_cmd(self.bot.alias["owo"]["normal"])
+                await self.send_cmd(self.bot.alias["owo"]["normal"], prefix=False)
 
             elif "**hunt/battle**" in message.content and (hunt or battle):
                 hunt_shortform = commands_dict["hunt"]["useShortForm"] 
@@ -135,7 +145,7 @@ class Reactionbot(commands.Cog):
                 if curse:
                     cmds.append("curse")
 
-                await self.send_cmd(self.bot.alias[random.choice(cmds)]["normal"])
+                await self.send_cmd(random.choice(cmds))
 
 
 async def setup(bot):

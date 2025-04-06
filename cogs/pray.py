@@ -82,11 +82,13 @@ class Pray(commands.Cog):
                 await self.bot.log(f"rmv startup thro func", "#d0ff78")
                 self.startup=False
                 await self.start_pray_curse()
-        
 
     async def cog_load(self):
         try:
-            if not self.bot.config_dict["commands"]["pray"]["enabled"] and not self.bot.config_dict["commands"]["curse"]["enabled"]:
+            if (
+                not self.bot.config_dict["commands"]["pray"]["enabled"]
+                and not self.bot.config_dict["commands"]["curse"]["enabled"]
+            ) or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
                 try:
                     asyncio.create_task(self.bot.unload_cog("cogs.pray"))
                 except ExtensionNotLoaded:
@@ -120,9 +122,6 @@ class Pray(commands.Cog):
                     await self.start_pray_curse()
                 else:
                     await self.bot.log("ongoing pray/curse", "#d0ff78")
-
-                
-
 
 
 async def setup(bot):
