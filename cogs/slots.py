@@ -33,7 +33,6 @@ class Slots(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
             "id": "slots"
         }
         self.turns_lost = 0

@@ -27,7 +27,7 @@ cmd = {
     "cmd_name": "daily",
     "prefix": True,
     "checks": True,
-    "retry_count": 0,
+    
     "id": "daily"
 }
 

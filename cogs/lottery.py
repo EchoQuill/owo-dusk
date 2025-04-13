@@ -42,7 +42,7 @@ class Lottery(commands.Cog):
             "cmd_arguments": self.bot.config_dict['commands']['lottery']['amount'],
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "lottery"
         }
     

@@ -44,16 +44,16 @@ class Others(commands.Cog):
             "cmd_name": self.bot.alias["lootbox"]["normal"],
             "prefix": True,
             "checks": False,
-            "retry_count": 0,
-            "slash_cmd_name": "lootbox"
+            "slash_cmd_name": "lootbox",
+            "id": "lootbox"
         }
 
         self.crate_cmd = {
             "cmd_name": self.bot.alias["crate"]["normal"],
             "prefix": True,
             "checks": False,
-            "retry_count": 0,
-            "slash_cmd_name": "crate"
+            "slash_cmd_name": "crate",
+            "id": "crate"
         }
     
     @commands.Cog.listener()
@@ -90,7 +90,8 @@ class Others(commands.Cog):
                     "cmd_name": self.bot.alias["zoo"]["normal"],
                     "prefix": True,
                     "checks": False,
-                    "retry_count": 0
+                    "retry_count": 0,
+                    "id": "zoo"
                 }
                 await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
                 await self.bot.put_queue(team_cmd, priority=True)

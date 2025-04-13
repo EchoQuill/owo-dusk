@@ -28,6 +28,7 @@ import random
 import traceback
 import subprocess
 import threading
+import itertools
 import aiohttp
 import json
 import pytz
@@ -354,7 +355,7 @@ class MyClient(commands.Bot):
         self.state_event = asyncio.Event()
         self.captcha = False
         self.balance = 0
-        self.queue = asyncio.Queue()
+        self.queue = asyncio.PriorityQueue()
         self.config_dict = None
         self.commands_dict = {}
         self.lock = asyncio.Lock()
@@ -366,6 +367,7 @@ class MyClient(commands.Bot):
         self.username = None
         self.last_cmd_ran = None
         self.reaction_bot_id = 519287796549156864
+        self.cmd_counter = itertools.count()
         """self.user_data = {
             "balance": 0,
             "essence": 0,
@@ -377,19 +379,30 @@ class MyClient(commands.Bot):
             "giveaway": 0,
             "captchas": 0
         }"""
-        
+
         with open("alias.json", "r") as config_file:
             self.alias = json.load(config_file)
 
         with open("misc.json", "r") as config_file:
             self.misc = json.load(config_file)
+
+        self.cmds_state = {
+            "global": {
+                "last_ran": 0
+            }
+        }
+        for key in self.misc["command_priority"]:
+            self.cmds_state[key] = {
+                "in_queue": False,
+                "in_monitor": False,
+                "last_ran": 0
+            }
+
         if self.misc["debug"]["hideUser"]:
+            """TASK: Ability to edit x/y"""
             x = ["cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"]
             y = ["123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"]
             self.username = f"{random.choice(x)}{random.choice(y)}"
-
-    
-        
 
     async def set_stat(self, value):
         if value:
@@ -436,7 +449,7 @@ class MyClient(commands.Bot):
     async def safety_check_loop(self):
         safety_check = requests.get(f"{owo_dusk_api}/safety_check.json").json()
         latest_version = requests.get(f"{owo_dusk_api}/safety_check.json").json()
-        
+
         if compare_versions(version, safety_check["version"]):
             self.captcha = True
             await self.log(f"There seems to be something wrong...\nStopping code for reason: {safety_check['reason']}\n(This was triggered by {safety_check['author']})", "#5c0018")
@@ -449,7 +462,7 @@ class MyClient(commands.Bot):
         self.refresh_commands_dict()
         for filename in files:
             if filename.endswith(".py"):
-                
+
                 extension = f"cogs.{filename[:-3]}"
                 if extension in self.extensions:
                     """skip if already loaded"""
@@ -460,8 +473,10 @@ class MyClient(commands.Bot):
                 try:
                     await asyncio.sleep(self.random_float(self.config_dict["account"]["commandsStartDelay"]))
                     await self.load_extension(extension)
+                    
                 except Exception as e:
-                    print(f"Failed to load extension {extension}: {e}")
+                    await self.log(f"Failed to load extension {extension}: {e}")
+
 
     async def update_config(self):
         async with self.lock:
@@ -474,7 +489,7 @@ class MyClient(commands.Bot):
             if cog_name in self.extensions:
                 await self.unload_extension(cog_name)
         except Exception as e:
-            print(f"Failed to unload cog {cog_name}: {e}")
+            await self.log(f"Error - Failed to unload cog {cog_name}: {e}")
 
     def refresh_commands_dict(self):
         commands_dict = self.config_dict["commands"]
@@ -519,45 +534,63 @@ class MyClient(commands.Bot):
                 )
             )
 
-    async def upd_cmd_time(self):
+    async def upd_cmd_state(self, id, reactionBot=False):
         async with self.lock:
-            self.last_cmd_ran = time.time()
-        
+            self.cmds_state["global"]["last_ran"] = time.time()
+            self.cmds_state[id]["last_ran"] = time.time()
+            if not reactionBot:
+                self.cmds_state[id]["in_queue"] = False
 
     def construct_command(self, data):
         prefix = self.config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False):
+        cnf = self.misc["command_priority"]
         try:
             while not self.state or self.sleep or self.captcha:
                 if priority:
                     break
                 await asyncio.sleep(random.uniform(1.4, 2.9))
-            await self.queue.put(deepcopy(cmd_data))
+            
+            if self.cmds_state[cmd_data["id"]]["in_queue"]:
+                # Ensure command already in queue is not readded to prevent spam
+                await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
+                return
+            
+            # Get priority
+            priority_int = cnf[cmd_data["id"]].get("priority")
+            if not priority_int:
+                await self.log(f"Error - command with id: {cmd_data['id']} do not have a priority set in misc.json", "#c25560")
+                return
+            
+            async with self.lock:
+                await self.queue.put((
+                    cnf[cmd_data["id"]]["priority"],  # Priority to sort commands with
+                    next(self.cmd_counter),               # A counter to serve as a tie-breaker
+                    deepcopy(cmd_data)                # actual data
+                ))
+                self.cmds_state[cmd_data["id"]]["in_queue"] = True
         except Exception as e:
-            print(e)
-            print("^ at put_queue")
+            await self.log(f"Error - {e}, during put_queue", "#c25560")
 
     async def remove_queue(self, cmd_data=None, id=None):
         if not cmd_data and not id:
-            print("invalid id/cmd_data")
+            await self.log(f"Error: No id or command data provided for removing item from queue.", "#c25560")
             return
         try:
             async with self.lock:
-                for index, (command, _) in enumerate(self.checks):
+                for index, command in enumerate(self.checks):
                     if cmd_data:
                         if command == cmd_data:
-                            #self.checks[index][0]["removed"] = True
                             await self.log(f"popping {self.checks[index]}", "#ffd359")
                             self.checks.pop(index)
                     else:
                         if command.get("id", None) == id:
-                            #self.checks[index][0]["removed"] = True
                             await self.log(f"popping {self.checks[index]}", "#ffd359")
                             self.checks.pop(index)
         except Exception as e:
-            print(e)
+            await self.log(f"Error: {e}, during remove_queue", "#c25560")
 
     async def search_checks(self, id):
         async with self.lock:
@@ -565,15 +598,15 @@ class MyClient(commands.Bot):
                 if command.get("id", None) == id:
                     return True
             return False
-        
+
     async def shuffle_queue(self):
         async with self.lock:
             items = []
             while not self.queue.empty():
                 items.append(await self.queue.get())
-            
+
             random.shuffle(items)
-            
+
             for item in items:
                 await self.queue.put(item)
 
@@ -644,11 +677,9 @@ class MyClient(commands.Bot):
             else:
                 await webhook.send(embed=emb, username='OwO-Dusk')
         except discord.Forbidden as e:
-            print("Bot does not have permission to execute this command:", e)
-        except discord.NotFound as e:
-            print("The specified command was not found:", e)
+            await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
         except Exception as e:
-            print(e)
+            await self.log(f"Error - {e}, during webhookSender.")
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
@@ -659,6 +690,10 @@ class MyClient(commands.Bot):
 
     # send commands
     async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
+        """
+            TASK: Refactor
+        """
+
         if not channel:
             channel = self.cm
         disable_log = self.misc["console"]["disableCommandSendLog"]
@@ -702,7 +737,7 @@ class MyClient(commands.Bot):
                     await command(**kwargs)
                     await self.log(f"Ran: /{msg}", "#5432a8")
         except Exception as e:
-            print(e)
+            await self.log(f"Error: {e}, during slashCommandSender", "#c25560")
 
     def calc_time(self):
         pst_timezone = pytz.timezone('US/Pacific') #gets timezone
@@ -719,7 +754,7 @@ class MyClient(commands.Bot):
         """
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
         return time_now.timestamp()
-    
+
     async def check_for_cash(self):
         await asyncio.sleep(random.uniform(4.5, 6.4))
         await self.put_queue(
@@ -727,13 +762,12 @@ class MyClient(commands.Bot):
                 "cmd_name": self.alias["cash"]["normal"],
                 "prefix": True,
                 "checks": True,
-                "retry_count": 0,
                 "id": "cash",
                 "removed": False
             }
         )
-        
-    async def on_ready(self):
+
+    """async def on_ready(self):
         if not self.dm:
             # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
             try:
@@ -743,8 +777,7 @@ class MyClient(commands.Bot):
                     self.dm = await self.fetch_user(self.owo_bot_id).create_dm()
 
             except discord.Forbidden as e:
-                print(e)
-                print(f"Attempting to get user with the help of {self.cm}")
+                await self.log(f"Error: {e}, Attempting to get user with the help of {self.cm}", "#c25560")
                 await self.cm.send(f"{config_dict['setprefix']}ping")
                 async for message in self.cm.history(limit=10):
                     if message.author.id == self.owo_bot_id:
@@ -752,8 +785,7 @@ class MyClient(commands.Bot):
                         break
                 await asyncio.sleep(random.uniform(0.5, 0.9))
             except Exception as e:
-                print(e)
-        
+                await self.log(f"Error: {e}, during", "#c25560")"""
 
     async def setup_hook(self):
         if not self.username:
@@ -773,25 +805,16 @@ class MyClient(commands.Bot):
             try:
                 self.cm = await self.fetch_channel(self.channel_id)
             except discord.NotFound:
-                print(f"Channel with ID {self.channel_id} does not exist.")
+                await self.log(f"Error - Channel with ID {self.channel_id} does not exist.", "#c25560")
                 return
             except discord.Forbidden:
-                print(f"Bot lacks permissions to access channel {self.channel_id}.")
+                await self.log(f"Bot lacks permissions to access channel {self.channel_id}.", "#c25560")
                 return
             except discord.HTTPException as e:
-                print(f"Failed to fetch channel {self.channel_id}: {e}")
+                await self.log(f"Failed to fetch channel {self.channel_id}: {e}", "#c25560")
                 return
 
-        async for message in self.cm.history(limit=10):
-            """
-            Since fetch is failing with d.py-self,
-            This is used to prevent the need for users who grind in same channel
-            to wait till on_ready for self.dm to be ready
-            """
-            if message.author.id == self.owo_bot_id:
-                self.dm = await message.author.create_dm()
-                print(self.dm)
-                break
+        self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
 
         # Fetch slash commands in self.cm
         self.slash_commands = []
@@ -816,7 +839,6 @@ class MyClient(commands.Bot):
                 accounts_dict.update(self.default_config)
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-
 
         # Start various tasks and updates
         self.config_update_checker.start()

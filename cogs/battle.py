@@ -22,7 +22,6 @@ class Battle(commands.Cog):
             "cmd_name": "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
             "id": "battle",
             "slash_cmd_name": "battle",
             "removed": False
@@ -40,7 +39,7 @@ class Battle(commands.Cog):
                 if self.bot.config_dict["commands"]["battle"]["useShortForm"] 
                 else self.bot.alias["battle"]["alias"]
             )
-            await self.bot.put_queue(self.cmd)
+            asyncio.create_task(self.bot.put_queue(self.cmd))
 
 
     async def cog_unload(self):

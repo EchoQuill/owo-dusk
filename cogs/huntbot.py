@@ -47,7 +47,7 @@ class Huntbot(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "huntbot",
         }
 
@@ -56,7 +56,7 @@ class Huntbot(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "upgrade",
         }
 

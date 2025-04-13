@@ -46,7 +46,7 @@ class Level(commands.Cog):
             "cmd_name": None,
             "prefix": False,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "level"
         }
 

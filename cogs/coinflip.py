@@ -30,7 +30,7 @@ class Coinflip(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "coinflip"
         }
         self.turns_lost = 0

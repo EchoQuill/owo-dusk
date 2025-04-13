@@ -122,7 +122,7 @@
             ]
         },
         "owo": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 10,
                 13
@@ -250,16 +250,12 @@
                 1.7,
                 2.7
             ],
-            "beforeReaddingToQueue": {
-                "baseDelay": 7,
-                "maxDelay": 40,
-                "antiSpamThreshold": 5
-            }
+            "beforeReaddingToQueue": 7
         },
         "reactionBot": {
-            "hunt_and_battle": true,
-            "owo": true,
-            "pray_and_curse": true,
+            "hunt_and_battle": false,
+            "owo": false,
+            "pray_and_curse": false,
             "cooldown": [
                 0.5,
                 1

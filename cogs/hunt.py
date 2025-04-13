@@ -23,7 +23,7 @@ class Hunt(commands.Cog):
             "cmd_name": "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "hunt",
             "slash_cmd_name": "hunt",
             "removed": False
@@ -41,7 +41,7 @@ class Hunt(commands.Cog):
                 if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 
                 else self.bot.alias["hunt"]["alias"]
             )
-            await self.bot.put_queue(self.cmd)
+            asyncio.create_task(self.bot.put_queue(self.cmd))
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="hunt")

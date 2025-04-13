@@ -37,7 +37,6 @@ class Shop(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
             "id": "shop"
         }
 

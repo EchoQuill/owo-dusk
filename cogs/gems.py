@@ -80,14 +80,12 @@ class Gems(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": False,
-            "retry_count": 0,
             "id": "gems"
         }
         self.inv_cmd = {
             "cmd_name": self.bot.alias["inv"]["normal"],
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
             "id": "inv"
         }
 

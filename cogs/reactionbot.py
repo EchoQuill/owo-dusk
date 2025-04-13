@@ -24,7 +24,7 @@ class Reactionbot(commands.Cog):
     async def send_cmd(self, cmd, cooldown=None, prefix=True):
         await self.bot.sleep_till(cooldown or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
         if not self.bot.captcha:
-            await self.bot.upd_cmd_time()
+            await self.bot.upd_cmd_state()
             await self.bot.send(f"{self.bot.config_dict['setprefix'] if prefix else ''}{cmd}")
 
     async def startup_handler(self):
@@ -90,15 +90,10 @@ class Reactionbot(commands.Cog):
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
         if not self.bot.config_dict["commands"]["owo"]["enabled"]:
-            try:
-                asyncio.create_task(self.bot.unload_cog("cogs.reactionbot"))
-            except ExtensionNotLoaded:
-                pass
+            pass
         else:
             asyncio.create_task(self.startup_handler())
 
-    async def cog_unload(self):
-        self.send_owo.stop()
 
     @commands.Cog.listener()
     async def on_message(self, message):

@@ -37,7 +37,6 @@ class Pray(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 2,
             "id": "pray"
         }
 
@@ -46,7 +45,6 @@ class Pray(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 2,
             "id": "pray" # using pray as id for curse to make it easier to close
         }
         self.cmd_names = []
