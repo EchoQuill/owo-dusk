@@ -25,10 +25,6 @@ Modified version licensed under GPL-3.0.
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-/*
-I am aware that I am still using names from slashy for containers and stuff
-I'll rename them to  a suitable name when I have time
-*/
 
 * {
   /*global css*/
@@ -67,7 +63,7 @@ nav {
 
 .lt,
 .ss {
-  color: #ff79c3;
+  color: #B388FF;
 }
 
 .lt {
@@ -103,35 +99,35 @@ nav {
   grid-template-rows: 1fr 1fr;
   gap: 15px 15px;
   grid-auto-flow: row;
-  grid-template-areas: "misc cmds cd adds" "balance cmds gamble extra"; /*"misc cmds cd adds" "balance cmds cd extra";*/
+  grid-template-areas: "misc cmds cd ." "balance cmds gamble ."; /*"misc cmds cd adds" "balance cmds gamble extra";*/
 }
 
 .misc {
   grid-area: misc;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
 }
 
 .gamble {
   grid-area: gamble;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
 }
 
-/**/
-.adds {
+/*
+adds {
   grid-area: adds;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
-}
+}*/
 
 .balance {
   grid-area: balance;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
   overflow-y: scroll;
   scrollbar-width: none; /* Firefox */
@@ -140,24 +136,24 @@ nav {
 
 .cd {
   grid-area: cd;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
 }
 
 .cmds {
   grid-area: cmds;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
 }
 
-.extra {
+/*.extra {
   grid-area: extra;
-  background-color: #040404;
-  border: 2px solid purple;
+  background-color: #05030d;
+  border: 2px solid #4A148C;
   border-radius: 10px;
-}
+}*/
 
 
 .ht {
@@ -403,7 +399,7 @@ nav {
   grid-area: cdr;
 }
 
-.search {
+/*.search {
   display: grid;
   grid-template-columns: auto;
   grid-template-rows: auto auto;
@@ -422,23 +418,23 @@ nav {
 }
 
 .searchl {
-  color: #8a8a8a;
+  color: #00c94d;
   grid-area: searchl;
-}
+}*/
 
 .re,
 .sase {
   color: #141414;
   height: 45px;
   width: 160px;
-  background-color: #f750ac;
+  background-color: #7E57C2;
   border: 0;
   border-radius: 8px;
   cursor: pointer;
 }
 
 .re {
-  background-color: #f750ac;
+  background-color: #7E57C2;
 }
 
 .sys {
@@ -556,11 +552,11 @@ nav {
 }
 
 #balance tr:nth-child(even) {
-  background-color: #202020;
+  background-color: #000000;
 }
 
 #balance tr:hover {
-  background-color: #303030;
+  background-color: #211a2e;
 }
 
 #balance th {
@@ -611,7 +607,7 @@ nav {
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   border-radius: 6px;
-  border: 1px solid #37273f;
+  border: 1px solid #6A1B9A;
 }
 
 .popup-content input[type="url"],
@@ -626,7 +622,7 @@ nav {
 }
 
 .popup-content button {
-  background-color: #44087c;
+  background-color: #E040FB;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -637,13 +633,13 @@ nav {
 }
 
 .popup-content button:hover {
-  background-color: #4c1068;
+  background-color: #D500F9;
 }
 
 .popup-content button#cancelInput {
-  background-color: #3f0400;
+  background-color: #FF5252;
 }
 
 .popup-content button#cancelInput:hover {
-  background-color: #6b1919;
+  background-color: #FF1744;
 }
