@@ -41,7 +41,6 @@ class Commands(commands.Cog):
     async def send_commands(self):
         try:
             _, _, cmd = await self.bot.queue.get()
-            print(f"Command data: {cmd}")
             """Send the command"""
             await self.bot.upd_cmd_state(cmd["id"])
             if self.bot.config_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
@@ -68,7 +67,6 @@ class Commands(commands.Cog):
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
-            print(f"current monitor: {self.bot.checks}")
             delay = self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
             current_time = datetime.now(timezone.utc)
             if not self.bot.state or self.bot.sleep or self.bot.captcha:

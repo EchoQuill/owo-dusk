@@ -17,6 +17,7 @@
         "battle": {"priority": 2, "basecd": 15000},
         "gems": {"priority": 3, "basecd": 5000},
         "inv": {"priority": 3, "basecd": 10000},
+        "owo": {"priority": 3, "basecd": 10000},
         "lootbox": {"priority": 4, "basecd": 5000},
         "crate": {"priority": 4, "basecd": 5000},
         "huntbot": {"priority": 5, "basecd": 1000},

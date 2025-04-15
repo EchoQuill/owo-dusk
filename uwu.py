@@ -583,11 +583,9 @@ class MyClient(commands.Bot):
                 for index, command in enumerate(self.checks):
                     if cmd_data:
                         if command == cmd_data:
-                            await self.log(f"popping {self.checks[index]}", "#ffd359")
                             self.checks.pop(index)
                     else:
                         if command.get("id", None) == id:
-                            await self.log(f"popping {self.checks[index]}", "#ffd359")
                             self.checks.pop(index)
         except Exception as e:
             await self.log(f"Error: {e}, during remove_queue", "#c25560")

@@ -107,9 +107,9 @@
             "maxLengthForRandomString": 20
         },
         "cookie": {
-            "enabled": false,
+            "enabled": true,
             "userid": 408785106942164992,
-            "pingUser": false
+            "pingUser": true
         },
         "shop": {
             "enabled": false,
@@ -122,7 +122,7 @@
             ]
         },
         "owo": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 10,
                 13
@@ -186,7 +186,7 @@
         "blackjack": {}
     },
     "giveawayJoiner": {
-        "enabled": true,
+        "enabled": false,
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
@@ -253,8 +253,8 @@
             "beforeReaddingToQueue": 7
         },
         "reactionBot": {
-            "hunt_and_battle": false,
-            "owo": false,
+            "hunt_and_battle": true,
+            "owo": true,
             "pray_and_curse": false,
             "cooldown": [
                 0.5,
