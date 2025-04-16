@@ -566,7 +566,7 @@ class MyClient(commands.Bot):
             
             async with self.lock:
                 await self.queue.put((
-                    cnf[cmd_data["id"]]["priority"],  # Priority to sort commands with
+                    priority_int,  # Priority to sort commands with
                     next(self.cmd_counter),               # A counter to serve as a tie-breaker
                     deepcopy(cmd_data)                # actual data
                 ))
