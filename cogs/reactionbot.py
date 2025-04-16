@@ -34,7 +34,6 @@ class Reactionbot(commands.Cog):
 
         base = {
             "cmd_name": cmd_name.get(id, id),
-            "cmd_arguments": None,
             "prefix": id != "owo",
             "checks": False,
             "id": id if id!="curse" else "pray"
@@ -44,7 +43,7 @@ class Reactionbot(commands.Cog):
 
     async def send_cmd(self, cmd):
         await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
-        await self.bot.put_queue(self.fetch_cmd(cmd), quick=True)
+        await self.bot.put_queue(self.fetch_cmd(cmd), quick=True, priority=True)
 
     async def startup_handler(self):
         await self.bot.set_stat(False)
