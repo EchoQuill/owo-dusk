@@ -255,7 +255,7 @@
         "reactionBot": {
             "hunt_and_battle": true,
             "owo": true,
-            "pray_and_curse": false,
+            "pray_and_curse": true,
             "cooldown": [
                 0.5,
                 1
