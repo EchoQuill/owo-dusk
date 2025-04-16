@@ -22,13 +22,19 @@ class Owo(commands.Cog):
         self.owo_ongoing = False
 
     async def send_owo(self, startup=False):
-        if not self.bot.captcha and self.bot.state:
-            if not startup:
-                self.owo_ongoing = True
-                await self.bot.sleep_till(self.bot.config_dict["commands"]["owo"]["cooldown"])
-                self.owo_ongoing = False
-            await self.bot.upd_cmd_state("owo")
-            await self.bot.send(self.bot.alias["owo"]["normal"])
+        cmd = {
+            "cmd_name": "owo",
+            "prefix": False,
+            "checks": False,
+            "id": "owo",
+            "removed": False
+        }
+        if not startup:
+            self.owo_ongoing = True
+            await self.bot.sleep_till(self.bot.config_dict["commands"]["owo"]["cooldown"])
+            self.owo_ongoing = False
+        await self.bot.put_queue(cmd, quick=True)
+        await self.bot.send(self.bot.alias["owo"]["normal"])
             
     
     """gets executed when the cog is first loaded"""

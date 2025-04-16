@@ -545,7 +545,7 @@ class MyClient(commands.Bot):
         prefix = self.config_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
-    async def put_queue(self, cmd_data, priority=False):
+    async def put_queue(self, cmd_data, priority=False, quick=False):
         cnf = self.misc["command_priority"]
         try:
             while not self.state or self.sleep or self.captcha:
@@ -559,8 +559,8 @@ class MyClient(commands.Bot):
                 return
             
             # Get priority
-            priority_int = cnf[cmd_data["id"]].get("priority")
-            if not priority_int:
+            priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
+            if not priority_int and priority_int!=0:
                 await self.log(f"Error - command with id: {cmd_data['id']} do not have a priority set in misc.json", "#c25560")
                 return
             
@@ -764,26 +764,6 @@ class MyClient(commands.Bot):
                 "removed": False
             }
         )
-
-    """async def on_ready(self):
-        if not self.dm:
-            # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
-            try:
-                self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
-
-                if self.dm is None:
-                    self.dm = await self.fetch_user(self.owo_bot_id).create_dm()
-
-            except discord.Forbidden as e:
-                await self.log(f"Error: {e}, Attempting to get user with the help of {self.cm}", "#c25560")
-                await self.cm.send(f"{config_dict['setprefix']}ping")
-                async for message in self.cm.history(limit=10):
-                    if message.author.id == self.owo_bot_id:
-                        self.dm = await message.author.create_dm()
-                        break
-                await asyncio.sleep(random.uniform(0.5, 0.9))
-            except Exception as e:
-                await self.log(f"Error: {e}, during", "#c25560")"""
 
     async def setup_hook(self):
         if not self.username:

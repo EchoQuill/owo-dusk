@@ -13,6 +13,7 @@
 import asyncio
 import time
 
+from collections import deque
 from discord.ext import commands, tasks
 from datetime import datetime, timezone, timedelta
 
@@ -22,7 +23,24 @@ class Commands(commands.Cog):
         self.bot = bot
         self.bot.checks = []
         self.calc_time = timedelta(0)
-        self.retry_spam_count = 0
+        self.command_times = deque(maxlen=3)
+        
+
+
+    
+    def sleep_required(self):
+        """makes sure three commands are within 5 second limit"""
+        now = time.time()
+        
+        while self.command_times and now - self.command_times[0] >= 5:
+            """Command has to be within 5 second limit"""
+            self.command_times.popleft()
+        
+        if len(self.command_times) < 3:
+            return False, 0
+        else:
+            wait_time = max(0, 5 - (now - self.command_times[0]))
+            return True, wait_time
         
         
 
@@ -40,13 +58,29 @@ class Commands(commands.Cog):
     @tasks.loop()
     async def send_commands(self):
         try:
-            _, _, cmd = await self.bot.queue.get()
+            cnf = self.bot.config_dict["defaultCooldowns"]["commandHandler"]
+            priority, _, cmd = await self.bot.queue.get()
+            print(priority, cmd)
+
+            if priority != 0:
+                while (time.time() - self.bot.cmds_state["global"]["last_ran"]) < cnf["betweenCommands"][0]:
+                    await self.bot.sleep_till(cnf["betweenCommands"])
+
+            sleep_required, sleep_time = self.sleep_required()
+            if sleep_required:
+                await self.bot.log(f"sleep required by {sleep_time}s", "#ffd359")
+                await self.bot.sleep_till([sleep_time, sleep_time+0.4])
+                self.command_times.clear()
+
+            
             """Send the command"""
             await self.bot.upd_cmd_state(cmd["id"])
             if self.bot.config_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
                 await self.bot.send(self.bot.construct_command(cmd))
+            """add command to the deque"""
+            self.command_times.append(time.time())
             
             """Append to checks"""
             if cmd.get("checks") and cmd.get("id"):
@@ -55,10 +89,7 @@ class Commands(commands.Cog):
                     async with self.bot.lock:
                         self.bot.checks.append(cmd)
             
-            cnf = self.bot.config_dict["defaultCooldowns"]["commandHandler"]
-
-            while (time.time() - self.bot.cmds_state["global"]["last_ran"]) < cnf["betweenCommands"][0]:
-                await self.bot.sleep_till(cnf["betweenCommands"])
+            
 
         except Exception as e:
             print(f"Error in send_commands loop: {e}. {cmd.get('cmd_name', None)}")

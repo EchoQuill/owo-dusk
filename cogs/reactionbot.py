@@ -21,16 +21,33 @@ class Reactionbot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def send_cmd(self, cmd, cooldown=None, prefix=True):
-        await self.bot.sleep_till(cooldown or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
-        if not self.bot.captcha:
-            await self.bot.upd_cmd_state(cmd["id"])
-            await self.bot.send(f"{self.bot.config_dict['setprefix'] if prefix else ''}{cmd["name"]}")
+    def fetch_cmd(self, id):
+        commands_dict = self.bot.config_dict["commands"]
+        hunt_shortform = commands_dict["hunt"]["useShortForm"] 
+        battle_shortform = commands_dict["battle"]["useShortForm"] 
+
+        cmd_name = {
+            "hunt": self.bot.alias["hunt"]["normal" if not hunt_shortform else "shortform"],
+            "battle": self.bot.alias["battle"]["normal" if not battle_shortform else "shortform"],
+            "owo": self.bot.alias["owo"]["normal"]
+        }
+
+        base = {
+            "cmd_name": cmd_name.get(id, id),
+            "cmd_arguments": None,
+            "prefix": id != "owo",
+            "checks": False,
+            "id": id if id!="curse" else "pray"
+        }
+
+        return base
+
+    async def send_cmd(self, cmd):
+        await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
+        await self.bot.put_queue(self.fetch_cmd(cmd), quick=True)
 
     async def startup_handler(self):
-        print("yp")
         await self.bot.set_stat(False)
-        print("np")
         """
         Usually pattern goes like
         owoh
@@ -41,13 +58,7 @@ class Reactionbot(commands.Cog):
         """
         reaction_bot_dict = self.bot.config_dict["defaultCooldowns"]["reactionBot"]
         commands_dict = self.bot.config_dict["commands"]
-        hunt_shortform = commands_dict["hunt"]["useShortForm"] 
-        battle_shortform = commands_dict["battle"]["useShortForm"] 
-
         """Define alias of commands"""
-        hunt_cmd = {"name":self.bot.alias["hunt"]["normal" if not hunt_shortform else "shortform"], "id": "hunt"}
-        battle_cmd = {"name":self.bot.alias["battle"]["normal" if not battle_shortform else "shortform"], "id": "battle"}
-        owo_cmd = {"name":self.bot.alias["owo"]["normal"], "id": "owo"}
         print("init")
 
         if reaction_bot_dict["hunt_and_battle"]:
@@ -64,16 +75,15 @@ class Reactionbot(commands.Cog):
         """Hunt/Battle"""
         if hunt and battle:
             print("hb rr")
-            await self.send_cmd(hunt_cmd)
-            await self.send_cmd(battle_cmd)
+            await self.send_cmd("hunt")
+            await self.send_cmd("battle")
         else:
-            cmd = hunt_cmd if hunt else battle_cmd
+            cmd = "hunt" if hunt else "battle"
             await self.send_cmd(cmd)
 
         """OwO/UwU"""
         if reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"]:
-            print("owo")
-            await self.send_cmd(owo_cmd, prefix=False)
+            await self.send_cmd("owo")
 
         """Pray/Curse"""
         if pray or curse:
@@ -83,15 +93,26 @@ class Reactionbot(commands.Cog):
                 cmds.append("pray")
             if curse:
                 cmds.append("curse")
-            cmd = {"name": random.choice(cmds), "id": "pray"}
-
-            await self.send_cmd(cmd)
+            await self.send_cmd(random.choice(cmds))
         await self.bot.set_stat(True)
 
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
         """TASK: Double check"""
-        asyncio.create_task(self.startup_handler())
+        reaction_bot_dict = self.bot.config_dict["defaultCooldowns"]["reactionBot"]
+        commands_dict = self.bot.config_dict["commands"]
+        hunt = commands_dict["hunt"]["enabled"]
+        battle = commands_dict["battle"]["enabled"]
+        pray = commands_dict["pray"]["enabled"]
+        curse = commands_dict["curse"]["enabled"]
+        owo = commands_dict["owo"]["enabled"]
+        if (reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["pray_and_curse"] or reaction_bot_dict["owo"]) and (hunt or battle or pray or curse or owo):
+            asyncio.create_task(self.startup_handler())
+        else:
+            try:
+                asyncio.create_task(self.bot.unload_cog("cogs.reactionbot"))
+            except ExtensionNotLoaded:
+                pass
 
 
     @commands.Cog.listener()
@@ -116,21 +137,15 @@ class Reactionbot(commands.Cog):
             TASK: Add slash command support!
             """
             if "**OwO**" in message.content and owo:
-                owo_cmd = {"name":self.bot.alias["owo"]["normal"], "id": "owo"}
-                await self.bot.sleep_till(reaction_bot_dict["cooldown"])
-                await self.send_cmd(owo_cmd, prefix=False)
+                await self.send_cmd("owo")
 
             elif "**hunt/battle**" in message.content and (hunt or battle):
-                hunt_shortform = commands_dict["hunt"]["useShortForm"] 
-                battle_shortform = commands_dict["battle"]["useShortForm"] 
-                hunt_cmd = {"name":self.bot.alias["hunt"]["normal" if not hunt_shortform else "shortform"], "id": "hunt"}
-                battle_cmd = {"name":self.bot.alias["battle"]["normal" if not battle_shortform else "shortform"], "id": "battle"}
-
                 if hunt and battle:
-                    await self.send_cmd(hunt_cmd)
-                    await self.send_cmd(battle_cmd)
+                    print("hb rr")
+                    await self.send_cmd("hunt")
+                    await self.send_cmd("battle")
                 else:
-                    cmd = hunt_cmd if hunt else battle_cmd
+                    cmd = "hunt" if hunt else "battle"
                     await self.send_cmd(cmd)
 
             elif "**pray/curse**" in message.content and (pray or curse):
@@ -139,9 +154,7 @@ class Reactionbot(commands.Cog):
                     cmds.append("pray")
                 if curse:
                     cmds.append("curse")
-                cmd = {"name": random.choice(cmds), "id": "pray"}
-
-                await self.send_cmd(cmd)
+                await self.send_cmd(random.choice(cmds))
 
 
 async def setup(bot):

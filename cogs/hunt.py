@@ -23,7 +23,6 @@ class Hunt(commands.Cog):
             "cmd_name": "",
             "prefix": True,
             "checks": True,
-            
             "id": "hunt",
             "slash_cmd_name": "hunt",
             "removed": False
@@ -60,6 +59,7 @@ class Hunt(commands.Cog):
                     )
                     print("hunt")
                     await self.bot.put_queue(self.cmd)
+                    print("sucess hunt")
         except Exception as e:
             print(e)
 
