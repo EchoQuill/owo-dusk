@@ -482,8 +482,14 @@ class MyClient(commands.Bot):
 
     async def update_config(self):
         async with self.lock:
-            with open("config/settings.json", "r") as config_file:
+            custom_path = f"config/{self.user.id}.settings.json"
+            default_config_path = "config/settings.json"
+
+            config_path = custom_path if os.path.exists(custom_path) else default_config_path
+
+            with open(config_path, "r") as config_file:
                 self.settings_dict = json.load(config_file)
+
             await self.start_cogs()
 
     async def unload_cog(self, cog_name):
