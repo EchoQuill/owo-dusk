@@ -57,8 +57,8 @@ class Cookie(commands.Cog):
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
-            self.cmd["cmd_arguments"] = f"<@{self.bot.config_dict['commands']['cookie']['userid']}>" if self.bot.config_dict["commands"]["cookie"]["pingUser"] else ""
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+            self.cmd["cmd_arguments"] = f"<@{self.bot.settings_dict['commands']['cookie']['userid']}>" if self.bot.settings_dict["commands"]["cookie"]["pingUser"] else ""
             await self.bot.put_queue(self.cmd, priority=True)
             with lock:
                 load_dict()
@@ -67,7 +67,7 @@ class Cookie(commands.Cog):
                     json.dump(accounts_dict, f, indent=4)
 
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["cookie"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["cookie"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.cookie"))
             except ExtensionNotLoaded:
@@ -89,7 +89,7 @@ class Cookie(commands.Cog):
                 await self.bot.remove_queue(id="cookie")
 
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(self.cmd, priority=True)
                 with lock:
                     load_dict()

@@ -29,7 +29,7 @@ class Hunt(commands.Cog):
         }
 
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["hunt"]["enabled"] or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
+        if not self.bot.settings_dict["commands"]["hunt"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.hunt"))
             except ExtensionNotLoaded:
@@ -37,7 +37,7 @@ class Hunt(commands.Cog):
         else:
             self.cmd["cmd_name"] = (
                 self.bot.alias["hunt"]["shortform"] 
-                if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 
+                if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
                 else self.bot.alias["hunt"]["alias"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
@@ -51,10 +51,10 @@ class Hunt(commands.Cog):
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
                     await self.bot.remove_queue(id="hunt")
-                    await self.bot.sleep_till(self.bot.config_dict["commands"]["hunt"]["cooldown"])
+                    await self.bot.sleep_till(self.bot.settings_dict["commands"]["hunt"]["cooldown"])
                     self.cmd["cmd_name"] = (
                         self.bot.alias["hunt"]["shortform"] 
-                        if self.bot.config_dict["commands"]["hunt"]["useShortForm"] 
+                        if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
                         else self.bot.alias["hunt"]["alias"]
                     )
                     print("hunt")

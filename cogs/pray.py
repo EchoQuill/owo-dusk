@@ -50,20 +50,21 @@ class Pray(commands.Cog):
         self.cmd_names = []
 
     async def start_pray_curse(self):
+        cnf = self.bot.settings_dict['commands'][cmd]
         self.pray_curse_ongoing = True
-        cmds = [cmd for cmd in ["pray", "curse"] if self.bot.config_dict['commands'][cmd]['enabled']]
+        cmds = [cmd for cmd in ["pray", "curse"] if cnf['enabled']]
         cmd = random.choice(cmds) # pick a random enabled cmd
         if not self.startup:
             await self.bot.remove_queue(id="pray")
             await self.bot.log(f"removed {cmd} from queue", "#d0ff78")
-            await self.bot.sleep_till(self.bot.config_dict["commands"][cmd]["cooldown"])
+            await self.bot.sleep_till(cnf["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = False
 
         cmd_argument_data = cmd_argument(
-            self.bot.config_dict['commands'][cmd]['userid'], self.bot.config_dict['commands'][cmd]['pingUser']
+            cnf['userid'], cnf['pingUser']
         )
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
@@ -75,7 +76,7 @@ class Pray(commands.Cog):
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
             before owo-dusk is ran, this check is to fix it getting the code stuck.
             """
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
             if self.startup:
                 await self.bot.log(f"rmv startup thro func", "#d0ff78")
                 self.startup=False
@@ -84,9 +85,9 @@ class Pray(commands.Cog):
     async def cog_load(self):
         try:
             if (
-                not self.bot.config_dict["commands"]["pray"]["enabled"]
-                and not self.bot.config_dict["commands"]["curse"]["enabled"]
-            ) or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
+                not self.bot.settings_dict["commands"]["pray"]["enabled"]
+                and not self.bot.settings_dict["commands"]["curse"]["enabled"]
+            ) or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
                 try:
                     asyncio.create_task(self.bot.unload_cog("cogs.pray"))
                 except ExtensionNotLoaded:
@@ -106,10 +107,10 @@ class Pray(commands.Cog):
             **⏱ | user**! Slow down and try the command again **<t:1734943219:R>**
             """
             if (
-                f"<@{self.bot.user.id}>** prays for **<@{self.bot.config_dict['commands']['pray']['userid']}>**!"
+                f"<@{self.bot.user.id}>** prays for **<@{self.bot.settings_dict['commands']['pray']['userid']}>**!"
                 in message.content
                 or f"<@{self.bot.user.id}>** prays..." in message.content
-                or f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.config_dict['commands']['curse']['userid']}>**!"
+                or f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.settings_dict['commands']['curse']['userid']}>**!"
                 in message.content
                 or f"<@{self.bot.user.id}>** is now cursed." in message.content
                 or "Slow down and try the command again" in message.content

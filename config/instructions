@@ -1,0 +1,15 @@
+== Overview of the Files ==
+
+global_settings.json -> This is global for every accounts. All accounts will follow these settings.
+
+misc.json -> Contains miscellaneous settings, like command aliasis, priority and more.
+
+settings.json -> Where the main settings are at, settings.json is the default settings followed by all accounts if custom settings is not provided for other accounts
+
+== Creating a Custom Configuration for Accounts ==
+
+*    Duplicate the settings.json file.
+
+*    Rename the copied file to <user_id>.settings.json, replacing <user_id> with the actual ID of the account.
+
+*    Customize the settings in this new file as needed.

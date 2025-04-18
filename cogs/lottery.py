@@ -39,7 +39,7 @@ class Lottery(commands.Cog):
 
         self.cmd = {
             "cmd_name": self.bot.alias["lottery"]["normal"],
-            "cmd_arguments": self.bot.config_dict['commands']['lottery']['amount'],
+            "cmd_arguments": self.bot.settings_dict['commands']['lottery']['amount'],
             "prefix": True,
             "checks": True,
             
@@ -60,8 +60,8 @@ class Lottery(commands.Cog):
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["shortCooldown"])
-            #self.bot.queue.put(["lottery", f" {self.bot.config_dict["commands"]["lottery"]["amount"]}"])
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
+            #self.bot.queue.put(["lottery", f" {self.bot.settings_dict["commands"]["lottery"]["amount"]}"])
             await self.bot.put_queue(self.cmd)
 
             with lock:
@@ -72,7 +72,7 @@ class Lottery(commands.Cog):
 
     async def cog_load(self):
 
-        if not self.bot.config_dict["commands"]["lottery"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["lottery"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.lottery"))
             except ExtensionNotLoaded:
@@ -91,7 +91,7 @@ class Lottery(commands.Cog):
                     if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
                         await self.bot.remove_queue(id="lottery")
                         await asyncio.sleep(self.bot.calc_time())
-                        await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                        await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
                         await self.bot.put_queue(self.cmd)
                         with lock:
                             load_dict()
@@ -102,7 +102,7 @@ class Lottery(commands.Cog):
             if "You can only bet up to 250,000 cowoncy!" in message.content:
                 await self.bot.remove_queue(id="lottery")
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(self.cmd)
                 with lock:
                     load_dict()

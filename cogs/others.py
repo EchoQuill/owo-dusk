@@ -75,11 +75,11 @@ class Others(commands.Cog):
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
-                if self.bot.config_dict["autoUse"]["autoCrate"]:
+                if self.bot.settings_dict["autoUse"]["autoCrate"]:
                     await self.bot.put_queue(self.crate_cmd)
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
-                if self.bot.config_dict["autoUse"]["autoLootbox"]:
+                if self.bot.settings_dict["autoUse"]["autoLootbox"]:
                     await self.bot.put_queue(self.lootbox_cmd)
 
             # Add animals to team
@@ -93,7 +93,7 @@ class Others(commands.Cog):
                     "retry_count": 0,
                     "id": "zoo"
                 }
-                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
                 await self.bot.put_queue(team_cmd, priority=True)
 
             elif "s zoo! **" in message.content and self.zoo:

@@ -61,7 +61,7 @@ class Daily(commands.Cog):
                 
             print("daily successfull")
 
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
             await self.bot.put_queue(cmd, priority=True)
             await self.bot.set_stat(False)
 
@@ -73,7 +73,7 @@ class Daily(commands.Cog):
                 
 
     async def cog_load(self):
-        if not self.bot.config_dict["autoDaily"]:
+        if not self.bot.settings_dict["autoDaily"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.daily"))
             except ExtensionNotLoaded:
@@ -91,7 +91,7 @@ class Daily(commands.Cog):
                 await self.bot.remove_queue(cmd)
                 await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)
                 with lock:
@@ -104,7 +104,7 @@ class Daily(commands.Cog):
                 await self.bot.remove_queue(cmd)
                 await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(self.bot.config_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)
                 with lock:

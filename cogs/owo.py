@@ -31,7 +31,7 @@ class Owo(commands.Cog):
         }
         if not startup:
             self.owo_ongoing = True
-            await self.bot.sleep_till(self.bot.config_dict["commands"]["owo"]["cooldown"])
+            await self.bot.sleep_till(self.bot.settings_dict["commands"]["owo"]["cooldown"])
             self.owo_ongoing = False
         await self.bot.put_queue(cmd, quick=True)
         await self.bot.send(self.bot.alias["owo"]["normal"])
@@ -39,7 +39,7 @@ class Owo(commands.Cog):
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["owo"]["enabled"] or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["owo"]:
+        if not self.bot.settings_dict["commands"]["owo"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["owo"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.owo"))
             except ExtensionNotLoaded:

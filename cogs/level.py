@@ -46,17 +46,17 @@ class Level(commands.Cog):
             "cmd_name": None,
             "prefix": False,
             "checks": True,
-            
             "id": "level"
         }
 
     async def start_level_grind(self):
+        cnf = self.bot.settings_dict["commands"]["lvlGrind"]
         try:
-            await self.bot.sleep_till(self.bot.config_dict["commands"]["lvlGrind"]["cooldown"])
-            if self.bot.config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
+            await self.bot.sleep_till(cnf["cooldown"])
+            if cnf["useQuoteInstead"]:
                 self.last_level_grind_message = await fetch_quotes(self.bot.session)
             else:
-                self.last_level_grind_message = generate_random_string(self.bot.config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], self.bot.config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
+                self.last_level_grind_message = generate_random_string(cnf["minLengthForRandomString"], cnf["maxLengthForRandomString"])
             self.cmd["cmd_name"] = self.last_level_grind_message
 
             await self.bot.put_queue(self.cmd)
@@ -66,7 +66,7 @@ class Level(commands.Cog):
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["lvlGrind"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["lvlGrind"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.level"))
             except ExtensionNotLoaded:

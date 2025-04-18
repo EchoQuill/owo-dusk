@@ -28,7 +28,7 @@ class Battle(commands.Cog):
         }
     
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["battle"]["enabled"] or self.bot.config_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
+        if not self.bot.settings_dict["commands"]["battle"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.battle"))
             except:
@@ -36,7 +36,7 @@ class Battle(commands.Cog):
         else:
             self.cmd["cmd_name"] = (
                 self.bot.alias["battle"]["shortform"] 
-                if self.bot.config_dict["commands"]["battle"]["useShortForm"] 
+                if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
                 else self.bot.alias["battle"]["alias"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
@@ -55,10 +55,10 @@ class Battle(commands.Cog):
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
                             await self.bot.remove_queue(id="battle")
-                            await self.bot.sleep_till(self.bot.config_dict["commands"]["battle"]["cooldown"])
+                            await self.bot.sleep_till(self.bot.settings_dict["commands"]["battle"]["cooldown"])
                             self.cmd["cmd_name"] = (
                                 self.bot.alias["battle"]["shortform"] 
-                                if self.bot.config_dict["commands"]["battle"]["useShortForm"] 
+                                if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
                                 else self.bot.alias["battle"]["alias"]
                             )
                             await self.bot.put_queue(self.cmd)

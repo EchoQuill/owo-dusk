@@ -97,20 +97,22 @@ class Gems(commands.Cog):
             3: "specialGem"
         }
         tier_order = ['fabled', 'legendary', 'mythical', 'epic', 'rare', 'uncommon', 'common']
-        if self.bot.config_dict["autoUse"]["gems"]["order"]["lowestToHighest"]:
+        cnf = self.bot.settings_dict["autoUse"]["gems"]
+
+        if cnf["order"]["lowestToHighest"]:
             tier_order.reverse()
 
         grouped_gem_list = []
 
         for tier in tier_order:
-            if not self.bot.config_dict["autoUse"]["gems"]["tiers"][tier]:
+            if not cnf["tiers"][tier]:
                 continue
 
             current_group = []
             for gem_id in gem_tiers[tier]:
                 gem_index = gem_tiers[tier].index(gem_id)
                 gem_type_key = gem_type[gem_index]
-                if self.bot.config_dict["autoUse"]["gems"]["gemsToUse"].get(gem_type_key) and available_gems[tier].get(gem_id, 0) > 0:
+                if cnf["gemsToUse"].get(gem_type_key) and available_gems[tier].get(gem_id, 0) > 0:
                     current_group.append(gem_id)
 
             if current_group:
@@ -136,7 +138,7 @@ class Gems(commands.Cog):
 
 
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["hunt"]["enabled"] or not self.bot.config_dict["autoUse"]["gems"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["hunt"]["enabled"] or not self.bot.settings_dict["autoUse"]["gems"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.gems"))
             except ExtensionNotLoaded:
@@ -160,13 +162,13 @@ class Gems(commands.Cog):
                 #if not self.available_gems:
                 self.available_gems = find_gems_available(message.content)
                 gems_list = self.find_gems_to_use(self.available_gems)
-                print(self.available_gems)
-                print(gems_list)
+                """print(self.available_gems)
+                print(gems_list)"""
                 self.gem_cmd["cmd_arguments"]=""
                 for i in gems_list:
                     self.gem_cmd["cmd_arguments"]+=f"{i} "
                 await self.bot.put_queue(self.gem_cmd, priority=True)
-                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
                 await self.bot.set_stat(True)
                 self.inventory_check = False
 

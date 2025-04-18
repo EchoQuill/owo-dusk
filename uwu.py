@@ -76,10 +76,10 @@ def load_accounts_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
 
-with open("config.json", "r") as config_file:
-    config_dict = json.load(config_file)
+with open("config/global_settings.json", "r") as config_file:
+    global_settings_dict = json.load(config_file)
 
-with open("misc.json", "r") as config_file:
+with open("config/misc.json", "r") as config_file:
     misc_dict = json.load(config_file)
 
 
@@ -121,7 +121,7 @@ def home():
 @app.route("/api/saveThings", methods=["POST"])
 def save_things():
     password = request.headers.get('password')
-    if not password or password != config_dict["website"]["password"]:
+    if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     global config_updated
     try:
@@ -129,10 +129,10 @@ def save_things():
         print(data)
         if not data:
             return jsonify({"status": "error", "message": "Invalid or missing JSON data"}), 400
-        with open("config.json", "r") as main_config:
+        with open("config/settings.json", "r") as main_config:
             main_data = json.load(main_config)
         merge_dicts(main_data, data)
-        with open("config.json", "w") as main_config:
+        with open("config/settings.json", "w") as main_config:
             json.dump(main_data, main_config, indent=4)
         print('saved successfully!')
         config_updated = time.time()
@@ -147,9 +147,9 @@ def save_things():
 @app.route('/api/config', methods=['GET'])
 def get_config():
     password = request.headers.get('password')
-    if not password or password != config_dict["website"]["password"]:
+    if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
-    with open("config.json", "r") as file:
+    with open("config/settings.json", "r") as file:
         config_data = json.load(file)
     return jsonify(config_data)
 
@@ -157,7 +157,7 @@ def get_config():
 @app.route('/api/console', methods=['GET'])
 def get_console_logs():
     password = request.headers.get('password')
-    if not password or password != config_dict["website"]["password"]:
+    if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     try:
         log_string = '\n'.join(website_logs)
@@ -176,12 +176,12 @@ def web_start():
         app.run(
             debug=False,
             use_reloader=False,
-            port=config_dict["website"]["port"],
-            host="0.0.0.0" if config_dict["website"]["enableHost"] else "127.0.0.1",
+            port=global_settings_dict["website"]["port"],
+            host="0.0.0.0" if global_settings_dict["website"]["enableHost"] else "127.0.0.1",
         )
     except Exception as e:
         print(e)
-if config_dict["website"]["enabled"]:
+if global_settings_dict["website"]["enabled"]:
     try:
         web_thread = threading.Thread(target=web_start)
         web_thread.start()
@@ -220,7 +220,7 @@ on_mobile = is_termux()
 
 if not on_mobile and not misc_dict["hostMode"]:
     try:
-        if config_dict["batteryCheck"]["enabled"]:
+        if global_settings_dict["batteryCheck"]["enabled"]:
             import psutil
     except Exception as e:
         print(f"ImportError: {e}")
@@ -228,10 +228,11 @@ if not on_mobile and not misc_dict["hostMode"]:
 
 # For battery check
 def batteryCheckFunc():
+    cnf = global_settings_dict["batteryCheck"]
     try:
         if on_mobile:
             while True:
-                time.sleep(config_dict["batteryCheck"]["refreshInterval"])
+                time.sleep(cnf["refreshInterval"])
                 try:
                     battery_status = os.popen("termux-battery-status").read()
                 except Exception as e:
@@ -245,11 +246,11 @@ def batteryCheckFunc():
                     f"-system[0] Current battery •> {percentage}".center(console_width - 2),
                     style="blue ",
                 )
-                if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
+                if percentage < int(cnf["minPercentage"]):
                     break
         else:
             while True:
-                time.sleep(config_dict["batteryCheck"]["refreshInterval"])
+                time.sleep(cnf["refreshInterval"])
                 try:
                     battery = psutil.sensors_battery()
                     if battery is not None:
@@ -258,7 +259,7 @@ def batteryCheckFunc():
                             f"-system[0] Current battery •> {percentage}".center(console_width - 2),
                             style="blue ",
                         )
-                        if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
+                        if percentage < int(cnf["minPercentage"]):
                             break
                 except Exception as e:
                     console.print(
@@ -269,7 +270,7 @@ def batteryCheckFunc():
         print("battery check", e)
     os._exit(0)
 
-if config_dict["batteryCheck"]["enabled"]:
+if global_settings_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc)
     loop_thread.start()
 
@@ -324,7 +325,7 @@ def show_popup_thread():
         popup.wait_window()
 
 
-if config_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
+if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
     try:
         import tkinter as tk
         from tkinter import PhotoImage
@@ -339,7 +340,7 @@ if config_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["h
 
 class MyClient(commands.Bot):
 
-    def __init__(self, token, channel_id, *args, **kwargs):
+    def __init__(self, token, channel_id, global_settings_dict, *args, **kwargs):
         """The self_bot here makes sure the inbuild command `help`
         doesn't get executed by other users."""
 
@@ -356,7 +357,8 @@ class MyClient(commands.Bot):
         self.captcha = False
         self.balance = 0
         self.queue = asyncio.PriorityQueue()
-        self.config_dict = None
+        self.settings_dict = None
+        self.global_settings_dict = global_settings_dict
         self.commands_dict = {}
         self.lock = asyncio.Lock()
         self.cash_check = False
@@ -380,11 +382,10 @@ class MyClient(commands.Bot):
             "captchas": 0
         }"""
 
-        with open("alias.json", "r") as config_file:
-            self.alias = json.load(config_file)
-
-        with open("misc.json", "r") as config_file:
+        with open("config/misc.json", "r") as config_file:
             self.misc = json.load(config_file)
+
+        self.alias = self.misc["alias"]
 
         self.cmds_state = {
             "global": {
@@ -436,10 +437,11 @@ class MyClient(commands.Bot):
 
     @tasks.loop(seconds=1)
     async def random_sleep(self):
-        await asyncio.sleep(self.random_float(self.config_dict["sleep"]["checkTime"]))
-        if random.randint(1, 100) > (100 - self.config_dict["sleep"]["frequencyPercentage"]):
+        sleep_dict = self.settings_dict["sleep"]
+        await asyncio.sleep(self.random_float(sleep_dict["checkTime"]))
+        if random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
             await self.set_stat(False)
-            sleep_time = self.random_float(self.config_dict["sleep"]["sleeptime"])
+            sleep_time = self.random_float(sleep_dict["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
             await self.set_stat(True)
@@ -471,7 +473,7 @@ class MyClient(commands.Bot):
                         await self.unload_cog(extension)
                     continue
                 try:
-                    await asyncio.sleep(self.random_float(self.config_dict["account"]["commandsStartDelay"]))
+                    await asyncio.sleep(self.random_float(self.global_settings_dict["account"]["commandsStartDelay"]))
                     await self.load_extension(extension)
                     
                 except Exception as e:
@@ -480,8 +482,8 @@ class MyClient(commands.Bot):
 
     async def update_config(self):
         async with self.lock:
-            with open("config.json", "r") as config_file:
-                self.config_dict = json.load(config_file)
+            with open("config/settings.json", "r") as config_file:
+                self.settings_dict = json.load(config_file)
             await self.start_cogs()
 
     async def unload_cog(self, cog_name):
@@ -492,18 +494,18 @@ class MyClient(commands.Bot):
             await self.log(f"Error - Failed to unload cog {cog_name}: {e}")
 
     def refresh_commands_dict(self):
-        commands_dict = self.config_dict["commands"]
-        reaction_bot_dict = self.config_dict["defaultCooldowns"]["reactionBot"]
+        commands_dict = self.settings_dict["commands"]
+        reaction_bot_dict = self.settings_dict["defaultCooldowns"]["reactionBot"]
         self.commands_dict = {
             "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "captcha": True,
             "chat": True,
-            "coinflip": self.config_dict["gamble"]["coinflip"]["enabled"],
+            "coinflip": self.settings_dict["gamble"]["coinflip"]["enabled"],
             "commands": True,
             "cookie": commands_dict["cookie"]["enabled"],
-            "daily": self.config_dict["autoDaily"],
-            "gems": self.config_dict["autoUse"]["gems"]["enabled"],
-            "giveaway": self.config_dict["giveawayJoiner"]["enabled"],
+            "daily": self.settings_dict["autoDaily"],
+            "gems": self.settings_dict["autoUse"]["gems"]["enabled"],
+            "giveaway": self.settings_dict["giveawayJoiner"]["enabled"],
             "hunt": commands_dict["hunt"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "huntbot": commands_dict["autoHuntBot"]["enabled"],
             "level": commands_dict["lvlGrind"]["enabled"],
@@ -514,7 +516,7 @@ class MyClient(commands.Bot):
             "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
-            "slots": self.config_dict["gamble"]["slots"]["enabled"]
+            "slots": self.settings_dict["gamble"]["slots"]["enabled"]
         }
 
     """To make the code cleaner when accessing cooldowns from config."""
@@ -542,7 +544,7 @@ class MyClient(commands.Bot):
                 self.cmds_state[id]["in_queue"] = False
 
     def construct_command(self, data):
-        prefix = self.config_dict['setprefix'] if data.get("prefix") else ""
+        prefix = self.settings_dict['setprefix'] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False, quick=False):
@@ -613,9 +615,9 @@ class MyClient(commands.Bot):
             popup_queue.put(
                 (
                     (
-                        config_dict["captcha"]["toastOrPopup"]["captchaContent"]
+                        global_settings_dict["captcha"]["toastOrPopup"]["captchaContent"]
                         if captcha_type != "Ban"
-                        else config_dict["captcha"]["toastOrPopup"]["bannedContent"]
+                        else global_settings_dict["captcha"]["toastOrPopup"]["bannedContent"]
                     ),
                     self.user.name,
                     channel_name,
@@ -623,7 +625,7 @@ class MyClient(commands.Bot):
                 )
             )
 
-    async def log(self, text, color, bold=False, web_log=config_dict["website"]["enabled"], webhook_useless_log=config_dict["webhook"]["webhookUselessLog"]):
+    async def log(self, text, color, bold=False, web_log=global_settings_dict["website"]["enabled"], webhook_useless_log=global_settings_dict["webhook"]["webhookUselessLog"]):
         global website_logs
         current_time = datetime.now().strftime("%H:%M:%S")
         if self.misc["debug"]["enabled"]:
@@ -669,7 +671,7 @@ class MyClient(commands.Bot):
                 emb.set_thumbnail(url=img_url)
             if author_img_url:
                 emb.set_author(name=self.username, icon_url=author_img_url)
-            webhook = discord.Webhook.from_url(self.config_dict["webhook"]["webhookUrl"] if not webhook_url else webhook_url, session=self.session)
+            webhook = discord.Webhook.from_url(self.global_settings_dict["webhook"]["webhookUrl"] if not webhook_url else webhook_url, session=self.session)
             if plain_text:
                 await webhook.send(content=plain_text, embed=emb, username='OwO-Dusk')
             else:
@@ -681,13 +683,13 @@ class MyClient(commands.Bot):
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
-        base_delay = self.random_float(self.config_dict["misspell"]["baseDelay"]) 
-        rectification_time = sum(self.random_float(self.config_dict["misspell"]["errorRectificationTimePerLetter"]) for _ in command)  
+        base_delay = self.random_float(self.settings_dict["misspell"]["baseDelay"]) 
+        rectification_time = sum(self.random_float(self.settings_dict["misspell"]["errorRectificationTimePerLetter"]) for _ in command)  
         total_time = base_delay + rectification_time
         return total_time
 
     # send commands
-    async def send(self, message, bypass=False, channel=None, silent=config_dict["silentTextMessages"], typingIndicator=config_dict["typingIndicator"]):
+    async def send(self, message, bypass=False, channel=None, silent=global_settings_dict["silentTextMessages"], typingIndicator=global_settings_dict["typingIndicator"]):
         """
             TASK: Refactor
         """
@@ -697,8 +699,8 @@ class MyClient(commands.Bot):
         disable_log = self.misc["console"]["disableCommandSendLog"]
         msg = message
         misspelled = False
-        if self.config_dict["misspell"]["enabled"]:
-            if random.uniform(1,100) < self.config_dict["misspell"]["frequencyPercentage"]:
+        if self.settings_dict["misspell"]["enabled"]:
+            if random.uniform(1,100) < self.settings_dict["misspell"]["frequencyPercentage"]:
                 msg = misspell_word(message)
                 misspelled = True
                 # left off here!
@@ -820,23 +822,23 @@ class MyClient(commands.Bot):
 
         # Start various tasks and updates
         self.config_update_checker.start()
-        await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
+        await asyncio.sleep(self.random_float(global_settings_dict["account"]["startupDelay"]))
         print("upd config")
         await self.update_config()
         print("updated cnfg")
 
-        if self.config_dict["offlineStatus"]:
+        if self.global_settings_dict["offlineStatus"]:
             self.presence.start()
 
-        if self.config_dict["sleep"]["enabled"]:
+        if self.settings_dict["sleep"]["enabled"]:
             self.random_sleep.start()
 
-        if self.config_dict["cashCheck"]:
+        if self.settings_dict["cashCheck"]:
             asyncio.create_task(self.check_for_cash())
         print("---- ed -----")
 
 def get_local_ip():
-    if not config_dict["website"]["enableHost"]:
+    if not global_settings_dict["website"]["enableHost"]:
         return 'localhost'
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -859,16 +861,16 @@ def fetch_json(url, description="data"):
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
-        thread = Thread(target=run_bot, args=(token, channel_id))
+        thread = Thread(target=run_bot, args=(token, channel_id, global_settings_dict))
         thread.start()
         threads.append(thread)
     for thread in threads:
         thread.join()
 
-def run_bot(token, channel_id):
+def run_bot(token, channel_id, global_settings_dict):
     try:
         logging.getLogger("discord.client").setLevel(logging.ERROR)
-        client = MyClient(token, channel_id)
+        client = MyClient(token, channel_id, global_settings_dict)
         client.run(token, log_level=logging.ERROR)
     except Exception as e:
         printBox(f"Error starting bot with token {token}...: {e}", "bold red")
@@ -891,9 +893,9 @@ if __name__ == "__main__":
 
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
 
-    if config_dict["website"]["enabled"]:
+    if global_settings_dict["website"]["enabled"]:
         ip = get_local_ip()
-        printBox(f'Website Dashboard: http://{ip}:{config_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
+        printBox(f'Website Dashboard: http://{ip}:{global_settings_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
 
     try:
         if misc_dict["news"]:

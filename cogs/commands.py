@@ -45,7 +45,7 @@ class Commands(commands.Cog):
         
 
     async def start_commands(self):
-        await self.bot.sleep_till(self.bot.config_dict["account"]["commandsHandlerStartDelay"])
+        await self.bot.sleep_till(self.bot.global_settings_dict["account"]["commandsHandlerStartDelay"])
         await self.bot.shuffle_queue()
         self.send_commands.start()
         self.monitor_checks.start()
@@ -58,7 +58,7 @@ class Commands(commands.Cog):
     @tasks.loop()
     async def send_commands(self):
         try:
-            cnf = self.bot.config_dict["defaultCooldowns"]["commandHandler"]
+            cnf = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]
             priority, _, cmd = await self.bot.queue.get()
             print(priority, cmd)
 
@@ -75,7 +75,7 @@ class Commands(commands.Cog):
             
             """Send the command"""
             await self.bot.upd_cmd_state(cmd["id"])
-            if self.bot.config_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
+            if self.bot.settings_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
                 await self.bot.send(self.bot.construct_command(cmd))
@@ -93,12 +93,12 @@ class Commands(commands.Cog):
 
         except Exception as e:
             print(f"Error in send_commands loop: {e}. {cmd.get('cmd_name', None)}")
-            await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
 
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
-            delay = self.bot.config_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
+            delay = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
             current_time = datetime.now(timezone.utc)
             if not self.bot.state or self.bot.sleep or self.bot.captcha:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)

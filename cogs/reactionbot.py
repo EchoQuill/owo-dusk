@@ -22,7 +22,7 @@ class Reactionbot(commands.Cog):
         self.bot = bot
 
     def fetch_cmd(self, id):
-        commands_dict = self.bot.config_dict["commands"]
+        commands_dict = self.bot.settings_dict["commands"]
         hunt_shortform = commands_dict["hunt"]["useShortForm"] 
         battle_shortform = commands_dict["battle"]["useShortForm"] 
 
@@ -42,7 +42,7 @@ class Reactionbot(commands.Cog):
         return base
 
     async def send_cmd(self, cmd):
-        await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
+        await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
         await self.bot.put_queue(self.fetch_cmd(cmd), quick=True, priority=True)
 
     async def startup_handler(self):
@@ -55,8 +55,8 @@ class Reactionbot(commands.Cog):
         pray/curse
         From what I have seen people do.
         """
-        reaction_bot_dict = self.bot.config_dict["defaultCooldowns"]["reactionBot"]
-        commands_dict = self.bot.config_dict["commands"]
+        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
+        commands_dict = self.bot.settings_dict["commands"]
         """Define alias of commands"""
         print("init")
 
@@ -98,8 +98,8 @@ class Reactionbot(commands.Cog):
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
         """TASK: Double check"""
-        reaction_bot_dict = self.bot.config_dict["defaultCooldowns"]["reactionBot"]
-        commands_dict = self.bot.config_dict["commands"]
+        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
+        commands_dict = self.bot.settings_dict["commands"]
         hunt = commands_dict["hunt"]["enabled"]
         battle = commands_dict["battle"]["enabled"]
         pray = commands_dict["pray"]["enabled"]
@@ -117,8 +117,8 @@ class Reactionbot(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         
-        reaction_bot_dict = self.bot.config_dict["defaultCooldowns"]["reactionBot"]
-        commands_dict = self.bot.config_dict["commands"]
+        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
+        commands_dict = self.bot.settings_dict["commands"]
         owo = reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"]
         if reaction_bot_dict["hunt_and_battle"]:
             hunt = commands_dict["hunt"]["enabled"]

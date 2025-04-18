@@ -42,7 +42,7 @@ class Slots(commands.Cog):
 
     async def cog_load(self):
         
-        if not self.bot.config_dict["gamble"]["slots"]["enabled"]:
+        if not self.bot.settings_dict["gamble"]["slots"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.slots"))
             except ExtensionNotLoaded:
@@ -54,25 +54,27 @@ class Slots(commands.Cog):
         await self.bot.remove_queue(id="slots")
 
     async def start_slots(self, startup=False):
+        cnf = cnf
+        goal_system_dict = self.bot.settings_dict['gamble']['goalSystem']
         try:
             if startup:
-                await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
             else:
                 await self.bot.remove_queue(id="slots")
-                await self.bot.sleep_till(self.bot.config_dict["gamble"]["slots"]["cooldown"])
+                await self.bot.sleep_till(cnf["cooldown"])
 
-            amount_to_gamble = int(self.bot.config_dict["gamble"]["slots"]["startValue"]*(self.bot.config_dict["gamble"]["slots"]["multiplierOnLose"]**self.turns_lost))
-            if self.bot.config_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > self.bot.config_dict["gamble"]["goalSystem"]["amount"]:
+            amount_to_gamble = int(cnf["startValue"]*(cnf["multiplierOnLose"]**self.turns_lost))
+            if self.bot.settings_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > goal_system_dict["amount"]:
                 if not self.goal_reached:
                     self.goal_reached = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{self.bot.config_dict['gamble']['goalSystem']['amount']}, stopping slots!", "#ffd7af")
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "#ffd7af")
 
                 return await self.start_slots()
             else:
                 # ensure goal amount change does not prevent goal recieved message (website dashboard)
                 self.goal_reached = False
 
-            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+self.bot.config_dict["gamble"]["allottedAmount"] <=0):
+            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
                 return await self.start_slots()
                 
             if amount_to_gamble > 250000:

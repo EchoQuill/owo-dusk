@@ -1,0 +1,108 @@
+{
+    "debug": {
+        "enabled": true,
+        "logInTextFile": false,
+        "hideUser": false
+    },
+    "news": true,
+    "console": {
+        "compactMode": false,
+        "hideStarRepoMessage": true,
+        "disableCommandSendLog": false
+    },
+    "hostMode": false,
+    "command_priority": {
+        "cash": {"priority": 1, "basecd": 5000},
+        "hunt": {"priority": 2, "basecd": 15000},
+        "battle": {"priority": 2, "basecd": 15000},
+        "gems": {"priority": 3, "basecd": 5000},
+        "inv": {"priority": 3, "basecd": 10000},
+        "owo": {"priority": 3, "basecd": 10000},
+        "lootbox": {"priority": 4, "basecd": 5000},
+        "crate": {"priority": 4, "basecd": 5000},
+        "huntbot": {"priority": 5, "basecd": 1000},
+        "coinflip": {"priority": 5, "basecd": 15000},
+        "slots": {"priority": 5, "basecd": 15000},
+        "pray": {"priority": 6, "basecd": 300000},
+        "cookie": {"priority": 7, "basecd": 5000},
+        "daily": {"priority": 7, "basecd": 5000},
+        "lottery": {"priority": 8, "basecd": 5000},
+        "level": {"priority": 8, "basecd": 15000},
+        "sell": {"priority": 9, "basecd": 1000},
+        "shop": {"priority": 9, "basecd": 15000},
+        "upgrade": {"priority": 9, "basecd": 1000}
+    },
+    "alias": {
+        "hunt": {
+            "normal": "hunt",
+            "shortform": "h",
+            "alias": ["hunt", "catch", "h"]
+        },
+        "battle": {
+            "normal": "battle",
+            "shortform": "b",
+            "alias": ["battle", "fight", "b"]
+        },
+        "owo": {
+            "normal": "owo",
+            "alias": ["owo", "uwu"]
+        },
+        "sac": {
+            "normal": "sac",
+            "alias": ["sac", "sacrifice", "essence", "sc"]
+        },
+        "lottery": {
+            "normal": "lottery",
+            "alias": ["lottery", "bet", "lotto"]
+        },
+        "cookie": {
+            "normal": "cookie",
+            "alias": ["cookie", "rep"]
+        },
+        "shop": {
+            "normal": "shop",
+            "alias": ["shop", "market"]
+        },
+        "huntbot": {
+            "normal": "ah",
+            "alias": ["ah", "hb", "huntbot", "autohunt"]
+        },
+        "zoo": {
+            "normal": "zoo",
+            "alias": ["zoo", "z"]
+        },
+        "cash": {
+            "normal": "cash",
+            "alias": ["cash", "money", "currency", "cowoncy", "credit", "balance"]
+        },
+        "use": {
+            "normal": "use",
+            "alias": ["use", "equip"]
+        },
+        "lootbox": {
+            "normal": "lootbox",
+            "alias": ["lootbox", "lb"]
+        },
+        "crate": {
+            "normal": "crate",
+            "alias": ["crate", "wc"]
+        },
+        "coinflip": {
+            "normal": "cf",
+            "alias": ["cf", "coinflip", "coin", "flip"]
+        },
+        "slots": {
+            "normal": "s",
+            "alias": ["s", "slots", "slot"]
+        },
+        "inv": {
+            "normal": "inv",
+            "alias": ["inv", "inventory"]
+        },
+        "upgrade": {
+            "normal": "upg",
+            "alias": ["upg", "upgrade"]
+        }
+    }
+    
+}

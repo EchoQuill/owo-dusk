@@ -1,30 +1,6 @@
 {
     "setprefix": "w",
-    "typingIndicator": true,
-    "offlineStatus": false,
     "useSlashCommands": false,
-    "silentTextMessages": false,
-    "website": {
-        "enabled": true,
-        "port": 1200,
-        "refreshInterval": 15,
-        "password": "areallylongandsecretpassword",
-        "enableHost": true
-    },
-    "account": {
-        "startupDelay": [
-            0.5,
-            3
-        ],
-        "commandsStartDelay": [
-            0.1,
-            0.2
-        ],
-        "commandsHandlerStartDelay": [
-            2.3,
-            4.6
-        ]
-    },
     "commands": {
         "hunt": {
             "enabled": true,
@@ -97,12 +73,12 @@
             "amount": 1
         },
         "lvlGrind": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 10,
                 15
             ],
-            "useQuoteInstead": false,
+            "useQuoteInstead": true,
             "minLengthForRandomString": 5,
             "maxLengthForRandomString": 20
         },
@@ -262,12 +238,7 @@
             ]
         }
     },
-    "textCommands": {
-        "prefix": ".",
-        "commandToStopUser": "stop",
-        "commandToStartUser": "start",
-        "allowedUsers": []
-    },
+    
     "autoUse": {
         "gems": {
             "enabled": true,
@@ -292,56 +263,5 @@
         },
         "autoLootbox": true,
         "autoCrate": true
-    },
-    "webhook": {
-        "enabled": false,
-        "webhookUselessLog": false,
-        "webhookUrl": "webhook url here",
-        "webhookCaptchaUrl": null,
-        "webhookUserIdToPingOnCaptcha": 1
-    },
-    "console": {
-        "runConsoleCommandOnCaptcha": false,
-        "commandToRunOnCaptcha": "command to run goes here",
-        "runConsoleCommandOnBan": false,
-        "commandToRunOnBan": "command to run goes here"
-    },
-    "captcha": {
-        "notifications": {
-            "enabled": true,
-            "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
-            "bannedContent": "{username} Banned from OwO!"
-        },
-        "playAudio": {
-            "enabled": true,
-            "path": "mm.mp3"
-        },
-        "toastOrPopup": {
-            "enabled": true,
-            "captchaContent": "Captcha Detected! {username}",
-            "bannedContent": "{username} Banned from OwO!",
-            "termuxToast": {
-                "backgroundColour": "black",
-                "textColour": "red",
-                "position": "middle"
-            }
-        },
-        "termux": {
-            "vibrate": {
-                "enabled": true,
-                "time": 5
-            },
-            "textToSpeech": {
-                "enabled": false,
-                "captchaContent": "Captcha detected! owo",
-                "bannedContent": "Banned from OwO!"
-            },
-            "openCaptchaWebsite": false
-        }
-    },
-    "batteryCheck": {
-        "enabled": false,
-        "minPercentage": 15,
-        "refreshInterval": 120
     }
 }

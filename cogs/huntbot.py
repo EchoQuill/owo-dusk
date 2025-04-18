@@ -70,13 +70,13 @@ class Huntbot(commands.Cog):
             "radar": {"enabled": False, "current_level": 0, "invested": 0},
         }
 
-        for trait, value in self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["traits"].items():
+        for trait, value in self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["traits"].items():
             if value:
                 self.upgrade_details[trait]["enabled"] = True
 
 
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["autoHuntBot"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["autoHuntBot"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.huntbot"))
             except ExtensionNotLoaded:
@@ -91,7 +91,7 @@ class Huntbot(commands.Cog):
         if startup:
             await asyncio.sleep(
                 self.bot.random_float(
-                    self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+                    self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
                 )+5
             )
         else:
@@ -104,7 +104,7 @@ class Huntbot(commands.Cog):
 
         """send the cmd"""
         self.cmd["cmd_arguments"] = str(
-            self.bot.config_dict["commands"]["autoHuntBot"]["cashToSpend"]
+            self.bot.settings_dict["commands"]["autoHuntBot"]["cashToSpend"]
         )
         if ans:
             self.cmd["cmd_arguments"] += f" {ans}"
@@ -114,7 +114,7 @@ class Huntbot(commands.Cog):
     async def upgrade_confirmation(self):
         await self.upgrade_event.wait()
         self.upgrade_event.clear()
-        await self.bot.sleep_till(self.bot.config_dict["defaultCooldowns"]["briefCooldown"])
+        await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
 
     def get_experience(self, embed):
         for field in embed.fields:
@@ -152,14 +152,14 @@ class Huntbot(commands.Cog):
             await self.send_ah(timeToSleep=total_seconds_hb)
 
         elif "I AM BACK WITH" in message.content:
-            if self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["enabled"]:
+            if self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["enabled"]:
                 await self.bot.remove_queue(id="huntbot")
                 self.cmd["cmd_arguments"] = ""
                 await self.bot.put_queue(self.cmd)
                 await self.bot.log(f"huntbot back! attempting to upgrade huntbot..", "#afaf87")
             else:
                 await self.send_ah(
-                    timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+                    timeToSleep=self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
                 )
                 await self.bot.log(f"huntbot back! sending next huntbot command.", "#afaf87")
 
@@ -167,7 +167,7 @@ class Huntbot(commands.Cog):
             ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
             await self.bot.log(f"huntbot receieved password, attempting to solve!", "#afaf87")
             await self.send_ah(
-                timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"],
+                timeToSleep=self.bot.settings_dict["defaultCooldowns"]["briefCooldown"],
                 ans=ans,
             )
 
@@ -182,8 +182,8 @@ class Huntbot(commands.Cog):
                     await self.bot.set_stat(False)
                     if embed.fields:
                         self.get_experience(embed)
-                        data = allocate_essence(self.upgrade_details, self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["priorities"])
-                        await self.bot.sleep_till(self.bot.config_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"])
+                        data = allocate_essence(self.upgrade_details, self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["priorities"])
+                        await self.bot.sleep_till(self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"])
                         for trait, essence_alloc in data.items():
                             self.upgrade_cmd["cmd_arguments"] = f"{trait} {essence_alloc}"
                             if essence_alloc > 0:
@@ -193,7 +193,7 @@ class Huntbot(commands.Cog):
                                 print(self.upgrade_details)
                         await self.bot.set_stat(True)
                     await self.send_ah(
-                        timeToSleep=self.bot.config_dict["defaultCooldowns"]["briefCooldown"]
+                        timeToSleep=self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
                     )
 
 
