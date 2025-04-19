@@ -580,7 +580,9 @@ class MyClient(commands.Bot):
 
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
-        return random.uniform(cooldown_list[0],cooldown_list[1])
+        if cooldown_list is None:
+            return random.uniform(1, 3)  # Default values if cooldown_list is None
+        return random.uniform(cooldown_list[0], cooldown_list[1])
 
     def construct_command(self, data):
         prefix = config_dict['setprefix'] if data.get("prefix") else ""
@@ -745,17 +747,107 @@ class MyClient(commands.Bot):
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
-            if not self.slash_commands:
-                await self.log(f"Slash commands not available in this discord.py version", "#FF0000")
-                return
+            channel = kwargs.get('channel', self.cm)
+            if not hasattr(self, 'application_commands') or not self.application_commands:
+                # Initialize application commands if not already
+                try:
+                    await self.log(f"Initializing application commands...", "#5432a8")
+                    await self.get_application_commands()
+                    await self.log(f"Application commands initialized successfully", "#5432a8")
+                except Exception as e:
+                    await self.log(f"Failed to initialize slash commands: {e}", "#FF0000")
+                    return
+
+            # Find matching command
+            command_found = False
+            target_channel_id = getattr(channel, 'id', None) or self.cm.id
             
-            for command in self.slash_commands:
-                if command.name == msg:
+            for command in self.application_commands:
+                if command.get('name') == msg:
+                    command_found = True
                     await self.wait_until_ready()
-                    await command(**kwargs)
-                    await self.log(f"Ran: /{msg}", "#5432a8")
+                    try:
+                        # Prepare the command data
+                        options = kwargs.get('options', {})
+                        
+                        # Different approach to interact with slash commands
+                        # Get the command ID
+                        command_id = command.get('id')
+                        
+                        if not command_id:
+                            await self.log(f"Missing command ID for /{msg}", "#FF0000")
+                            return
+                        
+                        # Make sure we have a session_id
+                        if not hasattr(self, 'session_id'):
+                            import uuid
+                            self.session_id = str(uuid.uuid4())
+                            await self.log(f"Created new session ID: {self.session_id}", "#FFAA00")
+                            
+                        # Create the interaction data
+                        interaction_data = {
+                            "type": 2,  # APPLICATION_COMMAND type
+                            "application_id": self.owo_bot_id,
+                            "guild_id": getattr(channel, 'guild', getattr(self.cm, 'guild', None)) and channel.guild.id,
+                            "channel_id": target_channel_id,
+                            "session_id": self.session_id,
+                            "data": {
+                                "id": command_id,
+                                "name": msg,
+                                "type": 1,  # CHAT_INPUT type
+                            }
+                        }
+                        
+                        # Add options if provided
+                        if options:
+                            interaction_data["data"]["options"] = options
+                        
+                        # Try alternate method that doesn't require session_id
+                        try:
+                            # Use the application-commands/search endpoint which doesn't require session_id
+                            search_response = await self.http.request(
+                                "GET", 
+                                f"/channels/{target_channel_id}/application-commands/search?type=1&query={msg}&limit=1&application_id={self.owo_bot_id}",
+                            )
+                            
+                            if search_response and 'application_commands' in search_response:
+                                found_command = search_response['application_commands'][0]
+                                await self.log(f"Found command via search: {found_command.get('name')}", "#5432a8")
+                                
+                                # Use simpler approach - send the slash command as a message
+                                await self.send(f"/{msg}", channel=channel)
+                                await self.log(f"Ran: /{msg} via text", "#5432a8")
+                                return
+                            
+                            # If search fails, try direct API method
+                            await self.http.request(
+                                "POST",
+                                f"/interactions",
+                                json=interaction_data
+                            )
+                            await self.log(f"Ran: /{msg}", "#5432a8")
+                        except Exception as e:
+                            await self.log(f"Error with API method: {e}", "#FF0000")
+                            # Final fallback - just send the command as a message
+                            await self.send(f"/{msg}", channel=channel)
+                            await self.log(f"Ran: /{msg} via text fallback", "#FFAA00")
+                    except Exception as e:
+                        await self.log(f"Error executing slash command {msg}: {e}", "#FF0000")
+                        # Try fallback through normal messages if specified
+                        if kwargs.get('fallback_cmd'):
+                            await self.log(f"Trying fallback command via text", "#FFAA00")
+                            await self.send(kwargs.get('fallback_cmd'))
+                        else:
+                            # Last resort - try a plain text command
+                            await self.send(f"/{msg}", channel=channel)
+                    break
+            
+            if not command_found:
+                await self.log(f"Slash command '{msg}' not found", "#FF0000")
+                # Try just sending as text as a last resort
+                await self.send(f"/{msg}", channel=channel)
         except Exception as e:
-            print(f"Error in slashCommandSender: {e}")
+            await self.log(f"Error in slashCommandSender: {e}", "#FF0000")
 
     def calc_time(self):
         pst_timezone = pytz.timezone('US/Pacific') #gets timezone
@@ -785,6 +877,20 @@ class MyClient(commands.Bot):
     async def on_ready(self):
         # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
         try:
+            # Get session ID for interactions
+            # Safely try to get session_id or provide a fallback
+            try:
+                if hasattr(self.http, 'session_id'):
+                    self.session_id = self.http.session_id
+                else:
+                    # Fallback - use a UUID as a session ID if not available
+                    import uuid
+                    self.session_id = str(uuid.uuid4())
+                    print(f"Using fallback session ID: {self.session_id}")
+            except Exception as e:
+                print(f"Error getting session ID: {e}")
+                self.session_id = "fallback_session_id"
+            
             self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
 
             if self.dm is None:
@@ -831,9 +937,32 @@ class MyClient(commands.Bot):
                     print(f"Failed to fetch channel {self.channel_id}: {e}")
                     return
 
-            # Skip slash commands in older Discord.py-self versions
-            self.slash_commands = []
-            print("Slash commands will be disabled in this version")
+            # Make sure config_dict is loaded
+            with open("config.json", "r") as config_file:
+                self.config_dict = json.load(config_file)
+
+            # Initialize slash commands
+            try:
+                if self.config_dict.get("useSlashCommands", False):
+                    # Try to get application commands
+                    try:
+                        await self.get_application_commands()
+                        printBox(f'Slash commands are available and enabled.', 'bold green')
+                    except Exception as e:
+                        printBox(f'Failed to initialize slash commands: {e}', 'bold red')
+                        printBox('Slash commands will be disabled', 'bold yellow')
+                        self.config_dict["useSlashCommands"] = False
+                else:
+                    printBox('Slash commands are disabled in config', 'bold yellow')
+            except Exception as e:
+                printBox(f'Error setting up slash commands: {e}', 'bold red')
+                if self.config_dict is not None:
+                    self.config_dict["useSlashCommands"] = False
+                else:
+                    printBox(f'Config dictionary is None. Loading from file.', 'bold red')
+                    with open("config.json", "r") as config_file:
+                        self.config_dict = json.load(config_file)
+                    self.config_dict["useSlashCommands"] = False
 
             # Add account to stats.json
             self.default_config = {
@@ -858,13 +987,13 @@ class MyClient(commands.Bot):
             await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
             await self.update_config()
 
-            if self.config_dict["offlineStatus"]:
+            if self.config_dict.get("offlineStatus", False):
                 self.presence.start()
 
-            if self.config_dict["sleep"]["enabled"]:
+            if self.config_dict.get("sleep", {}).get("enabled", False):
                 self.random_sleep.start()
 
-            if self.config_dict["cashCheck"]:
+            if self.config_dict.get("cashCheck", False):
                 await asyncio.sleep(random.uniform(4.5, 6.4))
                 await self.put_queue(
                     {
@@ -880,6 +1009,58 @@ class MyClient(commands.Bot):
             print(f"Error in setup_hook: {e}")
             import traceback
             traceback.print_exc()
+
+    async def get_application_commands(self):
+        """Fetch and prepare application commands for use"""
+        try:
+            # Try to fetch application commands from API
+            self.application_commands = []
+            
+            # Get global application commands
+            try:
+                global_commands = await self.http.get_global_commands(self.user.id)
+                if global_commands:
+                    for cmd_data in global_commands:
+                        self.application_commands.append(cmd_data)
+                else:
+                    await self.log(f"No global commands found", "#FFAA00")
+            except Exception as e:
+                await self.log(f"Error fetching global commands: {e}", "#FF0000")
+            
+            # Get guild-specific commands for the current channel's guild
+            if hasattr(self.cm, 'guild') and self.cm.guild:
+                try:
+                    guild_commands = await self.http.get_guild_commands(self.user.id, self.cm.guild.id)
+                    if guild_commands:
+                        for cmd_data in guild_commands:
+                            if cmd_data not in self.application_commands:
+                                self.application_commands.append(cmd_data)
+                    else:
+                        await self.log(f"No guild commands found", "#FFAA00")
+                except Exception as e:
+                    await self.log(f"Error fetching guild commands: {e}", "#FF0000")
+            
+            # Special case - try to get OWO bot slash commands
+            try:
+                await self.log(f"Attempting to find OwO bot commands...", "#5432a8")
+                guild_id = getattr(self.cm, 'guild', None) and self.cm.guild.id
+                if guild_id:
+                    owo_commands = await self.http.get_guild_commands(self.owo_bot_id, guild_id)
+                    if owo_commands:
+                        await self.log(f"Found {len(owo_commands)} OwO bot commands", "#5432a8")
+                        self.application_commands.extend(owo_commands)
+                    else:
+                        await self.log(f"No OwO bot commands found in guild", "#FFAA00")
+            except Exception as e:
+                await self.log(f"Error fetching OwO bot commands: {e}", "#FF0000")
+                
+            await self.log(f"Found {len(self.application_commands)} total application commands", "#5432a8")
+            return self.application_commands
+        except Exception as e:
+            await self.log(f"Error setting up application commands: {e}", "#FF0000")
+            # Initialize with empty list to prevent NoneType errors
+            self.application_commands = []
+            raise e
 
 
 # ----------STARTING BOT----------#

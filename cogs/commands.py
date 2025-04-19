@@ -44,10 +44,30 @@ class Commands(commands.Cog):
                     if not in_queue:
                         async with self.bot.lock:
                             self.bot.checks.append((cmd, datetime.now(timezone.utc)))
+            
+            # Handle slash commands
             if self.bot.config_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
-                await self.bot.slashCommandSender(cmd["slash_cmd_name"])
+                try:
+                    # Pass additional parameters if available
+                    kwargs = {}
+                    if cmd.get("options"):
+                        kwargs["options"] = cmd["options"]
+                    if cmd.get("channel_id"):
+                        kwargs["channel"] = self.bot.get_channel(cmd["channel_id"])
+                    else:
+                        kwargs["channel"] = self.bot.cm
+                    
+                    await self.bot.slashCommandSender(cmd["slash_cmd_name"], **kwargs)
+                except Exception as e:
+                    await self.bot.log(f"Error sending slash command {cmd['slash_cmd_name']}: {e}", "#FF0000")
+                    # Try regular command as fallback if slash fails
+                    if cmd.get("fallback_cmd"):
+                        await self.bot.log(f"Trying fallback command", "#FFAA00")
+                        await self.bot.send(self.bot.construct_command(cmd))
             else:
+                # Regular command
                 await self.bot.send(self.bot.construct_command(cmd))
+                
             await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"]))
         except Exception as e:
             print(f"Error in send_commands loop: {e}")

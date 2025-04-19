@@ -2,7 +2,7 @@
     "setprefix": "w",
     "typingIndicator": true,
     "offlineStatus": false,
-    "useSlashCommands": true,
+    "useSlashCommands": false,
     "silentTextMessages": false,
     "website": {
         "enabled": true,
@@ -73,7 +73,7 @@
             ]
         },
         "pray": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 310,
                 400
@@ -105,7 +105,7 @@
             "maxLengthForRandomString": 20
         },
         "cookie": {
-            "enabled": false,
+            "enabled": true,
             "userid": 408785106942164992,
             "pingUser": false
         },
