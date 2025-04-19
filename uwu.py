@@ -49,7 +49,15 @@ def handle_sigint(signal_number, frame):
     print("\nCtrl+C detected. stopping code!")
     os._exit(0)
 
-signal.signal(signal.SIGINT, handle_sigint)
+# Set up signal handlers for different platforms
+try:
+    signal.signal(signal.SIGINT, handle_sigint)
+    # Additional signals for Unix-like systems (Linux/Mac)
+    if sys.platform != 'win32':
+        signal.signal(signal.SIGTERM, handle_sigint)
+        signal.signal(signal.SIGHUP, handle_sigint)
+except Exception as e:
+    print(f"Warning: Could not set up signal handlers: {e}")
 
 def compare_versions(current_version, latest_version):
     current_version = current_version.lstrip("v")
@@ -192,9 +200,15 @@ def printBox(text, color, title=None):
     console.print(test_panel)
 
 def resource_path(relative_path):
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+    except Exception as e:
+        print(f"Error in resource_path: {e}")
+        return os.path.join(os.path.abspath("."), relative_path.replace("\\", "/"))
 
 def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
@@ -228,13 +242,14 @@ def batteryCheckFunc():
                 time.sleep(config_dict["batteryCheck"]["refreshInterval"])
                 try:
                     battery_status = os.popen("termux-battery-status").read()
+                    battery_data = json.loads(battery_status)
+                    percentage = battery_data["percentage"]
                 except Exception as e:
                     console.print(
                         f"""-system[0] Battery check failed!!""".center(console_width - 2),
                         style="red ",
                     )
-                battery_data = json.loads(battery_status)
-                percentage = battery_data["percentage"]
+                    continue
                 console.print(
                     f"-system[0] Current battery •> {percentage}".center(console_width - 2),
                     style="blue ",
@@ -242,25 +257,71 @@ def batteryCheckFunc():
                 if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
                     break
         else:
+            # For desktop platforms (Windows, macOS, Linux)
             while True:
                 time.sleep(config_dict["batteryCheck"]["refreshInterval"])
                 try:
-                    battery = psutil.sensors_battery()
-                    if battery is not None:
-                        percentage = int(battery.percent)
-                        console.print(
-                            f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                            style="blue ",
-                        )
-                        if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
-                            break
+                    if sys.platform == "darwin":  # macOS
+                        try:
+                            # Try to use psutil for battery info if available
+                            battery = psutil.sensors_battery()
+                            if battery is not None:
+                                percentage = int(battery.percent)
+                            else:
+                                # Fallback for macOS - use system_profiler
+                                cmd = "system_profiler SPPowerDataType | grep 'Charge Information' -A 4"
+                                output = os.popen(cmd).read()
+                                for line in output.split('\n'):
+                                    if "%" in line:
+                                        percentage = int(line.split("%")[0].strip())
+                                        break
+                        except Exception:
+                            console.print(
+                                f"""-system[0] Battery check failed on macOS!!""".center(console_width - 2),
+                                style="red ",
+                            )
+                            continue
+                    elif sys.platform.startswith('linux'):
+                        try:
+                            # Try to use psutil for battery info if available
+                            battery = psutil.sensors_battery()
+                            if battery is not None:
+                                percentage = int(battery.percent)
+                            else:
+                                # Fallback for Linux - check battery file
+                                if os.path.exists("/sys/class/power_supply/BAT0/capacity"):
+                                    with open("/sys/class/power_supply/BAT0/capacity", "r") as f:
+                                        percentage = int(f.read().strip())
+                                else:
+                                    raise Exception("Battery information not available")
+                        except Exception:
+                            console.print(
+                                f"""-system[0] Battery check failed on Linux!!""".center(console_width - 2),
+                                style="red ",
+                            )
+                            continue
+                    else:
+                        # Windows or other platforms with psutil
+                        battery = psutil.sensors_battery()
+                        if battery is not None:
+                            percentage = int(battery.percent)
+                        else:
+                            raise Exception("Battery information not available")
+                    
+                    console.print(
+                        f"-system[0] Current battery •> {percentage}".center(console_width - 2),
+                        style="blue ",
+                    )
+                    if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
+                        break
                 except Exception as e:
                     console.print(
-                        f"""-system[0] Battery check failed!!.""".center(console_width - 2),
+                        f"""-system[0] Battery check failed!! {e}""".center(console_width - 2),
                         style="red ",
                     )
+                    time.sleep(30)  # Wait longer on failure
     except Exception as e:
-        print("battery check", e)
+        print("battery check error:", e)
     os._exit(0)
 
 if config_dict["batteryCheck"]["enabled"]:
@@ -323,13 +384,60 @@ if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
         import tkinter as tk
         from tkinter import PhotoImage
         from queue import Queue
-    except Exception as e:
-        print(f"ImportError: {e}")
         
-    popup_queue = Queue()
-    popup_thread = threading.Thread(target=show_popup_thread)
-    popup_thread.daemon = True  # Ensure the thread exits when the main program does
-    popup_thread.start()
+        # Check if we need a different approach for different platforms
+        popup_queue = Queue()
+        
+        # Try to create a more platform-specific popup approach
+        if sys.platform == 'darwin':  # macOS
+            try:
+                # Try using osascript for notifications on macOS
+                def show_mac_notification(title, message):
+                    cmd = f'''osascript -e 'display notification "{message}" with title "{title}"' '''
+                    os.system(cmd)
+                
+                def macos_popup_thread():
+                    while True:
+                        msg, username, channelname, captchatype = popup_queue.get()
+                        formatted_msg = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+                        show_mac_notification("OwO-dusk - Notifs", formatted_msg)
+                
+                popup_thread = threading.Thread(target=macos_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+            except Exception:
+                # Fallback to tkinter
+                popup_thread = threading.Thread(target=show_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+        elif sys.platform.startswith('linux'):
+            try:
+                # Try using notify-send for Linux
+                def show_linux_notification(title, message):
+                    cmd = f'''notify-send "{title}" "{message}"'''
+                    os.system(cmd)
+                
+                def linux_popup_thread():
+                    while True:
+                        msg, username, channelname, captchatype = popup_queue.get()
+                        formatted_msg = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+                        show_linux_notification("OwO-dusk - Notifs", formatted_msg)
+                
+                popup_thread = threading.Thread(target=linux_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+            except Exception:
+                # Fallback to tkinter
+                popup_thread = threading.Thread(target=show_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+        else:
+            # Windows or other platforms use the default tkinter approach
+            popup_thread = threading.Thread(target=show_popup_thread)
+            popup_thread.daemon = True
+            popup_thread.start()
+    except Exception as e:
+        print(f"ImportError for notifications: {e}")
 
 class MyClient(commands.Bot):
 

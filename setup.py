@@ -33,7 +33,12 @@ def is_termux():
         return True
     else:
         return os.path.isdir("/data/data/com.termux")
-    
+
+def is_macos():
+    return sys.platform == 'darwin'
+
+def is_linux():
+    return sys.platform.startswith('linux')
 
 """while True:
     user_input = input("[?]Do you want help setting this up from scratch? (Y/N):-\n").lower()
@@ -57,6 +62,36 @@ if scratchSetup:
                 print('\033[1;36m[0]attempting to retry installing requirements.txt, after ensuring pkgs are uptodate\033[m')
                 subprocess.check_call(["pkg", "update", "-y"])
                 subprocess.check_call(["pkg", "upgrade", "-y"])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+            elif is_linux():
+                print('\033[1;36m[0]attempting to retry installing requirements.txt on Linux\033[m')
+                try:
+                    # For Debian/Ubuntu based
+                    print('\033[1;36m[0]Trying apt-get update...\033[m')
+                    subprocess.check_call(["sudo", "apt-get", "update", "-y"])
+                    # Install system dependencies
+                    print('\033[1;36m[0]Installing system dependencies...\033[m')
+                    subprocess.check_call(["sudo", "apt-get", "install", "-y", "python3-dev", "python3-pip", "python3-tk", "libnotify-bin"])
+                except:
+                    # For Fedora/RHEL based
+                    try:
+                        print('\033[1;36m[0]Trying dnf update...\033[m')
+                        subprocess.check_call(["sudo", "dnf", "update", "-y"])
+                        print('\033[1;36m[0]Installing system dependencies...\033[m')
+                        subprocess.check_call(["sudo", "dnf", "install", "-y", "python3-devel", "python3-pip", "python3-tkinter", "libnotify"])
+                    except:
+                        print('\033[1;33m[!]Could not update system packages. Continuing anyway...\033[m')
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+            elif is_macos():
+                print('\033[1;36m[0]attempting to retry installing requirements.txt on macOS\033[m')
+                try:
+                    # Check if Homebrew is installed
+                    subprocess.check_call(["which", "brew"])
+                    # Install dependencies with homebrew
+                    print('\033[1;36m[0]Installing system dependencies with Homebrew...\033[m')
+                    subprocess.check_call(["brew", "install", "python-tk"])
+                except:
+                    print('\033[1;33m[!]Homebrew not found. You may need to install tkinter manually.\033[m')
                 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         print('\033[1;36m[0]Installed modules from requirements.txt successfully!\033[m')
         print('\033[1;36m[0]attempting to install numpy and pil\033[m')
@@ -93,6 +128,20 @@ if scratchSetup:
             except Exception as e:
                 print(f"\033[1;31m[x]error when trying to install termux-api:-\n {e}\033[m")
             
+        elif is_linux():
+            print("\033[1;36m[0]installing for Linux...\033[m")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "psutil"])
+                print("\033[1;36m[0]Installed numpy, PIL, and psutil successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]Error when trying to install packages: {e}\033[m")
+        elif is_macos():
+            print("\033[1;36m[0]installing for macOS...\033[m")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "psutil", "playsound3"])
+                print("\033[1;36m[0]Installed numpy, PIL, psutil, and playsound3 successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]Error when trying to install packages: {e}\033[m")
         else:
             print("\033[1;36minstalling normally...\033[m")
             try:

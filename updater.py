@@ -63,6 +63,16 @@ def pull_latest_changes_git():
     repo_dir = "."
     os.chdir(repo_dir)
 
+    try:
+        # Check if git is installed
+        subprocess.run(['git', '--version'], capture_output=True, check=True)
+    except (subprocess.SubprocessError, FileNotFoundError):
+        console.log("[bold red]Git is not installed or not in PATH. Please install Git to update.")
+        console.log("[bold yellow]For Linux: sudo apt-get install git")
+        console.log("[bold yellow]For macOS: brew install git (or use the official installer)")
+        console.log("[bold yellow]For Windows: download from https://git-scm.com/download/win")
+        return
+
     # Check for uncommitted changes
     with console.status("[bold green]Checking for uncommitted changes...") as status:
         status_result = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
