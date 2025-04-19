@@ -34,7 +34,6 @@ class Owo(commands.Cog):
             await self.bot.sleep_till(self.bot.settings_dict["commands"]["owo"]["cooldown"])
             self.owo_ongoing = False
         await self.bot.put_queue(cmd, quick=True)
-        await self.bot.send(self.bot.alias["owo"]["normal"])
             
     
     """gets executed when the cog is first loaded"""
