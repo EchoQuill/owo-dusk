@@ -42,7 +42,6 @@ class Lottery(commands.Cog):
             "cmd_arguments": self.bot.settings_dict['commands']['lottery']['amount'],
             "prefix": True,
             "checks": True,
-            
             "id": "lottery"
         }
     

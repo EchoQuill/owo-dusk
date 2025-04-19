@@ -61,7 +61,7 @@ class Hunt(commands.Cog):
                     await self.bot.put_queue(self.cmd)
                     print("sucess hunt")
         except Exception as e:
-            print(e)
+            await self.log(f"Error - {e}, During hunt on_message()", "#c25560")
 
 async def setup(bot):
     await bot.add_cog(Hunt(bot))

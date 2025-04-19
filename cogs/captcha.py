@@ -77,9 +77,9 @@ def run_system_command(command, timeout, retry=False, delay=5):
 
     # If the thread is still alive after the timeout, terminate it
     if thread.is_alive():
-        print(f"-error[0] {command} command failed!")
+        print(f"Error: {command} command failed! (captcha)")
         if retry:
-            print(f"-system[0] Retrying '{command}' after {delay}s")
+            print(f"Retrying '{command}' after {delay}s")
             time.sleep(delay)
             run_system_command(command, timeout)
 
@@ -123,6 +123,7 @@ class Captcha(commands.Cog):
                         )
             except Exception as e:
                 print(f"{e} - at notifs")
+                
         """Play audio file"""
         """
         TASK: add two checks, check the path for the file in both outside utils folder

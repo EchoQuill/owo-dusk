@@ -172,21 +172,17 @@ def web_start():
     flaskLog.disabled = True
     cli = sys.modules["flask.cli"]
     cli.show_server_banner = lambda *x: None
-    try:
-        app.run(
-            debug=False,
-            use_reloader=False,
-            port=global_settings_dict["website"]["port"],
-            host="0.0.0.0" if global_settings_dict["website"]["enableHost"] else "127.0.0.1",
-        )
-    except Exception as e:
-        print(e)
+    app.run(
+        debug=False,
+        use_reloader=False,
+        port=global_settings_dict["website"]["port"],
+        host="0.0.0.0" if global_settings_dict["website"]["enableHost"] else "127.0.0.1",
+    )
+
 if global_settings_dict["website"]["enabled"]:
-    try:
-        web_thread = threading.Thread(target=web_start)
-        web_thread.start()
-    except Exception as e:
-        print(e)
+    web_thread = threading.Thread(target=web_start)
+    web_thread.start()
+
 
 """"""
 
@@ -477,7 +473,7 @@ class MyClient(commands.Bot):
                     await self.load_extension(extension)
                     
                 except Exception as e:
-                    await self.log(f"Failed to load extension {extension}: {e}")
+                    await self.log(f"Error - Failed to load extension {extension}: {e}", "#c25560")
 
 
     async def update_config(self):
@@ -497,7 +493,7 @@ class MyClient(commands.Bot):
             if cog_name in self.extensions:
                 await self.unload_extension(cog_name)
         except Exception as e:
-            await self.log(f"Error - Failed to unload cog {cog_name}: {e}")
+            await self.log(f"Error - Failed to unload cog {cog_name}: {e}", "#c25560")
 
     def refresh_commands_dict(self):
         commands_dict = self.settings_dict["commands"]
@@ -631,7 +627,7 @@ class MyClient(commands.Bot):
                 )
             )
 
-    async def log(self, text, color, bold=False, web_log=global_settings_dict["website"]["enabled"], webhook_useless_log=global_settings_dict["webhook"]["webhookUselessLog"]):
+    async def log(self, text, color="#ffffff", bold=False, web_log=global_settings_dict["website"]["enabled"], webhook_useless_log=global_settings_dict["webhook"]["webhookUselessLog"]):
         global website_logs
         current_time = datetime.now().strftime("%H:%M:%S")
         if self.misc["debug"]["enabled"]:
@@ -685,7 +681,7 @@ class MyClient(commands.Bot):
         except discord.Forbidden as e:
             await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
         except Exception as e:
-            await self.log(f"Error - {e}, during webhookSender.")
+            await self.log(f"Error - {e}, during webhookSender.", "#c25560")
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
@@ -829,9 +825,7 @@ class MyClient(commands.Bot):
         # Start various tasks and updates
         self.config_update_checker.start()
         await asyncio.sleep(self.random_float(global_settings_dict["account"]["startupDelay"]))
-        print("upd config")
         await self.update_config()
-        print("updated cnfg")
 
         if self.global_settings_dict["offlineStatus"]:
             self.presence.start()
@@ -841,7 +835,6 @@ class MyClient(commands.Bot):
 
         if self.settings_dict["cashCheck"]:
             asyncio.create_task(self.check_for_cash())
-        print("---- ed -----")
 
 def get_local_ip():
     if not global_settings_dict["website"]["enableHost"]:
@@ -913,7 +906,7 @@ if __name__ == "__main__":
                     title=news_json.get("title", "???")
                 )
     except Exception as e:
-        print(e)
+        print(f"Error - {e}, while attempting to fetch news")
 
     if not misc_dict["console"]["hideStarRepoMessage"]:
         console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")

@@ -83,19 +83,16 @@ class Pray(commands.Cog):
                 await self.start_pray_curse()
 
     async def cog_load(self):
-        try:
-            if (
-                not self.bot.settings_dict["commands"]["pray"]["enabled"]
-                and not self.bot.settings_dict["commands"]["curse"]["enabled"]
-            ) or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
-                try:
-                    asyncio.create_task(self.bot.unload_cog("cogs.pray"))
-                except ExtensionNotLoaded:
-                    pass
-            else:
-                asyncio.create_task(self.start_pray_curse())
-        except Exception as e:
-            print(e)
+        if (
+            not self.bot.settings_dict["commands"]["pray"]["enabled"]
+            and not self.bot.settings_dict["commands"]["curse"]["enabled"]
+        ) or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
+            try:
+                asyncio.create_task(self.bot.unload_cog("cogs.pray"))
+            except ExtensionNotLoaded:
+                pass
+        else:
+            asyncio.create_task(self.start_pray_curse())
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="pray")

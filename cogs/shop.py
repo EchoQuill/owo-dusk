@@ -73,7 +73,6 @@ class Shop(commands.Cog):
         🛒 **| user**, you bought a <:cring:590393333331918859> **Common Ring** for **10** <:cowoncy:416043450337853441>!
         """
         if "**, you bought a " in message.content:
-            print(message.content)
             self.bot.balance-=int(re.search(cash_regex, message.content).group(1))
             await self.send_buy()
 

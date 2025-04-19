@@ -58,7 +58,6 @@ class Reactionbot(commands.Cog):
         reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
         commands_dict = self.bot.settings_dict["commands"]
         """Define alias of commands"""
-        print("init")
 
         if reaction_bot_dict["hunt_and_battle"]:
             hunt = commands_dict["hunt"]["enabled"]
@@ -73,7 +72,6 @@ class Reactionbot(commands.Cog):
 
         """Hunt/Battle"""
         if hunt and battle:
-            print("hb rr")
             await self.send_cmd("hunt")
             await self.send_cmd("battle")
         else:
@@ -86,7 +84,6 @@ class Reactionbot(commands.Cog):
 
         """Pray/Curse"""
         if pray or curse:
-            print("pray/curse")
             cmds = []
             if pray:
                 cmds.append("pray")
@@ -140,7 +137,6 @@ class Reactionbot(commands.Cog):
 
             elif "**hunt/battle**" in message.content and (hunt or battle):
                 if hunt and battle:
-                    print("hb rr")
                     await self.send_cmd("hunt")
                     await self.send_cmd("battle")
                 else:

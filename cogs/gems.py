@@ -62,7 +62,7 @@ def find_gems_available(message):
     for gem_id, small_number in inv_numbers:
         gem_count = convert_small_numbers(small_number)
         
-        for rarity, gems in available_gems.items():
+        for _, gems in available_gems.items():
             if gem_id in gems:
                 gems[gem_id] = gem_count
                 break
