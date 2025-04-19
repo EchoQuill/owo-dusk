@@ -85,7 +85,7 @@ class Coinflip(commands.Cog):
                 await self.bot.put_queue(self.cmd)
 
         except Exception as e:
-            await self.log(f"Error - {e}, During coinflip start_cf()", "#c25560")
+            await self.bot.log(f"Error - {e}, During coinflip start_cf()", "#c25560")
 
 
     @commands.Cog.listener()
@@ -116,7 +116,7 @@ class Coinflip(commands.Cog):
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
             except Exception as e:
-                await self.log(f"Error - {e}, During coinflip on_message_edit()", "#c25560")
+                await self.bot.log(f"Error - {e}, During coinflip on_message_edit()", "#c25560")
 
 async def setup(bot):
     await bot.add_cog(Coinflip(bot))

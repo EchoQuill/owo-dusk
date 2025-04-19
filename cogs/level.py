@@ -61,7 +61,7 @@ class Level(commands.Cog):
 
             await self.bot.put_queue(self.cmd)
         except Exception as e:
-            await self.log(f"Error - start_level_grind(): {e}", "#c25560")
+            await self.bot.log(f"Error - start_level_grind(): {e}", "#c25560")
         
     
     """gets executed when the cog is first loaded"""

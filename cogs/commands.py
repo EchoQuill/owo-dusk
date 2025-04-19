@@ -91,7 +91,7 @@ class Commands(commands.Cog):
             
 
         except Exception as e:
-            await self.log(f"Error - send_commands() loop: {e}. {cmd.get('cmd_name', None)}", "#c25560")
+            await self.bot.log(f"Error - send_commands() loop: {e}. {cmd.get('cmd_name', None)}", "#c25560")
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
 
     @tasks.loop(seconds=1)
@@ -115,7 +115,7 @@ class Commands(commands.Cog):
                 self.calc_time = timedelta(0)
             self.last_check_time = current_time
         except Exception as e:
-            await self.log(f"Error - monitor_checks(): {e}", "#c25560")
+            await self.bot.log(f"Error - monitor_checks(): {e}", "#c25560")
 
 
 

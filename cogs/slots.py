@@ -84,7 +84,7 @@ class Slots(commands.Cog):
                 await self.bot.put_queue(self.cmd)
                 
         except Exception as e:
-            await self.log(f"Error - {e}, During slots start_slots()", "#c25560")
+            await self.bot.log(f"Error - {e}, During slots start_slots()", "#c25560")
 
 
     @commands.Cog.listener()
