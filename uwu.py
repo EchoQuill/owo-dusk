@@ -127,6 +127,9 @@ def merge_dicts(main, small):
 def home():
     return render_template("index.html", version=version)
 
+@app.route("/nya")
+def nya_home():
+    return render_template("nya/index.html", version=version)
 
 @app.route("/api/saveThings", methods=["POST"])
 def save_things():
