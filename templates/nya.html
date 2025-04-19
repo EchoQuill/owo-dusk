@@ -12,20 +12,6 @@ the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 -->
 
-<!--
-Website originally created by TheNabbu (https://github.com/TheNabbu)
-for the project Slashy (https://github.com/TahaGorme/slashy), licensed
-under the MIT License. For details, see:
-https://github.com/TahaGorme/slashy/blob/main/LICENSE
-
-This file has been modified for OwO-Dusk, under permission and in
-compliance with the MIT License.
-
-Modified version licensed under GPL-3.0.
--->
-
-
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -41,9 +27,76 @@ Modified version licensed under GPL-3.0.
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="../static/style.css">
 
-    <title>OwO-Dusk - {{version}}</title>
+    <title>OwO-Dusk Nyan~ - {{version}}</title>
+    <style>
+      /* Nya Theme Custom CSS */
+      body {
+        background-color: #1a0b22;
+        background-image: linear-gradient(135deg, #1a0b22 0%, #2a112d 100%);
+      }
+      
+      .container {
+        background-color: rgba(4, 0, 8, 0.4);
+        border-radius: 15px;
+        padding: 10px;
+        margin-top: 10px;
+      }
+      
+      .misc, .balance, .cmds, .cd, .gamble, .adds, .extra {
+        border: 2px solid #ff79c3;
+        box-shadow: 0 0 10px #ff79c380;
+      }
+      
+      .ht {
+        color: #ff79c3;
+        text-shadow: 0 0 5px #ff79c380;
+        font-weight: bold;
+      }
+      
+      .cmd, .mst {
+        color: #e2c6ff;
+      }
+      
+      .paw-icon {
+        display: inline-block;
+        margin: 0 5px;
+        animation: bounce 1s infinite alternate;
+      }
+      
+      @keyframes bounce {
+        from { transform: translateY(0); }
+        to { transform: translateY(-5px); }
+      }
+      
+      .tgl-ios:checked + .tgl-btn {
+        background: #ff79c3;
+      }
+      
+      .nyan-header {
+        text-align: center;
+        margin: 15px auto;
+        font-size: 24px;
+        color: #ff79c3;
+        text-shadow: 0 0 5px #ff79c380;
+        font-weight: bold;
+      }
+      
+      .ss, .sase, .re {
+        background-color: #6b2e8c;
+        transition: all 0.3s ease;
+      }
+      
+      .ss:hover, .sase:hover, .re:hover {
+        background-color: #9a41c9;
+        transform: scale(1.05);
+      }
+      
+      /* Cat ear cursor */
+      * {
+        cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='%23ff79c3' d='M13.64,21.97C13.14,22.21 12.54,22.29 12.00,22.29C11.46,22.29 10.87,22.21 10.36,21.97C3.57,18.72 0.00,12.78 0.00,5.50C0.00,4.76 0.02,4.03 0.07,3.31C0.12,2.60 0.69,2.01 1.40,1.93C2.61,1.79 3.77,1.44 4.81,0.92C5.85,0.39 6.74,0.00 7.50,0.00C8.15,0.00 8.58,0.43 9.17,0.92C9.75,1.40 10.67,2.22 12.00,2.22C13.33,2.22 14.25,1.40 14.84,0.92C15.42,0.43 15.85,0.00 16.50,0.00C17.26,0.00 18.15,0.39 19.19,0.92C20.23,1.44 21.39,1.79 22.60,1.93C23.31,2.01 23.88,2.60 23.93,3.31C23.98,4.03 24.00,4.76 24.00,5.50C24.00,12.78 20.43,18.72 13.64,21.97Z'/></svg>") 12 12, auto;
+      }
+    </style>
   </head>
-
   <body>
     <nav>
       <!--Navigation links-->
@@ -54,12 +107,7 @@ Modified version licensed under GPL-3.0.
           alt="OwO-Dusk Logo"
         />
         <span class="lt">OwO-Dusk</span>
-        <!--<a
-          href="https://github.com/TheNabbu"
-          style="text-decoration: none; cursor: not-allowed"
-          ><span class="ltm">Website by TheNabbu</span></a
-        >-->
-        <span class="ltm" id="credits">{{version}} :></span>
+        <span class="ltm" id="credits">{{version}} Nya~! <span class="paw-icon">🐾</span></span>
       </div>
 
       <div class="support">
@@ -71,10 +119,15 @@ Modified version licensed under GPL-3.0.
         >
       </div>
     </nav>
+    
+    <div class="nyan-header">
+      <span class="paw-icon">🐾</span> Nyan~ Theme <span class="paw-icon">🐾</span>
+    </div>
+    
     <!---->
     <div class="container">
       <div class="misc">
-        <div class="ht">Misc Settings</div>
+        <div class="ht">Misc Settings <span class="paw-icon">🐾</span></div>
         <div class="tab">
           <div class="ms">
             <div class="mst">Auto use Lootbox</div>
@@ -124,17 +177,17 @@ Modified version licensed under GPL-3.0.
       </div>
 
       <div class="balance" style="overflow-y: scroll; max-height: 300px">
-        <div class="ht">Balance</div>
+        <div class="ht">Balance <span class="paw-icon">🐾</span></div>
         <div class="tab">
           <table style="width: 100%" id="balance">
             <tr><th>work in progress</th></tr>
-            <tr><td>or maybe I am just lazy to remove this lol</td></tr>
+            <tr><td>meow meow meow~</td></tr>
           </table>
         </div>
       </div>
       <!--Commands category-->
       <div class="cmds">
-        <div class="ht">Main Features</div>
+        <div class="ht">Main Features <span class="paw-icon">🐾</span></div>
         <div class="tab">
           <div class="cmdp">
             <div class="cmd">Hunt</div>
@@ -228,7 +281,7 @@ Modified version licensed under GPL-3.0.
       </div>
 
       <div class="cd">
-        <div class="ht">Cooldowns</div>
+        <div class="ht">Cooldowns <span class="paw-icon">🐾</span></div>
         <div class="tab">
           <div class="coold">
             <div class="cdn">Long Cooldown</div>
@@ -273,7 +326,7 @@ Modified version licensed under GPL-3.0.
         </div>
       </div>
       <div class="gamble">
-        <div class="ht">Gamble</div>
+        <div class="ht">Gamble <span class="paw-icon">🐾</span></div>
         <div class="tab">
           <div class="cmdp">
             <div class="cmd">Coinflip</div>
@@ -291,14 +344,6 @@ Modified version licensed under GPL-3.0.
               <label class="tgl-btn" for="cb18"></label>
             </div>
           </div>
-          <!--<div class="cmdp">
-            <div class="cmd">Blackjack</div>
-            <div class="cda" id="set14">Settings</div>
-            <div class="cmdtg">
-              <input class="tgl tgl-ios" id="cb19" type="checkbox" />
-              <label class="tgl-btn" for="cb19"></label>
-            </div>
-          </div>-->
         </div>
       </div>
 
@@ -317,20 +362,19 @@ Modified version licensed under GPL-3.0.
           </div>
         </div>
         <div style="display: flex; justify-content: center; margin-top: 20px;">
-          <a href="/nya">
-            <button class="re" style="background-color: #6b2e8c;"><b>Switch to Nyan~ Theme 🐾</b></button>
+          <a href="/">
+            <button class="re" style="background-color: #ff79c3;"><b>Switch to Standard Theme</b></button>
           </a>
         </div>
-        <!-- </div> -->
       </div>
       
       <!-- Theme Switcher -->
       <div style="text-align: center; margin: 20px 0; padding: 10px; display: none;">
-        <a href="/nya" style="display: inline-block; background-color: #6b2e8c; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 5px; transition: all 0.3s ease;">
-          Switch to Nyan~ Theme 🐾
+        <a href="/" style="display: inline-block; background-color: #ff79c3; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 5px; transition: all 0.3s ease;">
+          Switch to Standard Theme
         </a>
       </div>
     </div>
   </body>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
-</html>
+</html> 

@@ -1,2 +1,0 @@
-token1 channel1
-

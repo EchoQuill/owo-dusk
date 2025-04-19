@@ -129,7 +129,7 @@ def home():
 
 @app.route("/nya")
 def nya_home():
-    return render_template("nya/index.html", version=version)
+    return render_template("nya.html", version=version)
 
 @app.route("/api/saveThings", methods=["POST"])
 def save_things():
