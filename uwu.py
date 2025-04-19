@@ -596,7 +596,7 @@ class MyClient(commands.Bot):
 
     async def search_checks(self, id):
         async with self.lock:
-            for command, _ in self.checks:
+            for command in self.checks:
                 if command.get("id", None) == id:
                     return True
             return False

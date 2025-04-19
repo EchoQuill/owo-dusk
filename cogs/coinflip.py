@@ -73,7 +73,7 @@ class Coinflip(commands.Cog):
                 # ensure goal amount change does not prevent goal recieved message (website dashboard)
                 self.goal_reached = False
 
-            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+cnf["allottedAmount"] <=0):
+            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
                 return await self.start_cf()
             
             if amount_to_gamble > 250000:
