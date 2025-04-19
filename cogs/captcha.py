@@ -186,7 +186,7 @@ class Captcha(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
-                time_to_sleep = self.bot.random_float(self.bot.global_settings_dict['defaultCooldowns']['captchaRestart'])
+                time_to_sleep = self.bot.random_float(self.bot.settings_dict['defaultCooldowns']['captchaRestart'])
                 await self.bot.log(f"Captcha solved! - sleeping {time_to_sleep}s before restart.", "#5fd700")
                 await asyncio.sleep(time_to_sleep)
                 self.bot.captcha = False
