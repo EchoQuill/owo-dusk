@@ -16,15 +16,40 @@ import time
 import re
 import os
 import asyncio
+import random
 
 from discord.ext import commands
 from discord import DMChannel
+from discord.channel import DMChannel
+from utils.platform_utils import (
+    IS_TERMUX,
+    play_sound,
+    show_notification,
+    run_system_command
+)
 
 
 with open("config.json", "r") as config_file:
     config_dict = json.load(config_file)
 
-list_captcha = ["human", "captcha", "link", "letterword"]
+list_captcha = [
+    "verifyhumanlol",
+    "captchadetected",
+    "waithuman",
+    "verifyingusereasy",
+    "captchafound",
+    "verifyhumanez",
+    "areyourobot",
+    "humanlolverify",
+    "verifyhumanlmao",
+    "notabotverify",
+    "probablyhumaasdaszxn", # weird keyword
+    "probablyhuman",
+    "botscreen", # idk
+    "clickmepls", # found in captcha
+    "humanalive", #found in some captchas
+    "doubleclick", # found in captcha, double click to verify
+]
 
 
 def clean(msg):
@@ -41,12 +66,14 @@ def is_termux():
     else:
         return os.path.isdir("/data/data/com.termux")
 
-on_mobile = is_termux()
+on_mobile = IS_TERMUX
 
 if not on_mobile:
     #desktop
     from plyer import notification
     from playsound3 import playsound
+    import tkinter as tk
+    popup_queue = asyncio.Queue()
 
 
 def run_system_command(command, timeout, retry=False, delay=5):
@@ -93,34 +120,20 @@ class Captcha(commands.Cog):
         """Notifications"""
         if config_dict["captcha"]["notifications"]["enabled"]:
             try:
-                if on_mobile:
-                    run_system_command(
-                        f"termux-notification -t '{self.bot.user.name} captcha!' -c '{config_dict['captcha']['notifications'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
-                        timeout=5, 
-                        retry=True
-                        )
-                else:
-                    notification.notify(
-                        title=f'{self.bot.user.name} DETECTED CAPTCHA',
-                        message=config_dict['captcha']['notifications'][content].format(username=self.bot.user.name,channelname=channel_name,captchatype=captcha_type),
-                        app_icon=None,
-                        timeout=15
-                        )
+                show_notification(
+                    title=f'{self.bot.user.name} DETECTED CAPTCHA',
+                    message=config_dict['captcha']['notifications'][content].format(
+                        username=self.bot.user.name,
+                        channelname=channel_name,
+                        captchatype=captcha_type
+                    )
+                )
             except Exception as e:
                 print(f"{e} - at notifs")
         """Play audio file"""
-        """
-        TASK: add two checks, check the path for the file in both outside utils folder
-        and in owo-dusk folder
-        +
-        better error handling for missing PATH
-        """
         if config_dict["captcha"]["playAudio"]["enabled"]:
             try:
-                if on_mobile:
-                    run_system_command(f"termux-media-player play {config_dict['playAudio']['path']}", timeout=5, retry=True)
-                else:
-                    playsound(config_dict["playAudio"]["path"], block=False)
+                play_sound(config_dict["playAudio"]["path"])
             except Exception as e:
                 print(f"{e} - at audio")
         """Toast/Popup"""

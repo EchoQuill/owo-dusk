@@ -27,6 +27,14 @@ from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from copy import deepcopy
 from utils.misspell import misspell_word
+from utils.platform_utils import (
+    clear_screen,
+    resource_path,
+    install_package,
+    IS_TERMUX,
+    check_battery,
+    normalize_path
+)
 import json
 import discord
 import asyncio
@@ -71,7 +79,7 @@ def compare_versions(current_version, latest_version):
 
 
 def clear():
-    os.system('cls') if os.name == 'nt' else os.system('clear')
+    clear_screen()
 
 console = Console()
 lock = threading.Lock()
@@ -119,6 +127,9 @@ def merge_dicts(main, small):
 def home():
     return render_template("index.html", version=version)
 
+@app.route("/nya")
+def nya_home():
+    return render_template("nya.html", version=version)
 
 @app.route("/api/saveThings", methods=["POST"])
 def save_things():
@@ -223,45 +234,24 @@ if not on_mobile:
 # For battery check
 def batteryCheckFunc():
     try:
-        if on_mobile:
-            while True:
-                time.sleep(config_dict["batteryCheck"]["refreshInterval"])
-                try:
-                    battery_status = os.popen("termux-battery-status").read()
-                except Exception as e:
-                    console.print(
-                        f"""-system[0] Battery check failed!!""".center(console_width - 2),
-                        style="red ",
-                    )
-                battery_data = json.loads(battery_status)
-                percentage = battery_data["percentage"]
+        while True:
+            time.sleep(config_dict["batteryCheck"]["refreshInterval"])
+            percentage = check_battery()
+            
+            if percentage is not None:
                 console.print(
                     f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                    style="blue ",
+                    style="deep_sky_blue3 ",
                 )
                 if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
                     break
-        else:
-            while True:
-                time.sleep(config_dict["batteryCheck"]["refreshInterval"])
-                try:
-                    battery = psutil.sensors_battery()
-                    if battery is not None:
-                        percentage = int(battery.percent)
-                        console.print(
-                            f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                            style="blue ",
-                        )
-                        if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
-                            break
-                except Exception as e:
-                    console.print(
-                        f"""-system[0] Battery check failed!!.""".center(console_width - 2),
-                        style="red ",
-                    )
+            else:
+                console.print(
+                    f"""-system[0] Battery check failed!!""".center(console_width - 2),
+                    style="red ",
+                )
     except Exception as e:
         print("battery check", e)
-    os._exit(0)
 
 if config_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc)

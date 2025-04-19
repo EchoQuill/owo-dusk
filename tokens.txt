@@ -1,5 +1,1 @@
-token1 channel_id1
-token2 channel_id2
-token3 channel_id3
-
-so on, each line one token and one channel id seperated by a space for however many accounts you have
+token1 channel1

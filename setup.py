@@ -15,25 +15,54 @@ import sys
 import json
 import subprocess
 
+# Try to import platform_utils, and if it fails (on first installation),
+# implement the basic functions needed for setup
 try:
-    os.system("cls") if os.name == "nt" else os.system("clear")
-except:
-    pass
+    from utils.platform_utils import (
+        clear_screen,
+        is_termux,
+        install_package,
+        IS_TERMUX,
+        IS_WINDOWS,
+        IS_MACOS,
+        IS_LINUX
+    )
+except ImportError:
+    def clear_screen():
+        try:
+            os.system("cls") if os.name == "nt" else os.system("clear")
+        except:
+            pass
+        
+    def is_termux():
+        termux_prefix = os.environ.get("PREFIX")
+        termux_home = os.environ.get("HOME")
+        
+        if termux_prefix and "com.termux" in termux_prefix:
+            return True
+        elif termux_home and "com.termux" in termux_home:
+            return True
+        else:
+            return os.path.isdir("/data/data/com.termux")
+    
+    def install_package(package_name):
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+            return True
+        except:
+            return False
+
+    IS_TERMUX = is_termux()
+    IS_WINDOWS = os.name == "nt"
+    IS_MACOS = sys.platform == "darwin"
+    IS_LINUX = sys.platform.startswith("linux")
+
+# Clear the screen
+clear_screen()
+
 print(
     "\033[1;32mwelcome to OwO-Dusk\nThis setup will guide you through with the setup of OwO-Dusk\nThankyou for your trust in OwO-Dusk\033[m"
 )
-
-def is_termux():
-    termux_prefix = os.environ.get("PREFIX")
-    termux_home = os.environ.get("HOME")
-    
-    if termux_prefix and "com.termux" in termux_prefix:
-        return True
-    elif termux_home and "com.termux" in termux_home:
-        return True
-    else:
-        return os.path.isdir("/data/data/com.termux")
-    
 
 """while True:
     user_input = input("[?]Do you want help setting this up from scratch? (Y/N):-\n").lower()
@@ -53,14 +82,14 @@ if scratchSetup:
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         except:
-            if is_termux():
+            if IS_TERMUX:
                 print('\033[1;36m[0]attempting to retry installing requirements.txt, after ensuring pkgs are uptodate\033[m')
                 subprocess.check_call(["pkg", "update", "-y"])
                 subprocess.check_call(["pkg", "upgrade", "-y"])
                 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         print('\033[1;36m[0]Installed modules from requirements.txt successfully!\033[m')
         print('\033[1;36m[0]attempting to install numpy and pil\033[m')
-        if is_termux():
+        if IS_TERMUX:
             # Termux
             print("\033[1;36m[0]installing for termux...\033[m")
             print()
@@ -96,10 +125,10 @@ if scratchSetup:
         else:
             print("\033[1;36minstalling normally...\033[m")
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer", "psutil"])
-                print("\033[1;36m[0]Installed numpy and PIL successfully!\033[m")
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "Pillow", "opencv-python"])
+                print('\033[1;36m[0]installed successfully!\033[m')
             except Exception as e:
-                print(f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m")
+                print(f"\033[1;31m[x]error when trying to install numpy, pil and opencv on reg device:-\n {e}\033[m")
 
     except Exception as e:
         print(f"\033[1;31m[x]error when trying to install requirements:-\n {e}\033[m")
