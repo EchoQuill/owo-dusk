@@ -1,0 +1,72 @@
+{
+    "hunt": {
+        "normal": "hunt",
+        "shortform": "h",
+        "alias": ["hunt", "catch", "h"]
+    },
+    "battle": {
+        "normal": "battle",
+        "shortform": "b",
+        "alias": ["battle", "fight", "b"]
+    },
+    "owo": {
+        "normal": "owo",
+        "alias": ["owo", "uwu"]
+    },
+    "sac": {
+        "normal": "sac",
+        "alias": ["sac", "sacrifice", "essence", "sc"]
+    },
+    "lottery": {
+        "normal": "lottery",
+        "alias": ["lottery", "bet", "lotto"]
+    },
+    "cookie": {
+        "normal": "cookie",
+        "alias": ["cookie", "rep"]
+    },
+    "shop": {
+        "normal": "shop",
+        "alias": ["shop", "market"]
+    },
+    "huntbot": {
+        "normal": "ah",
+        "alias": ["ah", "hb", "huntbot", "autohunt"]
+    },
+    "zoo": {
+        "normal": "zoo",
+        "alias": ["zoo", "z"]
+    },
+    "cash": {
+        "normal": "cash",
+        "alias": ["cash", "money", "currency", "cowoncy", "credit", "balance"]
+    },
+    "use": {
+        "normal": "use",
+        "alias": ["use", "equip"]
+    },
+    "lootbox": {
+        "normal": "lootbox",
+        "alias": ["lootbox", "lb"]
+    },
+    "crate": {
+        "normal": "crate",
+        "alias": ["crate", "wc"]
+    },
+    "coinflip": {
+        "normal": "cf",
+        "alias": ["cf", "coinflip", "coin", "flip"]
+    },
+    "slots": {
+        "normal": "s",
+        "alias": ["s", "slots", "slot"]
+    },
+    "inv": {
+        "normal": "inv",
+        "alias": ["inv", "inventory"]
+    },
+    "upgrade": {
+        "normal": "upg",
+        "alias": ["upg", "upgrade"]
+    }
+}
