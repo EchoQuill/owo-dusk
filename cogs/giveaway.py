@@ -12,7 +12,10 @@
 
 import asyncio
 import json
+<<<<<<< HEAD
 import discord
+=======
+>>>>>>> 2c7a79158070f63777e5ad96278966e70dca4f05
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
@@ -33,6 +36,7 @@ class Giveaway(commands.Cog):
         for i in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
             try:
                 channel = await self.bot.fetch_channel(i)
+<<<<<<< HEAD
             except discord.errors.NotFound:
                 await self.bot.log(f"Giveaway channel {i} not found", "#ff5f00")
                 continue
@@ -78,6 +82,23 @@ class Giveaway(commands.Cog):
                                     pass
             except Exception as e:
                 await self.bot.log(f"Error checking history for channel {channel.id}: {str(e)}", "#ff5f00")
+=======
+            except:
+                channel = None
+            if not channel:
+                # To prevent giving error if channel id is invalid
+                await self.bot.log(f"giveaway channel seems to be invalid", "#ff5f00")
+                continue
+            await self.bot.set_stat(False)
+            async for message in channel.history(limit=self.bot.config_dict["giveawayJoiner"]["messageRangeToCheck"]):
+                if message.embeds:
+                    for embed in message.embeds:
+                        if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
+                            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                            if message.components[0].children[0] and not message.components[0].children[0].disabled:
+                                await message.components[0].children[0].click()
+                                await self.bot.log(f"{self.bot.user}[+] giveaway joined in {message.channel.name}", "#00d7af")
+>>>>>>> 2c7a79158070f63777e5ad96278966e70dca4f05
 
             await self.bot.set_stat(True)
 
@@ -98,6 +119,7 @@ class Giveaway(commands.Cog):
         if message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
             if message.embeds:
                 for embed in message.embeds:
+<<<<<<< HEAD
                     if (embed.author and embed.author.name and 
                         " A New Giveaway Appeared!" in embed.author.name and 
                         message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]):
@@ -119,6 +141,12 @@ class Giveaway(commands.Cog):
                         except (IndexError, AttributeError):
                             # Handle case where components might be malformed
                             pass
+=======
+                    if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.config_dict["giveawayJoiner"]["channelsToJoin"]:
+                        await asyncio.sleep(self.bot.random_float(self.bot.config_dict["giveawayJoiner"]["cooldown"]))
+                        if message.components[0].children[0] and not message.components[0].children[0].disabled:
+                            await message.components[0].children[0].click()
+>>>>>>> 2c7a79158070f63777e5ad96278966e70dca4f05
 
 async def setup(bot):
     await bot.add_cog(Giveaway(bot))

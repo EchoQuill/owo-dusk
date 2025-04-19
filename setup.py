@@ -125,35 +125,10 @@ if scratchSetup:
         else:
             print("\033[1;36minstalling normally...\033[m")
             try:
-                # Install appropriate packages based on OS
-                if IS_WINDOWS:
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer", "psutil", "python-dotenv"])
-                elif IS_MACOS:
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer", "psutil", "python-dotenv"])
-                elif IS_LINUX:
-                    # Install additional dependencies for Linux audio and notifications
-                    print("\033[1;36m[0]Installing Linux-specific dependencies...\033[m")
-                    try:
-                        # Try to detect the package manager
-                        if os.path.exists("/usr/bin/apt"):
-                            # Debian/Ubuntu based
-                            subprocess.check_call(["sudo", "apt", "update"])
-                            subprocess.check_call(["sudo", "apt", "install", "-y", "python3-dev", "python3-pip", "libasound2-dev", "libnotify-dev", "libgirepository1.0-dev"])
-                        elif os.path.exists("/usr/bin/dnf"):
-                            # Fedora/RHEL based
-                            subprocess.check_call(["sudo", "dnf", "install", "-y", "python3-devel", "python3-pip", "alsa-lib-devel", "libnotify-devel", "gobject-introspection-devel"])
-                        elif os.path.exists("/usr/bin/pacman"):
-                            # Arch based
-                            subprocess.check_call(["sudo", "pacman", "-Sy", "python-pip", "alsa-lib", "libnotify", "gobject-introspection"])
-                    except Exception as e:
-                        print(f"\033[1;33m[!]Could not install system dependencies: {e}. You may need to install them manually.\033[m")
-                        
-                    # Install Python packages
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "pillow", "playsound3", "plyer", "psutil", "python-dotenv"])
-                
-                print("\033[1;36m[0]Installed packages successfully!\033[m")
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "Pillow", "opencv-python"])
+                print('\033[1;36m[0]installed successfully!\033[m')
             except Exception as e:
-                print(f"\033[1;31m[x]Error when trying to install packages: {e}\033[m")
+                print(f"\033[1;31m[x]error when trying to install numpy, pil and opencv on reg device:-\n {e}\033[m")
 
     except Exception as e:
         print(f"\033[1;31m[x]error when trying to install requirements:-\n {e}\033[m")

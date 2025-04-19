@@ -200,15 +200,23 @@ def printBox(text, color, title=None):
     console.print(test_panel)
 
 def resource_path(relative_path):
-    from utils.platform_utils import resource_path as rp
-    return rp(relative_path)
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
 
 def is_termux():
-    from utils.platform_utils import IS_TERMUX
-    return IS_TERMUX
+    termux_prefix = os.environ.get("PREFIX")
+    termux_home = os.environ.get("HOME")
+    
+    if termux_prefix and "com.termux" in termux_prefix:
+        return True
+    elif termux_home and "com.termux" in termux_home:
+        return True
+    else:
+        return os.path.isdir("/data/data/com.termux")
 
 on_mobile = is_termux()
 
@@ -230,7 +238,7 @@ def batteryCheckFunc():
             if percentage is not None:
                 console.print(
                     f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                    style="blue ",
+                    style="deep_sky_blue3 ",
                 )
                 if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
                     break
@@ -241,7 +249,6 @@ def batteryCheckFunc():
                 )
     except Exception as e:
         print("battery check", e)
-    os._exit(0)
 
 if config_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc)

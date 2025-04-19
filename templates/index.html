@@ -30,248 +30,129 @@ Modified version licensed under GPL-3.0.
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
-      rel="shortcut icon"
-      href="{{ url_for('static', filename='imgs/logo.png') }}"
-      type="image/x-icon"
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
     />
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}" />
 
-    <title>OwO-Dusk - {{version}}</title>
+    <title>OWO Dusk</title>
   </head>
-
   <body>
+    <!-- Navbar -->
     <nav>
-      <!--Navigation links-->
       <div class="logo">
         <img
           class="icon"
-          src="{{ url_for('static', filename='imgs/logo.png') }}"
-          alt="OwO-Dusk Logo"
+          src="{{ url_for('static', filename='icon.gif') }}"
+          alt="owo icon"
         />
-        <span class="lt">OwO-Dusk</span>
-        <!--<a
-          href="https://github.com/TheNabbu"
-          style="text-decoration: none; cursor: not-allowed"
-          ><span class="ltm">Website by TheNabbu</span></a
-        >-->
-        <span class="ltm" id="credits">{{version}} :></span>
+        <p class="lt">owo-dusk</p>
       </div>
-
       <div class="support">
-        <a
-          href="https://discord.gg/RMbZZDf2fa"
-          target="_blank"
-          rel="noopener noreferrer"
-          ><button class="ss">Support Server</button></a
-        >
+        <a href="https://discord.gg/mVQbEKFFXJ" target="_blank">
+          <button class="ss">Support Server</button>
+        </a>
       </div>
     </nav>
-    <!---->
-    <div class="container">
-      <div class="misc">
-        <div class="ht">Misc Settings</div>
+    <!-- Main -->
+    <div class="main">
+      <!-- Dashboard Controls top portion-->
+      <div class="all">
+        <div class="ht">Settings</div>
         <div class="tab">
-          <div class="ms">
-            <div class="mst">Auto use Lootbox</div>
-            <div class="mstg">
+          <div class="cmdp">
+            <div class="cmd">Auto Farm</div>
+            <div class="cda" id="set1">Settings</div>
+            <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb1" type="checkbox" />
               <label class="tgl-btn" for="cb1"></label>
             </div>
           </div>
-          <div class="ms">
-            <div class="mst">Auto use Crate</div>
-            <div class="mstg">
+          <div class="cmdp">
+            <div class="cmd">Pray/Curse</div>
+            <div class="cda" id="set2">Settings</div>
+            <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb2" type="checkbox" />
               <label class="tgl-btn" for="cb2"></label>
             </div>
           </div>
-          <div class="ms">
-            <div class="mst">Slash Commands</div>
-            <div class="mstg">
+          <div class="cmdp">
+            <div class="cmd">Daily/Cookie</div>
+            <div class="cda" id="set3">Settings</div>
+            <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb3" type="checkbox" />
               <label class="tgl-btn" for="cb3"></label>
             </div>
           </div>
-          <div class="ms">
-            <div class="mst">Offline Mode</div>
-            <div class="mstg">
+          <div class="cmdp">
+            <div class="cmd">Guild/Donations</div>
+            <div class="cda" id="set4">Settings</div>
+            <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb4" type="checkbox" />
               <label class="tgl-btn" for="cb4"></label>
             </div>
           </div>
           <div class="cmdp">
-            <div class="cmd">Webhook</div>
-            <div class="cda" id="set1">Settings</div>
+            <div class="cmd">CheckBalance</div>
+            <div class="cda" id="set5">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb5" type="checkbox" />
               <label class="tgl-btn" for="cb5"></label>
             </div>
           </div>
           <div class="cmdp">
-            <div class="cmd">Auto use Gems</div>
-            <!--<div class="cda" id="set2">Settings</div>-->
+            <div class="cmd">Lottery</div>
+            <div class="cda" id="set6">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb6" type="checkbox" />
               <label class="tgl-btn" for="cb6"></label>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="balance" style="overflow-y: scroll; max-height: 300px">
-        <div class="ht">Balance</div>
-        <div class="tab">
-          <table style="width: 100%" id="balance">
-            <tr><th>work in progress</th></tr>
-            <tr><td>or maybe I am just lazy to remove this lol</td></tr>
-          </table>
-        </div>
-      </div>
-      <!--Commands category-->
-      <div class="cmds">
-        <div class="ht">Main Features</div>
-        <div class="tab">
           <div class="cmdp">
-            <div class="cmd">Hunt</div>
-            <div class="cda" id="set3">Settings</div>
+            <div class="cmd">Gemmine</div>
+            <div class="cda" id="set7">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb7" type="checkbox" />
               <label class="tgl-btn" for="cb7"></label>
             </div>
           </div>
-
           <div class="cmdp">
-            <div class="cmd">Battle</div>
-            <div class="cda" id="set4">Settings</div>
+            <div class="cmd">Quest</div>
+            <div class="cda" id="set8">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb8" type="checkbox" />
               <label class="tgl-btn" for="cb8"></label>
             </div>
           </div>
-
           <div class="cmdp">
-            <div class="cmd">OwO</div>
-            <div class="cda" id="set5">Settings</div>
+            <div class="cmd">Send</div>
+            <div class="cda" id="set9">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb9" type="checkbox" />
               <label class="tgl-btn" for="cb9"></label>
             </div>
           </div>
-
           <div class="cmdp">
-            <div class="cmd">Level Grind</div>
-            <div class="cda" id="set6">Settings</div>
+            <div class="cmd">Auto Battle Teams</div>
+            <div class="cda" id="set10">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb10" type="checkbox" />
               <label class="tgl-btn" for="cb10"></label>
             </div>
           </div>
-
           <div class="cmdp">
-            <div class="cmd">Pray</div>
-            <div class="cda" id="set7">Settings</div>
+            <div class="cmd">Sleep/Awake</div>
+            <div class="cda" id="set11">Settings</div>
             <div class="cmdtg">
               <input class="tgl tgl-ios" id="cb11" type="checkbox" />
               <label class="tgl-btn" for="cb11"></label>
             </div>
           </div>
-
-          <div class="cmdp">
-            <div class="cmd">Curse</div>
-            <div class="cda" id="set7">Settings</div>
-            <div class="cmdtg">
-              <input class="tgl tgl-ios" id="cb12" type="checkbox" />
-              <label class="tgl-btn" for="cb12"></label>
-            </div>
-          </div>
-
-          <div class="cmdp">
-            <div class="cmd">Cookie</div>
-            <div class="cda" id="set9">Settings</div>
-            <div class="cmdtg">
-              <input class="tgl tgl-ios" id="cb13" type="checkbox" />
-              <label class="tgl-btn" for="cb13"></label>
-            </div>
-          </div>
-
-          <div class="cmdp">
-            <div class="cmd">Daily</div>
-            <div class="cmdtg">
-              <input class="tgl tgl-ios" id="cb14" type="checkbox" />
-              <label class="tgl-btn" for="cb14"></label>
-            </div>
-          </div>
-
-          <div class="cmdp">
-            <div class="cmd">Lottery</div>
-            <div class="cda" id="set10">Settings</div>
-            <div class="cmdtg">
-              <input class="tgl tgl-ios" id="cb15" type="checkbox" />
-              <label class="tgl-btn" for="cb15"></label>
-            </div>
-          </div>
-
-          <div class="cmdp">
-            <div class="cmd">Giveaway Joiner</div>
-            <div class="cda" id="set11">Settings</div>
-            <div class="cmdtg">
-              <input class="tgl tgl-ios" id="cb16" type="checkbox" />
-              <label class="tgl-btn" for="cb16"></label>
-            </div>
-          </div>
         </div>
       </div>
-
-      <div class="cd">
-        <div class="ht">Cooldowns</div>
-        <div class="tab">
-          <div class="coold">
-            <div class="cdn">Long Cooldown</div>
-            <div class="cdr">
-              <p id="b1" class="ct">400</p>
-              &nbsp;-&nbsp;
-              <p id="b2" class="ct">600</p>
-            </div>
-          </div>
-          <div class="coold">
-            <div class="cdn">Moderate Cooldown</div>
-            <div class="cdr">
-              <p id="b3" class="ct">70</p>
-              &nbsp;-&nbsp;
-              <p id="b4" class="ct">200</p>
-            </div>
-          </div>
-          <div class="coold">
-            <div class="cdn">Short Cooldown</div>
-            <div class="cdr">
-              <p id="b5" class="ct">10</p>
-              &nbsp;-&nbsp;
-              <p id="b6" class="ct">60</p>
-            </div>
-          </div>
-          <div class="coold">
-            <div class="cdn">Brief Cooldown</div>
-            <div class="cdr">
-              <p id="b7" class="ct">0.7</p>
-              &nbsp;-&nbsp;
-              <p id="b8" class="ct">2.7</p>
-            </div>
-          </div>
-          <div class="coold">
-            <div class="cdn">Captcha Restart Delay</div>
-            <div class="cdr">
-              <p id="b9" class="ct">0.7</p>
-              &nbsp;-&nbsp;
-              <p id="b10" class="ct">2.7</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Gamble -->
       <div class="gamble">
         <div class="ht">Gamble</div>
         <div class="tab">
