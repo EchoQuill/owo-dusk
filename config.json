@@ -2,7 +2,7 @@
     "setprefix": "w",
     "typingIndicator": true,
     "offlineStatus": false,
-    "useSlashCommands": false,
+    "useSlashCommands": true,
     "silentTextMessages": false,
     "website": {
         "enabled": true,
@@ -95,7 +95,7 @@
             "amount": 1
         },
         "lvlGrind": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 10,
                 15
@@ -120,7 +120,7 @@
             ]
         },
         "owo": {
-            "enabled": false,
+            "enabled": true,
             "cooldown": [
                 10,
                 13

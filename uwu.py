@@ -444,7 +444,7 @@ class MyClient(commands.Bot):
     def __init__(self, token, channel_id, *args, **kwargs):
         """The self_bot here makes sure the inbuild command `help`
         doesn't get executed by other users."""
-
+        
         super().__init__(command_prefix="-", self_bot=True, *args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
@@ -745,13 +745,17 @@ class MyClient(commands.Bot):
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
+            if not self.slash_commands:
+                await self.log(f"Slash commands not available in this discord.py version", "#FF0000")
+                return
+            
             for command in self.slash_commands:
                 if command.name == msg:
                     await self.wait_until_ready()
                     await command(**kwargs)
                     await self.log(f"Ran: /{msg}", "#5432a8")
         except Exception as e:
-            print(e)
+            print(f"Error in slashCommandSender: {e}")
 
     def calc_time(self):
         pst_timezone = pytz.timezone('US/Pacific') #gets timezone
@@ -803,81 +807,79 @@ class MyClient(commands.Bot):
         
 
     async def setup_hook(self):
-        self.owo_bot_id = 408785106942164992
-        self.safety_check_loop.start()
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
+        try:
+            self.owo_bot_id = 408785106942164992
+            self.safety_check_loop.start()
+            if self.session is None:
+                self.session = aiohttp.ClientSession()
 
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2), 'bold royal_blue1 ')
-        listUserIds.append(self.user.id)
+            printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2), 'bold royal_blue1 ')
+            listUserIds.append(self.user.id)
 
-        # Fetch the channel
-        self.cm = self.get_channel(self.channel_id)
-        if not self.cm:
-            try:
-                self.cm = await self.fetch_channel(self.channel_id)
-            except discord.NotFound:
-                print(f"Channel with ID {self.channel_id} does not exist.")
-                return
-            except discord.Forbidden:
-                print(f"Bot lacks permissions to access channel {self.channel_id}.")
-                return
-            except discord.HTTPException as e:
-                print(f"Failed to fetch channel {self.channel_id}: {e}")
-                return
+            # Fetch the channel
+            self.cm = self.get_channel(self.channel_id)
+            if not self.cm:
+                try:
+                    self.cm = await self.fetch_channel(self.channel_id)
+                except discord.NotFound:
+                    print(f"Channel with ID {self.channel_id} does not exist.")
+                    return
+                except discord.Forbidden:
+                    print(f"Bot lacks permissions to access channel {self.channel_id}.")
+                    return
+                except discord.HTTPException as e:
+                    print(f"Failed to fetch channel {self.channel_id}: {e}")
+                    return
 
-        
+            # Skip slash commands in older Discord.py-self versions
+            self.slash_commands = []
+            print("Slash commands will be disabled in this version")
 
-        # Fetch slash commands in self.cm
-        self.slash_commands = []
-        for command in await self.cm.application_commands():
-            if command.application.id == self.owo_bot_id:
-                self.slash_commands.append(command)
-
-        # Add account to stats.json
-        self.default_config = {
-            self.user.id: {
-                "daily": 0,
-                "lottery": 0,
-                "cookie": 0,
-                "banned": [],
-                "giveaways": 0
-            }
-        }
-
-        with lock:
-            accounts_dict = load_accounts_dict()
-            if str(self.user.id) not in accounts_dict:
-                accounts_dict.update(self.default_config)
-                with open("utils/stats.json", "w") as f:
-                    json.dump(accounts_dict, f, indent=4)
-
-
-        # Start various tasks and updates
-        self.config_update_checker.start()
-        await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
-        await self.update_config()
-
-        if self.config_dict["offlineStatus"]:
-            self.presence.start()
-
-        if self.config_dict["sleep"]["enabled"]:
-            self.random_sleep.start()
-
-        if self.config_dict["cashCheck"]:
-            await asyncio.sleep(random.uniform(4.5, 6.4))
-            await self.put_queue(
-                {
-                    "cmd_name": self.alias["cash"]["normal"],
-                    "prefix": True,
-                    "checks": True,
-                    "retry_count": 0,
-                    "id": "cash",
-                    "removed": False
+            # Add account to stats.json
+            self.default_config = {
+                self.user.id: {
+                    "daily": 0,
+                    "lottery": 0,
+                    "cookie": 0,
+                    "banned": [],
+                    "giveaways": 0
                 }
-            )
+            }
 
-        
+            with lock:
+                accounts_dict = load_accounts_dict()
+                if str(self.user.id) not in accounts_dict:
+                    accounts_dict.update(self.default_config)
+                    with open("utils/stats.json", "w") as f:
+                        json.dump(accounts_dict, f, indent=4)
+
+            # Start various tasks and updates
+            self.config_update_checker.start()
+            await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
+            await self.update_config()
+
+            if self.config_dict["offlineStatus"]:
+                self.presence.start()
+
+            if self.config_dict["sleep"]["enabled"]:
+                self.random_sleep.start()
+
+            if self.config_dict["cashCheck"]:
+                await asyncio.sleep(random.uniform(4.5, 6.4))
+                await self.put_queue(
+                    {
+                        "cmd_name": self.alias["cash"]["normal"],
+                        "prefix": True,
+                        "checks": True,
+                        "retry_count": 0,
+                        "id": "cash",
+                        "removed": False
+                    }
+                )
+        except Exception as e:
+            print(f"Error in setup_hook: {e}")
+            import traceback
+            traceback.print_exc()
 
 
 # ----------STARTING BOT----------#
@@ -889,10 +891,15 @@ def run_bots(tokens_and_channels):
         threads.append(thread)
     for thread in threads:
         thread.join()
+
 def run_bot(token, channel_id):
     logging.getLogger("discord.client").setLevel(logging.ERROR)
-    client = MyClient(token, channel_id)
-    client.run(token, log_level=logging.ERROR)
+    try:
+        client = MyClient(token, channel_id)
+        client.run(token, log_level=logging.ERROR)
+    except Exception as e:
+        print(f"Error running bot: {e}")
+
 if __name__ == "__main__":
     console.print(owoPanel)
     console.rule(f"[bold blue1]version - {version}", style="navy_blue")
