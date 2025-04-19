@@ -49,7 +49,15 @@ def handle_sigint(signal_number, frame):
     print("\nCtrl+C detected. stopping code!")
     os._exit(0)
 
-signal.signal(signal.SIGINT, handle_sigint)
+# Set up signal handlers for different platforms
+try:
+    signal.signal(signal.SIGINT, handle_sigint)
+    # Additional signals for Unix-like systems (Linux/Mac)
+    if sys.platform != 'win32':
+        signal.signal(signal.SIGTERM, handle_sigint)
+        signal.signal(signal.SIGHUP, handle_sigint)
+except Exception as e:
+    print(f"Warning: Could not set up signal handlers: {e}")
 
 def compare_versions(current_version, latest_version):
     current_version = current_version.lstrip("v")
@@ -192,9 +200,15 @@ def printBox(text, color, title=None):
     console.print(test_panel)
 
 def resource_path(relative_path):
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+    except Exception as e:
+        print(f"Error in resource_path: {e}")
+        return os.path.join(os.path.abspath("."), relative_path.replace("\\", "/"))
 
 def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
@@ -228,13 +242,14 @@ def batteryCheckFunc():
                 time.sleep(config_dict["batteryCheck"]["refreshInterval"])
                 try:
                     battery_status = os.popen("termux-battery-status").read()
+                    battery_data = json.loads(battery_status)
+                    percentage = battery_data["percentage"]
                 except Exception as e:
                     console.print(
                         f"""-system[0] Battery check failed!!""".center(console_width - 2),
                         style="red ",
                     )
-                battery_data = json.loads(battery_status)
-                percentage = battery_data["percentage"]
+                    continue
                 console.print(
                     f"-system[0] Current battery •> {percentage}".center(console_width - 2),
                     style="blue ",
@@ -242,25 +257,71 @@ def batteryCheckFunc():
                 if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
                     break
         else:
+            # For desktop platforms (Windows, macOS, Linux)
             while True:
                 time.sleep(config_dict["batteryCheck"]["refreshInterval"])
                 try:
-                    battery = psutil.sensors_battery()
-                    if battery is not None:
-                        percentage = int(battery.percent)
-                        console.print(
-                            f"-system[0] Current battery •> {percentage}".center(console_width - 2),
-                            style="blue ",
-                        )
-                        if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
-                            break
+                    if sys.platform == "darwin":  # macOS
+                        try:
+                            # Try to use psutil for battery info if available
+                            battery = psutil.sensors_battery()
+                            if battery is not None:
+                                percentage = int(battery.percent)
+                            else:
+                                # Fallback for macOS - use system_profiler
+                                cmd = "system_profiler SPPowerDataType | grep 'Charge Information' -A 4"
+                                output = os.popen(cmd).read()
+                                for line in output.split('\n'):
+                                    if "%" in line:
+                                        percentage = int(line.split("%")[0].strip())
+                                        break
+                        except Exception:
+                            console.print(
+                                f"""-system[0] Battery check failed on macOS!!""".center(console_width - 2),
+                                style="red ",
+                            )
+                            continue
+                    elif sys.platform.startswith('linux'):
+                        try:
+                            # Try to use psutil for battery info if available
+                            battery = psutil.sensors_battery()
+                            if battery is not None:
+                                percentage = int(battery.percent)
+                            else:
+                                # Fallback for Linux - check battery file
+                                if os.path.exists("/sys/class/power_supply/BAT0/capacity"):
+                                    with open("/sys/class/power_supply/BAT0/capacity", "r") as f:
+                                        percentage = int(f.read().strip())
+                                else:
+                                    raise Exception("Battery information not available")
+                        except Exception:
+                            console.print(
+                                f"""-system[0] Battery check failed on Linux!!""".center(console_width - 2),
+                                style="red ",
+                            )
+                            continue
+                    else:
+                        # Windows or other platforms with psutil
+                        battery = psutil.sensors_battery()
+                        if battery is not None:
+                            percentage = int(battery.percent)
+                        else:
+                            raise Exception("Battery information not available")
+                    
+                    console.print(
+                        f"-system[0] Current battery •> {percentage}".center(console_width - 2),
+                        style="blue ",
+                    )
+                    if percentage < int(config_dict["batteryCheck"]["minPercentage"]):
+                        break
                 except Exception as e:
                     console.print(
-                        f"""-system[0] Battery check failed!!.""".center(console_width - 2),
+                        f"""-system[0] Battery check failed!! {e}""".center(console_width - 2),
                         style="red ",
                     )
+                    time.sleep(30)  # Wait longer on failure
     except Exception as e:
-        print("battery check", e)
+        print("battery check error:", e)
     os._exit(0)
 
 if config_dict["batteryCheck"]["enabled"]:
@@ -323,20 +384,67 @@ if config_dict["captcha"]["toastOrPopup"] and not on_mobile:
         import tkinter as tk
         from tkinter import PhotoImage
         from queue import Queue
-    except Exception as e:
-        print(f"ImportError: {e}")
         
-    popup_queue = Queue()
-    popup_thread = threading.Thread(target=show_popup_thread)
-    popup_thread.daemon = True  # Ensure the thread exits when the main program does
-    popup_thread.start()
+        # Check if we need a different approach for different platforms
+        popup_queue = Queue()
+        
+        # Try to create a more platform-specific popup approach
+        if sys.platform == 'darwin':  # macOS
+            try:
+                # Try using osascript for notifications on macOS
+                def show_mac_notification(title, message):
+                    cmd = f'''osascript -e 'display notification "{message}" with title "{title}"' '''
+                    os.system(cmd)
+                
+                def macos_popup_thread():
+                    while True:
+                        msg, username, channelname, captchatype = popup_queue.get()
+                        formatted_msg = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+                        show_mac_notification("OwO-dusk - Notifs", formatted_msg)
+                
+                popup_thread = threading.Thread(target=macos_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+            except Exception:
+                # Fallback to tkinter
+                popup_thread = threading.Thread(target=show_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+        elif sys.platform.startswith('linux'):
+            try:
+                # Try using notify-send for Linux
+                def show_linux_notification(title, message):
+                    cmd = f'''notify-send "{title}" "{message}"'''
+                    os.system(cmd)
+                
+                def linux_popup_thread():
+                    while True:
+                        msg, username, channelname, captchatype = popup_queue.get()
+                        formatted_msg = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+                        show_linux_notification("OwO-dusk - Notifs", formatted_msg)
+                
+                popup_thread = threading.Thread(target=linux_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+            except Exception:
+                # Fallback to tkinter
+                popup_thread = threading.Thread(target=show_popup_thread)
+                popup_thread.daemon = True
+                popup_thread.start()
+        else:
+            # Windows or other platforms use the default tkinter approach
+            popup_thread = threading.Thread(target=show_popup_thread)
+            popup_thread.daemon = True
+            popup_thread.start()
+    except Exception as e:
+        print(f"ImportError for notifications: {e}")
 
 class MyClient(commands.Bot):
 
     def __init__(self, token, channel_id, *args, **kwargs):
         """The self_bot here makes sure the inbuild command `help`
         doesn't get executed by other users."""
-
+        
         super().__init__(command_prefix="-", self_bot=True, *args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
@@ -472,7 +580,9 @@ class MyClient(commands.Bot):
 
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
-        return random.uniform(cooldown_list[0],cooldown_list[1])
+        if cooldown_list is None:
+            return random.uniform(1, 3)  # Default values if cooldown_list is None
+        return random.uniform(cooldown_list[0], cooldown_list[1])
 
     def construct_command(self, data):
         prefix = config_dict['setprefix'] if data.get("prefix") else ""
@@ -637,13 +747,107 @@ class MyClient(commands.Bot):
 
     async def slashCommandSender(self, msg, **kwargs):
         try:
-            for command in self.slash_commands:
-                if command.name == msg:
+            channel = kwargs.get('channel', self.cm)
+            if not hasattr(self, 'application_commands') or not self.application_commands:
+                # Initialize application commands if not already
+                try:
+                    await self.log(f"Initializing application commands...", "#5432a8")
+                    await self.get_application_commands()
+                    await self.log(f"Application commands initialized successfully", "#5432a8")
+                except Exception as e:
+                    await self.log(f"Failed to initialize slash commands: {e}", "#FF0000")
+                    return
+
+            # Find matching command
+            command_found = False
+            target_channel_id = getattr(channel, 'id', None) or self.cm.id
+            
+            for command in self.application_commands:
+                if command.get('name') == msg:
+                    command_found = True
                     await self.wait_until_ready()
-                    await command(**kwargs)
-                    await self.log(f"Ran: /{msg}", "#5432a8")
+                    try:
+                        # Prepare the command data
+                        options = kwargs.get('options', {})
+                        
+                        # Different approach to interact with slash commands
+                        # Get the command ID
+                        command_id = command.get('id')
+                        
+                        if not command_id:
+                            await self.log(f"Missing command ID for /{msg}", "#FF0000")
+                            return
+                        
+                        # Make sure we have a session_id
+                        if not hasattr(self, 'session_id'):
+                            import uuid
+                            self.session_id = str(uuid.uuid4())
+                            await self.log(f"Created new session ID: {self.session_id}", "#FFAA00")
+                            
+                        # Create the interaction data
+                        interaction_data = {
+                            "type": 2,  # APPLICATION_COMMAND type
+                            "application_id": self.owo_bot_id,
+                            "guild_id": getattr(channel, 'guild', getattr(self.cm, 'guild', None)) and channel.guild.id,
+                            "channel_id": target_channel_id,
+                            "session_id": self.session_id,
+                            "data": {
+                                "id": command_id,
+                                "name": msg,
+                                "type": 1,  # CHAT_INPUT type
+                            }
+                        }
+                        
+                        # Add options if provided
+                        if options:
+                            interaction_data["data"]["options"] = options
+                        
+                        # Try alternate method that doesn't require session_id
+                        try:
+                            # Use the application-commands/search endpoint which doesn't require session_id
+                            search_response = await self.http.request(
+                                "GET", 
+                                f"/channels/{target_channel_id}/application-commands/search?type=1&query={msg}&limit=1&application_id={self.owo_bot_id}",
+                            )
+                            
+                            if search_response and 'application_commands' in search_response:
+                                found_command = search_response['application_commands'][0]
+                                await self.log(f"Found command via search: {found_command.get('name')}", "#5432a8")
+                                
+                                # Use simpler approach - send the slash command as a message
+                                await self.send(f"/{msg}", channel=channel)
+                                await self.log(f"Ran: /{msg} via text", "#5432a8")
+                                return
+                            
+                            # If search fails, try direct API method
+                            await self.http.request(
+                                "POST",
+                                f"/interactions",
+                                json=interaction_data
+                            )
+                            await self.log(f"Ran: /{msg}", "#5432a8")
+                        except Exception as e:
+                            await self.log(f"Error with API method: {e}", "#FF0000")
+                            # Final fallback - just send the command as a message
+                            await self.send(f"/{msg}", channel=channel)
+                            await self.log(f"Ran: /{msg} via text fallback", "#FFAA00")
+                    except Exception as e:
+                        await self.log(f"Error executing slash command {msg}: {e}", "#FF0000")
+                        # Try fallback through normal messages if specified
+                        if kwargs.get('fallback_cmd'):
+                            await self.log(f"Trying fallback command via text", "#FFAA00")
+                            await self.send(kwargs.get('fallback_cmd'))
+                        else:
+                            # Last resort - try a plain text command
+                            await self.send(f"/{msg}", channel=channel)
+                    break
+            
+            if not command_found:
+                await self.log(f"Slash command '{msg}' not found", "#FF0000")
+                # Try just sending as text as a last resort
+                await self.send(f"/{msg}", channel=channel)
         except Exception as e:
-            print(e)
+            await self.log(f"Error in slashCommandSender: {e}", "#FF0000")
 
     def calc_time(self):
         pst_timezone = pytz.timezone('US/Pacific') #gets timezone
@@ -673,6 +877,20 @@ class MyClient(commands.Bot):
     async def on_ready(self):
         # Temporary fix for https://github.com/dolfies/discord.py-self/issues/744
         try:
+            # Get session ID for interactions
+            # Safely try to get session_id or provide a fallback
+            try:
+                if hasattr(self.http, 'session_id'):
+                    self.session_id = self.http.session_id
+                else:
+                    # Fallback - use a UUID as a session ID if not available
+                    import uuid
+                    self.session_id = str(uuid.uuid4())
+                    print(f"Using fallback session ID: {self.session_id}")
+            except Exception as e:
+                print(f"Error getting session ID: {e}")
+                self.session_id = "fallback_session_id"
+            
             self.dm = await (self.get_user(self.owo_bot_id)).create_dm()
 
             if self.dm is None:
@@ -695,81 +913,154 @@ class MyClient(commands.Bot):
         
 
     async def setup_hook(self):
-        self.owo_bot_id = 408785106942164992
-        self.safety_check_loop.start()
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
+        try:
+            self.owo_bot_id = 408785106942164992
+            self.safety_check_loop.start()
+            if self.session is None:
+                self.session = aiohttp.ClientSession()
 
-        printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2), 'bold royal_blue1 ')
-        listUserIds.append(self.user.id)
+            printBox(f'-Loaded {self.user.name}[*].'.center(console_width - 2), 'bold royal_blue1 ')
+            listUserIds.append(self.user.id)
 
-        # Fetch the channel
-        self.cm = self.get_channel(self.channel_id)
-        if not self.cm:
+            # Fetch the channel
+            self.cm = self.get_channel(self.channel_id)
+            if not self.cm:
+                try:
+                    self.cm = await self.fetch_channel(self.channel_id)
+                except discord.NotFound:
+                    print(f"Channel with ID {self.channel_id} does not exist.")
+                    return
+                except discord.Forbidden:
+                    print(f"Bot lacks permissions to access channel {self.channel_id}.")
+                    return
+                except discord.HTTPException as e:
+                    print(f"Failed to fetch channel {self.channel_id}: {e}")
+                    return
+
+            # Make sure config_dict is loaded
+            with open("config.json", "r") as config_file:
+                self.config_dict = json.load(config_file)
+
+            # Initialize slash commands
             try:
-                self.cm = await self.fetch_channel(self.channel_id)
-            except discord.NotFound:
-                print(f"Channel with ID {self.channel_id} does not exist.")
-                return
-            except discord.Forbidden:
-                print(f"Bot lacks permissions to access channel {self.channel_id}.")
-                return
-            except discord.HTTPException as e:
-                print(f"Failed to fetch channel {self.channel_id}: {e}")
-                return
+                if self.config_dict.get("useSlashCommands", False):
+                    # Try to get application commands
+                    try:
+                        await self.get_application_commands()
+                        printBox(f'Slash commands are available and enabled.', 'bold green')
+                    except Exception as e:
+                        printBox(f'Failed to initialize slash commands: {e}', 'bold red')
+                        printBox('Slash commands will be disabled', 'bold yellow')
+                        self.config_dict["useSlashCommands"] = False
+                else:
+                    printBox('Slash commands are disabled in config', 'bold yellow')
+            except Exception as e:
+                printBox(f'Error setting up slash commands: {e}', 'bold red')
+                if self.config_dict is not None:
+                    self.config_dict["useSlashCommands"] = False
+                else:
+                    printBox(f'Config dictionary is None. Loading from file.', 'bold red')
+                    with open("config.json", "r") as config_file:
+                        self.config_dict = json.load(config_file)
+                    self.config_dict["useSlashCommands"] = False
 
-        
-
-        # Fetch slash commands in self.cm
-        self.slash_commands = []
-        for command in await self.cm.application_commands():
-            if command.application.id == self.owo_bot_id:
-                self.slash_commands.append(command)
-
-        # Add account to stats.json
-        self.default_config = {
-            self.user.id: {
-                "daily": 0,
-                "lottery": 0,
-                "cookie": 0,
-                "banned": [],
-                "giveaways": 0
-            }
-        }
-
-        with lock:
-            accounts_dict = load_accounts_dict()
-            if str(self.user.id) not in accounts_dict:
-                accounts_dict.update(self.default_config)
-                with open("utils/stats.json", "w") as f:
-                    json.dump(accounts_dict, f, indent=4)
-
-
-        # Start various tasks and updates
-        self.config_update_checker.start()
-        await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
-        await self.update_config()
-
-        if self.config_dict["offlineStatus"]:
-            self.presence.start()
-
-        if self.config_dict["sleep"]["enabled"]:
-            self.random_sleep.start()
-
-        if self.config_dict["cashCheck"]:
-            await asyncio.sleep(random.uniform(4.5, 6.4))
-            await self.put_queue(
-                {
-                    "cmd_name": self.alias["cash"]["normal"],
-                    "prefix": True,
-                    "checks": True,
-                    "retry_count": 0,
-                    "id": "cash",
-                    "removed": False
+            # Add account to stats.json
+            self.default_config = {
+                self.user.id: {
+                    "daily": 0,
+                    "lottery": 0,
+                    "cookie": 0,
+                    "banned": [],
+                    "giveaways": 0
                 }
-            )
+            }
 
-        
+            with lock:
+                accounts_dict = load_accounts_dict()
+                if str(self.user.id) not in accounts_dict:
+                    accounts_dict.update(self.default_config)
+                    with open("utils/stats.json", "w") as f:
+                        json.dump(accounts_dict, f, indent=4)
+
+            # Start various tasks and updates
+            self.config_update_checker.start()
+            await asyncio.sleep(self.random_float(config_dict["account"]["startupDelay"]))
+            await self.update_config()
+
+            if self.config_dict.get("offlineStatus", False):
+                self.presence.start()
+
+            if self.config_dict.get("sleep", {}).get("enabled", False):
+                self.random_sleep.start()
+
+            if self.config_dict.get("cashCheck", False):
+                await asyncio.sleep(random.uniform(4.5, 6.4))
+                await self.put_queue(
+                    {
+                        "cmd_name": self.alias["cash"]["normal"],
+                        "prefix": True,
+                        "checks": True,
+                        "retry_count": 0,
+                        "id": "cash",
+                        "removed": False
+                    }
+                )
+        except Exception as e:
+            print(f"Error in setup_hook: {e}")
+            import traceback
+            traceback.print_exc()
+
+    async def get_application_commands(self):
+        """Fetch and prepare application commands for use"""
+        try:
+            # Try to fetch application commands from API
+            self.application_commands = []
+            
+            # Get global application commands
+            try:
+                global_commands = await self.http.get_global_commands(self.user.id)
+                if global_commands:
+                    for cmd_data in global_commands:
+                        self.application_commands.append(cmd_data)
+                else:
+                    await self.log(f"No global commands found", "#FFAA00")
+            except Exception as e:
+                await self.log(f"Error fetching global commands: {e}", "#FF0000")
+            
+            # Get guild-specific commands for the current channel's guild
+            if hasattr(self.cm, 'guild') and self.cm.guild:
+                try:
+                    guild_commands = await self.http.get_guild_commands(self.user.id, self.cm.guild.id)
+                    if guild_commands:
+                        for cmd_data in guild_commands:
+                            if cmd_data not in self.application_commands:
+                                self.application_commands.append(cmd_data)
+                    else:
+                        await self.log(f"No guild commands found", "#FFAA00")
+                except Exception as e:
+                    await self.log(f"Error fetching guild commands: {e}", "#FF0000")
+            
+            # Special case - try to get OWO bot slash commands
+            try:
+                await self.log(f"Attempting to find OwO bot commands...", "#5432a8")
+                guild_id = getattr(self.cm, 'guild', None) and self.cm.guild.id
+                if guild_id:
+                    owo_commands = await self.http.get_guild_commands(self.owo_bot_id, guild_id)
+                    if owo_commands:
+                        await self.log(f"Found {len(owo_commands)} OwO bot commands", "#5432a8")
+                        self.application_commands.extend(owo_commands)
+                    else:
+                        await self.log(f"No OwO bot commands found in guild", "#FFAA00")
+            except Exception as e:
+                await self.log(f"Error fetching OwO bot commands: {e}", "#FF0000")
+                
+            await self.log(f"Found {len(self.application_commands)} total application commands", "#5432a8")
+            return self.application_commands
+        except Exception as e:
+            await self.log(f"Error setting up application commands: {e}", "#FF0000")
+            # Initialize with empty list to prevent NoneType errors
+            self.application_commands = []
+            raise e
 
 
 # ----------STARTING BOT----------#
@@ -781,10 +1072,15 @@ def run_bots(tokens_and_channels):
         threads.append(thread)
     for thread in threads:
         thread.join()
+
 def run_bot(token, channel_id):
     logging.getLogger("discord.client").setLevel(logging.ERROR)
-    client = MyClient(token, channel_id)
-    client.run(token, log_level=logging.ERROR)
+    try:
+        client = MyClient(token, channel_id)
+        client.run(token, log_level=logging.ERROR)
+    except Exception as e:
+        print(f"Error running bot: {e}")
+
 if __name__ == "__main__":
     console.print(owoPanel)
     console.rule(f"[bold blue1]version - {version}", style="navy_blue")
