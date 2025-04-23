@@ -132,6 +132,8 @@ class Huntbot(commands.Cog):
     async def on_message(self, message):
         if message.channel.id != self.bot.cm.id:
             return
+        if message.author.id != self.bot.owo_bot_id:
+            return
         if "Please include your password!" in message.content:
             total_seconds_hb = (
                 int(re.findall(password_reset_regex, message.content)[0]) * 60
