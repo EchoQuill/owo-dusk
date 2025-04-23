@@ -73,7 +73,7 @@
             "amount": 1
         },
         "lvlGrind": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 10,
                 15
@@ -83,7 +83,7 @@
             "maxLengthForRandomString": 20
         },
         "cookie": {
-            "enabled": true,
+            "enabled": false,
             "userid": 408785106942164992,
             "pingUser": true
         },

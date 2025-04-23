@@ -79,5 +79,14 @@
         "enabled": false,
         "minPercentage": 15,
         "refreshInterval": 120
+    },
+    "channelSwitcher": {
+        "enabled": false,
+        "channelids": {
+            "userid_one": [1,2],
+            "userid_two": [3,4]
+        },
+        "threadMode": false,
+        "interval": [300,600]
     }
 }
