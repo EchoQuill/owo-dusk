@@ -50,10 +50,10 @@ class Pray(commands.Cog):
         self.cmd_names = []
 
     async def start_pray_curse(self):
-        cnf = self.bot.settings_dict['commands'][cmd]
         self.pray_curse_ongoing = True
-        cmds = [cmd for cmd in ["pray", "curse"] if cnf['enabled']]
+        cmds = [cmd for cmd in ["pray", "curse"] if self.bot.settings_dict['commands'][cmd]['enabled']]
         cmd = random.choice(cmds) # pick a random enabled cmd
+        cnf = self.bot.settings_dict['commands'][cmd]
         if not self.startup:
             await self.bot.remove_queue(id="pray")
             await self.bot.log(f"removed {cmd} from queue", "#d0ff78")
