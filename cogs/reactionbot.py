@@ -12,14 +12,21 @@
 
 import asyncio
 import random
+import time
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import ExtensionNotLoaded
 
 
 class Reactionbot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.cmd_states = {
+            "hunt": 0,
+            "battle": 0,
+            "owo": 0,
+            "pray": 0
+        }
 
     def fetch_cmd(self, id):
         commands_dict = self.bot.settings_dict["commands"]
@@ -36,10 +43,42 @@ class Reactionbot(commands.Cog):
             "cmd_name": cmd_name.get(id, id),
             "prefix": id != "owo",
             "checks": False,
+            "slash_cmd_name": id if id in {"hunt", "battle"} else None,
             "id": id if id!="curse" else "pray"
         }
 
         return base
+    
+    def check_cmd_state(self, cmd, return_dict=False):
+        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
+        commands_dict = self.bot.settings_dict["commands"]
+        enabled_dict = {
+            "hunt": commands_dict["hunt"]["enabled"] and reaction_bot_dict["hunt_and_battle"],
+            "battle": commands_dict["battle"]["enabled"] and reaction_bot_dict["hunt_and_battle"],
+            "owo": reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"],
+            "pray": commands_dict["pray"]["enabled"] and reaction_bot_dict["pray_and_curse"],
+            "curse": commands_dict["curse"]["enabled"] and reaction_bot_dict["pray_and_curse"],
+        }
+
+        return enabled_dict[cmd] if not return_dict else enabled_dict
+    
+    def cmd_retry_required(self, cmd):
+        cmd_id = cmd if cmd!="curse" else "pray"
+        priority_dict = self.bot.misc["command_priority"]
+        last_time = self.cmd_states[cmd_id]
+        return (time.time() - last_time) > priority_dict[cmd_id]
+
+
+        
+    @tasks.loop(seconds=5)
+    async def check_stuck_state(self):
+        enabled_dict = self.check_cmd_state(return_dict=True)
+        for cmd, state in enabled_dict.items():
+            if state and self.cmd_retry_required(cmd):
+                await self.log(f"Retrying {cmd}...", "#6e6c52")
+                await self.send_cmd(cmd)
+        
+
 
     async def send_cmd(self, cmd):
         await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
@@ -47,28 +86,11 @@ class Reactionbot(commands.Cog):
 
     async def startup_handler(self):
         await self.bot.set_stat(False)
-        """
-        Usually pattern goes like
-        owoh
-        owob
-        owo
-        pray/curse
-        From what I have seen people do.
-        """
-        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
-        commands_dict = self.bot.settings_dict["commands"]
         """Define alias of commands"""
-
-        if reaction_bot_dict["hunt_and_battle"]:
-            hunt = commands_dict["hunt"]["enabled"]
-            battle = commands_dict["battle"]["enabled"]
-        else:
-            hunt, battle = False, False
-        if reaction_bot_dict["pray_and_curse"]:
-            pray = commands_dict["pray"]["enabled"]
-            curse = commands_dict["curse"]["enabled"]
-        else:
-            pray, curse = False, False
+        hunt = self.check_cmd_state("hunt")
+        battle = self.check_cmd_state("battle")
+        pray = self.check_cmd_state("pray")
+        curse = self.check_cmd_state("curse")
 
         """Hunt/Battle"""
         if hunt and battle:
@@ -79,7 +101,7 @@ class Reactionbot(commands.Cog):
             await self.send_cmd(cmd)
 
         """OwO/UwU"""
-        if reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"]:
+        if self.check_cmd_state("owo"):
             await self.send_cmd("owo")
 
         """Pray/Curse"""
@@ -94,15 +116,13 @@ class Reactionbot(commands.Cog):
 
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        """TASK: Double check"""
-        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
-        commands_dict = self.bot.settings_dict["commands"]
-        hunt = commands_dict["hunt"]["enabled"]
-        battle = commands_dict["battle"]["enabled"]
-        pray = commands_dict["pray"]["enabled"]
-        curse = commands_dict["curse"]["enabled"]
-        owo = commands_dict["owo"]["enabled"]
-        if (reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["pray_and_curse"] or reaction_bot_dict["owo"]) and (hunt or battle or pray or curse or owo):
+        hunt = self.check_cmd_state("hunt")
+        battle = self.check_cmd_state("battle")
+        pray = self.check_cmd_state("pray")
+        curse = self.check_cmd_state("curse")
+        owo = self.check_cmd_state("owo")
+
+        if hunt or battle or pray or curse or owo:
             asyncio.create_task(self.startup_handler())
         else:
             try:
@@ -113,25 +133,13 @@ class Reactionbot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        
-        reaction_bot_dict = self.bot.settings_dict["defaultCooldowns"]["reactionBot"]
-        commands_dict = self.bot.settings_dict["commands"]
-        owo = reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"]
-        if reaction_bot_dict["hunt_and_battle"]:
-            hunt = commands_dict["hunt"]["enabled"]
-            battle = commands_dict["battle"]["enabled"]
-        else:
-            hunt, battle = False, False
-        if reaction_bot_dict["pray_and_curse"]:
-            pray = commands_dict["pray"]["enabled"]
-            curse = commands_dict["curse"]["enabled"]
-        else:
-            pray, curse = False, False
+        hunt = self.check_cmd_state("hunt")
+        battle = self.check_cmd_state("battle")
+        pray = self.check_cmd_state("pray")
+        curse = self.check_cmd_state("curse")
+        owo = self.check_cmd_state("owo")
 
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.reaction_bot_id:
-            """
-            TASK: Add slash command support!
-            """
             if "**OwO**" in message.content and owo:
                 await self.send_cmd("owo")
 
