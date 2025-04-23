@@ -60,29 +60,27 @@ class Reactionbot(commands.Cog):
             "curse": commands_dict["curse"]["enabled"] and reaction_bot_dict["pray_and_curse"],
         }
 
-        return enabled_dict[cmd] if not return_dict else enabled_dict
+        return enabled_dict.get(cmd) if not return_dict else enabled_dict
     
     def cmd_retry_required(self, cmd):
         cmd_id = cmd if cmd!="curse" else "pray"
         priority_dict = self.bot.misc["command_priority"]
         last_time = self.cmd_states[cmd_id]
-        return (time.time() - last_time) > priority_dict[cmd_id]
+        # The 5s here is incase of delays.
+        return (time.time() - last_time) > priority_dict[cmd_id]["basecd"]+5
 
-
-        
     @tasks.loop(seconds=5)
     async def check_stuck_state(self):
-        enabled_dict = self.check_cmd_state(return_dict=True)
+        enabled_dict = self.check_cmd_state(cmd=None, return_dict=True)
         for cmd, state in enabled_dict.items():
             if state and self.cmd_retry_required(cmd):
-                await self.log(f"Retrying {cmd}...", "#6e6c52")
+                await self.bot.log(f"Retrying {cmd}...", "#6e6c52")
                 await self.send_cmd(cmd)
-        
-
 
     async def send_cmd(self, cmd):
         await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["cooldown"])
         await self.bot.put_queue(self.fetch_cmd(cmd), quick=True, priority=True)
+        self.cmd_states[cmd if cmd!="curse" else "pray"] = time.time()
 
     async def startup_handler(self):
         await self.bot.set_stat(False)
@@ -113,6 +111,8 @@ class Reactionbot(commands.Cog):
                 cmds.append("curse")
             await self.send_cmd(random.choice(cmds))
         await self.bot.set_stat(True)
+        """Start stuck state checker"""
+        self.check_stuck_state.start()
 
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
