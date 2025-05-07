@@ -92,6 +92,13 @@ if scratchSetup:
                 print("\033[1;36m[0]installed termux-api successfully!\033[m")
             except Exception as e:
                 print(f"\033[1;31m[x]error when trying to install termux-api:-\n {e}\033[m")
+
+            """Downgrade discord.py-self"""
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/dolfies/discord.py-self@20ae80b398ec83fa272f0a96812140e14868c88f"])
+                print("\033[1;36m[0]downgraded discord.py-self successfully!\033[m")
+            except Exception as e:
+                print(f"\033[1;31m[x]error when trying to downgrade discord.py-self:-\n {e}\033[m")
             
         else:
             print("\033[1;36minstalling normally...\033[m")
