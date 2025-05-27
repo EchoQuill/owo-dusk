@@ -47,13 +47,26 @@ class Battle(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.reference is not None:
-            return
+        
         try:
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
+                            if message.reference is not None:
+
+                                """Return if embed"""
+                                print(message.reference.message_id)
+                                referenced_message = await message.channel.fetch_message(message.reference.message_id)
+                                print(referenced_message, referenced_message.content)
+
+                                if not referenced_message.embeds and "You found a **weapon crate**!" in referenced_message.content:
+                                    print("success! - ignoring reply and proceeding!")
+                                    pass
+                                else:
+                                    print("returned from battle embed reply")
+                                    return
+                                
                             await self.bot.remove_queue(id="battle")
                             await self.bot.sleep_till(self.bot.settings_dict["commands"]["battle"]["cooldown"])
                             self.cmd["cmd_name"] = (
