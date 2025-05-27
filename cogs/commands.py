@@ -65,8 +65,8 @@ class Commands(commands.Cog):
                 while (time.time() - self.bot.cmds_state["global"]["last_ran"]) < cnf["betweenCommands"][0]:
                     await self.bot.sleep_till(cnf["betweenCommands"])
 
-            sleep_required, sleep_time = self.sleep_required()
-            if sleep_required:
+            sleep_req, sleep_time = self.sleep_required()
+            if sleep_req:
                 await self.bot.log(f"sleep required by {sleep_time}s", "#ffd359")
                 await self.bot.sleep_till([sleep_time, sleep_time+0.4])
                 self.command_times.clear()
@@ -74,6 +74,7 @@ class Commands(commands.Cog):
             
             """Send the command"""
             await self.bot.upd_cmd_state(cmd["id"])
+            
             if self.bot.settings_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
@@ -87,8 +88,6 @@ class Commands(commands.Cog):
                 if not in_queue:
                     async with self.bot.lock:
                         self.bot.checks.append(cmd)
-            
-            
 
         except Exception as e:
             await self.bot.log(f"Error - send_commands() loop: {e}. {cmd.get('cmd_name', None)}", "#c25560")

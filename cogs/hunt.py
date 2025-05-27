@@ -57,9 +57,7 @@ class Hunt(commands.Cog):
                         if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
                         else self.bot.alias["hunt"]["alias"]
                     )
-                    print("hunt")
                     await self.bot.put_queue(self.cmd)
-                    print("sucess hunt")
         except Exception as e:
             await self.bot.log(f"Error - {e}, During hunt on_message()", "#c25560")
 

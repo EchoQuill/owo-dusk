@@ -105,6 +105,7 @@ class Slots(commands.Cog):
                 self.turns_lost+=1
                 await self.bot.log(f"lost {match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                 await self.start_slots()
+                await self.bot.update_gamble_db("losses")
             else:
                 if ("<:eggplant:417475705719226369>" in after.content.lower()
                 and "and won" in after.content.lower()):
@@ -122,6 +123,7 @@ class Slots(commands.Cog):
                     self.turns_lost = 0
                     await self.bot.log(f"won {won_match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_slots()
+                    await self.bot.update_gamble_db("wins")
 
 
 async def setup(bot):

@@ -73,6 +73,7 @@ class Reactionbot(commands.Cog):
     async def check_stuck_state(self):
         enabled_dict = self.check_cmd_state(cmd=None, return_dict=True)
         for cmd, state in enabled_dict.items():
+            print(self.cmd_retry_required(cmd))
             if state and self.cmd_retry_required(cmd):
                 await self.bot.log(f"Retrying {cmd}...", "#6e6c52")
                 await self.send_cmd(cmd)

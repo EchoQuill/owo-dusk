@@ -106,6 +106,7 @@ class Coinflip(commands.Cog):
                     self.bot.gain_or_lose-=match
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
+                    await self.bot.update_gamble_db("losses")
                 else:
                     won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
@@ -115,6 +116,7 @@ class Coinflip(commands.Cog):
                     self.bot.gain_or_lose+=profit
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
+                    await self.bot.update_gamble_db("wins")
             except Exception as e:
                 await self.bot.log(f"Error - {e}, During coinflip on_message_edit()", "#c25560")
 

@@ -72,6 +72,7 @@ class Others(commands.Cog):
                 self.bot.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
                 await self.bot.log(f"Has {self.bot.balance} cowoncy!", "#d787d7")
                 await self.bot.remove_queue(id="cash")
+                await self.bot.update_cash_db()
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:

@@ -25,7 +25,13 @@ class ChannelSwitcher(commands.Cog):
     @tasks.loop()
     async def switch_channel_loop(self):
         await self.bot.sleep_till(self.bot.global_settings_dict["channelSwitcher"]["interval"])
-        await self.change_channel()
+        status, resp = await self.change_channel()
+
+        if not status:
+            await self.bot.log(f"Error - {resp}", "#c25560")
+        else:
+            await self.bot.log(f"Channel switcher: {resp}", "#9dc3f5")
+        
 
     async def change_channel(self):
         cnf = self.bot.global_settings_dict["channelSwitcher"]

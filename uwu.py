@@ -38,6 +38,8 @@ import time
 import requests
 import signal
 import socket
+import sqlite3
+import aiosqlite
 
 """Cntrl+c detect"""
 def handle_sigint(signal_number, frame):
@@ -112,46 +114,27 @@ def merge_dicts(main, small):
             merge_dicts(main[key], value)
         else:
             main[key] = value
+    
+def get_from_db(command):
+    with sqlite3.connect("utils/data/db.sqlite") as conn:
+        conn.row_factory = sqlite3.Row 
+        cur = conn.cursor()
+
+        cur.execute("PRAGMA journal_mode;")
+        mode = cur.fetchone()[0]
+        if mode.lower() != 'wal':
+            cur.execute("PRAGMA journal_mode=WAL;")
+
+        cur.execute(command)
+
+        item = cur.fetchall()
+        return item
+        
+
 
 @app.route("/")
 def home():
     return render_template("index.html", version=version)
-
-
-@app.route("/api/saveThings", methods=["POST"])
-def save_things():
-    password = request.headers.get('password')
-    if not password or password != global_settings_dict["website"]["password"]:
-        return "Invalid Password", 401
-    global config_updated
-    try:
-        data = request.get_json()
-        print(data)
-        if not data:
-            return jsonify({"status": "error", "message": "Invalid or missing JSON data"}), 400
-        with open("config/settings.json", "r") as main_config:
-            main_data = json.load(main_config)
-        merge_dicts(main_data, data)
-        with open("config/settings.json", "w") as main_config:
-            json.dump(main_data, main_config, indent=4)
-        print('saved successfully!')
-        config_updated = time.time()
-
-
-        return jsonify({"status": "success", "message": "Data received and saved successfully"}), 200
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"status": "error", "message": "An error occurred while saving data"}), 500
-
-@app.route('/api/config', methods=['GET'])
-def get_config():
-    password = request.headers.get('password')
-    if not password or password != global_settings_dict["website"]["password"]:
-        return "Invalid Password", 401
-    with open("config/settings.json", "r") as file:
-        config_data = json.load(file)
-    return jsonify(config_data)
 
 
 @app.route('/api/console', methods=['GET'])
@@ -165,6 +148,135 @@ def get_console_logs():
     except Exception as e:
         print(f"Error fetching logs: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching logs"}), 500
+    
+@app.route('/api/fetch_gamble_data', methods=['GET'])
+def fetch_gamble_data():
+    password = request.headers.get('password')
+    if not password or password != global_settings_dict["website"]["password"]:
+        return "Invalid Password", 401
+    try:
+        # Fetch table data
+        rows = get_from_db("SELECT hour, wins, losses FROM gamble_winrate ORDER BY hour")
+
+        # Extract columns as lists
+        win_data = [row["wins"] for row in rows]
+        lose_data = [row["losses"] for row in rows]
+
+        # Return Data
+        return jsonify({
+            "status": "success",
+            "win_data": win_data,
+            "lose_data": lose_data
+        })
+        
+    except Exception as e:
+        print(f"Error fetching logs: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while fetching gamble data"}), 500
+    
+@app.route('/api/fetch_cowoncy_data', methods=['GET'])
+def fetch_cowoncy_data():
+    password = request.headers.get('password')
+    total_cowoncy = 0
+    if not password or password != global_settings_dict["website"]["password"]:
+        return "Invalid Password", 401
+
+    try:
+        rows = get_from_db("SELECT user_id, hour, earnings FROM cowoncy_earnings ORDER BY hour")
+        cur_cash = 0
+        user_data = {}
+        for row in rows:
+            user_id = row["user_id"]
+            hour = row["hour"]
+            earnings = row["earnings"]
+
+            if user_id not in user_data:
+                # Create dummy data
+                user_data[user_id] = {i: 0 for i in range(24)}
+            # populate
+            user_data[user_id][hour] = earnings
+
+        # Base data
+        base_data = {
+            "labels": [f"Hour {i}" for i in range(24)],
+            "datasets": []
+        }
+
+        for user_id, hourly_data in user_data.items():
+            color_hue = random.randint(0, 360)
+            dataset = {
+                "label": user_id,
+                "data": [hourly_data[i] for i in range(24)],
+                "borderColor": f"hsl({color_hue}, 100%, 50%)",
+                "backgroundColor": f"hsl({color_hue}, 100%, 70%)",
+                "fill": True,
+                "tension": 0.4,
+                "pointRadius": 0,
+            }
+            base_data["datasets"].append(dataset)
+
+        return jsonify({
+            "status": "success",
+            "data": base_data,
+            "total_cash": total_cowoncy
+        }), 200
+
+    except Exception as e:
+        print(f"Error fetching cowoncy data: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "An error occurred while fetching cowoncy data"
+        }), 500
+    
+@app.route('/api/fetch_cmd_data', methods=['GET'])
+def fetch_cmd_data():
+    password = request.headers.get('password')
+    if not password or password != global_settings_dict["website"]["password"]:
+        return "Invalid Password", 401
+    try:
+        # Fetch table data
+        rows = get_from_db("SELECT * FROM commands")
+
+        # Extract columns as lists
+        command_names = [row["name"] for row in rows]
+        count = [row["count"] for row in rows]
+
+        # Return Data
+        return jsonify({
+            "status": "success",
+            "command_names": command_names,
+            "count": count
+        })
+        
+    except Exception as e:
+        print(f"Error fetching logs: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while fetching command data"}), 500
+    
+@app.route('/api/fetch_weekly_runtime', methods=['GET'])
+def fetch_weekly_runtime():
+    password = request.headers.get('password')
+    if not password or password != global_settings_dict["website"]["password"]:
+        return "Invalid Password", 401
+    try:
+        # Fetch json data
+        with open("utils/data/weekly_runtime.json", "r") as config_file:
+            data_dict = json.load(config_file)
+        
+        runtime_data = [(val[1] - val[0]) / 60 for val in data_dict.values() if isinstance(val, list)]
+        print(runtime_data)
+
+        cur_hour = get_weekday()
+
+        # Return Data
+        return jsonify({
+            "status": "success",
+            "runtime_data": runtime_data,
+            "current_uptime": data_dict[cur_hour]
+        })
+        
+    except Exception as e:
+        print(f"Error fetching logs: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while fetching gamble data"}), 500
+
 
 
 def web_start():
@@ -179,9 +291,7 @@ def web_start():
         host="0.0.0.0" if global_settings_dict["website"]["enableHost"] else "127.0.0.1",
     )
 
-if global_settings_dict["website"]["enabled"]:
-    web_thread = threading.Thread(target=web_start)
-    web_thread.start()
+
 
 
 """"""
@@ -220,6 +330,16 @@ if not on_mobile and not misc_dict["hostMode"]:
             import psutil
     except Exception as e:
         print(f"ImportError: {e}")
+
+
+# For time related stuff
+def get_weekday():
+    # 1 = monday, 7 = sunday
+    return str(datetime.today().isoweekday())
+
+def get_hour():
+    # only from 0 to 23 (24hr format)
+    return datetime.now().hour
 
 
 # For battery check
@@ -267,7 +387,7 @@ def batteryCheckFunc():
     os._exit(0)
 
 if global_settings_dict["batteryCheck"]["enabled"]:
-    loop_thread = threading.Thread(target=batteryCheckFunc)
+    loop_thread = threading.Thread(target=batteryCheckFunc, daemon=True)
     loop_thread.start()
 
 def show_popup_thread():
@@ -337,17 +457,11 @@ if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not mis
 class MyClient(commands.Bot):
 
     def __init__(self, token, channel_id, global_settings_dict, *args, **kwargs):
-        """The self_bot here makes sure the inbuild command `help`
-        doesn't get executed by other users."""
-
         super().__init__(command_prefix="-", self_bot=True, *args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
-        """`self.state` will be used to stop code for general stuff like for commands etc
-        and `self.captcha` for captchas to prevent anything unexpected causing the code to run
-        even after captcha..."""
         self.state = True
         self.state_event = asyncio.Event()
         self.captcha = False
@@ -377,6 +491,9 @@ class MyClient(commands.Bot):
             "giveaway": 0,
             "captchas": 0
         }"""
+
+        """Initialize Connection"""
+        
 
         with open("config/misc.json", "r") as config_file:
             self.misc = json.load(config_file)
@@ -488,6 +605,56 @@ class MyClient(commands.Bot):
 
             await self.start_cogs()
 
+
+    async def update_database(self, sql, params=None):
+        async with aiosqlite.connect("utils/data/db.sqlite", timeout=5) as db:
+            await db.execute("PRAGMA journal_mode=WAL;")
+            await db.execute("PRAGMA synchronous=NORMAL;")
+            await db.execute("BEGIN;")
+            await db.execute(sql, params)
+            await db.commit()
+
+    async def update_cash_db(self):
+        """Update values in database"""
+        hr = get_hour()
+
+        await self.update_database(
+            """UPDATE cowoncy_earnings
+            SET earnings = ?
+            WHERE user_id = ? AND hour = ?;""",
+            (self.balance, self.user.id, hr)
+        )
+
+    async def populate_cowoncy_earnings(self):
+        for i in range(24):
+            #c.execute("INSERT OR IGNORE INTO weekly_runtime (weekday, hours) VALUES (?, ?)", (weekday, 0))
+
+            await self.update_database(
+                "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
+                (self.user.id, i, 0)
+            )
+
+    async def update_cmd_db(self, cmd):
+        await self.update_database(
+            "UPDATE commands SET count = count + 1 WHERE name = ?",
+            (cmd,) # (cmd) won't be treated as a tuple because one item.
+        )
+
+    async def update_gamble_db(self, item="wins"):
+        hr = get_hour()
+
+        if item not in {"wins", "losses"}:
+            raise ValueError("Invalid column name.")
+        
+        await self.update_database(
+            f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?",
+            (hr,) # (cmd) won't be treated as a tuple because one item.
+        )
+
+
+
+
+
     async def unload_cog(self, cog_name):
         try:
             if cog_name in self.extensions:
@@ -544,6 +711,7 @@ class MyClient(commands.Bot):
             self.cmds_state[id]["last_ran"] = time.time()
             if not reactionBot:
                 self.cmds_state[id]["in_queue"] = False
+            await self.update_cmd_db(id)
 
     def construct_command(self, data):
         prefix = self.settings_dict['setprefix'] if data.get("prefix") else ""
@@ -645,7 +813,7 @@ class MyClient(commands.Bot):
             console.print(f"{self.username}| {text}".center(console_width - 2), style=color)
         if web_log:
             with lock:
-                website_logs.append(f"<p style='color: {color};'>[{current_time}] {self.username}| {text}</p>")
+                website_logs.append(f"<div class='message'><span class='timestamp'>[{current_time}]</span><span class='text'>{self.username}| {text}</span></div>")
                 if len(website_logs) > 10:
                     website_logs.pop(0)
         if webhook_useless_log:
@@ -769,6 +937,17 @@ class MyClient(commands.Bot):
             }
         )
 
+    # CHECK
+
+    """async def execute(self, task):
+        async with self.lock():
+            self.db_cursor.execute(task)
+
+    async def commit(self):
+        self.db_connection.commit()"""
+
+    
+
     async def setup_hook(self):
         if not self.username:
             self.username = self.user.name
@@ -815,12 +994,17 @@ class MyClient(commands.Bot):
             }
         }
 
+
+
         with lock:
             accounts_dict = load_accounts_dict()
             if str(self.user.id) not in accounts_dict:
                 accounts_dict.update(self.default_config)
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
+
+
+        await self.populate_cowoncy_earnings()
 
         # Start various tasks and updates
         self.config_update_checker.start()
@@ -846,6 +1030,100 @@ def get_local_ip():
             return s.getsockname()[0]
     except Exception:
         return 'localhost'
+    
+
+"""Handle Weekly runtime"""
+def handle_weekly_runtime(path="utils/data/weekly_runtime.json"):
+    while True:
+        try:
+            with open(path, "r") as config_file:
+                weekly_runtime_dict = json.load(config_file)
+            weekday = get_weekday()
+
+            if weekly_runtime_dict[weekday][0] == 0:
+                weekly_runtime_dict[weekday][0], weekly_runtime_dict[weekday][1] = time.time(), time.time()
+            else:
+                weekly_runtime_dict[weekday][1] = time.time()
+
+            with open(path, "w") as f:
+                json.dump(weekly_runtime_dict, f, indent=4)
+
+        except Exception as e:
+            print(f"Error when handling weekly runtime:\n{e}")
+
+        # update every 15 seconds
+        time.sleep(15)
+
+def start_runtime_loop(path="utils/data/weekly_runtime.json"):
+    try:
+        with open(path, "r") as config_file:
+            weekly_runtime_dict = json.load(config_file)
+
+        now = time.time()
+        last_checked = weekly_runtime_dict.get("last_checked", 0)
+
+        if now - last_checked > 604800: # 604800 -> seconds in a week
+            for day in map(str, range(7)):
+                weekly_runtime_dict[day] = [0, 0]
+
+        weekly_runtime_dict["last_checked"] = now
+
+        with open(path, "w") as f:
+            json.dump(weekly_runtime_dict, f, indent=4)
+
+        loop_thread = threading.Thread(target=handle_weekly_runtime, daemon=True)
+        loop_thread.start()
+
+    except Exception as e:
+        print(f"Error when attempting to start runtime handler:\n{e}")
+    
+
+
+
+
+
+"""Create SQLight database"""
+def create_database(db_path="utils/data/db.sqlite"):
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+
+    c.execute("CREATE TABLE IF NOT EXISTS commands (name TEXT PRIMARY KEY, count INTEGER)")
+    c.execute("CREATE TABLE IF NOT EXISTS cowoncy_earnings (user_id TEXT, hour INTEGER, earnings INTEGER, PRIMARY KEY (user_id, hour))")
+    #c.execute("CREATE TABLE IF NOT EXISTS weekly_runtime (weekday INTEGER PRIMARY KEY, hours INTEGER)")
+    c.execute("CREATE TABLE IF NOT EXISTS gamble_winrate (hour INTEGER PRIMARY KEY, wins INTEGER, losses INTEGER, net INTEGER)")
+    c.execute("CREATE TABLE IF NOT EXISTS user_stats (user_id TEXT PRIMARY KEY, daily REAL, lottery REAL, cookie REAL, giveaways REAL)")
+    c.execute("CREATE TABLE IF NOT EXISTS meta_data (key TEXT PRIMARY KEY, value INTEGER)")
+    # Switch to WAL mode.
+    c.execute("PRAGMA journal_mode=WAL;")
+
+    # Populate
+    
+    #-- Weekly_runtime
+    """for weekday in range(1,8):
+        c.execute("INSERT OR IGNORE INTO weekly_runtime (weekday, hours) VALUES (?, ?)", (weekday, 0))"""
+
+    #-- gamble_winrate
+    for hr in range(24):
+        # hour does not have 24 in 24 hr format!!
+        c.execute("INSERT OR IGNORE INTO gamble_winrate (hour, wins, losses, net) VALUES (?, ?, ?, ?)", (hr, 0, 0, 0))
+
+    #-- meta data
+    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("gamble_winrate_last_checked", 0))
+    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("cowoncy_earnings_last_checked", 0))
+    
+    #-- commands
+    for cmd in misc_dict["command_priority"].keys():
+        c.execute("INSERT OR IGNORE INTO commands (name, count) VALUES (?, ?)", (cmd, 0))
+
+    #-- end --#
+    conn.commit()
+    conn.close()
+    
+
+    
+
+
+
 
 # ----------STARTING BOT----------#
 def fetch_json(url, description="data"):
@@ -892,10 +1170,19 @@ if __name__ == "__main__":
 
     printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
 
+    # Create database or modify if required
+    create_database()
+
+    # Weekly runtime thread
+    start_runtime_loop()
+
     if global_settings_dict["website"]["enabled"]:
+        # Start website
+        web_thread = threading.Thread(target=web_start)
+        web_thread.start()
+        # get ip
         ip = get_local_ip()
         printBox(f'Website Dashboard: http://{ip}:{global_settings_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
-
     try:
         if misc_dict["news"]:
             news_json = fetch_json(f"{owo_dusk_api}/news.json", "news")

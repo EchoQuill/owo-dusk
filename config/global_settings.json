@@ -83,10 +83,10 @@
     "channelSwitcher": {
         "enabled": false,
         "channelids": {
-            "userid_one": [1,2],
-            "userid_two": [3,4]
+            "userid_one": [1, 2, 3],
+            "userid_two": [4, 5]
         },
         "threadMode": false,
-        "interval": [300,600]
+        "interval": [300, 600]
     }
 }
