@@ -56,15 +56,15 @@ class Battle(commands.Cog):
                             if message.reference is not None:
 
                                 """Return if embed"""
-                                print(message.reference.message_id)
+                                #print(message.reference.message_id)
                                 referenced_message = await message.channel.fetch_message(message.reference.message_id)
-                                print(referenced_message, referenced_message.content)
+                                #print(referenced_message, referenced_message.content)
 
                                 if not referenced_message.embeds and "You found a **weapon crate**!" in referenced_message.content:
-                                    print("success! - ignoring reply and proceeding!")
+                                    #print("success! - ignoring reply and proceeding!")
                                     pass
                                 else:
-                                    print("returned from battle embed reply")
+                                    #print("returned from battle embed reply")
                                     return
                                 
                             await self.bot.remove_queue(id="battle")

@@ -87,6 +87,7 @@ class Commands(commands.Cog):
                 in_queue = await self.bot.search_checks(id=cmd["id"])
                 if not in_queue:
                     async with self.bot.lock:
+                        #await self.bot.log(f"command {cmd} added to queue!", "#eeaaff")
                         self.bot.checks.append(cmd)
 
         except Exception as e:
@@ -96,19 +97,22 @@ class Commands(commands.Cog):
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
+            #await self.bot.log(f"started command monitor!", "#eeaaff")
             delay = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
             current_time = datetime.now(timezone.utc)
             if not self.bot.state or self.bot.sleep or self.bot.captcha:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             else:
                 for command in self.bot.checks[:]:
+                    #await self.bot.log(f"mon: {self.bot.checks[:]}", "#eeaaff")
                     cnf = self.bot.cmds_state[command["id"]]
-                    if (cnf["last_ran"] - time.time() > delay) and not cnf["in_queue"]:
-                        await self.bot.log(f"{command['cmd_name']} has been readded to queue ({command['id']})", "#ffd359")
+                    #print(cnf, command["id"], cnf["last_ran"] - time.time(), cnf["last_ran"] - time.time() > delay)
+                    if (time.time() - cnf["last_ran"] > delay) and not cnf["in_queue"]:
+                        #await self.bot.log(f"{command['cmd_name']} has been readded to queue ({command['id']})", "#ffd359")
                         async with self.bot.lock:
                             self.bot.checks.remove(command)
                         await self.bot.put_queue(command)
-                        await self.bot.log(f"removed state: {self.bot.checks}", "#ffd359")
+                        #await self.bot.log(f"removed state: {self.bot.checks}", "#ffd359")
 
 
                 self.calc_time = timedelta(0)
