@@ -390,7 +390,7 @@ if global_settings_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc, daemon=True)
     loop_thread.start()
 
-def show_popup_thread():
+def popup_main_loop():
     root = tk.Tk()
     root.withdraw()  # Hide the root window
 
@@ -441,18 +441,7 @@ def show_popup_thread():
         popup.wait_window()
 
 
-if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
-    try:
-        import tkinter as tk
-        from tkinter import PhotoImage
-        from queue import Queue
-    except Exception as e:
-        print(f"ImportError: {e}")
-        
-    popup_queue = Queue()
-    popup_thread = threading.Thread(target=show_popup_thread)
-    popup_thread.daemon = True  # Ensure the thread exits when the main program does
-    popup_thread.start()
+
 
 class MyClient(commands.Bot):
 
@@ -1198,4 +1187,25 @@ if __name__ == "__main__":
     if not misc_dict["console"]["hideStarRepoMessage"]:
         console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
     console.rule(style="navy_blue")
-    run_bots(tokens_and_channels)
+    
+    
+
+
+    if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
+        try:
+            import tkinter as tk
+            from tkinter import PhotoImage
+            from queue import Queue
+        except Exception as e:
+            print(f"ImportError: {e}")
+            
+        popup_queue = Queue()
+
+        bot_threads = threading.Thread(target=run_bots, args=(tokens_and_channels,))
+        bot_threads.daemon = True
+        bot_threads.start()
+
+        popup_main_loop()
+    else:
+        run_bots(tokens_and_channels)
+
