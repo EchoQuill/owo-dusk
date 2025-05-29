@@ -50,6 +50,8 @@ class Level(commands.Cog):
         }
 
     async def start_level_grind(self):
+        #await asyncio.sleep(1)
+        await self.bot.remove_queue(id="level")
         cnf = self.bot.settings_dict["commands"]["lvlGrind"]
         try:
             await self.bot.sleep_till(cnf["cooldown"])
@@ -81,7 +83,6 @@ class Level(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if self.last_level_grind_message == message.content:
-                await self.bot.remove_queue(id="level")
                 await self.start_level_grind()
                 
 

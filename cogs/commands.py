@@ -67,28 +67,29 @@ class Commands(commands.Cog):
 
             sleep_req, sleep_time = self.sleep_required()
             if sleep_req:
-                await self.bot.log(f"sleep required by {sleep_time}s", "#ffd359")
+                await self.bot.log(f"sleep required by {sleep_time}s (to prevent `slow down` message)", "#8f6b09")
                 await self.bot.sleep_till([sleep_time, sleep_time+0.4])
                 self.command_times.clear()
 
             
-            """Send the command"""
+            """Update Command state"""
             await self.bot.upd_cmd_state(cmd["id"])
-            
-            if self.bot.settings_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
-                await self.bot.slashCommandSender(cmd["slash_cmd_name"])
-            else:
-                await self.bot.send(self.bot.construct_command(cmd))
-            """add command to the deque"""
-            self.command_times.append(time.time())
-            
+
             """Append to checks"""
             if cmd.get("checks") and cmd.get("id"):
                 in_queue = await self.bot.search_checks(id=cmd["id"])
                 if not in_queue:
                     async with self.bot.lock:
-                        #await self.bot.log(f"command {cmd} added to queue!", "#eeaaff")
                         self.bot.checks.append(cmd)
+            
+            if self.bot.settings_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
+                await self.bot.slashCommandSender(cmd["slash_cmd_name"])
+            else:
+                await self.bot.send(self.bot.construct_command(cmd))
+
+            """add command to the deque"""
+            self.command_times.append(time.time())
+            
 
         except Exception as e:
             await self.bot.log(f"Error - send_commands() loop: {e}. {cmd.get('cmd_name', None)}", "#c25560")
@@ -97,22 +98,17 @@ class Commands(commands.Cog):
     @tasks.loop(seconds=1)
     async def monitor_checks(self):
         try:
-            #await self.bot.log(f"started command monitor!", "#eeaaff")
             delay = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
             current_time = datetime.now(timezone.utc)
             if not self.bot.state or self.bot.sleep or self.bot.captcha:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             else:
                 for command in self.bot.checks[:]:
-                    #await self.bot.log(f"mon: {self.bot.checks[:]}", "#eeaaff")
                     cnf = self.bot.cmds_state[command["id"]]
-                    #print(cnf, command["id"], cnf["last_ran"] - time.time(), cnf["last_ran"] - time.time() > delay)
                     if (time.time() - cnf["last_ran"] > delay) and not cnf["in_queue"]:
-                        #await self.bot.log(f"{command['cmd_name']} has been readded to queue ({command['id']})", "#ffd359")
                         async with self.bot.lock:
                             self.bot.checks.remove(command)
                         await self.bot.put_queue(command)
-                        #await self.bot.log(f"removed state: {self.bot.checks}", "#ffd359")
 
 
                 self.calc_time = timedelta(0)
