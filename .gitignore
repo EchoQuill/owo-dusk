@@ -117,3 +117,6 @@ Desktop.ini
 # Local configuration
 *.local
 
+# Tokens file
+**/tokens.txt
+
