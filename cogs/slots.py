@@ -54,7 +54,7 @@ class Slots(commands.Cog):
         await self.bot.remove_queue(id="slots")
 
     async def start_slots(self, startup=False):
-        cnf = cnf
+        cnf = self.bot.settings_dict["gamble"]["slots"]
         goal_system_dict = self.bot.settings_dict['gamble']['goalSystem']
         try:
             if startup:
