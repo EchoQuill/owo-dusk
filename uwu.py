@@ -658,6 +658,7 @@ class MyClient(commands.Bot):
         self.commands_dict = {
             "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "captcha": True,
+            "channelswitcher": self.global_settings_dict["channelSwitcher"]["enabled"],
             "chat": True,
             "coinflip": self.settings_dict["gamble"]["coinflip"]["enabled"],
             "commands": True,
