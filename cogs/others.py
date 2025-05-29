@@ -82,6 +82,9 @@ class Others(commands.Cog):
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
                 if self.bot.settings_dict["autoUse"]["autoLootbox"]:
                     await self.bot.put_queue(self.lootbox_cmd)
+                    # give time for command to run
+                    await asyncio.sleep(2.5)
+                    self.bot.user_status["no_gems"] = False
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:

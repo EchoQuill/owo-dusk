@@ -36,22 +36,32 @@ gem_tiers = {
 
 
 def convert_small_numbers(small_number):
-    numbers = {'⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9'}
+    numbers = {
+        "⁰": "0",
+        "¹": "1",
+        "²": "2",
+        "³": "3",
+        "⁴": "4",
+        "⁵": "5",
+        "⁶": "6",
+        "⁷": "7",
+        "⁸": "8",
+        "⁹": "9",
+    }
     normal_string = ''.join(numbers.get(char, char) for char in small_number)
     return int(normal_string)
-
 
 
 def find_gems_available(message):
 
     available_gems = {
-        "fabled": {"057": 0, "071": 0, "078": 0, "085": 0}, # fabled
-        "legendary": {"056": 0, "070": 0, "077": 0, "084": 0}, # legendary
-        "mythical": {"055": 0, "069": 0, "076": 0, "083": 0}, # mythical
-        "epic": {"054": 0, "068": 0, "075": 0, "082": 0}, # epic
-        "rare": {"053": 0, "067": 0, "074": 0, "081": 0}, # rare
-        "uncommon": {"052": 0, "066": 0, "073": 0, "080": 0}, # uncommon
-        "common": {"051": 0, "065": 0, "072": 0, "079": 0}, # common
+        "fabled": {"057": 0, "071": 0, "078": 0, "085": 0},  # fabled
+        "legendary": {"056": 0, "070": 0, "077": 0, "084": 0},  # legendary
+        "mythical": {"055": 0, "069": 0, "076": 0, "083": 0},  # mythical
+        "epic": {"054": 0, "068": 0, "075": 0, "082": 0},  # epic
+        "rare": {"053": 0, "067": 0, "074": 0, "081": 0},  # rare
+        "uncommon": {"052": 0, "066": 0, "073": 0, "080": 0},  # uncommon
+        "common": {"051": 0, "065": 0, "072": 0, "079": 0},  # common
         # hunt, emp, luck, special
     }
     """
@@ -61,7 +71,7 @@ def find_gems_available(message):
     inv_numbers = re.findall(r"`(\d+)`.*?([⁰¹²³⁴⁵⁶⁷⁸⁹]+)", message)
     for gem_id, small_number in inv_numbers:
         gem_count = convert_small_numbers(small_number)
-        
+
         for _, gems in available_gems.items():
             if gem_id in gems:
                 gems[gem_id] = gem_count
@@ -152,7 +162,10 @@ class Gems(commands.Cog):
     async def on_message(self, message):
         if message.channel.id != self.bot.channel_id or message.author.id != self.bot.owo_bot_id:
             return
-        elif "caught" in message.content:
+        
+        if "caught" in message.content:
+            if self.bot.user_status["no_gems"]:
+                return
             await self.bot.set_stat(False)
             self.inventory_check = True
             await self.bot.put_queue(self.inv_cmd, priority=True)
@@ -162,11 +175,14 @@ class Gems(commands.Cog):
                 #if not self.available_gems:
                 self.available_gems = find_gems_available(message.content)
                 gems_list = self.find_gems_to_use(self.available_gems)
-                """print(self.available_gems)
-                print(gems_list)"""
+
                 self.gem_cmd["cmd_arguments"]=""
-                for i in gems_list:
-                    self.gem_cmd["cmd_arguments"]+=f"{i} "
+                if gems_list:
+                    for i in gems_list:
+                        self.gem_cmd["cmd_arguments"]+=f"{i[1:]} "
+                else:
+                    await self.log(f"Warn: No gems to use.", "#924444")
+                    self.bot.user_status["no_gems"] = True
                 await self.bot.put_queue(self.gem_cmd, priority=True)
                 await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
                 await self.bot.set_stat(True)

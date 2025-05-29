@@ -69,7 +69,6 @@ class Pray(commands.Cog):
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
         await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
-        await self.bot.log(f"added {cmd} to queue", "#d0ff78")
         self.pray_curse_ongoing = False
         if self.startup:
             """
@@ -78,7 +77,6 @@ class Pray(commands.Cog):
             """
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
             if self.startup:
-                await self.bot.log(f"rmv startup thro func", "#d0ff78")
                 self.startup=False
                 await self.start_pray_curse()
 

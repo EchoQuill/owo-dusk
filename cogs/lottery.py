@@ -60,7 +60,6 @@ class Lottery(commands.Cog):
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
-            #self.bot.queue.put(["lottery", f" {self.bot.settings_dict["commands"]["lottery"]["amount"]}"])
             await self.bot.put_queue(self.cmd)
 
             with lock:
