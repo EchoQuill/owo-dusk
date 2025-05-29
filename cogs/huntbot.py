@@ -22,6 +22,9 @@ password_reset_regex = r"(?<=Password will reset in )(\d+)"
 huntbot_time_regex = r"(\d+)([DHM])"
 
 def fetch_level_and_progress(value):
+    if "[MAX]" in value:
+        # Level 1000, will return max.
+        return 1000, 0
     """Fetch level and essence investment from the given field.value"""
     pattern = r"Lvl (\d+) \[(\d+)\/\d+\]"
     match = re.search(pattern, value)
@@ -47,7 +50,6 @@ class Huntbot(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            
             "id": "huntbot",
         }
 
@@ -56,7 +58,6 @@ class Huntbot(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            
             "id": "upgrade",
         }
 

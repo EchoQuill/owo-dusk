@@ -24,6 +24,7 @@ class ChannelSwitcher(commands.Cog):
 
     @tasks.loop()
     async def switch_channel_loop(self):
+        print("bro what?")
         await self.bot.sleep_till(self.bot.global_settings_dict["channelSwitcher"]["interval"])
         status, resp = await self.change_channel()
 
@@ -70,6 +71,7 @@ class ChannelSwitcher(commands.Cog):
                 pass
         else:
             self.switch_channel_loop.start()
+            print("???")
 
     async def cog_unload(self):
         self.switch_channel_loop.cancel()
