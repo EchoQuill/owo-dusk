@@ -112,6 +112,7 @@ Desktop.ini
 
 # SQLite databases
 *.sqlite3
+*.sqlite
 *.db
 
 # Local configuration
