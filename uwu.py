@@ -576,7 +576,8 @@ class MyClient(commands.Bot):
                     continue
                 try:
                     await asyncio.sleep(self.random_float(self.global_settings_dict["account"]["commandsStartDelay"]))
-                    await self.load_extension(extension)
+                    if self.commands_dict.get(str(filename[:-3]), False):
+                        await self.load_extension(extension)
                     
                 except Exception as e:
                     await self.log(f"Error - Failed to load extension {extension}: {e}", "#c25560")
@@ -792,8 +793,12 @@ class MyClient(commands.Bot):
             filename = os.path.basename(frame_info.filename)
             lineno = frame_info.lineno
 
-            content_to_print = f"[{current_time}] {self.username} - {text} | [{filename}:{lineno}]"
-            console.print(content_to_print, style=color, markup=False)
+            content_to_print = f"[#676585]❲{current_time}❳[/#676585] {self.username} - {text} | [#676585]❲{filename}:{lineno}❳[/#676585]"
+            console.print(
+                content_to_print,
+                style=color,
+                markup=True
+            )
             with lock:
                 if self.misc["debug"]["logInTextFile"]:
                     with open("logs.txt", "a") as log:
@@ -925,18 +930,7 @@ class MyClient(commands.Bot):
                 "removed": False
             }
         )
-
-    # CHECK
-
-    """async def execute(self, task):
-        async with self.lock():
-            self.db_cursor.execute(task)
-
-    async def commit(self):
-        self.db_connection.commit()"""
-
     
-
     async def setup_hook(self):
         if not self.username:
             self.username = self.user.name
@@ -996,7 +990,9 @@ class MyClient(commands.Bot):
         await self.populate_cowoncy_earnings()
 
         # Start various tasks and updates
-        self.config_update_checker.start()
+        #self.config_update_checker.start()
+        # disabled since unnecessory
+        
         await asyncio.sleep(self.random_float(global_settings_dict["account"]["startupDelay"]))
         await self.update_config()
 
