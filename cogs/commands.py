@@ -51,7 +51,8 @@ class Commands(commands.Cog):
     async def min_seconds_for_watchdog(self):
         req = 1000
         cnf = self.bot.settings_dict["commands"]
-        for cmd in cnf:
+        print(cnf)
+        for cmd in cnf.values():
             if cmd["enabled"]:
                 if cmd.get("cooldown"):
                     cd = cmd["cooldown"][0]
