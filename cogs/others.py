@@ -69,8 +69,8 @@ class Others(commands.Cog):
             # Cash Check
             elif "you currently have **__" in message.content:
                 """task: add checks for cash at ready."""
-                self.bot.balance = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
-                await self.bot.log(f"Has {self.bot.balance} cowoncy!", "#d787d7")
+                self.bot.user_status["balance"] = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
+                await self.bot.log(f"Has {self.bot.user_status['balance']} cowoncy!", "#d787d7")
                 await self.bot.remove_queue(id="cash")
                 await self.bot.update_cash_db()
 

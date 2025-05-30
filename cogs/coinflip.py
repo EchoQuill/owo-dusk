@@ -73,7 +73,7 @@ class Coinflip(commands.Cog):
                 # ensure goal amount change does not prevent goal recieved message (website dashboard)
                 self.goal_reached = False
 
-            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
+            if (amount_to_gamble > self.bot.user_status["balance"]) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
                 return await self.start_cf()
             
             if amount_to_gamble > 250000:
@@ -102,7 +102,7 @@ class Coinflip(commands.Cog):
                 if "and you lost it all... :c" in after.content.lower():
                     self.turns_lost+=1
                     match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
-                    self.bot.balance-=match
+                    self.bot.user_status["balance"]-=match
                     self.bot.gain_or_lose-=match
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
@@ -112,7 +112,7 @@ class Coinflip(commands.Cog):
                     lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
                     self.turns_lost = 0
                     profit = won_match-lose_match
-                    self.bot.balance+=profit
+                    self.bot.user_status["balance"]+=profit
                     self.bot.gain_or_lose+=profit
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()

@@ -17,6 +17,13 @@ import re
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
+"""
+SHOP-
+100-110 - limited time items
+200-274 - wallpapers (one time buy)
+1-7 - rings
+"""
+
 cash_regex = r"for \*\*(\d+)\*\* <:cowoncy:\d+>"
 
 cash_required = {
@@ -54,13 +61,20 @@ class Shop(commands.Cog):
 
     async def send_buy(self, startup=False):
         cnf = self.bot.settings_dict["commands"]["shop"]
-        item = random.choice(cnf["itemsToBuy"])
+        valid_items = [item for item in cnf["itemsToBuy"] if item in range(1, 8)]
+
+        if not valid_items:
+            await self.log(f"Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
+            return
+
+        item = random.choice(valid_items)
+
         if startup:
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
         else:
             await self.bot.remove_queue(id="shop")
             await self.bot.sleep_till(cnf["cooldown"])
-        if cash_required[item] <= self.bot.balance:
+        if cash_required[item] <= self.bot.user_status["balance"]:
             self.cmd["cmd_arguments"] = item
             await self.bot.put_queue(self.cmd)
         else:
@@ -73,7 +87,7 @@ class Shop(commands.Cog):
         🛒 **| user**, you bought a <:cring:590393333331918859> **Common Ring** for **10** <:cowoncy:416043450337853441>!
         """
         if "**, you bought a " in message.content:
-            self.bot.balance-=int(re.search(cash_regex, message.content).group(1))
+            self.bot.user_status["balance"]-=int(re.search(cash_regex, message.content).group(1))
             await self.send_buy()
 
 
