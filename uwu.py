@@ -500,10 +500,13 @@ class MyClient(commands.Bot):
             }
 
         if self.misc["debug"]["hideUser"]:
-            """TASK: Ability to edit x/y"""
-            x = ["cat", "dog", "wut", "idk", "noob", "pro", "gamer", "real", "fake", "notsoreal", "asreal", "hii"]
-            y = ["123", "345", "234234", "catts", "fish", "dusk", "dawn", "op", "?", "new", "old", "epic", "duh"]
-            self.username = f"{random.choice(x)}{random.choice(y)}"
+            x = [
+                "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
+                "Cloud", "Mint", "Flare", "Breeze", "Dusty", "Blip"
+            ]
+            random_part = random.choice(x)
+            self.username = f"{random_part}_{abs(hash(str(self.user.id) + random_part)) % 10000}"
+
 
     async def set_stat(self, value):
         if value:
