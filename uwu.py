@@ -10,36 +10,38 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from datetime import datetime, timedelta, timezone
-from discord.ext import commands, tasks
-from rich.console import Console
-from threading import Thread
-from rich.panel import Panel
-from rich.align import Align
-from datetime import datetime
-from flask import Flask, render_template, request, jsonify
-from copy import deepcopy
-from utils.misspell import misspell_word
-import json
-import discord
+# Standard Library
 import asyncio
-import logging
-import random
-import traceback
-import subprocess
-import threading
 import itertools
-import aiohttp
 import json
-import pytz
-import sys
+import logging
 import os
-import time
-import requests
+import random
 import signal
 import socket
 import sqlite3
+import subprocess
+import sys
+import threading
+import time
+import traceback
+from copy import deepcopy
+from datetime import datetime, timedelta, timezone
+from threading import Thread
+# Third-Party Libraries
 import aiosqlite
+import aiohttp
+import discord
+import pytz
+import requests
+from discord.ext import commands, tasks
+from flask import Flask, jsonify, render_template, request
+from rich.align import Align
+from rich.console import Console
+from rich.panel import Panel
+# Local
+from utils.misspell import misspell_word
+
 
 """Cntrl+c detect"""
 def handle_sigint(signal_number, frame):
@@ -927,6 +929,24 @@ class MyClient(commands.Bot):
                 "removed": False
             }
         )
+
+    def update_cash(self, amount, override=False, reduce=False):
+        if not self.settings_dict["cashCheck"]:
+            return
+        
+        if override:
+            self.user_status["balance"] = amount
+        else:
+            if not reduce:
+                self.user_status["balance"] += amount
+            else:
+                self.user_status["balance"] -= amount 
+
+
+
+
+
+    
     
     async def setup_hook(self):
         if not self.username:

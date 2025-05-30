@@ -67,9 +67,12 @@ class Others(commands.Cog):
                     await message.components[0].children[0].click()
 
             # Cash Check
-            elif "you currently have **__" in message.content and self.bot.settings_dict["cashCheck"]:
+            elif "you currently have **__" in message.content:
                 """task: add checks for cash at ready."""
-                self.bot.user_status["balance"] = int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', ''))
+                self.bot.update_cash(
+                    int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', '')),
+                    override = True
+                )
                 await self.bot.log(f"Has {self.bot.user_status['balance']} cowoncy!", "#d787d7")
                 await self.bot.remove_queue(id="cash")
                 await self.bot.update_cash_db()

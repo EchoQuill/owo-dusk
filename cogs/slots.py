@@ -100,9 +100,10 @@ class Slots(commands.Cog):
             if "and won nothing... :c" in after.content:
                 """Lose cash"""
                 match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
-                if self.bot.settings_dict["cashCheck"]:
-                    self.bot.user_status["balance"]-=match
+
+                self.bot.update_cash(match, reduce=True)
                 self.bot.gain_or_lose-=match
+                
                 self.turns_lost+=1
                 await self.bot.log(f"lost {match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                 await self.start_slots()
@@ -119,9 +120,10 @@ class Slots(commands.Cog):
                     won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     lose_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     profit = won_match-lose_match
-                    if self.bot.settings_dict["cashCheck"]:
-                        self.bot.user_status["balance"]+=profit
+
+                    self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
+
                     self.turns_lost = 0
                     await self.bot.log(f"won {won_match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_slots()

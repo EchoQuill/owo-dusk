@@ -78,7 +78,7 @@ class Sell(commands.Cog):
 
                 if self.bot.settings_dict["cashCheck"]:
                     try:
-                        self.bot.user_status["balance"] += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
+                        self.bot.update_cash(int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', '')))
                     except:
                         await self.bot.log(f"failed to fetch cowoncy from sales", "#af0087")
                 

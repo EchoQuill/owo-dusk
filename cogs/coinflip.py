@@ -103,9 +103,10 @@ class Coinflip(commands.Cog):
                 if "and you lost it all... :c" in after.content.lower():
                     self.turns_lost+=1
                     match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
-                    if self.bot.settings_dict["cashCheck"]:
-                        self.bot.user_status["balance"]-=match
+
+                    self.bot.update_cash(match, reduce=True)
                     self.bot.gain_or_lose-=match
+
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
                     await self.bot.update_gamble_db("losses")
@@ -114,9 +115,10 @@ class Coinflip(commands.Cog):
                     lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
                     self.turns_lost = 0
                     profit = won_match-lose_match
-                    if self.bot.settings_dict["cashCheck"]:
-                        self.bot.user_status["balance"]+=profit
+
+                    self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
+                    
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
                     await self.bot.update_gamble_db("wins")
