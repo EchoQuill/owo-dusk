@@ -28,7 +28,7 @@ class Commands(commands.Cog):
         self.last_msg = 0
 
 
-    @tasks.loop(seconds=20)
+    @tasks.loop()
     async def watchdog(self):
         # Watch dog for unresponsive code
         # added mostly due to library issues cause code to be unresponsive
@@ -37,7 +37,10 @@ class Commands(commands.Cog):
         cd = await self.min_seconds_for_watchdog()
 
         if cd is None:
+            self.watchdog.cancel()
             return
+
+        await asyncio.sleep(cd)
         
 
         if time.time() - self.last_msg >= cd:
@@ -51,7 +54,6 @@ class Commands(commands.Cog):
     async def min_seconds_for_watchdog(self):
         req = 1000
         cnf = self.bot.settings_dict["commands"]
-        print(cnf)
         for cmd in cnf.values():
             if cmd["enabled"]:
                 if cmd.get("cooldown"):
@@ -65,7 +67,7 @@ class Commands(commands.Cog):
             # Rest would daily, cookie etc which doesnt really cause much issues even in case of failure.
             # It would be safe to assume nothing wrong will happen (hopefully)
             return None
-        await self.bot.log(f"Watchdog threshold: {threshold}s", "#13353a")
+        #await self.bot.log(f"Watchdog threshold: {threshold}s", "#13353a")
         return threshold
 
         
