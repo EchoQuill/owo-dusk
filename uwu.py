@@ -577,6 +577,11 @@ class MyClient(commands.Bot):
                 except Exception as e:
                     await self.log(f"Error - Failed to load extension {extension}: {e}", "#c25560")
 
+        if "cogs.captcha" not in self.extensions:
+            await self.log(f"Error - Failed to load captcha extension,\nStopping code!!", "#c25560")
+            os._exit(0)
+
+
 
     async def update_config(self):
         async with self.lock:
