@@ -499,13 +499,7 @@ class MyClient(commands.Bot):
                 "last_ran": 0
             }
 
-        if self.misc["debug"]["hideUser"]:
-            x = [
-                "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
-                "Cloud", "Mint", "Flare", "Breeze", "Dusty", "Blip"
-            ]
-            random_part = random.choice(x)
-            self.username = f"{random_part}_{abs(hash(str(self.user.id) + random_part)) % 10000}"
+        
 
 
     async def set_stat(self, value):
@@ -947,13 +941,18 @@ class MyClient(commands.Bot):
 
 
 
-
-
-    
-    
     async def setup_hook(self):
-        if not self.username:
+        # Randomise user
+        if self.misc["debug"]["hideUser"]:
+            x = [
+                "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
+                "Cloud", "Mint", "Flare", "Breeze", "Dusty", "Blip"
+            ]
+            random_part = random.choice(x)
+            self.username = f"{random_part}_{abs(hash(str(self.user.id) + random_part)) % 10000}"
+        else:
             self.username = self.user.name
+
         self.dm = None
         self.safety_check_loop.start()
         if self.session is None:
