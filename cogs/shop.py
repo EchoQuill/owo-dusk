@@ -74,7 +74,8 @@ class Shop(commands.Cog):
         else:
             await self.bot.remove_queue(id="shop")
             await self.bot.sleep_till(cnf["cooldown"])
-        if cash_required[item] <= self.bot.user_status["balance"]:
+
+        if cash_required[item] <= self.bot.user_status["balance"] or not self.bot.settings_dict["cashCheck"]:
             self.cmd["cmd_arguments"] = item
             await self.bot.put_queue(self.cmd)
         else:
@@ -87,7 +88,8 @@ class Shop(commands.Cog):
         🛒 **| user**, you bought a <:cring:590393333331918859> **Common Ring** for **10** <:cowoncy:416043450337853441>!
         """
         if "**, you bought a " in message.content:
-            self.bot.user_status["balance"]-=int(re.search(cash_regex, message.content).group(1))
+            if self.bot.settings_dict["cashCheck"]:
+                self.bot.user_status["balance"]-=int(re.search(cash_regex, message.content).group(1))
             await self.send_buy()
 
 

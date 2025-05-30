@@ -74,7 +74,8 @@ class Coinflip(commands.Cog):
                 self.goal_reached = False
 
             if (amount_to_gamble > self.bot.user_status["balance"]) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
-                return await self.start_cf()
+                if not self.bot.settings_dict["cashCheck"]:
+                    return await self.start_cf()
             
             if amount_to_gamble > 250000:
                 self.exceeded_max_amount = True
@@ -102,7 +103,8 @@ class Coinflip(commands.Cog):
                 if "and you lost it all... :c" in after.content.lower():
                     self.turns_lost+=1
                     match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
-                    self.bot.user_status["balance"]-=match
+                    if self.bot.settings_dict["cashCheck"]:
+                        self.bot.user_status["balance"]-=match
                     self.bot.gain_or_lose-=match
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
@@ -112,7 +114,8 @@ class Coinflip(commands.Cog):
                     lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
                     self.turns_lost = 0
                     profit = won_match-lose_match
-                    self.bot.user_status["balance"]+=profit
+                    if self.bot.settings_dict["cashCheck"]:
+                        self.bot.user_status["balance"]+=profit
                     self.bot.gain_or_lose+=profit
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()

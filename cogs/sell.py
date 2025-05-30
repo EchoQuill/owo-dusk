@@ -76,10 +76,12 @@ class Sell(commands.Cog):
             if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
                 await self.bot.remove_queue(id="sell")
 
-                try:
-                    self.bot.user_status["balance"] += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
-                except:
-                    await self.bot.log(f"failed to fetch cowoncy from sales", "#af0087")
+                if self.bot.settings_dict["cashCheck"]:
+                    try:
+                        self.bot.user_status["balance"] += int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', ''))
+                    except:
+                        await self.bot.log(f"failed to fetch cowoncy from sales", "#af0087")
+                
                 if self.bot.settings_dict["commands"]["sac"]["enabled"]:
                     await self.sell_sac_queue(self.sac_cmd, self.bot.settings_dict["commands"]["sac"]["cooldown"])
                 else:

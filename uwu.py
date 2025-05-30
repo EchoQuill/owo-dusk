@@ -170,7 +170,7 @@ def fetch_gamble_data():
         })
         
     except Exception as e:
-        print(f"Error fetching logs: {e}")
+        print(f"Error fetching gamble data: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching gamble data"}), 500
     
 @app.route('/api/fetch_cowoncy_data', methods=['GET'])
@@ -248,7 +248,7 @@ def fetch_cmd_data():
         })
         
     except Exception as e:
-        print(f"Error fetching logs: {e}")
+        print(f"Error fetching command data: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching command data"}), 500
     
 @app.route('/api/fetch_weekly_runtime', methods=['GET'])
@@ -274,8 +274,8 @@ def fetch_weekly_runtime():
         })
         
     except Exception as e:
-        print(f"Error fetching logs: {e}")
-        return jsonify({"status": "error", "message": "An error occurred while fetching gamble data"}), 500
+        print(f"Error fetching weekly runtime: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while fetching weekly runtime"}), 500
 
 
 
@@ -353,13 +353,13 @@ def batteryCheckFunc():
                     battery_status = os.popen("termux-battery-status").read()
                 except Exception as e:
                     console.print(
-                        f"""-system[0] Battery check failed!!""".center(console_width - 2),
+                        f"system - Battery check failed!!".center(console_width - 2),
                         style="red ",
                     )
                 battery_data = json.loads(battery_status)
                 percentage = battery_data["percentage"]
                 console.print(
-                    f"-system[0] Current battery •> {percentage}".center(console_width - 2),
+                    f"system - Current battery •> {percentage}".center(console_width - 2),
                     style="blue ",
                 )
                 if percentage < int(cnf["minPercentage"]):
@@ -372,14 +372,14 @@ def batteryCheckFunc():
                     if battery is not None:
                         percentage = int(battery.percent)
                         console.print(
-                            f"-system[0] Current battery •> {percentage}".center(console_width - 2),
+                            f"system - Current battery •> {percentage}".center(console_width - 2),
                             style="blue ",
                         )
                         if percentage < int(cnf["minPercentage"]):
                             break
                 except Exception as e:
                     console.print(
-                        f"""-system[0] Battery check failed!!.""".center(console_width - 2),
+                        f"-system - Battery check failed!!.".center(console_width - 2),
                         style="red ",
                     )
     except Exception as e:
@@ -454,7 +454,6 @@ class MyClient(commands.Bot):
         self.state = True
         self.state_event = asyncio.Event()
         self.captcha = False
-        self.balance = 0
         self.queue = asyncio.PriorityQueue()
         self.settings_dict = None
         self.global_settings_dict = global_settings_dict
@@ -468,18 +467,15 @@ class MyClient(commands.Bot):
         self.username = None
         self.last_cmd_ran = None
         self.reaction_bot_id = 519287796549156864
+        self.owo_bot_id = 408785106942164992
         self.cmd_counter = itertools.count()
-        """self.user_data = {
-            "balance": 0,
-            "essence": 0,
-            "server_id": 0,
-            "animals_caught": 0,
-            "hunts": 0,
-            "battles": 0,
-            "hb": 0,
-            "giveaway": 0,
-            "captchas": 0
-        }"""
+
+        # Task: Update code to have checks using status instead of individual variables
+        self.user_status = {
+            "no_gems": False,
+            "no_cash": False,
+            "balance": 0
+        }
 
         """Initialize Connection"""
         
@@ -612,7 +608,7 @@ class MyClient(commands.Bot):
             """UPDATE cowoncy_earnings
             SET earnings = ?
             WHERE user_id = ? AND hour = ?;""",
-            (self.balance, self.user.id, hr)
+            (self.user_status["balance"], self.user.id, hr)
         )
 
     async def populate_cowoncy_earnings(self):
@@ -935,7 +931,6 @@ class MyClient(commands.Bot):
     async def setup_hook(self):
         if not self.username:
             self.username = self.user.name
-        self.owo_bot_id = 408785106942164992
         self.dm = None
         self.safety_check_loop.start()
         if self.session is None:
