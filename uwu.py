@@ -1129,9 +1129,57 @@ def run_bot(token, channel_id, global_settings_dict):
     try:
         logging.getLogger("discord.client").setLevel(logging.ERROR)
         client = MyClient(token, channel_id, global_settings_dict)
-        client.run(token, log_level=logging.ERROR)
+
+        if not on_mobile:
+            try:
+                client.run(token, log_level=logging.ERROR)
+
+            except CurlError as e:
+                if "WS_SEND" in str(e) and "55" in str(e):
+                    printBox("Broken pipe error detected. Restarting bot...", "bold red")
+                    # add a restart of client.run after exiting cleanly here!
+                else:
+                    printBox(f"Curl error: {e}", "bold red")
+        else:
+            client.run(token, log_level=logging.ERROR)
+
     except Exception as e:
-        printBox(f"Error starting bot with token {token}...: {e}", "bold red")
+        printBox(f"Error starting bot: {e}", "bold red")
+
+def run_bot(token, channel_id, global_settings_dict):
+    try:
+        logging.getLogger("discord.client").setLevel(logging.ERROR)
+
+        while True:
+            client = MyClient(token, channel_id, global_settings_dict)
+
+            if not on_mobile:
+                try:
+                    client.run(token, log_level=logging.ERROR)
+
+                except CurlError as e:
+                    if "WS_SEND" in str(e) and "55" in str(e):
+                        printBox("Broken pipe error detected. Restarting bot...", "bold red")
+                        # Restart the loop with a new client instance.
+                        continue 
+                    else:
+                        printBox(f"Curl error: {e}", "bold red")
+                        # Don't retry unknown curl errors.
+                        break 
+                except Exception as e:
+                    printBox(f"Unknown error when running bot: {e}", "bold red")
+
+            else:
+                # Mobile (Termux) uses an older version without curl_cffi.
+                # No need to handle error in such cases.
+                try:
+                    client.run(token, log_level=logging.ERROR)
+                except Exception as e:
+                    printBox(f"Unknown error when running bot: {e}", "bold red")
+                break 
+
+    except Exception as e:
+        printBox(f"Error starting bot: {e}", "bold red")
 
 if __name__ == "__main__":
     if not misc_dict["console"]["compactMode"]:
@@ -1179,10 +1227,12 @@ if __name__ == "__main__":
     if not misc_dict["console"]["hideStarRepoMessage"]:
         console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
     console.rule(style="navy_blue")
-    
-    
 
 
+    if not on_mobile:
+        # To catch `Broken pipe` error
+        from curl_cffi.curl import CurlError
+    
     if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
         try:
             import tkinter as tk

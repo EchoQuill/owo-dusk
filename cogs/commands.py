@@ -24,8 +24,50 @@ class Commands(commands.Cog):
         self.bot.checks = []
         self.calc_time = timedelta(0)
         self.command_times = deque(maxlen=3)
+
+        self.last_msg = 0
+
+
+    @tasks.loop(seconds=20)
+    async def watchdog(self):
+        # Watch dog for unresponsive code
+        # added mostly due to library issues cause code to be unresponsive
+        # incase code becomes unresponsive we will attempt a retry
+
+        cd = await self.min_seconds_for_watchdog()
+
+        if cd is None:
+            return
         
 
+        if time.time() - self.last_msg >= cd:
+            await self.bot.log(f"UNABLE TO DETECT MESSAGES!", "#8b1657")
+            self.bot.captcha = True # Prevent any further messages
+            await self.bot.log(f"Code was stopped for obvious reasons, please report logs of when this happened along with any errors to @echoquill\nYou may report through either dms or support server!", "#8b1657")
+
+            print("attempting to trigger retry!")
+            await self.bot.close()
+
+    async def min_seconds_for_watchdog(self):
+        req = 1000
+        cnf = self.bot.settings_dict["commands"]
+        for cmd in cnf:
+            if cmd["enabled"]:
+                if cmd.get("cooldown"):
+                    cd = cmd["cooldown"][0]
+                    req = cd if cd < req else req
+
+        if req != 1000:
+            threshold = req+10
+        else:
+            await self.bot.log(f"Disabling watchdog since no valid cooldown found", "#13353a")
+            # Rest would daily, cookie etc which doesnt really cause much issues even in case of failure.
+            # It would be safe to assume nothing wrong will happen (hopefully)
+            return None
+        await self.bot.log(f"Watchdog threshold: {threshold}s", "#13353a")
+        return threshold
+
+        
 
     
     def sleep_required(self):
@@ -49,6 +91,7 @@ class Commands(commands.Cog):
         await self.bot.shuffle_queue()
         self.send_commands.start()
         self.monitor_checks.start()
+        self.watchdog.start()
 
     async def cog_load(self):
         """Run join_previous_giveaways when bot is ready"""
@@ -115,6 +158,10 @@ class Commands(commands.Cog):
             self.last_check_time = current_time
         except Exception as e:
             await self.bot.log(f"Error - monitor_checks(): {e}", "#c25560")
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        self.last_msg = time.time()
 
 
 

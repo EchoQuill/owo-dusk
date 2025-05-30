@@ -16,7 +16,7 @@ import re
 import os
 import asyncio
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import DMChannel
 
 list_captcha = ["human", "captcha", "link", "letterword"]
@@ -185,13 +185,15 @@ class Captcha(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        self.last_msg = time.time()
+
+
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
                 time_to_sleep = self.bot.random_float(self.bot.settings_dict['defaultCooldowns']['captchaRestart'])
                 await self.bot.log(f"Captcha solved! - sleeping {time_to_sleep}s before restart.", "#5fd700")
                 await asyncio.sleep(time_to_sleep)
                 self.bot.captcha = False
-                
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
