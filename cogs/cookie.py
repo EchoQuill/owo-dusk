@@ -58,7 +58,8 @@ class Cookie(commands.Cog):
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
 
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
-            self.cmd["cmd_arguments"] = f"<@{self.bot.settings_dict['commands']['cookie']['userid']}>" if self.bot.settings_dict["commands"]["cookie"]["pingUser"] else ""
+            cnf = self.bot.settings_dict['commands']['cookie']
+            self.cmd["cmd_arguments"] = f"<@{cnf['userid']}>" if cnf["pingUser"] else f"{cnf['userid']}"
             await self.bot.put_queue(self.cmd, priority=True)
             with lock:
                 load_dict()
