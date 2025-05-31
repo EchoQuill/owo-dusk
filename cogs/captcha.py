@@ -194,6 +194,7 @@ class Captcha(commands.Cog):
                 await self.bot.log(f"Captcha solved! - sleeping {time_to_sleep}s before restart.", "#5fd700")
                 await asyncio.sleep(time_to_sleep)
                 self.bot.captcha = False
+                await self.bot.update_captcha_db()
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:

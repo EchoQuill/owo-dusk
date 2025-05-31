@@ -117,7 +117,7 @@ def merge_dicts(main, small):
             merge_dicts(main[key], value)
         else:
             main[key] = value
-    
+
 def get_from_db(command):
     with sqlite3.connect("utils/data/db.sqlite") as conn:
         conn.row_factory = sqlite3.Row 
@@ -132,7 +132,6 @@ def get_from_db(command):
 
         item = cur.fetchall()
         return item
-        
 
 
 @app.route("/")
@@ -151,7 +150,7 @@ def get_console_logs():
     except Exception as e:
         print(f"Error fetching logs: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching logs"}), 500
-    
+
 @app.route('/api/fetch_gamble_data', methods=['GET'])
 def fetch_gamble_data():
     password = request.headers.get('password')
@@ -175,17 +174,15 @@ def fetch_gamble_data():
     except Exception as e:
         print(f"Error fetching gamble data: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching gamble data"}), 500
-    
+
 @app.route('/api/fetch_cowoncy_data', methods=['GET'])
 def fetch_cowoncy_data():
     password = request.headers.get('password')
-    total_cowoncy = 0
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
 
     try:
         rows = get_from_db("SELECT user_id, hour, earnings FROM cowoncy_earnings ORDER BY hour")
-        cur_cash = 0
         user_data = {}
         for row in rows:
             user_id = row["user_id"]
@@ -217,10 +214,18 @@ def fetch_cowoncy_data():
             }
             base_data["datasets"].append(dataset)
 
+        
+        rows = get_from_db("SELECT cowoncy, captchas FROM user_stats")
+        total_cowoncy = sum(row["cowoncy"] for row in rows)
+        # I understand this area is for cowoncy, but accessing thro here since lazy lol.
+        total_captchas = sum(row["captchas"] for row in rows)
+
+
         return jsonify({
             "status": "success",
             "data": base_data,
-            "total_cash": total_cowoncy
+            "total_cash": total_cowoncy,
+            "total_captchas": total_captchas
         }), 200
 
     except Exception as e:
@@ -229,7 +234,7 @@ def fetch_cowoncy_data():
             "status": "error",
             "message": "An error occurred while fetching cowoncy data"
         }), 500
-    
+
 @app.route('/api/fetch_cmd_data', methods=['GET'])
 def fetch_cmd_data():
     password = request.headers.get('password')
@@ -259,7 +264,7 @@ def fetch_cmd_data():
     except Exception as e:
         print(f"Error fetching command data: {e}")
         return jsonify({"status": "error", "message": "An error occurred while fetching command data"}), 500
-    
+
 @app.route('/api/fetch_weekly_runtime', methods=['GET'])
 def fetch_weekly_runtime():
     password = request.headers.get('password')
@@ -286,7 +291,6 @@ def fetch_weekly_runtime():
         return jsonify({"status": "error", "message": "An error occurred while fetching weekly runtime"}), 500
 
 
-
 def web_start():
     flaskLog = logging.getLogger("werkzeug")
     flaskLog.disabled = True
@@ -298,8 +302,6 @@ def web_start():
         port=global_settings_dict["website"]["port"],
         host="0.0.0.0" if global_settings_dict["website"]["enableHost"] else "127.0.0.1",
     )
-
-
 
 
 """"""
@@ -450,8 +452,6 @@ def popup_main_loop():
             popup.lift()  # Bring the popup to the top
 
         popup.wait_window()
-
-
 
 
 class MyClient(commands.Bot):
@@ -637,6 +637,24 @@ class MyClient(commands.Bot):
             (self.user_status["net_earnings"], self.user.id, hr)
         )
 
+        await self.update_database(
+            "UPDATE user_stats SET cowoncy = ? WHERE user_id = ?",
+            (self.user_status["balance"], self.user.id)
+        )
+
+    async def update_captcha_db(self):
+        await self.update_database(
+            "UPDATE user_stats SET captchas = captchas + 1 WHERE user_id = ?",
+            (self.user.id,)
+        )
+
+    async def populate_stats_db(self):
+        await self.update_database(
+            "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (self.user.id, 0, 0, 0, 0, 0, 0)
+        )
+
+
     async def populate_cowoncy_earnings(self, update=False):
         today_str = get_date()
 
@@ -729,7 +747,7 @@ class MyClient(commands.Bot):
     async def update_cmd_db(self, cmd):
         await self.update_database(
             "UPDATE commands SET count = count + 1 WHERE name = ?",
-            (cmd,) # (cmd) won't be treated as a tuple because one item.
+            (cmd,)
         )
 
     async def update_gamble_db(self, item="wins"):
@@ -831,7 +849,6 @@ class MyClient(commands.Bot):
                     next(self.cmd_counter),               # A counter to serve as a tie-breaker
                     deepcopy(cmd_data)                # actual data
                 ))
-                await self.log(f"Command with id {cmd_data['id']} put to queue", "#ff00b3")
                 self.cmds_state[cmd_data["id"]]["in_queue"] = True
         except Exception as e:
             await self.log(f"Error - {e}, during put_queue", "#c25560")
@@ -849,7 +866,6 @@ class MyClient(commands.Bot):
                     else:
                         if command.get("id", None) == id:
                             self.checks.pop(index)
-                            await self.log(f"Command with id {command['id']} removed from queue", "#ff00b3")
         except Exception as e:
             await self.log(f"Error: {e}, during remove_queue", "#c25560")
 
@@ -1117,6 +1133,8 @@ class MyClient(commands.Bot):
 
 
         # Charts
+        await self.populate_stats_db()
+
         await self.populate_cowoncy_earnings()
         await self.reset_gamble_wins_or_losses()
 
@@ -1148,7 +1166,7 @@ def get_local_ip():
             return s.getsockname()[0]
     except Exception:
         return 'localhost'
-    
+
 
 """Handle Weekly runtime"""
 def handle_weekly_runtime(path="utils/data/weekly_runtime.json"):
@@ -1194,10 +1212,6 @@ def start_runtime_loop(path="utils/data/weekly_runtime.json"):
 
     except Exception as e:
         print(f"Error when attempting to start runtime handler:\n{e}")
-    
-
-
-
 
 
 """Create SQLight database"""
@@ -1205,42 +1219,42 @@ def create_database(db_path="utils/data/db.sqlite"):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
 
-    c.execute("CREATE TABLE IF NOT EXISTS commands (name TEXT PRIMARY KEY, count INTEGER)")
-    c.execute("CREATE TABLE IF NOT EXISTS cowoncy_earnings (user_id TEXT, hour INTEGER, earnings INTEGER, PRIMARY KEY (user_id, hour))")
-    #c.execute("CREATE TABLE IF NOT EXISTS weekly_runtime (weekday INTEGER PRIMARY KEY, hours INTEGER)")
-    c.execute("CREATE TABLE IF NOT EXISTS gamble_winrate (hour INTEGER PRIMARY KEY, wins INTEGER, losses INTEGER, net INTEGER)")
-    c.execute("CREATE TABLE IF NOT EXISTS user_stats (user_id TEXT PRIMARY KEY, daily REAL, lottery REAL, cookie REAL, giveaways REAL)")
-    c.execute("CREATE TABLE IF NOT EXISTS meta_data (key TEXT PRIMARY KEY, value INTEGER)")
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS commands (name TEXT PRIMARY KEY, count INTEGER)"
+    )
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS cowoncy_earnings (user_id TEXT, hour INTEGER, earnings INTEGER, PRIMARY KEY (user_id, hour))"
+    )
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS gamble_winrate (hour INTEGER PRIMARY KEY, wins INTEGER, losses INTEGER, net INTEGER)"
+    )
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS user_stats (user_id TEXT PRIMARY KEY, daily REAL, lottery REAL, cookie REAL, giveaways REAL, captchas INTEGER, cowoncy INTEGER)"
+    )
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS meta_data (key TEXT PRIMARY KEY, value INTEGER)"
+    )
     # Switch to WAL mode.
     c.execute("PRAGMA journal_mode=WAL;")
 
     # Populate
-    
-    #-- Weekly_runtime
-    """for weekday in range(1,8):
-        c.execute("INSERT OR IGNORE INTO weekly_runtime (weekday, hours) VALUES (?, ?)", (weekday, 0))"""
 
-    #-- gamble_winrate
+    # -- gamble_winrate
     for hr in range(24):
         # hour does not have 24 in 24 hr format!!
         c.execute("INSERT OR IGNORE INTO gamble_winrate (hour, wins, losses, net) VALUES (?, ?, ?, ?)", (hr, 0, 0, 0))
 
-    #-- meta data
+    # -- meta data
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("gamble_winrate_last_checked", 0))
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("cowoncy_earnings_last_checked", 0))
-    
-    #-- commands
+
+    # -- commands
     for cmd in misc_dict["command_priority"].keys():
         c.execute("INSERT OR IGNORE INTO commands (name, count) VALUES (?, ?)", (cmd, 0))
 
-    #-- end --#
+    # -- end --#
     conn.commit()
     conn.close()
-    
-
-    
-
-
 
 
 # ----------STARTING BOT----------#
@@ -1387,4 +1401,3 @@ if __name__ == "__main__":
         popup_main_loop()
     else:
         run_bots(tokens_and_channels)
-
