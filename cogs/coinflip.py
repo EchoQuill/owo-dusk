@@ -82,7 +82,7 @@ class Coinflip(commands.Cog):
             else:
                 self.cmd["cmd_arguments"] = str(amount_to_gamble)
                 if cnf["options"]:
-                    self.cmd["cmd_arguments"]+=f" {random.choice(cnf['options'])}"
+                    self.cmd["cmd_arguments"]+=f" {self.randomchoice(cnf['options'])}"
                 await self.bot.put_queue(self.cmd)
 
         except Exception as e:

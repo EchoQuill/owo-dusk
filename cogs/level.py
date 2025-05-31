@@ -24,8 +24,8 @@ quotes_url = "https://favqs.com/api/qotd"
 def generate_random_string(min, max):
     """something like a list?"""
     characters = string.ascii_lowercase + ' '
-    length = random.randint(min,max)
-    random_string = "".join(random.choice(characters) for _ in range(length))
+    length = self.randomrandint(min,max)
+    random_string = "".join(self.randomchoice(characters) for _ in range(length))
     return random_string
 
 async def fetch_quotes(session):

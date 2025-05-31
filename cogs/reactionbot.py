@@ -110,7 +110,7 @@ class Reactionbot(commands.Cog):
                 cmds.append("pray")
             if curse:
                 cmds.append("curse")
-            await self.send_cmd(random.choice(cmds))
+            await self.send_cmd(self.randomchoice(cmds))
         await self.bot.set_stat(True)
         """Start stuck state checker"""
         self.check_stuck_state.start()
@@ -158,7 +158,7 @@ class Reactionbot(commands.Cog):
                     cmds.append("pray")
                 if curse:
                     cmds.append("curse")
-                await self.send_cmd(random.choice(cmds))
+                await self.send_cmd(self.randomchoice(cmds))
 
 
 async def setup(bot):

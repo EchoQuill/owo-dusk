@@ -76,6 +76,7 @@ console = Console()
 lock = threading.Lock()
 clear()
 
+
 def load_accounts_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
@@ -475,6 +476,10 @@ class MyClient(commands.Bot):
         self.owo_bot_id = 408785106942164992
         self.cmd_counter = itertools.count()
 
+        # discord.py-self's module sets global random to fixed seed. reset that, locally.
+        self.random = random.Random()
+
+
         # Task: Update code to have checks using status instead of individual variables
         self.user_status = {
             "no_gems": False,
@@ -540,7 +545,7 @@ class MyClient(commands.Bot):
     async def random_sleep(self):
         sleep_dict = self.settings_dict["sleep"]
         await asyncio.sleep(self.random_float(sleep_dict["checkTime"]))
-        if random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
+        if self.random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
             await self.set_stat(False)
             sleep_time = self.random_float(sleep_dict["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
@@ -561,7 +566,7 @@ class MyClient(commands.Bot):
 
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
-        random.shuffle(files)
+        self.random.shuffle(files)
         self.refresh_commands_dict()
         for filename in files:
             if filename.endswith(".py"):
@@ -769,16 +774,16 @@ class MyClient(commands.Bot):
 
     """To make the code cleaner when accessing cooldowns from config."""
     def random_float(self, cooldown_list):
-        return random.uniform(cooldown_list[0],cooldown_list[1])
+        return self.random.uniform(cooldown_list[0],cooldown_list[1])
 
     async def sleep_till(self, cooldown, cd_list=True, noise=3):
         if cd_list:
             await asyncio.sleep(
-                random.uniform(cooldown[0],cooldown[1])
+                self.random.uniform(cooldown[0],cooldown[1])
             )
         else:
             await asyncio.sleep(
-                random.uniform(
+                self.random.uniform(
                     cooldown,
                     cooldown + noise
                 )
@@ -802,7 +807,7 @@ class MyClient(commands.Bot):
             while not self.state or self.sleep or self.captcha:
                 if priority:
                     break
-                await asyncio.sleep(random.uniform(1.4, 2.9))
+                await asyncio.sleep(self.random.uniform(1.4, 2.9))
             
             if self.cmds_state[cmd_data["id"]]["in_queue"]:
                 # Ensure command already in queue is not readded to prevent spam
@@ -856,7 +861,7 @@ class MyClient(commands.Bot):
             while not self.queue.empty():
                 items.append(await self.queue.get())
 
-            random.shuffle(items)
+            self.random.shuffle(items)
 
             for item in items:
                 await self.queue.put(item)
@@ -955,7 +960,7 @@ class MyClient(commands.Bot):
         msg = message
         misspelled = False
         if self.settings_dict["misspell"]["enabled"]:
-            if random.uniform(1,100) < self.settings_dict["misspell"]["frequencyPercentage"]:
+            if self.random.uniform(1,100) < self.settings_dict["misspell"]["frequencyPercentage"]:
                 msg = misspell_word(message)
                 misspelled = True
                 # left off here!
@@ -1011,7 +1016,7 @@ class MyClient(commands.Bot):
         return time_now.timestamp()
 
     async def check_for_cash(self):
-        await asyncio.sleep(random.uniform(4.5, 6.4))
+        await asyncio.sleep(self.random.uniform(4.5, 6.4))
         await self.put_queue(
             {
                 "cmd_name": self.alias["cash"]["normal"],
@@ -1049,7 +1054,7 @@ class MyClient(commands.Bot):
                 "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
                 "Cloud", "Mint", "Flare", "Breeze", "Dusty", "Blip"
             ]
-            random_part = random.choice(x)
+            random_part = self.random.choice(x)
             self.username = f"{random_part}_{abs(hash(str(self.user.id) + random_part)) % 10000}"
         else:
             self.username = self.user.name

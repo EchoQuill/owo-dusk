@@ -67,7 +67,7 @@ class Shop(commands.Cog):
             await self.log(f"Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
             return
 
-        item = random.choice(valid_items)
+        item = self.randomchoice(valid_items)
 
         if startup:
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
