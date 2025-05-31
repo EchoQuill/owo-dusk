@@ -236,12 +236,12 @@ def fetch_cmd_data():
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     try:
-        # Fetch table data
         rows = get_from_db("SELECT * FROM commands")
 
-        # Extract columns as lists
-        command_names = [row["name"] for row in rows]
-        count = [row["count"] for row in rows]
+        filtered_rows = [row for row in rows if row["count"] != 0]
+
+        command_names = [row["name"] for row in filtered_rows]
+        count = [row["count"] for row in filtered_rows]
 
         for idx, item in enumerate(count):
             if item == 0:
