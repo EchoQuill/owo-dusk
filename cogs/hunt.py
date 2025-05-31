@@ -11,9 +11,38 @@
 # (at your option) any later version.
 
 import asyncio
+import json
+import re
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
+
+
+try:
+    with open("utils/emojis.json", 'r', encoding="utf-8") as file:
+        emoji_dict = json.load(file)
+except FileNotFoundError:
+    print("The file emojis.json was not found.")
+except json.JSONDecodeError:
+    print("Failed to decode JSON from the file.")
+
+
+def get_emoji_cost(text, emoji_dict=emoji_dict):
+    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
+    emojis = pattern.findall(text)
+    emoji_names = [emoji_dict[char]["sell_price"] for char in emojis if char in emoji_dict]
+    return emoji_names
+
+def get_emoji_values(text):
+    emoji_costs = get_emoji_cost(text)
+    total_sell_price = 0
+
+    for sell_price in emoji_costs:
+        total_sell_price += sell_price
+
+    return total_sell_price
+
+
 
 
 class Hunt(commands.Cog):
@@ -51,6 +80,13 @@ class Hunt(commands.Cog):
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if 'you found:' in message.content.lower() or "caught" in message.content.lower():
                     await self.bot.remove_queue(id="hunt")
+
+                    msg_lines = message.content.splitlines()
+
+                    sell_value = get_emoji_values(msg_lines[0] if "caught" in message.content.lower() else msg_lines[1])
+                    await self.bot.update_cash(sell_value - 5, assumed=True)
+                    await self.bot.update_cash(5, reduce=True)
+
                     await self.bot.sleep_till(self.bot.settings_dict["commands"]["hunt"]["cooldown"])
                     self.cmd["cmd_name"] = (
                         self.bot.alias["hunt"]["shortform"] 

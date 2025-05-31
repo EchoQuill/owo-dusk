@@ -67,6 +67,7 @@ class Battle(commands.Cog):
                                     #print("returned from battle embed reply")
                                     return
                                 
+                            
                             await self.bot.remove_queue(id="battle")
                             await self.bot.sleep_till(self.bot.settings_dict["commands"]["battle"]["cooldown"])
                             self.cmd["cmd_name"] = (

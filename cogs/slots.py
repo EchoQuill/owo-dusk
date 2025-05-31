@@ -101,7 +101,7 @@ class Slots(commands.Cog):
                 """Lose cash"""
                 match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
 
-                self.bot.update_cash(match, reduce=True)
+                await self.bot.update_cash(match, reduce=True)
                 self.bot.gain_or_lose-=match
                 
                 self.turns_lost+=1
@@ -121,7 +121,7 @@ class Slots(commands.Cog):
                     lose_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     profit = won_match-lose_match
 
-                    self.bot.update_cash(profit)
+                    await self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
 
                     self.turns_lost = 0

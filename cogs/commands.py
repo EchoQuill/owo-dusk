@@ -132,6 +132,7 @@ class Commands(commands.Cog):
                 await self.bot.slashCommandSender(cmd["slash_cmd_name"])
             else:
                 await self.bot.send(self.bot.construct_command(cmd))
+            await self.bot.log(f"queue at the time command was ran:\n{self.bot.queue._queue}", "#ff78d6")
 
             """add command to the deque"""
             self.command_times.append(time.time())
@@ -154,6 +155,7 @@ class Commands(commands.Cog):
                     if (time.time() - cnf["last_ran"] > delay) and not cnf["in_queue"]:
                         async with self.bot.lock:
                             self.bot.checks.remove(command)
+                        await self.bot.log(f"Command with id {command['id']} readded to queue", "#ff78d6")
                         await self.bot.put_queue(command)
 
 

@@ -23,8 +23,6 @@ perhaps make a new category `animals` as we are already handling command being p
 """
 
 
-
-
 class Sell(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -78,7 +76,7 @@ class Sell(commands.Cog):
 
                 if self.bot.settings_dict["cashCheck"]:
                     try:
-                        self.bot.update_cash(int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', '')))
+                        await self.bot.update_cash(int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', '')))
                     except:
                         await self.bot.log(f"failed to fetch cowoncy from sales", "#af0087")
                 

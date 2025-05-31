@@ -104,7 +104,7 @@ class Coinflip(commands.Cog):
                     self.turns_lost+=1
                     match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
 
-                    self.bot.update_cash(match, reduce=True)
+                    await self.bot.update_cash(match, reduce=True)
                     self.bot.gain_or_lose-=match
 
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
@@ -116,7 +116,7 @@ class Coinflip(commands.Cog):
                     self.turns_lost = 0
                     profit = won_match-lose_match
 
-                    self.bot.update_cash(profit)
+                    await self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
                     
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")

@@ -336,12 +336,15 @@ if not on_mobile and not misc_dict["hostMode"]:
 
 # For time related stuff
 def get_weekday():
-    # 1 = monday, 7 = sunday
-    return str(datetime.today().isoweekday())
+    # 0 = monday, 6 = sunday
+    return str(datetime.today().weekday())
 
 def get_hour():
     # only from 0 to 23 (24hr format)
     return datetime.now().hour
+
+def get_date():
+    return datetime.now().date().isoformat()  # e.g. "2025-05-31"
 
 
 # For battery check
@@ -476,7 +479,8 @@ class MyClient(commands.Bot):
         self.user_status = {
             "no_gems": False,
             "no_cash": False,
-            "balance": 0
+            "balance": 0,
+            "net_earnings": 0
         }
 
         """Initialize Connection"""
@@ -604,6 +608,14 @@ class MyClient(commands.Bot):
             await db.execute(sql, params)
             await db.commit()
 
+    async def get_from_db(self, sql, params=None):
+        async with aiosqlite.connect("utils/data/db.sqlite", timeout=5) as db:
+            # allows dictionary-like access
+            db.row_factory = aiosqlite.Row
+            async with db.execute(sql, params or ()) as cursor:
+                result = await cursor.fetchall()
+                return result
+
     async def update_cash_db(self):
         """Update values in database"""
         hr = get_hour()
@@ -612,17 +624,97 @@ class MyClient(commands.Bot):
             """UPDATE cowoncy_earnings
             SET earnings = ?
             WHERE user_id = ? AND hour = ?;""",
-            (self.user_status["balance"], self.user.id, hr)
+            (self.user_status["net_earnings"], self.user.id, hr)
         )
 
-    async def populate_cowoncy_earnings(self):
-        for i in range(24):
-            #c.execute("INSERT OR IGNORE INTO weekly_runtime (weekday, hours) VALUES (?, ?)", (weekday, 0))
+    async def populate_cowoncy_earnings(self, update=False):
+        today_str = get_date()
 
+        for i in range(24):
+            if not update:
+                await self.update_database(
+                    "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
+                    (self.user.id, i, 0)
+                )
+        
+        rows = await self.get_from_db(
+            "SELECT value FROM meta_data WHERE key = ?", 
+            ("cowoncy_earnings_last_checked",)
+        )
+
+        last_reset_str = rows[0]['value'] if rows else "0"
+
+        if last_reset_str == today_str:
+            # Handle gap between cowoncy chart
+            cur_hr = get_hour()
+            last_cash = 0
+            for hr in range(cur_hr+1):
+                hr_row = await self.get_from_db(
+                    "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? AND hour = ?", 
+                    (self.user.id, hr)
+                )
+                # Note: negative values are allowed.
+                if hr_row and hr_row[0]["earnings"] != 0:
+                    last_cash = hr_row[0]["earnings"]
+                elif last_cash != 0:
+                    await self.update_database(
+                        "UPDATE cowoncy_earnings SET earnings = ? WHERE hour = ? AND user_id = ?",
+                        (last_cash, hr, self.user.id)
+                    )
+            # Return once done as we don't want reset.
+            return
+
+        for i in range(24):
             await self.update_database(
-                "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
-                (self.user.id, i, 0)
+                "UPDATE cowoncy_earnings SET earnings = 0 WHERE user_id = ? AND hour = ?",
+                (self.user.id, i)
             )
+
+        await self.update_database(
+            "UPDATE meta_data SET value = ? WHERE key = ?",
+            (today_str, "cowoncy_earnings_last_checked")
+        )
+
+    async def fetch_net_earnings(self):
+        self.user_status["net_earnings"] = 0
+        rows = await self.get_from_db(
+            "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? ORDER BY hour",
+            (self.user.id,)
+        )
+        
+        cowoncy_list = [row["earnings"] for row in rows]
+
+        for item in reversed(cowoncy_list):
+            if item != 0:
+                self.user_status["net_earnings"] = item
+                break
+
+
+
+    async def reset_gamble_wins_or_losses(self):
+        today_str = get_date()
+
+        rows = await self.get_from_db(
+            "SELECT value FROM meta_data WHERE key = ?", 
+            ("gamble_winrate_last_checked",)
+        )
+        
+        last_reset_str = rows[0]['value'] if rows else "0"
+
+        if last_reset_str == today_str:
+            return
+
+        for hour in range(24):
+            await self.update_database(
+                "UPDATE gamble_winrate SET wins = 0, losses = 0, net = 0 WHERE hour = ?",
+                (hour,)
+            )
+
+        await self.update_database(
+            "UPDATE meta_data SET value = ? WHERE key = ?",
+            (today_str, "gamble_winrate_last_checked")
+        )
+
 
     async def update_cmd_db(self, cmd):
         await self.update_database(
@@ -638,12 +730,8 @@ class MyClient(commands.Bot):
         
         await self.update_database(
             f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?",
-            (hr,) # (cmd) won't be treated as a tuple because one item.
+            (hr,)
         )
-
-
-
-
 
     async def unload_cog(self, cog_name):
         try:
@@ -733,6 +821,7 @@ class MyClient(commands.Bot):
                     next(self.cmd_counter),               # A counter to serve as a tie-breaker
                     deepcopy(cmd_data)                # actual data
                 ))
+                await self.log(f"Command with id {cmd_data['id']} put to queue", "#ff00b3")
                 self.cmds_state[cmd_data["id"]]["in_queue"] = True
         except Exception as e:
             await self.log(f"Error - {e}, during put_queue", "#c25560")
@@ -750,6 +839,7 @@ class MyClient(commands.Bot):
                     else:
                         if command.get("id", None) == id:
                             self.checks.pop(index)
+                            await self.log(f"Command with id {command['id']} removed from queue", "#ff00b3")
         except Exception as e:
             await self.log(f"Error: {e}, during remove_queue", "#c25560")
 
@@ -809,7 +899,7 @@ class MyClient(commands.Bot):
         if web_log:
             with lock:
                 website_logs.append(f"<div class='message'><span class='timestamp'>[{current_time}]</span><span class='text'>{self.username}| {text}</span></div>")
-                if len(website_logs) > 10:
+                if len(website_logs) > 300:
                     website_logs.pop(0)
         if webhook_useless_log:
             await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
@@ -932,22 +1022,28 @@ class MyClient(commands.Bot):
             }
         )
 
-    def update_cash(self, amount, override=False, reduce=False):
-        if not self.settings_dict["cashCheck"]:
-            return
-        
-        if override:
+    async def update_cash(self, amount, override=False, reduce=False, assumed=False):
+        if override and self.settings_dict["cashCheck"]:
             self.user_status["balance"] = amount
         else:
-            if not reduce:
-                self.user_status["balance"] += amount
+            if self.settings_dict["cashCheck"] and not assumed:
+                if reduce:
+                    self.user_status["balance"] -= amount
+                else:
+                    self.user_status["balance"] += amount
+
+            if reduce:
+                self.user_status["net_earnings"] -= amount
             else:
-                self.user_status["balance"] -= amount 
+                self.user_status["net_earnings"] += amount
+        await self.update_cash_db()
+        
 
 
 
     async def setup_hook(self):
         # Randomise user
+
         if self.misc["debug"]["hideUser"]:
             x = [
                 "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
@@ -1010,7 +1106,11 @@ class MyClient(commands.Bot):
                     json.dump(accounts_dict, f, indent=4)
 
 
+        # Charts
         await self.populate_cowoncy_earnings()
+        await self.reset_gamble_wins_or_losses()
+
+        await self.fetch_net_earnings()
 
         # Start various tasks and updates
         #self.config_update_checker.start()

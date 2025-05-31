@@ -14,6 +14,7 @@ import json
 import pytz
 import asyncio
 import threading
+import re
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
@@ -22,7 +23,7 @@ from datetime import datetime, timezone
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
-    
+
 cmd = {
     "cmd_name": "daily",
     "prefix": True,
@@ -38,12 +39,10 @@ def load_dict():
 load_dict()
 
 
-
 class Daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    
+
     async def start_daily(self):
         if str(self.bot.user.id) in accounts_dict:
             self.current_time_seconds = self.bot.time_in_seconds()
@@ -56,7 +55,6 @@ class Daily(commands.Cog):
                 self.last_daily_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
-                
 
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
             await self.bot.put_queue(cmd, priority=True)
@@ -67,7 +65,6 @@ class Daily(commands.Cog):
                 accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-                
 
     async def cog_load(self):
         if not self.bot.settings_dict["autoDaily"]:
@@ -88,6 +85,18 @@ class Daily(commands.Cog):
                 await self.bot.remove_queue(cmd)
                 await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
+
+                await self.bot.update_cash(
+                    int(
+                        re.search(
+                            r"Here is your daily \*\*<:cowoncy:\d+> ([\d,]+)",
+                            message.content,
+                        )
+                        .group(1)
+                        .replace(",", "")
+                    )
+                )
+
                 await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)
@@ -110,6 +119,6 @@ class Daily(commands.Cog):
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 
-                
+
 async def setup(bot):
     await bot.add_cog(Daily(bot))

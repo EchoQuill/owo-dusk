@@ -31,8 +31,7 @@ except json.JSONDecodeError:
 def get_emoji_names(text, emoji_dict=emoji_dict):
     pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
     emojis = pattern.findall(text)
-    #print(emojis)
-    emoji_names = [emoji_dict[char] for char in emojis if char in emoji_dict]
+    emoji_names = [emoji_dict[char]["name"] for char in emojis if char in emoji_dict]
     return emoji_names
 
 
@@ -69,13 +68,12 @@ class Others(commands.Cog):
             # Cash Check
             elif "you currently have **__" in message.content:
                 """task: add checks for cash at ready."""
-                self.bot.update_cash(
+                await self.bot.update_cash(
                     int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', '')),
                     override = True
                 )
                 await self.bot.log(f"Has {self.bot.user_status['balance']} cowoncy!", "#d787d7")
                 await self.bot.remove_queue(id="cash")
-                await self.bot.update_cash_db()
 
             # Lootbox and Crate
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
