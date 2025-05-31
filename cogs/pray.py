@@ -19,7 +19,7 @@ from discord.ext.commands import ExtensionNotLoaded
 
 def cmd_argument(userid, ping):
     if userid:
-        return f"<@{self.randomchoice(userid)}>" if ping else self.randomchoice(userid)
+        return f"<@{random.choice(userid)}>" if ping else random.choice(userid)
     else:
         return ""
 
@@ -52,7 +52,7 @@ class Pray(commands.Cog):
     async def start_pray_curse(self):
         self.pray_curse_ongoing = True
         cmds = [cmd for cmd in ["pray", "curse"] if self.bot.settings_dict['commands'][cmd]['enabled']]
-        cmd = self.randomchoice(cmds) # pick a random enabled cmd
+        cmd = self.bot.random.choice(cmds) # pick a random enabled cmd
         cnf = self.bot.settings_dict['commands'][cmd]
         if not self.startup:
             await self.bot.remove_queue(id="pray")

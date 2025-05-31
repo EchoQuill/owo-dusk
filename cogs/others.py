@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import random
 import json
 import re
 
@@ -61,7 +60,7 @@ class Others(commands.Cog):
 
             # Accept Rules
             if "**you must accept these rules to use the bot!**" in message.content.lower():
-                await asyncio.sleep(self.randomuniform(0.6,1.7))
+                await asyncio.sleep(self.bot.random.uniform(0.6,1.7))
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:
                     await message.components[0].children[0].click()
 
@@ -104,7 +103,7 @@ class Others(commands.Cog):
             elif "s zoo! **" in message.content and self.zoo:
                 animals = get_emoji_names(message.content)
                 animals.reverse()
-                await asyncio.sleep(self.randomuniform(1.5,2.3))
+                await asyncio.sleep(self.bot.random.uniform(1.5,2.3))
                 three_animals = min(len(animals), 3) #int
                 for i in range(three_animals):
                     zoo_cmd = {
@@ -115,7 +114,7 @@ class Others(commands.Cog):
                         "retry_count": 0
                     }
                     await self.bot.put_queue(zoo_cmd, priority=True)
-                    await asyncio.sleep(self.randomuniform(1.5,2.3))
+                    await asyncio.sleep(self.bot.random.uniform(1.5,2.3))
 
                 self.zoo = False
                 await self.bot.set_stat(True)

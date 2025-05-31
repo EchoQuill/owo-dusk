@@ -243,6 +243,12 @@ def fetch_cmd_data():
         command_names = [row["name"] for row in rows]
         count = [row["count"] for row in rows]
 
+        for idx, item in enumerate(count):
+            if item == 0:
+                command_names.pop(idx)
+                count.pop(idx)
+
+
         # Return Data
         return jsonify({
             "status": "success",
@@ -265,7 +271,6 @@ def fetch_weekly_runtime():
             data_dict = json.load(config_file)
         
         runtime_data = [(val[1] - val[0]) / 60 for val in data_dict.values() if isinstance(val, list)]
-        print(runtime_data)
 
         cur_hour = get_weekday()
 

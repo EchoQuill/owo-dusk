@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import random
 import time
 
 from discord.ext import commands, tasks
@@ -110,7 +109,7 @@ class Reactionbot(commands.Cog):
                 cmds.append("pray")
             if curse:
                 cmds.append("curse")
-            await self.send_cmd(self.randomchoice(cmds))
+            await self.send_cmd(self.bot.random.choice(cmds))
         await self.bot.set_stat(True)
         """Start stuck state checker"""
         self.check_stuck_state.start()
@@ -158,7 +157,7 @@ class Reactionbot(commands.Cog):
                     cmds.append("pray")
                 if curse:
                     cmds.append("curse")
-                await self.send_cmd(self.randomchoice(cmds))
+                await self.send_cmd(self.bot.random.choice(cmds))
 
 
 async def setup(bot):

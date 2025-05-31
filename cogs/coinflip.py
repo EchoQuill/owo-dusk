@@ -12,7 +12,6 @@
 
 import re
 import asyncio
-import random
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
@@ -82,7 +81,7 @@ class Coinflip(commands.Cog):
             else:
                 self.cmd["cmd_arguments"] = str(amount_to_gamble)
                 if cnf["options"]:
-                    self.cmd["cmd_arguments"]+=f" {self.randomchoice(cnf['options'])}"
+                    self.cmd["cmd_arguments"]+=f" {self.bot.random.choice(cnf['options'])}"
                 await self.bot.put_queue(self.cmd)
 
         except Exception as e:

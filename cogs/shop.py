@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import random
 import re
 
 from discord.ext import commands
@@ -67,7 +66,7 @@ class Shop(commands.Cog):
             await self.log(f"Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
             return
 
-        item = self.randomchoice(valid_items)
+        item = self.bot.random.choice(valid_items)
 
         if startup:
             await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])

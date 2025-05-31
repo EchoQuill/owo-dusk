@@ -11,7 +11,6 @@
 # (at your option) any later version.
 
 import asyncio
-import random
 
 from discord.ext import commands, tasks
 from datetime import datetime, timezone
@@ -40,7 +39,7 @@ class ChannelSwitcher(commands.Cog):
         valid_channels = [cid for cid in available_channels if cid != current_channel_id]
 
         while valid_channels:
-            channel_id = self.randomchoice(valid_channels)
+            channel_id = self.bot.random.choice(valid_channels)
 
             try:
                 new_channel = await self.bot.fetch_channel(channel_id)
