@@ -23,16 +23,23 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 ---
 * Computer
   ```
-  git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py
+  git clone https://github.com/echoquill/owo-dusk.git
+  cd owo-dusk
+  python setup.py
+  python uwu.py
   ```
   > make sure git and python is installed and that terminal is open in `Desktop` for easier access
+  > Run in order
 * Termux
   ```
-  pkg update && pkg upgrade -y && termux-setup-storage && pkg install python -y && pkg install git -y && pkg install termux-api -y && cd storage/downloads && git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py
+  pkg update && pkg upgrade -y && termux-setup-storage && pkg install python -y && pkg install git -y && pkg install termux-api -y && cd storage/downloads && git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py && python uwu.py
   ```
   > Make sure to install termux and termux:api app from fdroid or github.
+  > after the above is done, do the steps setup.py asks you to.
+  > 
+  > simpily run `cd storage/downloads/owo-dusk && python uwu.py` next time to re-run code
   
-  after the above is done, do the steps setup.py asks you to.
+  
 
 > [!TIP]
 > For help with setup, please join our discord server(or send `echoquill` a friend request) and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutoriales for it laters!
@@ -49,7 +56,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
   <br>
   <center><img src="static/imgs/website.png" width="1200" height=600"></center>
   <br>
-  <p>Website for captcha logger.</p>
+  <p>Website dashboard</p>
 </div>
 
 ---
@@ -59,6 +66,15 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 <div>
     <center><img src="https://repobeats.axiom.co/api/embed/0a1054d566f34198e5adb680c8c95884f514b0bc.svg" alt="Alt" title="Repobeats analytics image"></div></center>
 </div>
+
+---
+# Credits
+---
+* https://github.com/BridgeSenseDev/Dank-Memer-Grinder
+> inspired cogs part and code structure. I also learned Python from this project :>.
+* https://github.com/TahaGorme/slashy & https://github.com/Trixiacute/
+> inspired website dashboard. Alot of js code was stolen from slashy; before 2.1.0^ script.js was an entire copy of slashy's (with permission ofc).
+ 
 
 ---
 

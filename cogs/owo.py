@@ -11,42 +11,49 @@
 # (at your option) any later version.
 
 import asyncio
-import json
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
 
 class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.owo_ongoing = False
 
-        self.cmd = {
-            "cmd_name": self.bot.alias["owo"]["normal"],
+    async def send_owo(self, startup=False):
+        cmd = {
+            "cmd_name": "owo",
             "prefix": False,
             "checks": False,
-            "retry_count": 0,
-            "id": "owo"
+            "id": "owo",
+            "removed": False
         }
-
-    @tasks.loop(seconds=1)
-    async def send_owo(self):
-        if not self.bot.captcha and self.bot.state:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["owo"]["cooldown"]))
-            await self.bot.put_queue(self.cmd)
+        if not startup:
+            self.owo_ongoing = True
+            await self.bot.sleep_till(self.bot.settings_dict["commands"]["owo"]["cooldown"])
+            self.owo_ongoing = False
+        await self.bot.put_queue(cmd, quick=True)
+            
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["owo"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["owo"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["owo"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.owo"))
             except ExtensionNotLoaded:
                 pass
         else:
-            self.send_owo.start()
+            asyncio.create_task(self.send_owo(startup=True))
 
-    async def cog_unload(self):
-        self.send_owo.stop()
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
+            if message.content in {'owo', 'uwu'}:
+                if not self.owo_ongoing:
+                    await self.send_owo()
+
+
 
 
 async def setup(bot):

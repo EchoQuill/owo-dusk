@@ -11,13 +11,19 @@
 # (at your option) any later version.
 
 import asyncio
-import random
 import re
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-cash_regex = r"/for \*\*(\d+)\*\* <:cowoncy:/gm"
+"""
+SHOP-
+100-110 - limited time items
+200-274 - wallpapers (one time buy)
+1-7 - rings
+"""
+
+cash_regex = r"for \*\*(\d+)\*\* <:cowoncy:\d+>"
 
 cash_required = {
     1:10,
@@ -37,12 +43,11 @@ class Shop(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
             "id": "shop"
         }
 
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["shop"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["shop"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.shop"))
             except ExtensionNotLoaded:
@@ -54,13 +59,22 @@ class Shop(commands.Cog):
         await self.bot.remove_queue(id="shop")
 
     async def send_buy(self, startup=False):
-        item = random.choice(self.bot.config_dict["commands"]["shop"]["itemsToBuy"])
+        cnf = self.bot.settings_dict["commands"]["shop"]
+        valid_items = [item for item in cnf["itemsToBuy"] if item in range(1, 8)]
+
+        if not valid_items:
+            await self.log(f"Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
+            return
+
+        item = self.bot.random.choice(valid_items)
+
         if startup:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
         else:
             await self.bot.remove_queue(id="shop")
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["shop"]["cooldown"]))
-        if cash_required[item] <= self.bot.balance:
+            await self.bot.sleep_till(cnf["cooldown"])
+
+        if cash_required[item] <= self.bot.user_status["balance"] or not self.bot.settings_dict["cashCheck"]:
             self.cmd["cmd_arguments"] = item
             await self.bot.put_queue(self.cmd)
         else:
@@ -73,7 +87,7 @@ class Shop(commands.Cog):
         🛒 **| user**, you bought a <:cring:590393333331918859> **Common Ring** for **10** <:cowoncy:416043450337853441>!
         """
         if "**, you bought a " in message.content:
-            self.bot.balance-=int(re.search(cash_regex, message.content).group(1))
+            await self.bot.update_cash(int(re.search(cash_regex, message.content).group(1)), reduce=True)
             await self.send_buy()
 
 

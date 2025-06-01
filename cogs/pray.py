@@ -30,12 +30,13 @@ class Pray(commands.Cog):
         self.pray_cmd_arguement = None
         self.curse_cmd_arguement = None
         self.startup = True
+        # prevents pray/curse from being re-added if it is queued to be queued
+        self.pray_curse_ongoing = False
         self.pray_cmd = {
             "cmd_name": "pray",
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 2,
             "id": "pray"
         }
 
@@ -44,53 +45,52 @@ class Pray(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 2,
-            "id": "pray" #using pray as id for curse to make it easier to close
+            "id": "pray" # using pray as id for curse to make it easier to close
         }
         self.cmd_names = []
 
     async def start_pray_curse(self):
-        cmds = []
-        if self.bot.config_dict['commands']['pray']['enabled']:
-            cmds.append("pray")
-        if self.bot.config_dict['commands']['curse']['enabled']:
-            cmds.append("curse")
-        cmd = random.choice(cmds)
+        self.pray_curse_ongoing = True
+        cmds = [cmd for cmd in ["pray", "curse"] if self.bot.settings_dict['commands'][cmd]['enabled']]
+        cmd = self.bot.random.choice(cmds) # pick a random enabled cmd
+        cnf = self.bot.settings_dict['commands'][cmd]
         if not self.startup:
             await self.bot.remove_queue(id="pray")
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"][cmd]["cooldown"]))
+            await self.bot.log(f"removed {cmd} from queue", "#d0ff78")
+            await self.bot.sleep_till(cnf["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = False
 
         cmd_argument_data = cmd_argument(
-            self.bot.config_dict['commands'][cmd]['userid'], self.bot.config_dict['commands'][cmd]['pingUser']
+            cnf['userid'], cnf['pingUser']
         )
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
         await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
+        self.pray_curse_ongoing = False
         if self.startup:
             """
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
             before owo-dusk is ran, this check is to fix it getting the code stuck.
             """
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["shortCooldown"]))
+            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
             if self.startup:
                 self.startup=False
                 await self.start_pray_curse()
 
     async def cog_load(self):
-        try:
-            if not self.bot.config_dict["commands"]["pray"]["enabled"] and not self.bot.config_dict["commands"]["curse"]["enabled"]:
-                try:
-                    asyncio.create_task(self.bot.unload_cog("cogs.pray"))
-                except ExtensionNotLoaded:
-                    pass
-            else:
-                asyncio.create_task(self.start_pray_curse())
-        except Exception as e:
-            print(e)
+        if (
+            not self.bot.settings_dict["commands"]["pray"]["enabled"]
+            and not self.bot.settings_dict["commands"]["curse"]["enabled"]
+        ) or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
+            try:
+                asyncio.create_task(self.bot.unload_cog("cogs.pray"))
+            except ExtensionNotLoaded:
+                pass
+        else:
+            asyncio.create_task(self.start_pray_curse())
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="pray")
@@ -101,18 +101,21 @@ class Pray(commands.Cog):
             """
             **⏱ | user**! Slow down and try the command again **<t:1734943219:R>**
             """
-
             if (
-                f"<@{self.bot.user.id}>** prays for **<@{self.bot.config_dict['commands']['pray']['userid']}>**!"
+                f"<@{self.bot.user.id}>** prays for **<@{self.bot.settings_dict['commands']['pray']['userid']}>**!"
                 in message.content
                 or f"<@{self.bot.user.id}>** prays..." in message.content
-                or f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.config_dict['commands']['curse']['userid']}>**!"
+                or f"<@{self.bot.user.id}>** puts a curse on **<@{self.bot.settings_dict['commands']['curse']['userid']}>**!"
                 in message.content
                 or f"<@{self.bot.user.id}>** is now cursed." in message.content
                 or "Slow down and try the command again" in message.content
             ):
-                self.startup = False
-                await self.start_pray_curse()
+                if not self.pray_curse_ongoing:
+                    await self.bot.log("prayed/cursed successfully!", "#d0ff78")
+                    self.startup = False
+                    await self.start_pray_curse()
+                else:
+                    await self.bot.log("ongoing pray/curse", "#d0ff78")
 
 
 async def setup(bot):

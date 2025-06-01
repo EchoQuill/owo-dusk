@@ -46,27 +46,29 @@ class Level(commands.Cog):
             "cmd_name": None,
             "prefix": False,
             "checks": True,
-            "retry_count": 0,
             "id": "level"
         }
 
     async def start_level_grind(self):
+        #await asyncio.sleep(1)
+        await self.bot.remove_queue(id="level")
+        cnf = self.bot.settings_dict["commands"]["lvlGrind"]
         try:
-            await asyncio.sleep(self.bot.random_float(self.bot.config_dict["commands"]["lvlGrind"]["cooldown"]))
-            if self.bot.config_dict["commands"]["lvlGrind"]["useQuoteInstead"]:
+            await self.bot.sleep_till(cnf["cooldown"])
+            if cnf["useQuoteInstead"]:
                 self.last_level_grind_message = await fetch_quotes(self.bot.session)
             else:
-                self.last_level_grind_message = generate_random_string(self.bot.config_dict["commands"]["lvlGrind"]["minLengthForRandomString"], self.bot.config_dict["commands"]["lvlGrind"]["maxLengthForRandomString"])
+                self.last_level_grind_message = generate_random_string(cnf["minLengthForRandomString"], cnf["maxLengthForRandomString"])
             self.cmd["cmd_name"] = self.last_level_grind_message
 
             await self.bot.put_queue(self.cmd)
         except Exception as e:
-            print(e)
+            await self.bot.log(f"Error - start_level_grind(): {e}", "#c25560")
         
     
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
-        if not self.bot.config_dict["commands"]["lvlGrind"]["enabled"]:
+        if not self.bot.settings_dict["commands"]["lvlGrind"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.level"))
             except ExtensionNotLoaded:
@@ -81,7 +83,6 @@ class Level(commands.Cog):
     async def on_message(self, message):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
             if self.last_level_grind_message == message.content:
-                await self.bot.remove_queue(id="level")
                 await self.start_level_grind()
                 
 

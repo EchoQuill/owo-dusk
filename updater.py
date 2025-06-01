@@ -96,5 +96,9 @@ def pull_latest_changes_git():
     write_tokens_file(previous_tokens)
     console.log("[bold green]Previous tokens content restored to tokens.txt!")
 
+
+
 # Run the update process
-pull_latest_changes_git()
+#pull_latest_changes_git()
+
+print("HiHi, updater broken. For steps to update, check github! Sorry, was busy so couldn't finish a fix for updater")

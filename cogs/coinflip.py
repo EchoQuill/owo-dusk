@@ -12,7 +12,6 @@
 
 import re
 import asyncio
-import random
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
@@ -30,7 +29,7 @@ class Coinflip(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "retry_count": 0,
+            
             "id": "coinflip"
         }
         self.turns_lost = 0
@@ -39,7 +38,7 @@ class Coinflip(commands.Cog):
 
 
     async def cog_load(self):
-        if not self.bot.config_dict["gamble"]["coinflip"]["enabled"]:
+        if not self.bot.settings_dict["gamble"]["coinflip"]["enabled"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.coinflip"))
             except ExtensionNotLoaded as e:
@@ -53,37 +52,40 @@ class Coinflip(commands.Cog):
         await self.bot.remove_queue(id="coinflip")
 
     async def start_cf(self, startup=False):
+        cnf = self.bot.settings_dict["gamble"]["coinflip"]
+        goal_system_dict = self.bot.settings_dict['gamble']['goalSystem']
         try:
             if startup:
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["defaultCooldowns"]["briefCooldown"]))
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
             else:
                 await self.bot.remove_queue(id="coinflip")
-                await asyncio.sleep(self.bot.random_float(self.bot.config_dict["gamble"]["coinflip"]["cooldown"]))
+                await self.bot.sleep_till(cnf["cooldown"])
             
-            amount_to_gamble = int(self.bot.config_dict["gamble"]["coinflip"]["startValue"]*(self.bot.config_dict["gamble"]["coinflip"]["multiplierOnLose"]**self.turns_lost))
-            if self.bot.config_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > self.bot.config_dict["gamble"]["goalSystem"]["amount"]:
+            amount_to_gamble = int(cnf["startValue"]*(cnf["multiplierOnLose"]**self.turns_lost))
+            if goal_system_dict["enabled"] and self.bot.gain_or_lose > goal_system_dict["amount"]:
                 if not self.goal_reached:
                     self.goal_reached = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{self.bot.config_dict["gamble"]["goalSystem"]["amount"]}, stopping coinflip!", "#ffd7af")
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{cnf['amount']}, stopping coinflip!", "#ffd7af")
 
                 return await self.start_cf()
             else:
                 # ensure goal amount change does not prevent goal recieved message (website dashboard)
                 self.goal_reached = False
 
-            if (amount_to_gamble > self.bot.balance) or (self.bot.gain_or_lose+self.bot.config_dict["gamble"]["allottedAmount"] <=0):
-                return await self.start_cf()
+            if (amount_to_gamble > self.bot.user_status["balance"]) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
+                if not self.bot.settings_dict["cashCheck"]:
+                    return await self.start_cf()
             
             if amount_to_gamble > 250000:
                 self.exceeded_max_amount = True
             else:
                 self.cmd["cmd_arguments"] = str(amount_to_gamble)
-                if self.bot.config_dict["gamble"]["coinflip"]["options"]:
-                    self.cmd["cmd_arguments"]+=f" {random.choice(self.bot.config_dict['gamble']['coinflip']['options'])}"
+                if cnf["options"]:
+                    self.cmd["cmd_arguments"]+=f" {self.bot.random.choice(cnf['options'])}"
                 await self.bot.put_queue(self.cmd)
 
         except Exception as e:
-            print(e)
+            await self.bot.log(f"Error - {e}, During coinflip start_cf()", "#c25560")
 
 
     @commands.Cog.listener()
@@ -100,21 +102,27 @@ class Coinflip(commands.Cog):
                 if "and you lost it all... :c" in after.content.lower():
                     self.turns_lost+=1
                     match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
-                    self.bot.balance-=match
+
+                    await self.bot.update_cash(match, reduce=True)
                     self.bot.gain_or_lose-=match
+
                     await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
+                    await self.bot.update_gamble_db("losses")
                 else:
                     won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
                     lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
                     self.turns_lost = 0
                     profit = won_match-lose_match
-                    self.bot.balance+=profit
+
+                    await self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
+                    
                     await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
                     await self.start_cf()
+                    await self.bot.update_gamble_db("wins")
             except Exception as e:
-                print(e)
+                await self.bot.log(f"Error - {e}, During coinflip on_message_edit()", "#c25560")
 
 async def setup(bot):
     await bot.add_cog(Coinflip(bot))

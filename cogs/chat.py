@@ -20,12 +20,14 @@ class Chat(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
 
-        if message.author.id in [self.bot.user.id, 1209017744696279041] + self.bot.config_dict["textCommands"]["allowedUsers"]:
-            if f"{self.bot.config_dict['textCommands']['prefix']}{self.bot.config_dict['textCommands']['commandToStopUser']}" in message.content.lower():
+        cnf = self.bot.global_settings_dict['textCommands']
+
+        if message.author.id in [self.bot.user.id, 1209017744696279041] + cnf["allowedUsers"]:
+            if f"{cnf['prefix']}{cnf['commandToStopUser']}" in message.content.lower():
                 await self.bot.log("stopping owo-dusk..","#87875f")
                 self.bot.sleep=True
 
-            elif f"{self.bot.config_dict['textCommands']['prefix']}{self.bot.config_dict['textCommands']['commandToStartUser']}" in message.content.lower():
+            elif f"{cnf['prefix']}{cnf['commandToStartUser']}" in message.content.lower():
                 await self.bot.log("starting owo-dusk..","#87875f")
                 self.bot.sleep=False
 
