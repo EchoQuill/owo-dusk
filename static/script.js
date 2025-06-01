@@ -73,6 +73,8 @@ async function handle_gamble_earnings_chart() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      devicePixelRatio: 4,
       plugins: {
         legend: {
           position: 'top',
@@ -132,6 +134,8 @@ async function handle_weekly_runtimes_chart() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      devicePixelRatio: 4,
       plugins: {
         legend: {
           position: 'top',
@@ -169,6 +173,8 @@ async function handle_cowoncy_earnings_chart() {
     data: data.data,
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      devicePixelRatio: 4,
       plugins: {
         legend: {
           position: 'top',
@@ -229,6 +235,8 @@ async function handle_total_commands_chart() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      devicePixelRatio: 4,
       plugins: {
         legend: {
           position: 'left',

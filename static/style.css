@@ -110,7 +110,7 @@ nav {
     min-width: 0;
     margin-left: 2px;
     margin-right: 2px;
-    min-width: 384px;
+    min-width: 330px;
 }
 
 .section-area {
@@ -121,6 +121,23 @@ nav {
     padding: 15px;
     transition: all 0.15s ease;
     box-shadow: 0 0 10px rgba(100, 80, 200, 0.1);
+    /* Make sure content does not overflow horizontally */
+    overflow-x: auto;
+}
+
+.section-area-scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a46ae0 transparent;
+}
+
+.section-area-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.section-area-scroll::-webkit-scrollbar-thumb {
+    background: #a46ae0;
+    border-radius: 4px;
 }
 
 .section-area:hover {
@@ -138,6 +155,7 @@ nav {
 
 .section-area canvas {
     max-height: 300px;
+    min-width: 1000px;
 }
 
 .cards-area {
@@ -242,5 +260,10 @@ nav {
 @media (max-width: 768px) {
     .nav-area {
         position: static;
+    }
+
+
+    .section-area canvas {
+        min-width: 900px;
     }
 }

@@ -20,10 +20,11 @@ the Free Software Foundation, either version 3 of the License, or
         <title>OwO-Dusk - Web Dashboard</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="../static/style.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <script src="../static/test.js"></script>
+        <link rel="stylesheet" href="../static/style.css">
         
     </head>
     <body>
@@ -68,7 +69,7 @@ the Free Software Foundation, either version 3 of the License, or
                         <div class="card-note">(Today's uptime)</div>
                     </div>
                     <div class="card">
-                        <div class="card-label">commands ran 🚀</div>
+                        <div class="card-label">commands 🚀</div>
                         <div class="card-number"id="total_commands_card">null</div>
                         <div class="card-note">(All total commands ran)</div>
                     </div>
@@ -90,20 +91,20 @@ the Free Software Foundation, either version 3 of the License, or
             
             <div class="section-area">
                 <h2>Total Commands Sent</h2>
-                <canvas id="total_commands"></canvas>
+                <div class="section-area-scroll"><canvas id="total_commands" style="min-width: 440px;"></canvas></div>
             </div>
         </div>
         <div class="section-area">
             <h2>Cowoncy Earnings</h2>
-            <canvas id="cowoncy_earnings"></canvas>
+            <div class="section-area-scroll"><canvas id="cowoncy_earnings"></canvas></div>
         </div>
         <div class="section-area">
             <h2>Weekly Runtime</h2>
-            <canvas id="weekly_runtimes"></canvas>
+            <div class="section-area-scroll"><canvas id="weekly_runtimes"></canvas></div>
         </div>
         <div class="section-area">
-            <h2>Gamble Earnings</h2>
-            <canvas id="gamble_earnings"></canvas>
+            <h2>Gamble Winrates</h2>
+            <div class="section-area-scroll"><canvas id="gamble_earnings"></canvas></div>
         </div>
         
     </div>
