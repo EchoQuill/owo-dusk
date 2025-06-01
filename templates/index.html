@@ -20,7 +20,7 @@ the Free Software Foundation, either version 3 of the License, or
         <title>OwO-Dusk - Web Dashboard</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="../static/style.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="{{ url_for('static', filename='script.js') }}"></script>
@@ -56,33 +56,36 @@ the Free Software Foundation, either version 3 of the License, or
         <div class="section-area" style="height: auto;">
             <h2>Overview</h2>
             <div class="cards-area">
-                <div class="card">
-                    <div class="card-label">cash 💸</div>
-                    <div class="card-number" id="total_cash_card">null</div>
+                <div class="cards-wrapper">
+                    <div class="card">
+                        <div class="card-label">cash 💸</div>
+                        <div class="card-number" id="total_cash_card">null</div>
+                        <div class="card-note">(All total)</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">uptime ⏱️</div>
+                        <div class="card-number" id="total_uptime_card">null</div>
+                        <div class="card-note">(Today's uptime)</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">commands ran 🚀</div>
+                        <div class="card-number"id="total_commands_card">null</div>
+                        <div class="card-note">(All total commands ran)</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Captchas 🛡️</div>
+                        <div class="card-number" id="total_captchas_card">null</div>
+                        <div class="card-note">(All total captchas that user manually solved)</div>
+                    </div>
                 </div>
-                <div class="card">
-                    <div class="card-label">uptime ⏱️</div>
-                    <div class="card-number" id="total_uptime_card">null</div>
-                </div>
-                <div class="card">
-                    <div class="card-label">commands ran 🚀</div>
-                    <div class="card-number"id="total_commands_card">null</div>
-                </div>
-                <div class="card">
-                    <div class="card-label">Captchas 🛡️</div>
-                    <div class="card-number" id="total_captchas_card">null</div>
-                </div>
-                </div>
+            </div>
 
         </div>
 
         <div class="multi-items">
             <div id="console-area" class="section-area">
                 <h2>Activity Console</h2>
-                <div id="messages" class="messages">
-                    <div class="message"><span class="timestamp">test</span><span class="text">further test</span></div>
-                    <div class="message"><span class="timestamp">test</span><span class="text">further test</span></div>
-                </div>
+                <div id="messages" class="messages"></div>
             </div>
             
             <div class="section-area">

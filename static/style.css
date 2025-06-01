@@ -141,12 +141,27 @@ nav {
 }
 
 .cards-area {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a46ae0 transparent;
     display: flex;
-    flex-direction: row;
     justify-content: center;
-    align-items: center;
+}
+
+.cards-area::-webkit-scrollbar {
+    height: 8px;
+}
+
+.cards-area::-webkit-scrollbar-thumb {
+    background: #a46ae0;
+    border-radius: 4px;
+}
+
+.cards-wrapper {
+    display: inline-flex;
     gap: 40px;
-    flex-wrap: wrap;
+    padding: 20px;
+    min-width: max-content;
 }
 
 .card {
@@ -157,10 +172,11 @@ nav {
     border-radius: 15px;
     height: 200px;
     width: 200px;
+    /*min-width: 200px;*/
     padding: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
@@ -181,11 +197,18 @@ nav {
     text-align: center;
 }
 
+.card-note {
+    font-size: 0.6rem;
+    color: #8a8a8a;
+    text-align: center;
+}
+
 .card:hover {
     background-color: rgba(255, 255, 255, 0.1);
     transform: scale(1.05);
     /* zoom in effect */
 }
+
 
 
 .messages {
@@ -207,18 +230,17 @@ nav {
     border-radius: 4px;
 }
 
+
+/* Fix issues with horizontal scroll area */
+@media (max-width: 1200px) {
+    .cards-area {
+        justify-content: flex-start; 
+    }
+}
+
 /* Mobile Tweaks */
 @media (max-width: 768px) {
     .nav-area {
         position: static;
     }
-
-    .cards-area {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    /*.multi-items {
-        flex-direction: column;
-    }*/
 }

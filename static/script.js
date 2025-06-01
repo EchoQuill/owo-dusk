@@ -206,6 +206,8 @@ async function handle_cowoncy_earnings_chart() {
 
   var ctx = document.getElementById('total_cash_card');
   ctx.innerText = data.total_cash;
+  var ctx = document.getElementById('total_captchas_card');
+  ctx.innerText = data.total_captchas;
 
 }
 
