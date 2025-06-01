@@ -7,7 +7,7 @@
     "news": true,
     "console": {
         "compactMode": false,
-        "hideStarRepoMessage": true,
+        "hideStarRepoMessage": false,
         "disableCommandSendLog": false
     },
     "hostMode": false,

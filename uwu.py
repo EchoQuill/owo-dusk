@@ -1335,7 +1335,7 @@ def run_bot(token, channel_id, global_settings_dict):
 if __name__ == "__main__":
     if not misc_dict["console"]["compactMode"]:
         console.print(owoPanel)
-        console.rule(f"[bold blue1]version - {version} beta", style="navy_blue")
+        console.rule(f"[bold blue1]version - {version}", style="navy_blue")
     version_json = fetch_json(f"{owo_dusk_api}/version.json", "version info")
 
     if compare_versions(version, version_json["version"]):

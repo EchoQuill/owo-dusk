@@ -49,8 +49,8 @@
             "bannedContent": "{username} Banned from OwO!"
         },
         "playAudio": {
-            "enabled": true,
-            "path": "mm.mp3"
+            "enabled": false,
+            "path": "filename.mp3"
         },
         "toastOrPopup": {
             "enabled": true,
@@ -86,7 +86,6 @@
             "userid_one": [1, 2, 3],
             "userid_two": [4, 5]
         },
-        "threadMode": false,
         "interval": [300, 600]
     }
 }

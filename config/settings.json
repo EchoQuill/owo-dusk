@@ -1,6 +1,6 @@
 {
-    "setprefix": "w",
-    "useSlashCommands": true,
+    "setprefix": "owo ",
+    "useSlashCommands": false,
     "commands": {
         "hunt": {
             "enabled": true,
@@ -19,7 +19,7 @@
             "useShortForm": true
         },
         "sell": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 410,
                 500
@@ -35,7 +35,7 @@
             ]
         },
         "sac": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 410,
                 500
@@ -51,7 +51,7 @@
             ]
         },
         "pray": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 310,
                 400
@@ -78,7 +78,7 @@
                 10,
                 15
             ],
-            "useQuoteInstead": true,
+            "useQuoteInstead": false,
             "minLengthForRandomString": 5,
             "maxLengthForRandomString": 20
         },
@@ -139,7 +139,7 @@
             "amount": 300
         },
         "coinflip": {
-            "enabled": true,
+            "enabled": false,
             "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
@@ -152,7 +152,7 @@
         },
         "slots": {
             "enabled": false,
-            "startValue": 2,
+            "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
                 16,
@@ -241,7 +241,7 @@
     
     "autoUse": {
         "gems": {
-            "enabled": true,
+            "enabled": false,
             "order": {
                 "lowestToHighest": true
             },
@@ -261,7 +261,7 @@
                 "specialGem": false
             }
         },
-        "autoLootbox": true,
-        "autoCrate": true
+        "autoLootbox": false,
+        "autoCrate": false
     }
 }
