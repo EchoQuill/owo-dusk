@@ -8,7 +8,7 @@ click==8.2.1
 discord-protos==0.0.2
 discord.py-self @ git+https://github.com/dolfies/discord.py-self.git
 Flask==3.1.1
-frozenlist==1.6.0
+frozenlist==1.7.0
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
