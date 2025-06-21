@@ -25,6 +25,7 @@ import sys
 import threading
 import time
 import traceback
+from importlib.metadata import version as import_ver
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from threading import Thread
@@ -1333,7 +1334,19 @@ def run_bot(token, channel_id, global_settings_dict):
     except Exception as e:
         printBox(f"Error starting bot: {e}", "bold red")
 
+def install_package(package_name):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+
 if __name__ == "__main__":
+    try:
+        discord_cur_version = import_ver("discord.py-self")
+        discord_req_version = "2.1.0a5097+g20ae80b3"
+        if discord_cur_version != discord_req_version:
+            install_package("git+https://github.com/dolfies/discord.py-self@20ae80b398ec83fa272f0a96812140e14868c88f")
+            raise SystemExit("discord.py-self was reinstalled. Please restart the program.")
+    except ImportError as e:
+        print(e)
+
     if not misc_dict["console"]["compactMode"]:
         console.print(owoPanel)
         console.rule(f"[bold blue1]version - {version}", style="navy_blue")
