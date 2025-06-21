@@ -94,7 +94,7 @@ class Commands(commands.Cog):
         await self.bot.shuffle_queue()
         self.send_commands.start()
         self.monitor_checks.start()
-        self.watchdog.start()
+        #self.watchdog.start()
 
     async def cog_load(self):
         """Run join_previous_giveaways when bot is ready"""
@@ -162,9 +162,9 @@ class Commands(commands.Cog):
         except Exception as e:
             await self.bot.log(f"Error - monitor_checks(): {e}", "#c25560")
 
-    @commands.Cog.listener()
+    """@commands.Cog.listener()
     async def on_message(self, message):
-        self.last_msg = time.time()
+        self.last_msg = time.time()"""
 
 
 

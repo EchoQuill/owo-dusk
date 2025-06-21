@@ -187,6 +187,13 @@ class Captcha(commands.Cog):
     async def on_message(self, message):
         self.last_msg = time.time()
 
+        if not self.bot.dm:
+            if message.author.id == self.bot.owo_bot_id:
+                self.bot.dm = await message.author.create_dm()
+            else:
+                # Safe, since only owobot will send captcha messages.
+                return
+
 
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:

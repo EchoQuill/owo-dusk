@@ -101,7 +101,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.1.0"
+version = "2.1.1"
 debug_print = True
 
 
@@ -1080,7 +1080,6 @@ class MyClient(commands.Bot):
         else:
             self.username = self.user.name
 
-        self.dm = None
         self.safety_check_loop.start()
         if self.session is None:
             self.session = aiohttp.ClientSession()
@@ -1103,7 +1102,9 @@ class MyClient(commands.Bot):
                 await self.log(f"Failed to fetch channel {self.channel_id}: {e}", "#c25560")
                 return
 
-        self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
+        # self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
+        # remove temp fix in `cogs/captcha.py` if uncommenting
+
 
         # Fetch slash commands in self.cm
         self.slash_commands = []
