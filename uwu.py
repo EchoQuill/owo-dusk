@@ -829,7 +829,7 @@ class MyClient(commands.Bot):
         cnf = self.misc["command_priority"]
         try:
             while not self.state or self.sleep or self.captcha:
-                if priority:
+                if priority and (not self.sleep and not self.captcha):
                     break
                 await asyncio.sleep(self.random.uniform(1.4, 2.9))
             
