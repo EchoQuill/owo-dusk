@@ -27,6 +27,7 @@
         "prefix": ".",
         "commandToStopUser": "stop",
         "commandToStartUser": "start",
+        "commandToRestartAfterCaptcha": "restart_captcha",
         "allowedUsers": []
     },
     "webhook": {
