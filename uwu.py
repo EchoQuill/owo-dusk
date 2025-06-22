@@ -507,7 +507,7 @@ class MyClient(commands.Bot):
                 "last_ran": 0
             }
         }
-        for key in self.misc["command_priority"]:
+        for key in self.misc["command_info"]:
             self.cmds_state[key] = {
                 "in_queue": False,
                 "in_monitor": False,
@@ -826,7 +826,7 @@ class MyClient(commands.Bot):
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False, quick=False):
-        cnf = self.misc["command_priority"]
+        cnf = self.misc["command_info"]
         try:
             while not self.state or self.sleep or self.captcha:
                 if priority and (not self.sleep and not self.captcha):
@@ -971,7 +971,7 @@ class MyClient(commands.Bot):
         return total_time
 
     # send commands
-    async def send(self, message, bypass=False, channel=None, silent=global_settings_dict["silentTextMessages"], typingIndicator=global_settings_dict["typingIndicator"]):
+    async def send(self, message, color=None, bypass=False, channel=None, silent=global_settings_dict["silentTextMessages"], typingIndicator=global_settings_dict["typingIndicator"]):
         """
             TASK: Refactor
         """
@@ -998,11 +998,11 @@ class MyClient(commands.Bot):
             else:
                 await channel.send(msg, silent=silent)
             if not disable_log:
-                await self.log(f"Ran: {msg}", "#5432a8")
+                await self.log(f"Ran: {msg}", color if color else "#5432a8")
             if misspelled:
                 await self.set_stat(False)
                 time = self.calculate_correction_time(message)
-                await self.log(f"correcting: {msg} -> {message} in {time}s", "#5432a8")
+                await self.log(f"correcting: {msg} -> {message} in {time}s", "#422052")
                 await asyncio.sleep(time)
                 if typingIndicator:
                     async with channel.typing():
@@ -1011,13 +1011,13 @@ class MyClient(commands.Bot):
                     await channel.send(message, silent=silent)
                 await self.set_stat(True)
 
-    async def slashCommandSender(self, msg, **kwargs):
+    async def slashCommandSender(self, msg, color, **kwargs):
         try:
             for command in self.slash_commands:
                 if command.name == msg:
                     await self.wait_until_ready()
                     await command(**kwargs)
-                    await self.log(f"Ran: /{msg}", "#5432a8")
+                    await self.log(f"Ran: /{msg}", color if color else "#5432a8")
         except Exception as e:
             await self.log(f"Error: {e}, during slashCommandSender", "#c25560")
 
@@ -1251,7 +1251,7 @@ def create_database(db_path="utils/data/db.sqlite"):
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("cowoncy_earnings_last_checked", 0))
 
     # -- commands
-    for cmd in misc_dict["command_priority"].keys():
+    for cmd in misc_dict["command_info"].keys():
         c.execute("INSERT OR IGNORE INTO commands (name, count) VALUES (?, ?)", (cmd, 0))
 
     # -- end --#

@@ -106,6 +106,7 @@ class Commands(commands.Cog):
         try:
             cnf = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]
             priority, _, cmd = await self.bot.queue.get()
+            cmd_id = cmd.get("id")
 
             if priority != 0:
                 while (time.time() - self.bot.cmds_state["global"]["last_ran"]) < cnf["betweenCommands"][0]:
@@ -119,19 +120,19 @@ class Commands(commands.Cog):
 
             
             """Update Command state"""
-            await self.bot.upd_cmd_state(cmd["id"])
+            await self.bot.upd_cmd_state(cmd_id)
 
             """Append to checks"""
-            if cmd.get("checks") and cmd.get("id"):
-                in_queue = await self.bot.search_checks(id=cmd["id"])
+            if cmd.get("checks") and cmd_id:
+                in_queue = await self.bot.search_checks(id=cmd_id)
                 if not in_queue:
                     async with self.bot.lock:
                         self.bot.checks.append(cmd)
             
             if self.bot.settings_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
-                await self.bot.slashCommandSender(cmd["slash_cmd_name"])
+                await self.bot.slashCommandSender(cmd["slash_cmd_name"], self.bot.misc["command_info"][cmd_id]["log_color"])
             else:
-                await self.bot.send(self.bot.construct_command(cmd))
+                await self.bot.send(self.bot.construct_command(cmd), self.bot.misc["command_info"][cmd_id]["log_color"])
 
             """add command to the deque"""
             self.command_times.append(time.time())

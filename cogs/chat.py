@@ -31,6 +31,9 @@ class Chat(commands.Cog):
                 await self.bot.log("starting owo-dusk..","#87875f")
                 self.bot.sleep=False
 
+        if f"{cnf['prefix']}{cnf['commandToRestartAfterCaptcha']}" in message.content.lower():
+            await self.bot.log("restarting owo-dusk after captcha","#87875f")
+            self.bot.captcha=False
 
 async def setup(bot):
     await bot.add_cog(Chat(bot))

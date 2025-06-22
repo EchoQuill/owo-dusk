@@ -63,7 +63,7 @@ class Reactionbot(commands.Cog):
     
     def cmd_retry_required(self, cmd):
         cmd_id = cmd if cmd!="curse" else "pray"
-        priority_dict = self.bot.misc["command_priority"]
+        priority_dict = self.bot.misc["command_info"]
         last_time = self.cmd_states[cmd_id]
         # The 5s here is incase of delays.
         return (time.time() - last_time) > priority_dict[cmd_id]["basecd"]+5
