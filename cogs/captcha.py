@@ -230,7 +230,8 @@ class Captcha(commands.Cog):
                 or any(b in clean(message.content) for b in list_captcha)
             ):
                 if not get_channel_name(message.channel) == "owo DMs":
-                    if f"{self.bot.user.name}" not in message.content and f"<@{self.bot.user.id}>" not in message.content:
+                    display_name = message.guild.me.display_name
+                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", display_name)):
                         return
                 self.bot.captcha = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
