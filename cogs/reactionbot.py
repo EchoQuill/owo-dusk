@@ -140,10 +140,10 @@ class Reactionbot(commands.Cog):
         owo = self.check_cmd_state("owo")
 
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.reaction_bot_id:
-            if "**OwO**" in message.content and owo:
+            if "**OwO**" in message.content and (f"<@{self.bot.user.id}>" in message.content or self.bot.user.name in message.content) and owo:
                 await self.send_cmd("owo")
 
-            elif "**hunt/battle**" in message.content and (hunt or battle):
+            elif "**hunt/battle**" in message.content and (f"<@{self.bot.user.id}>" in message.content or self.bot.user.name in message.content) and (hunt or battle):
                 if hunt and battle:
                     await self.send_cmd("hunt")
                     await self.send_cmd("battle")
@@ -151,7 +151,7 @@ class Reactionbot(commands.Cog):
                     cmd = "hunt" if hunt else "battle"
                     await self.send_cmd(cmd)
 
-            elif "**pray/curse**" in message.content and (pray or curse):
+            elif "**pray/curse**" in message.content and (f"<@{self.bot.user.id}>" in message.content or self.bot.user.name in message.content) and (pray or curse):
                 cmds = []
                 if pray:
                     cmds.append("pray")

@@ -229,6 +229,10 @@ class Captcha(commands.Cog):
                 )  # message attachment check
                 or any(b in clean(message.content) for b in list_captcha)
             ):
+                if not get_channel_name(message.channel) == "owo DMs":
+                    display_name = message.guild.me.display_name
+                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", display_name)):
+                        return
                 self.bot.captcha = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
                 self.captcha_handler(message.channel, "Link")
