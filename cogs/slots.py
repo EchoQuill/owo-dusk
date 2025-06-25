@@ -37,7 +37,12 @@ class Slots(commands.Cog):
         }
         self.turns_lost = 0
         self.exceeded_max_amount = False
-        self.goal_reached = False
+
+        self.gamble_flags = {
+            "goal_reached": False,
+            "amount_exceeded": False,
+            "no_balance": False
+        }
 
 
     async def cog_load(self):
@@ -64,18 +69,38 @@ class Slots(commands.Cog):
                 await self.bot.sleep_till(cnf["cooldown"])
 
             amount_to_gamble = int(cnf["startValue"]*(cnf["multiplierOnLose"]**self.turns_lost))
+
+            # Goal system check
             if self.bot.settings_dict["gamble"]["goalSystem"]["enabled"] and self.bot.gain_or_lose > goal_system_dict["amount"]:
-                if not self.goal_reached:
-                    self.goal_reached = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "#ffd7af")
+                if not self.gamble_flags["goal_reached"]:
+                    self.gamble_flags["goal_reached"] = True
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "#4a270c")
 
                 return await self.start_slots()
-            else:
-                # ensure goal amount change does not prevent goal recieved message (website dashboard)
-                self.goal_reached = False
+            elif self.gamble_flags["goal_reached"]:
+                self.gamble_flags["goal_reached"] = False
 
-            if (amount_to_gamble > self.bot.user_status["balance"] and self.bot.settings_dict["cashCheck"]) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
+            # Balance check
+            if (amount_to_gamble > self.bot.user_status["balance"] and self.bot.settings_dict["cashCheck"]):
+                if not self.gamble_flags["no_balance"]:
+                    self.gamble_flags["no_balance"] = True
+                    await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping slots!", "#4a270c")
+
                 return await self.start_slots()
+            elif self.gamble_flags["no_balance"]:
+                await self.bot.log(f"Balance regained! ({self.bot.user_status["balance"]}) - restarting slots!", "#4a270c")
+                self.gamble_flags["no_balance"] = False
+            
+            # Allotted value check
+            if (self.bot.gain_or_lose + (self.bot.settings_dict["gamble"]["allottedAmount"] - amount_to_gamble) <=0):
+                if not self.gamble_flags["amount_exceeded"]:
+                    self.gamble_flags["amount_exceeded"] = True
+                    await self.bot.log(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping slots!", "#4a270c")
+
+                return await self.start_slots()
+            elif self.gamble_flags["amount_exceeded"]:
+                self.gamble_flags["amount_exceeded"] = False
+
                 
             if amount_to_gamble > 250000:
                 self.exceeded_max_amount = True
