@@ -74,7 +74,7 @@ class Shop(commands.Cog):
             await self.bot.remove_queue(id="shop")
             await self.bot.sleep_till(cnf["cooldown"])
 
-        if cash_required[item] <= self.bot.user_status["balance"] or not self.bot.settings_dict["cashCheck"]:
+        if cash_required[item] <= self.bot.user_status["balance"] and not self.bot.settings_dict["cashCheck"]:
             self.cmd["cmd_arguments"] = item
             await self.bot.put_queue(self.cmd)
         else:
