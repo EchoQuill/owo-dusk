@@ -83,10 +83,17 @@
     },
     "channelSwitcher": {
         "enabled": false,
-        "channelids": {
-            "userid_one": [1, 2, 3],
-            "userid_two": [4, 5]
-        },
-        "interval": [300, 600]
+        "users": [
+            {
+                "userid": 23454123321,
+                "channels": [444234234, 23423423, 234324234]
+            },
+            {
+                "userid": 23432454321,
+                "channels": [42342344, 552342345]
+            }
+        ],
+        "interval": [300, 600],
+        "delayBeforeSwitch": [2,4]
     }
 }
