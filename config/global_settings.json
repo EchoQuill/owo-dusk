@@ -50,8 +50,8 @@
             "bannedContent": "{username} Banned from OwO!"
         },
         "playAudio": {
-            "enabled": false,
-            "path": "filename.mp3"
+            "enabled": true,
+            "path": "Beep.mp3"
         },
         "toastOrPopup": {
             "enabled": true,
