@@ -34,7 +34,12 @@ class Coinflip(commands.Cog):
         }
         self.turns_lost = 0
         self.exceeded_max_amount = False
-        self.goal_reached = False
+
+        self.gamble_flags = {
+            "goal_reached": False,
+            "amount_exceeded": False,
+            "no_balance": False
+        }
 
 
     async def cog_load(self):
@@ -62,19 +67,38 @@ class Coinflip(commands.Cog):
                 await self.bot.sleep_till(cnf["cooldown"])
             
             amount_to_gamble = int(cnf["startValue"]*(cnf["multiplierOnLose"]**self.turns_lost))
+
+            # Goal system check
             if goal_system_dict["enabled"] and self.bot.gain_or_lose > goal_system_dict["amount"]:
-                if not self.goal_reached:
-                    self.goal_reached = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{cnf['amount']}, stopping coinflip!", "#ffd7af")
+                if not self.gamble_flags["goal_reached"]:
+                    self.gamble_flags["goal_reached"] = True
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{cnf['amount']}, stopping coinflip!", "#4a270c")
 
                 return await self.start_cf()
-            else:
-                # ensure goal amount change does not prevent goal recieved message (website dashboard)
-                self.goal_reached = False
+            elif self.gamble_flags["goal_reached"]:
+                self.gamble_flags["goal_reached"] = False
 
-            if (amount_to_gamble > self.bot.user_status["balance"]) or (self.bot.gain_or_lose+self.bot.settings_dict["gamble"]["allottedAmount"] <=0):
-                if not self.bot.settings_dict["cashCheck"]:
-                    return await self.start_cf()
+            # Balance check
+            if amount_to_gamble > self.bot.user_status["balance"] and not self.bot.settings_dict["cashCheck"]:
+                if not self.gamble_flags["no_balance"]:
+                    self.gamble_flags["no_balance"] = True
+                    await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "#4a270c")
+
+                return await self.start_cf()
+            elif self.gamble_flags["no_balance"]:
+                await self.bot.log(f"Balance regained! ({self.bot.user_status["balance"]}) - restarting coinflip!", "#4a270c")
+                self.gamble_flags["no_balance"] = False
+
+            # Allotted value check
+            if (self.bot.gain_or_lose + (self.bot.settings_dict["gamble"]["allottedAmount"] - amount_to_gamble) <=0):
+                if not self.gamble_flags["amount_exceeded"]:
+                    self.gamble_flags["amount_exceeded"] = True
+                    await self.bot.log(f"Allotted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "#4a270c")
+
+                return await self.start_cf()
+            elif self.gamble_flags["amount_exceeded"]:
+                self.gamble_flags["amount_exceeded"] = False
+
             
             if amount_to_gamble > 250000:
                 self.exceeded_max_amount = True

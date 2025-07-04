@@ -35,18 +35,24 @@ class ChannelSwitcher(commands.Cog):
     async def change_channel(self):
         cnf = self.bot.global_settings_dict["channelSwitcher"]
         current_channel_id = self.bot.cm.id
-        available_channels = cnf["channelids"].get(str(self.bot.user.id), [])
+
+        item = None
+        for entry in cnf["users"]:
+            if entry["userid"] == self.bot.user.id:
+                item = entry
+                break
+
+        available_channels = item["channels"] if item else []
         valid_channels = [cid for cid in available_channels if cid != current_channel_id]
 
         while valid_channels:
             channel_id = self.bot.random.choice(valid_channels)
-
             try:
                 new_channel = await self.bot.fetch_channel(channel_id)
                 if new_channel:
                     no_activity = await self.ensure_no_activity(new_channel)
                     if no_activity:
-                        self.bot.cm = new_channel
+                        await self.bot.empty_checks_and_switch(new_channel)
                         return True, f"Switched successfully to channel {new_channel.name}"
             except Exception as e:
                 await self.bot.log(f"Error - Failed to fetch channel with id {channel_id}: {e}", "#c25560")

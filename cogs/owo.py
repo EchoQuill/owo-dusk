@@ -25,11 +25,12 @@ class Owo(commands.Cog):
         cmd = {
             "cmd_name": "owo",
             "prefix": False,
-            "checks": False,
+            "checks": True,
             "id": "owo",
             "removed": False
         }
         if not startup:
+            await self.bot.remove_queue(id="owo")
             self.owo_ongoing = True
             await self.bot.sleep_till(self.bot.settings_dict["commands"]["owo"]["cooldown"])
             self.owo_ongoing = False

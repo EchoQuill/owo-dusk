@@ -45,7 +45,7 @@ class Commands(commands.Cog):
 
         if time.time() - self.last_msg >= cd:
             await self.bot.log(f"UNABLE TO DETECT MESSAGES!", "#8b1657")
-            self.bot.captcha = True # Prevent any further messages
+            self.bot.command_handler_status["captcha"] = True # Prevent any further messages
             await self.bot.log(f"Code was stopped for obvious reasons, please report logs of when this happened along with any errors to @echoquill\nYou may report through either dms or support server!", "#8b1657")
 
             print("attempting to trigger retry!")
@@ -94,7 +94,7 @@ class Commands(commands.Cog):
         await self.bot.shuffle_queue()
         self.send_commands.start()
         self.monitor_checks.start()
-        self.watchdog.start()
+        #self.watchdog.start()
 
     async def cog_load(self):
         """Run join_previous_giveaways when bot is ready"""
@@ -106,6 +106,7 @@ class Commands(commands.Cog):
         try:
             cnf = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]
             priority, _, cmd = await self.bot.queue.get()
+            cmd_id = cmd.get("id")
 
             if priority != 0:
                 while (time.time() - self.bot.cmds_state["global"]["last_ran"]) < cnf["betweenCommands"][0]:
@@ -119,19 +120,19 @@ class Commands(commands.Cog):
 
             
             """Update Command state"""
-            await self.bot.upd_cmd_state(cmd["id"])
+            await self.bot.upd_cmd_state(cmd_id)
 
             """Append to checks"""
-            if cmd.get("checks") and cmd.get("id"):
-                in_queue = await self.bot.search_checks(id=cmd["id"])
+            if cmd.get("checks") and cmd_id:
+                in_queue = await self.bot.search_checks(id=cmd_id)
                 if not in_queue:
                     async with self.bot.lock:
                         self.bot.checks.append(cmd)
             
             if self.bot.settings_dict["useSlashCommands"] and cmd.get("slash_cmd_name", False):
-                await self.bot.slashCommandSender(cmd["slash_cmd_name"])
+                await self.bot.slashCommandSender(cmd["slash_cmd_name"], self.bot.misc["command_info"][cmd_id]["log_color"])
             else:
-                await self.bot.send(self.bot.construct_command(cmd))
+                await self.bot.send(self.bot.construct_command(cmd), self.bot.misc["command_info"][cmd_id]["log_color"])
 
             """add command to the deque"""
             self.command_times.append(time.time())
@@ -146,7 +147,7 @@ class Commands(commands.Cog):
         try:
             delay = self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["beforeReaddingToQueue"]
             current_time = datetime.now(timezone.utc)
-            if not self.bot.state or self.bot.sleep or self.bot.captcha:
+            if not self.bot.command_handler_status["state"] or self.bot.command_handler_status["sleep"] or self.bot.command_handler_status["captcha"]:
                 self.calc_time += current_time - getattr(self, "last_check_time", current_time)
             else:
                 for command in self.bot.checks[:]:
@@ -162,9 +163,9 @@ class Commands(commands.Cog):
         except Exception as e:
             await self.bot.log(f"Error - monitor_checks(): {e}", "#c25560")
 
-    @commands.Cog.listener()
+    """@commands.Cog.listener()
     async def on_message(self, message):
-        self.last_msg = time.time()
+        self.last_msg = time.time()"""
 
 
 
