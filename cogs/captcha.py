@@ -200,7 +200,7 @@ class Captcha(commands.Cog):
                 time_to_sleep = self.bot.random_float(self.bot.settings_dict['defaultCooldowns']['captchaRestart'])
                 await self.bot.log(f"Captcha solved! - sleeping {time_to_sleep}s before restart.", "#5fd700")
                 await asyncio.sleep(time_to_sleep)
-                self.bot.captcha = False
+                self.bot.command_handler_status["captcha"] = False
                 await self.bot.update_captcha_db()
                 return
 
@@ -233,7 +233,7 @@ class Captcha(commands.Cog):
                     display_name = message.guild.me.display_name
                     if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", display_name)):
                         return
-                self.bot.captcha = True
+                self.bot.command_handler_status["captcha"] = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
                 self.captcha_handler(message.channel, "Link")
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
@@ -253,7 +253,7 @@ class Captcha(commands.Cog):
                 console_handler(self.bot.global_settings_dict["console"])
 
             elif "**☠ |** You have been banned" in message.content:
-                self.bot.captcha = True
+                self.bot.command_handler_status["captcha"] = True
                 await self.bot.log(f"Ban detected!", "#d70000")
                 self.captcha_handler(message.channel, "Ban")
                 console_handler(self.bot.global_settings_dict["console"], captcha=False)
@@ -281,18 +281,18 @@ class Captcha(commands.Cog):
                     for i in items:
                         if any(b in clean(i) for b in list_captcha):
                             """clean function cleans the captcha message of unwanted symbols etc"""
-                            self.captcha = True
+                            self.bot.command_handler_status["captcha"] = True
                             await self.bot.log(f"Captcha detected...?", "#d70000")
                             break
 
                     if embed.fields:
                         for field in embed.fields:
                             if field.name and any(b in clean(field.name) for b in list_captcha):
-                                self.captcha = True
+                                self.bot.command_handler_status["captcha"] = True
                                 await self.bot.log(f"Captcha detected...?", "#d70000")
                                 break
                             if field.value and any(b in clean(field.value) for b in list_captcha):
-                                self.captcha = True
+                                self.bot.command_handler_status["captcha"] = True
                                 await self.bot.log(f"Captcha detected...?", "#d70000")
                                 break
 

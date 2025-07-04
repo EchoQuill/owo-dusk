@@ -463,9 +463,7 @@ class MyClient(commands.Bot):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
-        self.state = True
         self.state_event = asyncio.Event()
-        self.captcha = False
         self.queue = asyncio.PriorityQueue()
         self.settings_dict = None
         self.global_settings_dict = global_settings_dict
@@ -475,7 +473,6 @@ class MyClient(commands.Bot):
         self.gain_or_lose = 0
         self.checks = []
         self.dm, self.cm = None,None
-        self.sleep = False
         self.username = None
         self.last_cmd_ran = None
         self.reaction_bot_id = 519287796549156864
@@ -494,7 +491,12 @@ class MyClient(commands.Bot):
             "net_earnings": 0
         }
 
-        """Initialize Connection"""
+        self.command_handler_status = {
+            "state": True,
+            "captcha": False,
+            "sleep": False,
+            "hold_handler": False
+        }
         
 
         with open("config/misc.json", "r") as config_file:
@@ -517,15 +519,18 @@ class MyClient(commands.Bot):
         
 
 
-    async def set_stat(self, value):
+    async def set_stat(self, value, debug_note=None):
         if value:
-            self.state = True
+            self.command_handler_status["state"] = True
             self.state_event.set()
         else:
-            while not self.state:
+            while not self.command_handler_status["state"]:
                 await self.state_event.wait()
-            self.state = False
+            self.command_handler_status["state"] = False
             self.state_event.clear()
+
+    """async def empty_queue(self):
+        self.command_handler_status["hold_handler"] = True"""
 
     @tasks.loop(seconds=30)
     async def presence(self):
@@ -552,11 +557,11 @@ class MyClient(commands.Bot):
         sleep_dict = self.settings_dict["sleep"]
         await asyncio.sleep(self.random_float(sleep_dict["checkTime"]))
         if self.random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
-            await self.set_stat(False)
+            await self.set_stat(False, "sleep")
             sleep_time = self.random_float(sleep_dict["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
-            await self.set_stat(True)
+            await self.set_stat(True, "sleep stop")
             await self.log("sleeping finished!", "#87af87")
 
     @tasks.loop(seconds=7)
@@ -565,7 +570,7 @@ class MyClient(commands.Bot):
         latest_version = requests.get(f"{owo_dusk_api}/safety_check.json").json()
 
         if compare_versions(version, safety_check["version"]):
-            self.captcha = True
+            self.command_handler_status["captcha"] = True
             await self.log(f"There seems to be something wrong...\nStopping code for reason: {safety_check['reason']}\n(This was triggered by {safety_check['author']})", "#5c0018")
             if compare_versions(latest_version["version"], safety_check["version"]):
                 await self.log(f"please update to: v{latest_version['version']}", "#33245e")
@@ -828,8 +833,8 @@ class MyClient(commands.Bot):
     async def put_queue(self, cmd_data, priority=False, quick=False):
         cnf = self.misc["command_info"]
         try:
-            while not self.state or self.sleep or self.captcha:
-                if priority and (not self.sleep and not self.captcha):
+            while not self.command_handler_status["state"] or self.command_handler_status["sleep"] or self.command_handler_status["captcha"]:
+                if priority and (not self.command_handler_status["sleep"] and not self.command_handler_status["captcha"]):
                     break
                 await asyncio.sleep(self.random.uniform(1.4, 2.9))
             
@@ -990,7 +995,7 @@ class MyClient(commands.Bot):
         """
         TASK: remove repition here
         """
-        if not self.captcha or bypass:
+        if not self.command_handler_status["captcha"] or bypass:
             await self.wait_until_ready()
             if typingIndicator:
                 async with channel.typing():
@@ -1000,7 +1005,7 @@ class MyClient(commands.Bot):
             if not disable_log:
                 await self.log(f"Ran: {msg}", color if color else "#5432a8")
             if misspelled:
-                await self.set_stat(False)
+                await self.set_stat(False, "misspell")
                 time = self.calculate_correction_time(message)
                 await self.log(f"correcting: {msg} -> {message} in {time}s", "#422052")
                 await asyncio.sleep(time)
@@ -1009,7 +1014,7 @@ class MyClient(commands.Bot):
                         await channel.send(message, silent=silent)
                 else:
                     await channel.send(message, silent=silent)
-                await self.set_stat(True)
+                await self.set_stat(True, "misspell stop")
 
     async def slashCommandSender(self, msg, color, **kwargs):
         try:
