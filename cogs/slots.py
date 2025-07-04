@@ -143,7 +143,7 @@ class Slots(commands.Cog):
                 elif "and won" in after.content.lower():
                     """won cash"""
                     won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
-                    lose_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
+                    lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
                     profit = won_match-lose_match
 
                     await self.bot.update_cash(profit)
