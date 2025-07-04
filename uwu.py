@@ -482,7 +482,6 @@ class MyClient(commands.Bot):
         # discord.py-self's module sets global random to fixed seed. reset that, locally.
         self.random = random.Random()
 
-
         # Task: Update code to have checks using status instead of individual variables
         self.user_status = {
             "no_gems": False,
@@ -497,7 +496,6 @@ class MyClient(commands.Bot):
             "sleep": False,
             "hold_handler": False
         }
-        
 
         with open("config/misc.json", "r") as config_file:
             self.misc = json.load(config_file)
@@ -516,9 +514,6 @@ class MyClient(commands.Bot):
                 "last_ran": 0
             }
 
-        
-
-
     async def set_stat(self, value, debug_note=None):
         if value:
             self.command_handler_status["state"] = True
@@ -529,8 +524,11 @@ class MyClient(commands.Bot):
             self.command_handler_status["state"] = False
             self.state_event.clear()
 
-    """async def empty_queue(self):
-        self.command_handler_status["hold_handler"] = True"""
+    async def empty_checks_and_switch(self, channel):
+        self.command_handler_status["hold_handler"] = True
+        await self.sleep_till(self.global_settings_dict["channelSwitcher"]["delayBeforeSwitch"])
+        self.cm = channel
+        self.command_handler_status["hold_handler"] = False
 
     @tasks.loop(seconds=30)
     async def presence(self):
@@ -593,15 +591,13 @@ class MyClient(commands.Bot):
                     await asyncio.sleep(self.random_float(self.global_settings_dict["account"]["commandsStartDelay"]))
                     if self.commands_dict.get(str(filename[:-3]), False):
                         await self.load_extension(extension)
-                    
+
                 except Exception as e:
                     await self.log(f"Error - Failed to load extension {extension}: {e}", "#c25560")
 
         if "cogs.captcha" not in self.extensions:
             await self.log(f"Error - Failed to load captcha extension,\nStopping code!!", "#c25560")
             os._exit(0)
-
-
 
     async def update_config(self):
         async with self.lock:
@@ -614,7 +610,6 @@ class MyClient(commands.Bot):
                 self.settings_dict = json.load(config_file)
 
             await self.start_cogs()
-
 
     async def update_database(self, sql, params=None):
         async with aiosqlite.connect("utils/data/db.sqlite", timeout=5) as db:
@@ -660,7 +655,6 @@ class MyClient(commands.Bot):
             (self.user.id, 0, 0, 0, 0, 0, 0)
         )
 
-
     async def populate_cowoncy_earnings(self, update=False):
         today_str = get_date()
 
@@ -670,7 +664,7 @@ class MyClient(commands.Bot):
                     "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
                     (self.user.id, i, 0)
                 )
-        
+
         rows = await self.get_from_db(
             "SELECT value FROM meta_data WHERE key = ?", 
             ("cowoncy_earnings_last_checked",)
@@ -715,15 +709,13 @@ class MyClient(commands.Bot):
             "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? ORDER BY hour",
             (self.user.id,)
         )
-        
+
         cowoncy_list = [row["earnings"] for row in rows]
 
         for item in reversed(cowoncy_list):
             if item != 0:
                 self.user_status["net_earnings"] = item
                 break
-
-
 
     async def reset_gamble_wins_or_losses(self):
         today_str = get_date()
@@ -732,7 +724,7 @@ class MyClient(commands.Bot):
             "SELECT value FROM meta_data WHERE key = ?", 
             ("gamble_winrate_last_checked",)
         )
-        
+
         last_reset_str = rows[0]['value'] if rows else "0"
 
         if last_reset_str == today_str:
@@ -749,7 +741,6 @@ class MyClient(commands.Bot):
             (today_str, "gamble_winrate_last_checked")
         )
 
-
     async def update_cmd_db(self, cmd):
         await self.update_database(
             "UPDATE commands SET count = count + 1 WHERE name = ?",
@@ -761,7 +752,7 @@ class MyClient(commands.Bot):
 
         if item not in {"wins", "losses"}:
             raise ValueError("Invalid column name.")
-        
+
         await self.update_database(
             f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?",
             (hr,)
@@ -833,22 +824,31 @@ class MyClient(commands.Bot):
     async def put_queue(self, cmd_data, priority=False, quick=False):
         cnf = self.misc["command_info"]
         try:
-            while not self.command_handler_status["state"] or self.command_handler_status["sleep"] or self.command_handler_status["captcha"]:
-                if priority and (not self.command_handler_status["sleep"] and not self.command_handler_status["captcha"]):
+            while (
+                not self.command_handler_status["state"]
+                or self.command_handler_status["hold_handler"]
+                or self.command_handler_status["sleep"]
+                or self.command_handler_status["captcha"]
+            ):
+                if priority and (
+                    not self.command_handler_status["sleep"]
+                    and not self.command_handler_status["hold_handler"]
+                    and not self.command_handler_status["captcha"]
+                ):
                     break
                 await asyncio.sleep(self.random.uniform(1.4, 2.9))
-            
+
             if self.cmds_state[cmd_data["id"]]["in_queue"]:
                 # Ensure command already in queue is not readded to prevent spam
                 await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
                 return
-            
+
             # Get priority
             priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
             if not priority_int and priority_int!=0:
                 await self.log(f"Error - command with id: {cmd_data['id']} do not have a priority set in misc.json", "#c25560")
                 return
-            
+
             async with self.lock:
                 await self.queue.put((
                     priority_int,  # Priority to sort commands with
@@ -1069,9 +1069,6 @@ class MyClient(commands.Bot):
             else:
                 self.user_status["net_earnings"] += amount
         await self.update_cash_db()
-        
-
-
 
     async def setup_hook(self):
         # Randomise user
@@ -1111,7 +1108,6 @@ class MyClient(commands.Bot):
         # self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
         # remove temp fix in `cogs/captcha.py` if uncommenting
 
-
         # Fetch slash commands in self.cm
         self.slash_commands = []
         for command in await self.cm.application_commands():
@@ -1129,15 +1125,12 @@ class MyClient(commands.Bot):
             }
         }
 
-
-
         with lock:
             accounts_dict = load_accounts_dict()
             if str(self.user.id) not in accounts_dict:
                 accounts_dict.update(self.default_config)
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
-
 
         # Charts
         await self.populate_stats_db()
@@ -1148,9 +1141,9 @@ class MyClient(commands.Bot):
         await self.fetch_net_earnings()
 
         # Start various tasks and updates
-        #self.config_update_checker.start()
+        # self.config_update_checker.start()
         # disabled since unnecessory
-        
+
         await asyncio.sleep(self.random_float(global_settings_dict["account"]["startupDelay"]))
         await self.update_config()
 
