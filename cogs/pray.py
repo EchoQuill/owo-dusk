@@ -97,6 +97,9 @@ class Pray(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if f"<@{self.bot.user.id}>" not in message.content:
+            return
+        
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             """
             **⏱ | user**! Slow down and try the command again **<t:1734943219:R>**

@@ -79,7 +79,9 @@ class Daily(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
+        nick = message.guild.me.nick
+
+        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id and nick in message.content:
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
                 await self.bot.remove_queue(cmd)

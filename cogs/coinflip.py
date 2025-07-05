@@ -121,6 +121,11 @@ class Coinflip(commands.Cog):
         if self.exceeded_max_amount:
             return
         
+        nick = before.guild.me.nick
+
+        if nick not in after.content:
+            return
+        
         if "chose" in after.content.lower():
             try:
                 if "and you lost it all... :c" in after.content.lower():

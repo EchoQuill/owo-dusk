@@ -76,26 +76,29 @@ class Hunt(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        try:
-            if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
-                if 'you found:' in message.content.lower() or "caught" in message.content.lower():
-                    await self.bot.remove_queue(id="hunt")
+        nick = message.guild.me.nick
+        if nick not in message.content:
+            return
+        
+        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
+            if 'you found:' in message.content.lower() or "caught" in message.content.lower():
+                await self.bot.remove_queue(id="hunt")
 
-                    msg_lines = message.content.splitlines()
+                msg_lines = message.content.splitlines()
 
-                    sell_value = get_emoji_values(msg_lines[0] if "caught" in message.content.lower() else msg_lines[1])
-                    await self.bot.update_cash(sell_value - 5, assumed=True)
-                    await self.bot.update_cash(5, reduce=True)
+                sell_value = get_emoji_values(msg_lines[0] if "caught" in message.content.lower() else msg_lines[1])
+                print(sell_value)
+                await self.bot.update_cash(sell_value - 5, assumed=True)
+                await self.bot.update_cash(5, reduce=True)
 
-                    await self.bot.sleep_till(self.bot.settings_dict["commands"]["hunt"]["cooldown"])
-                    self.cmd["cmd_name"] = (
-                        self.bot.alias["hunt"]["shortform"] 
-                        if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
-                        else self.bot.alias["hunt"]["alias"]
-                    )
-                    await self.bot.put_queue(self.cmd)
-        except Exception as e:
-            await self.bot.log(f"Error - {e}, During hunt on_message()", "#c25560")
+                await self.bot.sleep_till(self.bot.settings_dict["commands"]["hunt"]["cooldown"])
+                self.cmd["cmd_name"] = (
+                    self.bot.alias["hunt"]["shortform"] 
+                    if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
+                    else self.bot.alias["hunt"]["alias"]
+                )
+                await self.bot.put_queue(self.cmd)
+
 
 async def setup(bot):
     await bot.add_cog(Hunt(bot))

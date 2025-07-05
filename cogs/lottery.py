@@ -86,7 +86,7 @@ class Lottery(commands.Cog):
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if message.embeds:
                 for embed in message.embeds:
-                    if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
+                    if embed.author.name is not None and f"{message.guild.me.nick}'s Lottery Submission" in embed.author.name:
                         await self.bot.remove_queue(id="lottery")
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))

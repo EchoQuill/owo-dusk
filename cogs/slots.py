@@ -121,6 +121,11 @@ class Slots(commands.Cog):
         if self.exceeded_max_amount:
             return
         
+        nick = before.guild.me.nick
+
+        if nick not in after.content:
+            return
+        
         if "slots" in after.content.lower():
             if "and won nothing... :c" in after.content:
                 """Lose cash"""

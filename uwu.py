@@ -102,7 +102,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.1.1"
+version = "2.2.0"
 debug_print = True
 
 
@@ -474,6 +474,7 @@ class MyClient(commands.Bot):
         self.checks = []
         self.dm, self.cm = None,None
         self.username = None
+        self.nick_name = None
         self.last_cmd_ran = None
         self.reaction_bot_id = 519287796549156864
         self.owo_bot_id = 408785106942164992
@@ -1054,6 +1055,7 @@ class MyClient(commands.Bot):
             }
         )
 
+
     async def update_cash(self, amount, override=False, reduce=False, assumed=False):
         if override and self.settings_dict["cashCheck"]:
             self.user_status["balance"] = amount
@@ -1104,6 +1106,8 @@ class MyClient(commands.Bot):
             except discord.HTTPException as e:
                 await self.log(f"Failed to fetch channel {self.channel_id}: {e}", "#c25560")
                 return
+
+        #self.nick_name = self.cm.guild.me.nick
 
         # self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
         # remove temp fix in `cogs/captcha.py` if uncommenting

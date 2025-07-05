@@ -194,7 +194,6 @@ class Captcha(commands.Cog):
                 # Safe, since only owobot will send captcha messages.
                 return
 
-
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
                 time_to_sleep = self.bot.random_float(self.bot.settings_dict['defaultCooldowns']['captchaRestart'])
@@ -230,8 +229,7 @@ class Captcha(commands.Cog):
                 or any(b in clean(message.content) for b in list_captcha)
             ):
                 if not get_channel_name(message.channel) == "owo DMs":
-                    display_name = message.guild.me.display_name
-                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", display_name)):
+                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", message.guild.me.nick)):
                         return
                 self.bot.command_handler_status["captcha"] = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
