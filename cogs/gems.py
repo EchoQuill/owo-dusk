@@ -160,7 +160,7 @@ class Gems(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = message.guild.me.nick
+        nick = self.bot.get_nick(message.guild.me)
         if message.channel.id != self.bot.channel_id or message.author.id != self.bot.owo_bot_id:
             return
         if nick not in message.content:

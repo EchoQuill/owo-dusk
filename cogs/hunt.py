@@ -76,12 +76,13 @@ class Hunt(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = message.guild.me.nick
+        nick = self.bot.get_nick(message.guild.me)
         if nick not in message.content:
             return
         
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'you found:' in message.content.lower() or "caught" in message.content.lower():
+                print(f"detected with {nick}")
                 await self.bot.remove_queue(id="hunt")
 
                 msg_lines = message.content.splitlines()

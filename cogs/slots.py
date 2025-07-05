@@ -120,8 +120,7 @@ class Slots(commands.Cog):
             return
         if self.exceeded_max_amount:
             return
-        
-        nick = before.guild.me.nick
+        nick = self.bot.get_nick(before.guild.me)
 
         if nick not in after.content:
             return

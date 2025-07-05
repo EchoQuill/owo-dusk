@@ -83,7 +83,7 @@ class Shop(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = message.guild.me.nick
+        nick = self.bot.get_nick(message.guild.me)
 
         if not message.channel.id == self.bot.cm.id:
             return

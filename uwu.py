@@ -1055,7 +1055,6 @@ class MyClient(commands.Bot):
             }
         )
 
-
     async def update_cash(self, amount, override=False, reduce=False, assumed=False):
         if override and self.settings_dict["cashCheck"]:
             self.user_status["balance"] = amount
@@ -1071,6 +1070,15 @@ class MyClient(commands.Bot):
             else:
                 self.user_status["net_earnings"] += amount
         await self.update_cash_db()
+
+    def get_nick(self, user):
+        if user.nick:
+            return user.nick
+        elif user.display_name:
+            return user.display_name
+        else:
+            return user.name
+
 
     async def setup_hook(self):
         # Randomise user

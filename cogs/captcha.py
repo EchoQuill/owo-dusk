@@ -228,8 +228,9 @@ class Captcha(commands.Cog):
                 )  # message attachment check
                 or any(b in clean(message.content) for b in list_captcha)
             ):
+                nick = self.bot.get_nick(message.guild.me)
                 if not get_channel_name(message.channel) == "owo DMs":
-                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", message.guild.me.nick)):
+                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", nick)):
                         return
                 self.bot.command_handler_status["captcha"] = True
                 await self.bot.log(f"Captcha detected!", "#d70000")

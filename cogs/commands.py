@@ -92,6 +92,7 @@ class Commands(commands.Cog):
     async def start_commands(self):
         await self.bot.sleep_till(self.bot.global_settings_dict["account"]["commandsHandlerStartDelay"])
         await self.bot.shuffle_queue()
+        await self.bot.wait_until_ready()
         self.send_commands.start()
         self.monitor_checks.start()
         #self.watchdog.start()
