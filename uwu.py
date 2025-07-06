@@ -1102,6 +1102,7 @@ class MyClient(commands.Bot):
 
         # Fetch the channel
         self.cm = self.get_channel(self.channel_id)
+        
         if not self.cm:
             try:
                 self.cm = await self.fetch_channel(self.channel_id)
@@ -1114,6 +1115,8 @@ class MyClient(commands.Bot):
             except discord.HTTPException as e:
                 await self.log(f"Failed to fetch channel {self.channel_id}: {e}", "#c25560")
                 return
+            
+        self.cm_slowmode_cd = self.cm.slowmode_delay
 
         #self.nick_name = self.cm.guild.me.nick
 
