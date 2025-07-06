@@ -81,7 +81,7 @@ class Cookie(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = self.bot.get_nick(message.guild.me)
+        nick = self.bot.get_nick(message)
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if ("You got a cookie from" in message.content or "Nu! You need to wait" in message.content):
                 if nick in message.content or f"<@{self.bot.user.id}>":

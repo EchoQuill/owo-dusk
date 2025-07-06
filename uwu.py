@@ -1071,13 +1071,17 @@ class MyClient(commands.Bot):
                 self.user_status["net_earnings"] += amount
         await self.update_cash_db()
 
-    def get_nick(self, user):
-        if user.nick:
-            return user.nick
-        elif user.display_name:
-            return user.display_name
+    def get_nick(self, msg):
+        if not msg.guild:
+            return ""
         else:
-            return user.name
+            user = msg.guild.me
+            if user.nick:
+                return user.nick
+            elif user.display_name:
+                return user.display_name
+            else:
+                return user.name
 
 
     async def setup_hook(self):

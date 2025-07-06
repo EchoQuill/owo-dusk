@@ -228,7 +228,8 @@ class Captcha(commands.Cog):
                 )  # message attachment check
                 or any(b in clean(message.content) for b in list_captcha)
             ):
-                nick = self.bot.get_nick(message.guild.me)
+                nick = self.bot.get_nick(message)
+
                 if not get_channel_name(message.channel) == "owo DMs":
                     if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", nick)):
                         return

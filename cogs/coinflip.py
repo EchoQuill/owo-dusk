@@ -121,7 +121,7 @@ class Coinflip(commands.Cog):
         if self.exceeded_max_amount:
             return
         
-        nick = self.bot.get_nick(before.guild.me)
+        nick = self.bot.get_nick(before)
 
         if nick not in after.content:
             return

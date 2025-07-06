@@ -70,7 +70,7 @@ class Sell(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = self.bot.get_nick(message.guild.me)
+        nick = self.bot.get_nick(message)
         if nick not in message.content:
             return
         

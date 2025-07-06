@@ -83,7 +83,7 @@ class Lottery(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = self.bot.get_nick(message.guild.me)
+        nick = self.bot.get_nick(message)
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if message.embeds:
                 for embed in message.embeds:
