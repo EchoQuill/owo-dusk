@@ -67,7 +67,7 @@ class Hunt(commands.Cog):
             self.cmd["cmd_name"] = (
                 self.bot.alias["hunt"]["shortform"] 
                 if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
-                else self.bot.alias["hunt"]["alias"]
+                else self.bot.alias["hunt"]["normal"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
 
@@ -96,7 +96,7 @@ class Hunt(commands.Cog):
                 self.cmd["cmd_name"] = (
                     self.bot.alias["hunt"]["shortform"] 
                     if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
-                    else self.bot.alias["hunt"]["alias"]
+                    else self.bot.alias["hunt"]["normal"]
                 )
                 await self.bot.put_queue(self.cmd)
 

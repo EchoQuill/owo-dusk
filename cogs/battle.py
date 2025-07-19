@@ -37,7 +37,7 @@ class Battle(commands.Cog):
             self.cmd["cmd_name"] = (
                 self.bot.alias["battle"]["shortform"] 
                 if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
-                else self.bot.alias["battle"]["alias"]
+                else self.bot.alias["battle"]["normal"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
 
@@ -74,7 +74,7 @@ class Battle(commands.Cog):
                             self.cmd["cmd_name"] = (
                                 self.bot.alias["battle"]["shortform"] 
                                 if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
-                                else self.bot.alias["battle"]["alias"]
+                                else self.bot.alias["battle"]["normal"]
                             )
                             await self.bot.put_queue(self.cmd)
         except Exception as e:
