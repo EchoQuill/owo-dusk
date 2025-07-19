@@ -18,6 +18,7 @@
         "gems": {"priority": 3, "basecd": 5, "log_color": "#993ade"},
         "inv": {"priority": 3, "basecd": 10, "log_color": "#4db6c4"},
         "zoo": {"priority": 3, "basecd": 45, "log_color": "#4db6c4"},
+        "team": {"priority": 3, "basecd": 3, "log_color": "#4db6c4"},
         "owo": {"priority": 3, "basecd": 10, "log_color": "#730fa6"},
         "lootbox": {"priority": 4, "basecd": 5, "log_color": "#977bab"},
         "crate": {"priority": 4, "basecd": 5, "log_color": "#977bab"},

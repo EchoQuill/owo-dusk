@@ -115,7 +115,8 @@ class Others(commands.Cog):
                         "cmd_arguments": f"add {animals[i]}",
                         "prefix": True,
                         "checks": False,
-                        "retry_count": 0
+                        "retry_count": 0,
+                        "id": "team"
                     }
                     await self.bot.put_queue(zoo_cmd, priority=True)
                     await asyncio.sleep(self.bot.random.uniform(1.5,2.3))
