@@ -1,113 +1,590 @@
-<!--
-This file is part of owo-dusk.
-
-Copyright (c) 2024-present EchoQuill
-
-Portions of this file are based on code by EchoQuill, licensed under the
-GNU General Public License v3.0 (GPL-3.0).
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
--->
-
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>OwO-Dusk - Web Dashboard</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="{{ url_for('static', filename='script.js') }}"></script>
-        <script src="../static/test.js"></script>
-        <link rel="stylesheet" href="../static/style.css">
-        
-    </head>
-    <body>
-        <!--https://www.w3schools.com/tags/tag_header.asp
-        Same as div tag, but for better readability it seems.-->
-        <header class="nav-area">
-            <!--Nav Bar area.-->
-            <nav>
-                <div class="nav-wrapper">
-                    <div>
-                        <img class="icon" src="{{ url_for('static', filename='imgs/logo.png') }}" alt="OwO-Dusk Logo">
-                    </div>
-                    <div>
-                        <p><b>OwO-Dusk v2.1.1</b></p>
-                    </div>
-                    <div class="support">
-                        <a href="https://github.com/EchoQuill" target="_blank" rel="noopener noreferrer">
-                            <img src="{{ url_for('static', filename='imgs/github.png') }}" alt="GitHub Repo" class="icon">
-                        </a>
-                        <a href="https://discord.gg/pyvKUh5mMU" target="_blank" rel="noopener noreferrer">
-                            <img src="{{ url_for('static', filename='imgs/discord.png') }}" alt="Discord" class="discord-icon">
-                        </a>
-                    </div>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>OwO-Dusk - Web Dashboard</title>
+    <meta name="description" content="Enhanced OwO-Dusk Web Dashboard">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0515;
+            --bg-secondary: #1a0f2e;
+            --bg-tertiary: #2d1b4e;
+            --bg-glass: rgba(45, 27, 78, 0.4);
+            --accent-primary: #b57edc;
+            --accent-secondary: #9c4dcc;
+            --accent-glow: #e1a6ff;
+            --text-primary: #ffffff;
+            --text-secondary: #e0d7f4;
+            --text-muted: #a899c7;
+            --border-subtle: rgba(181, 126, 220, 0.2);
+            --border-glow: rgba(225, 166, 255, 0.5);
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 8px 32px rgba(181, 126, 220, 0.3);
+        }
+
+        body {
+            background: 
+                radial-gradient(ellipse at top, rgba(181, 126, 220, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(156, 77, 204, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, var(--bg-primary) 0%, #0f0820 100%);
+            background-attachment: fixed;
+            color: var(--text-secondary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Enhanced Navigation */
+        .nav-area {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 5, 21, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .nav-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px 24px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon {
+            height: 42px;
+            width: 42px;
+            border-radius: 8px;
+            filter: drop-shadow(0 0 8px rgba(181, 126, 220, 0.4));
+            transition: all 0.3s ease;
+        }
+
+        .icon:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 12px rgba(181, 126, 220, 0.6));
+        }
+
+        .version-badge {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(181, 126, 220, 0.3);
+        }
+
+        .support {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .support a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-glass);
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .support a:hover {
+            transform: translateY(-2px);
+            background: var(--bg-tertiary);
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .support img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0.9);
+        }
+
+        /* Main Content */
+        .main-content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* Enhanced Cards */
+        .overview-section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-glow), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-emoji {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 8px rgba(181, 126, 220, 0.4));
+        }
+
+        .card-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--accent-glow);
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(225, 166, 255, 0.5);
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { text-shadow: 0 0 20px rgba(225, 166, 255, 0.5); }
+            100% { text-shadow: 0 0 30px rgba(225, 166, 255, 0.8); }
+        }
+
+        .card-note {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Chart Sections */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .chart-section:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+        }
+
+        .chart-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent-primary);
+            position: relative;
+        }
+
+        .chart-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: var(--accent-glow);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            overflow-x: auto;
+        }
+
+        .chart-container canvas {
+            max-height: 100%;
+            border-radius: 12px;
+        }
+
+        /* Console Area */
+        .console-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .messages {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) transparent;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--accent-primary), var(--accent-secondary));
+            border-radius: 3px;
+        }
+
+        .message {
+            background: linear-gradient(135deg, rgba(181, 126, 220, 0.1), rgba(156, 77, 204, 0.1));
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .message:hover {
+            transform: translateX(8px);
+            border-left-color: var(--accent-glow);
+            box-shadow: 0 4px 16px rgba(181, 126, 220, 0.2);
+        }
+
+        .timestamp {
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .text {
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-wrapper {
+                padding: 12px 16px;
+            }
+
+            .main-content-container {
+                padding: 20px 16px;
+                gap: 20px;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.6rem;
+            }
+
+            .overview-section {
+                padding: 20px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0.6;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 0.6; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(var(--accent-glow), var(--accent-primary));
+        }
+    </style>
+</head>
+<body>
+    <header class="nav-area">
+        <nav>
+            <div class="nav-wrapper">
+                <div class="nav-brand">
+                    <img class="icon" src="{{ url_for('static', filename='imgs/logo.png') }}" alt="OwO-Dusk Logo">
+                    <div class="version-badge">OwO-Dusk v2.1.1</div>
                 </div>
-            </nav>
-        </header>
-        
-    <div class="main-content-container">
-    
-        <div class="section-area" style="height: auto;">
-            <h2>Overview</h2>
-            <div class="cards-area">
-                <div class="cards-wrapper">
-                    <div class="card">
-                        <div class="card-label">cash 💸</div>
-                        <div class="card-number" id="total_cash_card">null</div>
-                        <div class="card-note">(All total)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-label">uptime ⏱️</div>
-                        <div class="card-number" id="total_uptime_card">null</div>
-                        <div class="card-note">(Today's uptime)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-label">commands 🚀</div>
-                        <div class="card-number"id="total_commands_card">null</div>
-                        <div class="card-note">(All total commands ran)</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-label">Captchas 🛡️</div>
-                        <div class="card-number" id="total_captchas_card">null</div>
-                        <div class="card-note">(All total captchas that user manually solved)</div>
-                    </div>
+                <div class="support">
+                    <a href="https://github.com/EchoQuill" target="_blank" rel="noopener noreferrer">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z'/%3E%3C/svg%3E" alt="GitHub">
+                    </a>
+                    <a href="https://discord.gg/pyvKUh5mMU" target="_blank" rel="noopener noreferrer">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.246.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028zM8.02 15.278c-1.182 0-2.157-1.069-2.157-2.38 0-1.312.956-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.956 2.38-2.157 2.38zm7.975 0c-1.183 0-2.157-1.069-2.157-2.38 0-1.312.955-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.946 2.38-2.157 2.38z'/%3E%3C/svg%3E" alt="Discord">
+                    </a>
                 </div>
             </div>
+        </nav>
+    </header>
 
+    <div class="main-content-container">
+        <div class="overview-section">
+            <h2 class="section-title">Dashboard Overview</h2>
+            <div class="cards-grid">
+                <div class="stat-card">
+                    <div class="card-header">
+                        <div class="card-emoji">💸</div>
+                        <div class="card-label">Total Cash</div>
+                    </div>
+                    <div class="card-number" id="total_cash_card">null</div>
+                    <div class="card-note">All accumulated earnings</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="card-header">
+                        <div class="card-emoji">⏱️</div>
+                        <div class="card-label">Daily Uptime</div>
+                    </div>
+                    <div class="card-number" id="total_uptime_card">null</div>
+                    <div class="card-note">Today's active runtime</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="card-header">
+                        <div class="card-emoji">🚀</div>
+                        <div class="card-label">Commands</div>
+                    </div>
+                    <div class="card-number" id="total_commands_card">null</div>
+                    <div class="card-note">Total commands executed</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="card-header">
+                        <div class="card-emoji">🛡️</div>
+                        <div class="card-label">Captchas</div>
+                    </div>
+                    <div class="card-number" id="total_captchas_card">null</div>
+                    <div class="card-note">Manual captcha solutions</div>
+                </div>
+            </div>
         </div>
 
-        <div class="multi-items">
-            <div id="console-area" class="section-area">
-                <h2>Activity Console</h2>
-                <div id="messages" class="messages"></div>
+        <div class="charts-grid">
+            <div class="console-section">
+                <h3 class="chart-title">Activity Console</h3>
+                <div class="messages" id="messages">
+                    <!-- Messages will be populated by your existing JavaScript -->
+                </div>
             </div>
             
-            <div class="section-area">
-                <h2>Total Commands Sent</h2>
-                <div class="section-area-scroll"><canvas id="total_commands" style="min-width: 440px;"></canvas></div>
+            <div class="chart-section">
+                <h3 class="chart-title">Commands Sent</h3>
+                <div class="chart-container">
+                    <canvas id="total_commands"></canvas>
+                </div>
             </div>
         </div>
-        <div class="section-area">
-            <h2>Cowoncy Earnings</h2>
-            <div class="section-area-scroll"><canvas id="cowoncy_earnings"></canvas></div>
+
+        <div class="chart-section full-width">
+            <h3 class="chart-title">Cowoncy Earnings</h3>
+            <div class="chart-container">
+                <canvas id="cowoncy_earnings"></canvas>
+            </div>
         </div>
-        <div class="section-area">
-            <h2>Weekly Runtime</h2>
-            <div class="section-area-scroll"><canvas id="weekly_runtimes"></canvas></div>
+
+        <div class="charts-grid">
+            <div class="chart-section">
+                <h3 class="chart-title">Weekly Runtime</h3>
+                <div class="chart-container">
+                    <canvas id="weekly_runtimes"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h3 class="chart-title">Gamble Winrates</h3>
+                <div class="chart-container">
+                    <canvas id="gamble_earnings"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="section-area">
-            <h2>Gamble Winrates</h2>
-            <div class="section-area-scroll"><canvas id="gamble_earnings"></canvas></div>
-        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="../static/test.js"></script>
+    <script>
+        // Keep the original functionality - the external scripts will handle data loading
+        // Just ensure proper styling is applied to dynamically loaded content
         
-    </div>
-    </div>
-    </body>
+        // Chart styling configuration for consistency with the new design
+        Chart.defaults.color = '#a899c7';
+        Chart.defaults.borderColor = 'rgba(181, 126, 220, 0.1)';
+        Chart.defaults.backgroundColor = 'rgba(181, 126, 220, 0.1)';
+        
+        // Override chart defaults for better styling
+        const originalChartDefaults = {
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e0d7f4',
+                        font: {
+                            family: 'Inter, sans-serif'
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(181, 126, 220, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a899c7'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(181, 126, 220, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a899c7'
+                    }
+                }
+            }
+        };
+
+        // Apply enhanced styling when charts are created
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove loading class when content is updated
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                        const target = mutation.target;
+                        if (target.classList && target.classList.contains('loading')) {
+                            target.classList.remove('loading');
+                        }
+                        if (target.parentElement && target.parentElement.classList.contains('loading')) {
+                            target.parentElement.classList.remove('loading');
+                        }
+                    }
+                });
+            });
+
+            // Observe card numbers for changes
+            document.querySelectorAll('.card-number').forEach(card => {
+                card.classList.add('loading');
+                observer.observe(card, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true
+                });
+            });
+        });
+    </script>
+</body>
 </html>
