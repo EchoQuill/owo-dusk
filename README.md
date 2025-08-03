@@ -8,7 +8,7 @@
   </a>
   <br><br>
   
-  [![Discord](https://img.shields.io/discord/1209019075271856128?color=7289da&logo=discord&logoColor=white)](https://discord.gg/gUdQQtukMQ)
+  [![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da?logo=discord&logoColor=white)](https://discord.gg/gUdQQtukMQ)
   [![License](https://img.shields.io/github/license/echoquill/owo-dusk)](LICENSE)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
   
