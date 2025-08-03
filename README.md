@@ -1,162 +1,81 @@
-# OwO Dusk
-
 <div align="center">
-  <img src="static/imgs/logo.png" width="150" alt="OwO Dusk Logo">
-  <br><br>
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Pacifico&size=40&pause=1000&color=802DF7&center=true&vCenter=true&random=false&width=425&lines=Owo+Dusk" alt="OwO Dusk">
-  </a>
-  <br><br>
-  
-  [![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da?logo=discord&logoColor=white)](https://discord.gg/gUdQQtukMQ)
-  [![License](https://img.shields.io/github/license/echoquill/owo-dusk)](LICENSE)
-  [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-  
-  **A powerful OWO-Bot automation tool supporting both mobile and desktop platforms**
-  
-  [🚀 Quick Start](#installation) • [📖 Documentation](#usage) • [💬 Support](#support) • [🤝 Contributing](#contributing)
-</div>
-
----
-
-## ⚠️ Disclaimer
-
-> **Important Warning**
-> 
-> This tool involves automation that may violate Discord's Terms of Service and OwO Bot's rules. We are **NOT responsible** if you get banned while using this software. Use at your own risk.
->
-> **Recommended Safety Measures:**
-> - Use only 1-2 accounts per server
-> - Only use in private servers
-> - Don't openly share that you use automation
-> - Use clean alt accounts that haven't used OwO Bot before
-
-## ✨ Features
-
-- 🖥️ **Cross-Platform Support** - Works on Windows, macOS, Linux, and Android (Termux)
-- 📱 **Mobile & Desktop UI** - Responsive interface for all devices
-- 🔔 **Captcha Notifications** - Smart captcha detection and alerts
-- 🤖 **Reaction Bot Support** - Automated reaction handling
-- 🌐 **Web Dashboard** - Browser-based captcha solving interface
-- ⚡ **High Performance** - Optimized for speed and reliability
-
-## 📋 Requirements
-
-- **Python 3.8+**
-- **Git**
-- **Internet Connection**
-- **Discord Account** (clean alt recommended)
-
-### Additional Requirements for Android (Termux)
-- Termux app
-- Termux:API app
-
-## 🚀 Installation
-
-### 💻 Desktop/Laptop (Windows, macOS, Linux)
-
-```bash
-# Clone the repository
-git clone https://github.com/echoquill/owo-dusk.git
-
-# Navigate to the project directory
-cd owo-dusk
-
-# Run setup
-python setup.py
-
-# Start the application
-python uwu.py
-```
-
-> **Note:** Ensure Git and Python are installed. Open terminal in `Desktop` for easier access.
-
-### 📱 Android (Termux)
-
-```bash
-# Install dependencies and clone repository
-pkg update && pkg upgrade -y && termux-setup-storage && pkg install python git termux-api -y
-
-# Navigate and clone
-cd storage/downloads && git clone https://github.com/echoquill/owo-dusk.git
-
-# Setup and run
-cd owo-dusk && python setup.py && python uwu.py
-```
-
-**For subsequent runs:**
-```bash
-cd storage/downloads/owo-dusk && python uwu.py
-```
-
-> **Requirements:** Install Termux and Termux:API from [F-Droid](https://f-droid.org/) or GitHub releases.
-
-## 🎯 Usage
-
-1. **First Run:** Execute `python setup.py` and follow the configuration prompts
-2. **Regular Use:** Run `python uwu.py` to start the bot
-3. **Web Dashboard:** Access the browser interface for captcha solving
-4. **Mobile Support:** Full functionality available on mobile devices through Termux
-
-## 📸 Screenshots
-
-<div align="center">
-  
-### Desktop CLI Interface
-<img src="static/imgs/desktop_cli.png" width="800" alt="Desktop CLI Screenshot">
-
-### Web Dashboard
-<img src="static/imgs/website.png" width="800" alt="Website Dashboard Screenshot">
-
-</div>
-
-## 💬 Support
-
-Need help? We're here to assist you!
-
-- 🔗 **Discord Server:** [Join our community](https://discord.gg/hDDrKhWPqr)
-- 👤 **Direct Contact:** Send a friend request to `@echoquill` on Discord
-- 📚 **Documentation:** Check our [Wiki](../../wiki) for detailed guides
-
-> **Important:** When joining our Discord, please use a **clean alt account** that hasn't used OwO Bot!
-
-## 🛠️ Development
-
-<div align="center">
-  <img src="https://repobeats.axiom.co/api/embed/0a1054d566f34198e5adb680c8c95884f514b0bc.svg" alt="Repository Analytics">
-</div>
-
-### Contributing
-
-We welcome contributions! Please feel free to:
-- 🐛 Report bugs
-- 💡 Suggest features  
-- 🔧 Submit pull requests
-- 📝 Improve documentation
-Please make your contributions according to [these](https://github.com/EchoQuill/owo-dusk/blob/main/CONTRIBUTING.md) rules.
-## 🙏 Credits & Acknowledgments
-
-This project was inspired by and learned from several amazing projects:
-
-- **[Dank Memer Grinder](https://github.com/BridgeSenseDev/Dank-Memer-Grinder)** - Inspired the cogs architecture and code structure. This project was instrumental in learning Python!
-- **[Slashy](https://github.com/TahaGorme/slashy)** & **[Trixiacute](https://github.com/Trixiacute/)** - Inspired the website dashboard design. Much of the JavaScript foundation was adapted from Slashy (with permission).
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
-
-## ⭐ Show Your Support
-
-If this project helped you, please consider:
-- ⭐ Starring the repository
-- 🍴 Forking the project
-- 🐛 Reporting issues
-- 💖 Sharing with others
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by the OwO Dusk community</sub>
+  <center><img src="static/imgs/logo.png" width="150"></center>
   <br>
-  <sub>Thank you for using our tool! We hope it serves you well. 💜</sub>
+  <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Pacifico&size=40&pause=1000&color=802DF7&center=true&vCenter=true&random=false&width=425&lines=Owo+Dusk" alt="Typing SVG" />
+  <br/>
+  <a href="https://discord.gg/hDDrKhWPqr"><img src="https://invidget.switchblade.xyz/hDDrKhWPqr" alt="Discord Invite"/> </a>
+  <br/>
+  <p>join our discord! (Join with an **CLEAN** alt please , one that hasn't and won't use owobot!)</p>
+  <p>Alternatively, send a friend request to `@echoquill` on discord for help!</p>
 </div>
+
+
+---
+
+Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also support reaction bot, and have a custom dashboard for solving captchas (image ones) through your browser!
+
+> [!IMPORTANT]
+> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in private servers, And not openly sharing the fact that you use selfbot to grind owo.
+
+
+---
+# Basic installation
+---
+* Computer
+  ```
+  git clone https://github.com/echoquill/owo-dusk.git
+  cd owo-dusk
+  python setup.py
+  python uwu.py
+  ```
+  > make sure git and python is installed and that terminal is open in `Desktop` for easier access
+  > Run in order
+* Termux
+  ```
+  pkg update && pkg upgrade -y && termux-setup-storage && pkg install python -y && pkg install git -y && pkg install termux-api -y && cd storage/downloads && git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py && python uwu.py
+  ```
+  > Make sure to install termux and termux:api app from fdroid or github.
+  > after the above is done, do the steps setup.py asks you to.
+  > 
+  > simpily run `cd storage/downloads/owo-dusk && python uwu.py` next time to re-run code
+  
+  
+
+> [!TIP]
+> For help with setup, please join our discord server(or send `echoquill` a friend request) and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutoriales for it laters!
+
+
+---
+# Screenshots 📸 
+---
+
+<div align="center">
+  <center><img src="static/imgs/desktop_cli.png" width="800" height="500"></center>
+  <br>
+  <p>Desktop CLI screenshot</p>
+  <br>
+  <center><img src="static/imgs/website.png" width="1200" height=600"></center>
+  <br>
+  <p>Website dashboard</p>
+</div>
+
+---
+# development 🖥️
+---
+
+<div>
+    <center><img src="https://repobeats.axiom.co/api/embed/0a1054d566f34198e5adb680c8c95884f514b0bc.svg" alt="Alt" title="Repobeats analytics image"></div></center>
+</div>
+
+---
+# Credits
+---
+* https://github.com/BridgeSenseDev/Dank-Memer-Grinder
+> inspired cogs part and code structure. I also learned Python from this project :>.
+* https://github.com/TahaGorme/slashy & https://github.com/Trixiacute/
+> inspired website dashboard. Alot of js code was stolen from slashy; before 2.1.0^ script.js was an entire copy of slashy's (with permission ofc).
+ 
+
+---
+
+thanks for reading :>, I hope this tool could help you even if a little ❤ .
