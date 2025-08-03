@@ -12,9 +12,9 @@
   [![License](https://img.shields.io/github/license/echoquill/owo-dusk)](LICENSE)
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
   
-  **A powerful automation tool supporting both mobile and desktop platforms**
+  **A powerful OWO-Bot automation tool supporting both mobile and desktop platforms**
   
-  [🚀 Quick Start](#installation) • [📖 Documentation](#usage) • [💬 Support](#support) • [🤝 Contributing](#contributing)
+  [🚀 Quick Start](#installation) • [📖 Documentation](#usage) • [💬 Support](#support) • [🤝 Contributing](https://github.com/license/echoquill/owo-dusk/CONTRIBUTING.md)
 </div>
 
 ---
