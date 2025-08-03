@@ -14,7 +14,7 @@
   
   **A powerful OWO-Bot automation tool supporting both mobile and desktop platforms**
   
-  [🚀 Quick Start](#installation) • [📖 Documentation](#usage) • [💬 Support](#support) • [🤝 Contributing](https://github.com/EchoQuill/owo-dusk/blob/main/CONTRIBUTING.md)
+  [🚀 Quick Start](#installation) • [📖 Documentation](#usage) • [💬 Support](#support) • [🤝 Contributing](#contributing)
 </div>
 
 ---
