@@ -518,10 +518,6 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="../static/test.js"></script>
     <script>
-        // Keep the original functionality - the external scripts will handle data loading
-        // Just ensure proper styling is applied to dynamically loaded content
-        
-        // Chart styling configuration for consistency with the new design
         Chart.defaults.color = '#a899c7';
         Chart.defaults.borderColor = 'rgba(181, 126, 220, 0.1)';
         Chart.defaults.backgroundColor = 'rgba(181, 126, 220, 0.1)';
@@ -558,9 +554,8 @@
             }
         };
 
-        // Apply enhanced styling when charts are created
         document.addEventListener('DOMContentLoaded', function() {
-            // Remove loading class when content is updated
+
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.type === 'childList' || mutation.type === 'characterData') {
@@ -587,4 +582,5 @@
         });
     </script>
 </body>
+
 </html>
