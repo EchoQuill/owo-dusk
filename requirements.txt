@@ -19,7 +19,7 @@ pytz==2025.2
 multidict==6.6.4
 protobuf==6.31.1
 Pygments==2.19.2
-requests==2.32.4
+requests==2.32.5
 rich==14.1.0
 tzlocal==5.3.1
 urllib3==2.5.0
