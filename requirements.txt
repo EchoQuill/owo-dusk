@@ -7,7 +7,7 @@ charset-normalizer==3.4.3
 click==8.2.1
 discord-protos==0.0.2
 discord.py-self @ git+https://github.com/dolfies/discord.py-self.git
-Flask==3.1.1
+Flask==3.1.2
 frozenlist==1.7.0
 idna==3.10
 itsdangerous==2.2.0
