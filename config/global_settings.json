@@ -47,11 +47,15 @@
         "notifications": {
             "enabled": true,
             "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
-            "bannedContent": "{username} Banned from OwO!"
+            "bannedContent": "{username} Banned from OwO!",
+            "reccur": {
+                "enabled": false,
+                "times_to_reccur": 3
+            }
         },
         "playAudio": {
-            "enabled": true,
-            "path": "Beep.mp3"
+            "enabled": false,
+            "path": "filename.mp3"
         },
         "toastOrPopup": {
             "enabled": true,
@@ -74,7 +78,8 @@
                 "bannedContent": "Banned from OwO!"
             },
             "openCaptchaWebsite": false
-        }
+        },
+        "stopCodeIfFailedToSolve": true
     },
     "batteryCheck": {
         "enabled": false,

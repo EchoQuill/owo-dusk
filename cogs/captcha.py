@@ -94,11 +94,46 @@ def console_handler(cnf, captcha=True):
     elif cnf["runConsoleCommandOnBan"] and not captcha:
         run_system_command(cnf["commandToRunOnBan"], timeout=5)
 
+def get_reccur_sleep_time(times_to_reccur):
+    if times_to_reccur > 600:
+        # I wonder what would hapeen without this check.
+        return 200
+    return 600/times_to_reccur
+
 
 class Captcha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.sound = None
+        self.reccured = 0
+        self.content_to_notify = ""
+
+
+    @tasks.loop()
+    async def reccur_notifications(self):
+        if self.content_to_notify:
+            if on_mobile:
+                run_system_command(
+                    f"termux-notification -t '{self.bot.username} captcha!' -c '{self.content_to_notify}' --led-color '#a575ff' --priority 'high'",
+                    timeout=5, 
+                    retry=True
+                    )
+            else:
+                notification.notify(
+                    title=f'{self.bot.username} DETECTED CAPTCHA',
+                    message=self.content_to_notify,
+                    app_icon=None,
+                    timeout=15
+                )
+            self.reccured+=1
+
+        times_to_reccur = self.bot.global_settings_dict["captcha"]["notifications"]["reccur"]["times_to_reccur"]
+
+        if self.reccured == times_to_reccur:
+            self.reccur_notifications.cancel()
+
+        await asyncio.sleep(get_reccur_sleep_time(times_to_reccur))
+
 
     def captcha_handler(self, channel, captcha_type):
         if self.bot.misc["hostMode"]:
@@ -106,24 +141,34 @@ class Captcha(commands.Cog):
         cnf = self.bot.global_settings_dict["captcha"]
         channel_name = get_channel_name(channel)
         content = 'captchaContent' if not captcha_type=="Ban" else 'bannedContent'
+
         """Notifications"""
         if cnf["notifications"]["enabled"]:
-            try:
-                if on_mobile:
-                    run_system_command(
-                        f"termux-notification -t '{self.bot.username} captcha!' -c '{cnf['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
-                        timeout=5, 
-                        retry=True
-                        )
-                else:
-                    notification.notify(
-                        title=f'{self.bot.username} DETECTED CAPTCHA',
-                        message=cnf['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type),
-                        app_icon=None,
-                        timeout=15
-                        )
-            except Exception as e:
-                print(f"{e} - at notifs")
+            notification_content = cnf['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type)
+
+            if cnf["notifications"]["reccur"]["enabled"]:
+                self.reccured = 0
+                self.content_to_notify = notification_content
+                self.reccur_notifications.start()
+            else:
+                try:
+                    if on_mobile:
+                        run_system_command(
+                            f"termux-notification -t '{self.bot.username} captcha!' -c '{notification_content}' --led-color '#a575ff' --priority 'high'",
+                            timeout=5, 
+                            retry=True
+                            )
+                    else:
+                        notification.notify(
+                            title=f'{self.bot.username} DETECTED CAPTCHA',
+                            message=notification_content,
+                            app_icon=None,
+                            timeout=15
+                            )
+                except Exception as e:
+                    print(f"{e} - at notifs")
+
+        
                 
         """Play audio file"""
         """
@@ -202,11 +247,19 @@ class Captcha(commands.Cog):
                 print(f"{e} - at audio")
 
         """Reccurrring notification"""
+        if cnf["notifications"]["enabled"] and cnf["notifications"]["reccur"]["enabled"]:
+            try:
+                self.reccur_notifications.cancel()
+            except:
+                pass
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
         self.last_msg = time.time()
 
+        # This is likely a part of temporary fix, I forgot.
+        # Doesn't hurt letting it stay!
         if not self.bot.dm:
             if message.author.id == self.bot.owo_bot_id:
                 self.bot.dm = await message.author.create_dm()
