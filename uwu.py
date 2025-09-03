@@ -528,6 +528,7 @@ class MyClient(commands.Bot):
         self.command_handler_status["hold_handler"] = True
         await self.sleep_till(self.global_settings_dict["channelSwitcher"]["delayBeforeSwitch"])
         self.cm = channel
+        self.channel_id = self.cm.id
         self.command_handler_status["hold_handler"] = False
 
     @tasks.loop(seconds=30)

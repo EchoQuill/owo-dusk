@@ -20,6 +20,8 @@ from discord.ext.commands import ExtensionNotLoaded
 class ChannelSwitcher(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        # Temporary
+        self.default_channel_id = self.bot.channel_id
 
     @tasks.loop()
     async def switch_channel_loop(self):
@@ -30,6 +32,23 @@ class ChannelSwitcher(commands.Cog):
             await self.bot.log(f"Error - {resp}", "#c25560")
         else:
             await self.bot.log(f"Channel switcher: {resp}", "#9dc3f5")
+
+
+    """def check_channel(self):
+        cnf = self.bot.global_settings_dict["channelSwitcher"]
+        
+        item = None
+        for entry in cnf["users"]:
+            if entry["userid"] == self.bot.user.id:
+                item = entry
+                break
+
+        available_channels = item["channels"] if item else []
+
+        if available_channels:
+            if self.bot.channel_id not in available_channels:
+                # add channel to json"""
+
         
 
     async def change_channel(self):
@@ -44,6 +63,9 @@ class ChannelSwitcher(commands.Cog):
 
         available_channels = item["channels"] if item else []
         valid_channels = [cid for cid in available_channels if cid != current_channel_id]
+        # Temporary
+        if self.default_channel_id not in valid_channels:
+            valid_channels.append(self.default_channel_id)
 
         while valid_channels:
             channel_id = self.bot.random.choice(valid_channels)
@@ -74,6 +96,7 @@ class ChannelSwitcher(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
+
             self.switch_channel_loop.start()
 
     async def cog_unload(self):
