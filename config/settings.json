@@ -1,5 +1,5 @@
 {
-    "setprefix": "owo ",
+    "setprefix": "w",
     "useSlashCommands": false,
     "commands": {
         "hunt": {
@@ -85,7 +85,7 @@
         "cookie": {
             "enabled": false,
             "userid": 408785106942164992,
-            "pingUser": true
+            "pingUser": false
         },
         "shop": {
             "enabled": false,
@@ -98,15 +98,15 @@
             ]
         },
         "owo": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 10,
                 13
             ]
         },
         "autoHuntBot": {
-            "enabled": true,
-            "cashToSpend": 10000,
+            "enabled": false,
+            "cashToSpend": 28800,
             "upgrader": {
                 "enabled": true,
                 "traits": {
@@ -139,7 +139,7 @@
             "amount": 300
         },
         "coinflip": {
-            "enabled": false,
+            "enabled": true,
             "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
@@ -166,7 +166,9 @@
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
-            1168797827464429618
+            1168797827464429618,
+            817823900486074408,
+            811486588806234174
         ],
         "cooldown": [
             40,
@@ -261,7 +263,27 @@
                 "specialGem": false
             }
         },
-        "autoLootbox": false,
-        "autoCrate": false
+        "autoLootbox": true,
+        "autoCrate": true
+    },
+    "customCommands": {
+        "enabled": false,
+        "commands": [
+            {
+                "enabled": true,
+                "command": "custom command 1",
+                "cooldown": 2
+            },
+            {
+                "enabled": true,
+                "command": "custom command 2",
+                "cooldown": 5
+            },
+            {
+                "enabled": true,
+                "command": "custom command 3, add more as needed. keep an eye on , as json's don't end with ','!",
+                "cooldown": 5
+            }
+        ]
     }
 }
