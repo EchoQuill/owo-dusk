@@ -82,13 +82,11 @@ class Hunt(commands.Cog):
         
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'you found:' in message.content.lower() or "caught" in message.content.lower():
-                print(f"detected with {nick}")
                 await self.bot.remove_queue(id="hunt")
 
                 msg_lines = message.content.splitlines()
 
                 sell_value = get_emoji_values(msg_lines[0] if "caught" in message.content.lower() else msg_lines[1])
-                print(sell_value)
                 await self.bot.update_cash(sell_value - 5, assumed=True)
                 await self.bot.update_cash(5, reduce=True)
 

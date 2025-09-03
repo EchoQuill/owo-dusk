@@ -42,6 +42,7 @@ from rich.console import Console
 from rich.panel import Panel
 # Local
 from utils.misspell import misspell_word
+from utils.notification import notify
 
 
 """Cntrl+c detect"""
@@ -791,6 +792,7 @@ class MyClient(commands.Bot):
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
+            "customcommands": self.settings_dict["customCommands"]["enabled"],
             "test": False # remove this
         }
 
@@ -841,9 +843,11 @@ class MyClient(commands.Bot):
                 await asyncio.sleep(self.random.uniform(1.4, 2.9))
 
             if self.cmds_state[cmd_data["id"]]["in_queue"]:
-                # Ensure command already in queue is not readded to prevent spam
-                await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
-                return
+                # Add exception for custom commands
+                if cmd_data["id"] != "customcommand":
+                    # Ensure command already in queue is not readded to prevent spam
+                    await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
+                    return
 
             # Get priority
             priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
@@ -1356,6 +1360,7 @@ def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
 
 if __name__ == "__main__":
+    notify("OwO-Dusk starting... If any issue arises visit out discord support server (link available in console or github)", "Starting OwO-Dusk! :>")
     try:
         discord_cur_version = import_ver("discord.py-self")
         discord_req_version = "2.1.0a5097+g20ae80b3"

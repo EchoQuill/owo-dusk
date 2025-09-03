@@ -16,6 +16,8 @@ import asyncio
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
+from utils.notification import notify
+
 
 won_pattern = r"and won <:cowoncy:\d+> ([\d,]+)"
 lose_pattern = r"bet <:cowoncy:\d+> ([\d,]+)"
@@ -75,6 +77,7 @@ class Slots(commands.Cog):
                 if not self.gamble_flags["goal_reached"]:
                     self.gamble_flags["goal_reached"] = True
                     await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "#4a270c")
+                    notify(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "Slots - Goal reached")
 
                 return await self.start_slots()
             elif self.gamble_flags["goal_reached"]:
@@ -85,6 +88,7 @@ class Slots(commands.Cog):
                 if not self.gamble_flags["no_balance"]:
                     self.gamble_flags["no_balance"] = True
                     await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping slots!", "#4a270c")
+                    notify(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping slots!", "Slots - Insufficient balance")
 
                 return await self.start_slots()
             elif self.gamble_flags["no_balance"]:
@@ -96,6 +100,7 @@ class Slots(commands.Cog):
                 if not self.gamble_flags["amount_exceeded"]:
                     self.gamble_flags["amount_exceeded"] = True
                     await self.bot.log(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping slots!", "#4a270c")
+                    notify(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping slots!", "Slots - Alloted value exceeded")
 
                 return await self.start_slots()
             elif self.gamble_flags["amount_exceeded"]:
