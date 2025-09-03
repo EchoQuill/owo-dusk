@@ -18,9 +18,19 @@ from time import sleep
 
 console = Console()
 
-# Load the previous config
-with open("config.json", "r") as config_file:
-    prev_config_dict = json.load(config_file)
+CONFIG_FILES = [
+    "configs/settings.json",
+    "configs/global_settings.json",
+    "configs/misc.json"
+]
+
+prev_configs = {}
+for path in CONFIG_FILES:
+    try:
+        with open(path, "r") as f:
+            prev_configs[path] = json.load(f)
+    except FileNotFoundError:
+        prev_configs[path] = {}
 
 def read_tokens_file():
     try:
@@ -33,30 +43,60 @@ def write_tokens_file(content):
     with open("tokens.txt", "w") as tokens_file:
         tokens_file.write(content)
 
-def deep_merge_carry_over(base, new):
+def deep_merge(old, new):
+    """
+    This one merges based on on type of each items, unlike default merge this is much safer.
+    """
     result = {}
-
-    for key, value in new.items():
-        if key in base:
-            if isinstance(value, dict) and isinstance(base[key], dict):
-                result[key] = deep_merge_carry_over(base[key], value)
+    for key, new_value in new.items():
+        if key in old:
+            old_value = old[key]
+            if isinstance(old_value, dict) and isinstance(new_value, dict):
+                # Recursive
+                result[key] = deep_merge(old_value, new_value)
+            elif type(old_value) == type(new_value):
+                result[key] = old_value
             else:
-                # Use the existing value from base
-                result[key] = base[key]
+                result[key] = new_value
         else:
-            # Use the default value from new
-            result[key] = value
-
+            result[key] = new_value
     return result
 
-def merge_json_carry_over():
-    with open("config.json", 'r') as main_file:
-        main_data = json.load(main_file)
+def merge_json_carry_over(path, prev_dict):
+    with open(path, 'r') as f:
+        main_data = json.load(f)
 
-    updated_data = deep_merge_carry_over(prev_config_dict, main_data)
+    updated_data = deep_merge(prev_dict, main_data)
 
-    with open("config.json", 'w') as output_file:
-        json.dump(updated_data, output_file, indent=4)
+    with open(path, 'w') as f:
+        json.dump(updated_data, f, indent=4)
+
+def merge_custom_user_settings():
+    """
+    Merge each <user_id>.settings.json with the new base settings.json.
+    Keeps user overrides, adopts new defaults.
+    """
+    base_path = "configs/settings.json"
+    try:
+        with open(base_path, "r") as f:
+            base_settings = json.load(f)
+    except FileNotFoundError:
+        # This shouldn't happen since settings.json should always be there in configs folder
+        console.log("[red]Base settings.json not found, skipping user settings merge.")
+        return
+
+    for filename in os.listdir("configs"):
+        if filename.endswith(".settings.json") and filename != "settings.json":
+            user_path = os.path.join("configs", filename)
+            try:
+                with open(user_path, "r") as uf:
+                    user_data = json.load(uf)
+                console.log(f"[cyan]Merging custom config {filename} with new settings.json...")
+                merged_data = deep_merge(user_data, base_settings)
+                with open(user_path, "w") as out:
+                    json.dump(merged_data, out, indent=4)
+            except Exception as e:
+                console.log(f"[red]Failed to merge {filename}: {e}")
 
 def pull_latest_changes_git():
     previous_tokens = read_tokens_file()
@@ -64,41 +104,39 @@ def pull_latest_changes_git():
     os.chdir(repo_dir)
 
     # Check for uncommitted changes
-    with console.status("[bold green]Checking for uncommitted changes...") as status:
+    with console.status("[bold green]Checking for uncommitted changes..."):
         status_result = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
 
     if status_result.stdout:
         console.log("[yellow]Uncommitted changes detected. Stashing changes...")
-        with console.status("[bold yellow]Stashing changes...") as status:
+        with console.status("[bold yellow]Stashing changes..."):
             subprocess.run(['git', 'stash'])
             sleep(1)
 
     # Check for untracked files
-    with console.status("[bold cyan]Checking for untracked files...") as status:
+    with console.status("[bold cyan]Checking for untracked files..."):
         untracked_files = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard'], capture_output=True, text=True)
 
     if untracked_files.stdout:
         console.log("[yellow]Untracked files detected. Cleaning up untracked files...")
-        with console.status("[bold red]Cleaning untracked files...") as status:
+        with console.status("[bold red]Cleaning untracked files..."):
             subprocess.run(['git', 'clean', '-f', "-d"])
             sleep(1)
 
-    # Pull the latest changes
-    with console.status("[bold green]Pulling the latest changes from origin/main...") as status:
+    with console.status("[bold green]Pulling the latest changes from main branch..."):
         subprocess.run(['git', 'checkout', 'main'])
         subprocess.run(['git', 'pull', 'origin', 'main'])
         sleep(1)
 
-    # Merge configuration and restore tokens
     console.log("[bold green]Update complete!")
-    console.log("[bold green]Attempting to merge previous config with the updated config...")
-    merge_json_carry_over()
+    for path in CONFIG_FILES:
+        console.log(f"[bold green]Merging previous config into {path}...")
+        merge_json_carry_over(path, prev_configs.get(path, {}))
+
+    merge_custom_user_settings()
+
     write_tokens_file(previous_tokens)
     console.log("[bold green]Previous tokens content restored to tokens.txt!")
 
-
-
-# Run the update process
-#pull_latest_changes_git()
-
-print("HiHi, updater broken. For steps to update, check github! Sorry, was busy so couldn't finish a fix for updater")
+# Start
+pull_latest_changes_git()
