@@ -107,6 +107,13 @@ class Captcha(commands.Cog):
         self.sound = None
         self.reccured = 0
         self.content_to_notify = ""
+        self.kill_task = None
+
+    async def kill_code(self):
+        await asyncio.sleep(590)
+        if self.bot.captcha:
+            print("captcha not solved within time...")
+            os._exit(0)
 
 
     @tasks.loop()
@@ -183,7 +190,7 @@ class Captcha(commands.Cog):
                 if on_mobile:
                     run_system_command(f"termux-media-player play {path}", timeout=5, retry=True)
                 else:
-                    playsound(path, block=False)
+                    self.sound = playsound(path, block=False)
             except Exception as e:
                 print(f"{e} - at audio")
         """Toast/Popup"""
@@ -229,6 +236,10 @@ class Captcha(commands.Cog):
         if cnf["termux"]["openCaptchaWebsite"] and on_mobile:
             run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
 
+        if cnf["stopCodeIfFailedToSolve"]:
+            """Kill code if failure in solving captcha within time"""
+            self.kill_task = asyncio.create_task(self.kill_code())
+
     def handle_solves(self):
         if self.bot.misc["hostMode"]:
             return
@@ -252,6 +263,10 @@ class Captcha(commands.Cog):
                 self.reccur_notifications.cancel()
             except:
                 pass
+
+        if cnf["stopCodeIfFailedToSolve"]:
+            if not self.kill_task.done():
+                self.kill_task.cancel()
 
 
     @commands.Cog.listener()
