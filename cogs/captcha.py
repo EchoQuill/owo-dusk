@@ -16,6 +16,9 @@ import re
 import os
 import asyncio
 
+from utils.misc import is_termux, run_system_command
+from utils.notification import notify
+
 from discord.ext import commands, tasks
 from discord import DMChannel
 
@@ -42,46 +45,16 @@ def get_path(path):
 def clean(msg):
     return re.sub(r"[^a-zA-Z]", "", msg)
 
-def is_termux():
-    termux_prefix = os.environ.get("PREFIX")
-    termux_home = os.environ.get("HOME")
-    
-    if termux_prefix and "com.termux" in termux_prefix:
-        return True
-    elif termux_home and "com.termux" in termux_home:
-        return True
-    else:
-        return os.path.isdir("/data/data/com.termux")
+
 
 on_mobile = is_termux()
 
 if not on_mobile:
     #desktop
-    from plyer import notification
     from playsound3 import playsound
 
 
-def run_system_command(command, timeout, retry=False, delay=5):
-    def target():
-        try:
-            os.system(command)
-        except Exception as e:
-            print(f"Error executing command: {command} - {e}")
 
-    # Create and start a thread to execute the command
-    thread = threading.Thread(target=target)
-    thread.start()
-
-    # Wait for the thread to finish, with a timeout
-    thread.join(timeout)
-
-    # If the thread is still alive after the timeout, terminate it
-    if thread.is_alive():
-        print(f"Error: {command} command failed! (captcha)")
-        if retry:
-            print(f"Retrying '{command}' after {delay}s")
-            time.sleep(delay)
-            run_system_command(command, timeout)
 
 def get_channel_name(channel):
     if isinstance(channel, DMChannel):
@@ -119,7 +92,7 @@ class Captcha(commands.Cog):
     @tasks.loop()
     async def reccur_notifications(self):
         if self.content_to_notify:
-            if on_mobile:
+            """if on_mobile:
                 run_system_command(
                     f"termux-notification -t '{self.bot.username} captcha!' -c '{self.content_to_notify}' --led-color '#a575ff' --priority 'high'",
                     timeout=5, 
@@ -127,11 +100,12 @@ class Captcha(commands.Cog):
                     )
             else:
                 notification.notify(
-                    title=f'{self.bot.username} DETECTED CAPTCHA',
-                    message=self.content_to_notify,
+                    title=f,
+                    message=,
                     app_icon=None,
                     timeout=15
-                )
+                )"""
+            notify(self.content_to_notify, f'Captcha - {self.bot.username}!')
             self.reccured+=1
 
         times_to_reccur = self.bot.global_settings_dict["captcha"]["notifications"]["reccur"]["times_to_reccur"]
@@ -159,9 +133,9 @@ class Captcha(commands.Cog):
                 self.reccur_notifications.start()
             else:
                 try:
-                    if on_mobile:
+                    """if on_mobile:
                         run_system_command(
-                            f"termux-notification -t '{self.bot.username} captcha!' -c '{notification_content}' --led-color '#a575ff' --priority 'high'",
+                            f"termux-notification -t 'Captcha - {self.bot.username}!' -c '{notification_content}' --led-color '#a575ff' --priority 'high'",
                             timeout=5, 
                             retry=True
                             )
@@ -171,7 +145,8 @@ class Captcha(commands.Cog):
                             message=notification_content,
                             app_icon=None,
                             timeout=15
-                            )
+                            )"""
+                    notify(notification_content, f'Captcha - {self.bot.username}!')
                 except Exception as e:
                     print(f"{e} - at notifs")
 
@@ -289,7 +264,7 @@ class Captcha(commands.Cog):
                 await asyncio.sleep(time_to_sleep)
                 self.bot.command_handler_status["captcha"] = False
                 await self.bot.update_captcha_db()
-                await self.handle_solves()
+                self.handle_solves()
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:

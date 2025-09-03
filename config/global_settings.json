@@ -49,7 +49,7 @@
             "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
             "bannedContent": "{username} Banned from OwO!",
             "reccur": {
-                "enabled": false,
+                "enabled": true,
                 "times_to_reccur": 3
             }
         },

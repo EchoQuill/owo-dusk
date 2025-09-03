@@ -410,7 +410,6 @@ def popup_main_loop():
 
     while True:
         msg, username, channelname, captchatype = popup_queue.get()
-        print(msg, username, channelname, captchatype)
         # Create a new popup window
         popup = tk.Toplevel(root)
         popup.configure(bg="#000000")
@@ -458,7 +457,7 @@ def popup_main_loop():
 class MyClient(commands.Bot):
 
     def __init__(self, token, channel_id, global_settings_dict, *args, **kwargs):
-        super().__init__(command_prefix="-", self_bot=True, *args, **kwargs)
+        super().__init__(command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs)
         self.token = token
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
@@ -790,7 +789,8 @@ class MyClient(commands.Bot):
             "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
-            "slots": self.settings_dict["gamble"]["slots"]["enabled"]
+            "slots": self.settings_dict["gamble"]["slots"]["enabled"],
+            "test": False # remove this
         }
 
     """To make the code cleaner when accessing cooldowns from config."""
