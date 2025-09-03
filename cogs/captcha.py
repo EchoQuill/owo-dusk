@@ -98,6 +98,7 @@ def console_handler(cnf, captcha=True):
 class Captcha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.sound = None
 
     def captcha_handler(self, channel, captcha_type):
         if self.bot.misc["hostMode"]:
@@ -183,6 +184,25 @@ class Captcha(commands.Cog):
         if cnf["termux"]["openCaptchaWebsite"] and on_mobile:
             run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
 
+    def handle_solves(self):
+        if self.bot.misc["hostMode"]:
+            return
+        cnf = self.bot.global_settings_dict["captcha"]
+
+        """Play Audio"""
+        if cnf["playAudio"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(f"termux-media-player stop", timeout=5, retry=True)
+                else:
+                    if self.sound != None:
+                        if self.sound.is_alive():
+                            self.sound.stop()
+            except Exception as e:
+                print(f"{e} - at audio")
+
+        """Reccurrring notification"""
+
     @commands.Cog.listener()
     async def on_message(self, message):
         self.last_msg = time.time()
@@ -201,6 +221,7 @@ class Captcha(commands.Cog):
                 await asyncio.sleep(time_to_sleep)
                 self.bot.command_handler_status["captcha"] = False
                 await self.bot.update_captcha_db()
+                await self.handle_solves()
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
@@ -271,7 +292,7 @@ class Captcha(commands.Cog):
                         ),
                         webhook_url=self.bot.global_settings_dict["webhook"].get("webhookCaptchaUrl", None),
                     )
-            elif message.embeds:
+            """elif message.embeds:
                 for embed in message.embeds:
                     items = {
                         embed.title if embed.title else "",
@@ -280,7 +301,6 @@ class Captcha(commands.Cog):
                     }
                     for i in items:
                         if any(b in clean(i) for b in list_captcha):
-                            """clean function cleans the captcha message of unwanted symbols etc"""
                             self.bot.command_handler_status["captcha"] = True
                             await self.bot.log(f"Captcha detected...?", "#d70000")
                             break
@@ -294,7 +314,7 @@ class Captcha(commands.Cog):
                             if field.value and any(b in clean(field.value) for b in list_captcha):
                                 self.bot.command_handler_status["captcha"] = True
                                 await self.bot.log(f"Captcha detected...?", "#d70000")
-                                break
+                                break"""
 
 async def setup(bot):
     await bot.add_cog(Captcha(bot))
