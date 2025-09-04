@@ -651,6 +651,21 @@ class MyClient(commands.Bot):
             (self.user.id,)
         )
 
+    async def update_giveaway_db(self, last_ran):
+        await self.update_database(
+            "UPDATE user_stats SET captchas = ? WHERE user_id = ?",
+            (last_ran, self.user.id)
+        )
+
+    async def fetch_giveaway_db(self):
+        results = await self.get_from_db(
+            "SELECT giveaways FROM user_stats WHERE user_id = ?", 
+            (self.user.id,)
+        )
+        if results:
+            return results[0]["giveaways"]
+        return None
+
     async def populate_stats_db(self):
         await self.update_database(
             "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy) VALUES (?, ?, ?, ?, ?, ?, ?)",
