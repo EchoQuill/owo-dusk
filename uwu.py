@@ -653,7 +653,7 @@ class MyClient(commands.Bot):
 
     async def update_giveaway_db(self, last_ran):
         await self.update_database(
-            "UPDATE user_stats SET captchas = ? WHERE user_id = ?",
+            "UPDATE user_stats SET giveaways = ? WHERE user_id = ?",
             (last_ran, self.user.id)
         )
 
