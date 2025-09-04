@@ -113,6 +113,25 @@ class Gems(commands.Cog):
             "specialGem": cnf["specialGem"]
         }
     
+    async def use_gems(self, available_gems, gems_in_use=None, full=False):
+        if not full:
+            result = self.find_specific_gems_to_use(gems_in_use, available_gems)
+        else:
+            result = self.find_gems_to_use(available_gems)
+        if result:
+            self.gem_cmd["cmd_arguments"]=""
+            for item in result:
+                self.gem_cmd["cmd_arguments"]+=f"{item[1:]} "
+            await self.bot.put_queue(self.gem_cmd, priority=True)
+            self.reduce_used_gems(result)
+        else:
+            if not full:
+                self.already_checked = True
+            else:
+                await self.log(f"Warn: No gems to use.", "#924444")
+                self.bot.user_status["no_gems"] = True
+
+    
     def fetch_gems_in_use(self, msg):
         gem_type_map = {
             "gem1": "huntGem",
@@ -156,7 +175,7 @@ class Gems(commands.Cog):
     
     def reduce_used_gems(self, used_gem_ids):
         for gem_id in used_gem_ids:
-            for tier, gems in self.available_gems.items():
+            for _, gems in self.available_gems.items():
                 if gem_id in gems:
                     if gems[gem_id] > 0:
                         gems[gem_id] -= 1
@@ -204,12 +223,21 @@ class Gems(commands.Cog):
             "luckyGem":  ["078", "077", "076", "075", "074", "073", "072"],
             "specialGem": ["085", "084", "083", "082", "081", "080", "079"]
         }
-        for item in gems_in_use:
-            for ids in gem_type_map[item["gem_type"]]:
-                temp_available_gems[item["gem_tier"]][ids] = 0
 
-        # Now that we have cleared unwanted gems, we can now pass it to find required gems
+        for item in gems_in_use:
+            gem_ids = gem_type_map[item["gem_type"]]
+            for _, gems in temp_available_gems.items():
+                for gem_id in gem_ids:
+                    if gem_id in gems:
+                        gems[gem_id] = 0
+
+        """print(available_gems)
+        print("to")
+        print(temp_available_gems)"""
+
         return self.find_gems_to_use(temp_available_gems)
+
+
 
 
     def process_result(self, result):
@@ -261,42 +289,29 @@ class Gems(commands.Cog):
             # Task 3: Ensure no_gems status is dynamically removed as required.
             if result and required:
                 if self.available_gems:
-                    result = self.find_specific_gems_to_use(result)
-                    if result:
-                        self.gem_cmd["cmd_arguments"]=""
-                        for item in result:
-                            self.gem_cmd["cmd_arguments"]+=f"{item[1:]} "
-                        await self.bot.put_queue(self.gem_cmd, priority=True)
-                        self.reduce_used_gems(result)
-                    else:
-                        # Task 4: Set this to false when gem count falls by any amount
-                        self.already_checked = True
+                    await self.use_gems(self.available_gems, result)
                 else:
                     await self.bot.set_stat(False)
                     await self.bot.put_queue(self.inv_cmd, priority=True)
+                    self.cache_gems_in_use = result
 
 
         elif "'s Inventory ======**" in message.content:
             await self.bot.remove_queue(id="inv")
-            #if not self.available_gems:
             self.available_gems = find_gems_available(message.content)
             self.already_checked = False
             if self.inventory_check:
-                gems_list = self.find_gems_to_use(self.available_gems)
-
-                self.gem_cmd["cmd_arguments"]=""
-                if gems_list:
-                    for i in gems_list:
-                        self.gem_cmd["cmd_arguments"]+=f"{i[1:]} "
-                    await self.bot.put_queue(self.gem_cmd, priority=True)
-                    self.reduce_used_gems(gems_list)
-                else:
-                    await self.log(f"Warn: No gems to use.", "#924444")
-                    self.bot.user_status["no_gems"] = True
-                
+                await self.use_gems(self.available_gems, full=True)
                 await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
-                await self.bot.set_stat(True)
                 self.inventory_check = False
+                self.cache_gems_in_use = {}
+            elif self.cache_gems_in_use:
+                await self.use_gems(self.available_gems, self.cache_gems_in_use)
+                self.cache_gems_in_use = {}
+
+            # Task 4: make commands trigger stat instead of manual to avoid such issues and also avoids permanent stop incase of fails
+            await self.bot.set_stat(True)
+
                 
 
 async def setup(bot):

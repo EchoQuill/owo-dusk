@@ -515,7 +515,7 @@ class MyClient(commands.Bot):
                 "last_ran": 0
             }
 
-    async def set_stat(self, value, debug_note=None):
+    async def set_stat(self, value):
         if value:
             self.command_handler_status["state"] = True
             self.state_event.set()
