@@ -473,6 +473,7 @@ class MyClient(commands.Bot):
         self.gain_or_lose = 0
         self.checks = []
         self.dm, self.cm = None,None
+        self.hunt_disabled = False
         self.username = None
         self.nick_name = None
         self.last_cmd_ran = None

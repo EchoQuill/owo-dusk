@@ -124,12 +124,21 @@ class Gems(commands.Cog):
                 self.gem_cmd["cmd_arguments"]+=f"{item[1:]} "
             await self.bot.put_queue(self.gem_cmd, priority=True)
             self.reduce_used_gems(result)
+            if self.bot.hunt_disabled:
+                self.bot.hunt_disabled = False
         else:
             if not full:
                 self.already_checked = True
             else:
                 await self.log(f"Warn: No gems to use.", "#924444")
                 self.bot.user_status["no_gems"] = True
+                if not self.bot.hunt_disabled and self.bot.settings_dict["autoUse"]["gems"]["disable_hunts_if_no_gems"]:
+                    await self.log(f"Disabling hunt since there is no gems to be used.", "#C51818")
+                    """
+                    Currently no_gems status isn't being reset after being set
+                    """
+                    self.bot.hunt_disabled = True
+
 
     
     def fetch_gems_in_use(self, msg):
