@@ -457,9 +457,10 @@ def popup_main_loop():
 
 class MyClient(commands.Bot):
 
-    def __init__(self, token, channel_id, global_settings_dict, *args, **kwargs):
+    def __init__(self, token, channel_id, global_settings_dict, token_len, *args, **kwargs):
         super().__init__(command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs)
         self.token = token
+        self.token_len = token_len
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
@@ -480,9 +481,11 @@ class MyClient(commands.Bot):
         self.reaction_bot_id = 519287796549156864
         self.owo_bot_id = 408785106942164992
         self.cmd_counter = itertools.count()
+        self.cmd_priorities = {}
 
         # discord.py-self's module sets global random to fixed seed. reset that, locally.
         self.random = random.Random()
+        #print(f"These will be printed at start: {self.random.randint(1,2)} {self.random.randint(1,5)} {self.random.uniform(3,6.2)}")
 
         # Task: Update code to have checks using status instead of individual variables
         self.user_status = {
@@ -629,15 +632,50 @@ class MyClient(commands.Bot):
             async with db.execute(sql, params or ()) as cursor:
                 result = await cursor.fetchall()
                 return result
+            
+    async def update_priorities(self):
+        # Check if already in db
+        res = await self.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
+        if res:
+            for row in res:
+                # 0 -> user_id
+                # 1 -> command_name
+                # 2 -> priority
+                self.cmd_priorities[row[1]] = int(row[2])
+        else:
+            # Group items using tiers
+            tiers_map = {}
+            for key, value in self.misc["command_info"].items():
+                tiers_map[value["priority"]] = tiers_map.get(value["priority"], []) + [key]
+
+            # randomising based on these tiers
+            base_priority = 0
+            for tier in sorted(tiers_map):
+                temp_list = tiers_map[tier]
+                self.random.shuffle(temp_list)
+                for item in temp_list:
+                    # This way base_priority will remain above 0, ensuring it doesn't hit quick send.
+                    base_priority+=1
+                    self.cmd_priorities[item] = base_priority
+                    await self.update_database(
+                        """INSERT OR REPLACE INTO command_priority (user_id, command_name, priority)
+                        VALUES (?, ?, ?)""",
+                        (str(self.user.id), item, base_priority)
+                    )
+
+
+        #print(self.user.name, "->", self.cmd_priorities)
+
+
+
 
     async def update_cash_db(self):
-        """Update values in database"""
         hr = get_hour()
 
         await self.update_database(
             """UPDATE cowoncy_earnings
             SET earnings = ?
-            WHERE user_id = ? AND hour = ?;""",
+            WHERE user_id = ? AND hour = ?""",
             (self.user_status["net_earnings"], self.user.id, hr)
         )
 
@@ -842,7 +880,7 @@ class MyClient(commands.Bot):
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False, quick=False):
-        cnf = self.misc["command_info"]
+        #cnf = self.misc["command_info"]
         try:
             while (
                 not self.command_handler_status["state"]
@@ -866,9 +904,11 @@ class MyClient(commands.Bot):
                     return
 
             # Get priority
-            priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
+            #priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
+            priority_int = self.cmd_priorities.get(cmd_data["id"])
+            
             if not priority_int and priority_int!=0:
-                await self.log(f"Error - command with id: {cmd_data['id']} do not have a priority set in misc.json", "#c25560")
+                await self.log(f"Error - command with id: {cmd_data['id']} is missing priority.", "#c25560")
                 return
 
             async with self.lock:
@@ -1065,7 +1105,7 @@ class MyClient(commands.Bot):
         return time_now.timestamp()
 
     async def check_for_cash(self):
-        await asyncio.sleep(self.random.uniform(4.5, 6.4))
+        await asyncio.sleep(self.random.uniform(4.5, 34.4))
         await self.put_queue(
             {
                 "cmd_name": self.alias["cash"]["normal"],
@@ -1125,6 +1165,8 @@ class MyClient(commands.Bot):
         printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
         listUserIds.append(self.user.id)
 
+        await self.update_priorities()
+
         # Fetch the channel
         self.cm = self.get_channel(self.channel_id)
         
@@ -1183,8 +1225,11 @@ class MyClient(commands.Bot):
         # Start various tasks and updates
         # self.config_update_checker.start()
         # disabled since unnecessory
+        if self.token_len>1:
+            time_to_sleep = self.random_float(global_settings_dict["account"]["startupDelay"])
+            await self.log(f"{self.username} sleeping {time_to_sleep}s before starting")
+            await asyncio.sleep(time_to_sleep)
 
-        await asyncio.sleep(self.random_float(global_settings_dict["account"]["startupDelay"]))
         await self.update_config()
 
         if self.global_settings_dict["offlineStatus"]:
@@ -1274,6 +1319,9 @@ def create_database(db_path="utils/data/db.sqlite"):
     c.execute(
         "CREATE TABLE IF NOT EXISTS meta_data (key TEXT PRIMARY KEY, value INTEGER)"
     )
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS command_priority (user_id TEXT, command_name TEXT, priority INTEGER, PRIMARY KEY (user_id, command_name))"
+    )
     # Switch to WAL mode.
     c.execute("PRAGMA journal_mode=WAL;")
 
@@ -1287,6 +1335,51 @@ def create_database(db_path="utils/data/db.sqlite"):
     # -- meta data
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("gamble_winrate_last_checked", 0))
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("cowoncy_earnings_last_checked", 0))
+
+    # `INSERT OR UPDATE` is not used since we will be comparing old value (if any) ------ (check!!)
+    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("version", version))
+
+    # -- command priority
+    c.execute("SELECT * FROM command_priority WHERE user_id = ?", ("default",))
+    rows = c.fetchall()
+    populate = False
+    if not rows:
+        populate = True
+
+    if not populate:
+        """for key, value in misc_dict["command_info"].items():
+            
+            for idx, row in enumerate(rows[:]):
+                # Order should be same unless user makes changes which does indeed require a refetch
+                if key != row[1] or value["priority"] != row[2]:
+                    c.execute("DELETE FROM command_priority")
+                    populate = True
+                    break
+                rows.pop(idx)
+        if rows:
+            c.execute("DELETE FROM command_priority")
+            populate = True"""
+
+        ###
+
+        # 0 -> user_id
+        # 1 -> command_name
+        # 2 -> priority
+        temp_list = [(row[1], int(row[2])) for row in rows]
+        for key, value in misc_dict["command_info"].items():
+            if not (key, value["priority"]) in temp_list:
+                c.execute("DELETE FROM command_priority")
+                populate = True
+                break
+
+    if populate:
+        for key, value in misc_dict["command_info"].items():
+            # We will be putting a `DEFAULT` value here to make it easier to compare to misc.json.
+            # This is to ensure we do update in two cases:
+            # 1) when priority is changed
+            # 3) when a new item is added to priority
+            c.execute("INSERT OR IGNORE INTO command_priority (user_id, command_name, priority) VALUES (?, ?, ?)", ("default", key, value.get("priority")))
+
 
     # -- commands
     for cmd in misc_dict["command_info"].keys():
@@ -1310,39 +1403,19 @@ def fetch_json(url, description="data"):
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
-        thread = Thread(target=run_bot, args=(token, channel_id, global_settings_dict))
+        thread = Thread(target=run_bot, args=(token, channel_id, global_settings_dict, len(tokens_and_channels)))
         thread.start()
         threads.append(thread)
     for thread in threads:
         thread.join()
 
-def run_bot(token, channel_id, global_settings_dict):
-    try:
-        logging.getLogger("discord.client").setLevel(logging.ERROR)
-        client = MyClient(token, channel_id, global_settings_dict)
 
-        if not on_mobile:
-            try:
-                client.run(token, log_level=logging.ERROR)
-
-            except CurlError as e:
-                if "WS_SEND" in str(e) and "55" in str(e):
-                    printBox("Broken pipe error detected. Restarting bot...", "bold red")
-                    # add a restart of client.run after exiting cleanly here!
-                else:
-                    printBox(f"Curl error: {e}", "bold red")
-        else:
-            client.run(token, log_level=logging.ERROR)
-
-    except Exception as e:
-        printBox(f"Error starting bot: {e}", "bold red")
-
-def run_bot(token, channel_id, global_settings_dict):
+def run_bot(token, channel_id, global_settings_dict, token_len):
     try:
         logging.getLogger("discord.client").setLevel(logging.ERROR)
 
         while True:
-            client = MyClient(token, channel_id, global_settings_dict)
+            client = MyClient(token, channel_id, global_settings_dict, token_len)
 
             if not on_mobile:
                 try:
