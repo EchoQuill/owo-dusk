@@ -215,7 +215,7 @@ class Captcha(commands.Cog):
             """Kill code if failure in solving captcha within time"""
             self.kill_task = asyncio.create_task(self.kill_code())
 
-    def handle_solves(self):
+    async def handle_solves(self):
         if self.bot.misc["hostMode"]:
             return
         cnf = self.bot.global_settings_dict["captcha"]
@@ -243,6 +243,16 @@ class Captcha(commands.Cog):
             if not self.kill_task.done():
                 self.kill_task.cancel()
 
+        if self.bot.global_settings_dict["webhook"]["enabled"]:
+            await self.bot.webhookSender(
+                title=f"-{self.bot.username} - Captcha Solved",
+                desc=f"**User** <@{self.bot.user.id}> solved captcha successfully!",
+                colors="#00FFAF",
+                img_url="https://cdn.discordapp.com/emojis/1090553827847045160.gif",
+                author_img_url="https://i.imgur.com/6zeCgXo.png",
+                webhook_url=self.bot.global_settings_dict["webhook"].get("webhookCaptchaUrl", None),
+            )
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -264,7 +274,7 @@ class Captcha(commands.Cog):
                 await asyncio.sleep(time_to_sleep)
                 self.bot.command_handler_status["captcha"] = False
                 await self.bot.update_captcha_db()
-                self.handle_solves()
+                await self.handle_solves()
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
@@ -302,12 +312,12 @@ class Captcha(commands.Cog):
                 self.captcha_handler(message.channel, "Link")
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        msg=f"-{self.bot.username} [+] CAPTCHA Detected",
+                        title=f"-{self.bot.username} - CAPTCHA Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
                         colors="#00FFAF",
-                        img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                        img_url="https://cdn.discordapp.com/emojis/755106539122982922.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text=(
+                        msg=(
                             f"<@{self.bot.global_settings_dict['webhook']['webhookUserIdToPingOnCaptcha']}>"
                             if self.bot.global_settings_dict['webhook']['webhookUserIdToPingOnCaptcha']
                             else None
@@ -323,12 +333,12 @@ class Captcha(commands.Cog):
                 console_handler(self.bot.global_settings_dict["console"], captcha=False)
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        msg=f"-{self.bot.username} [+] BAN Detected",
+                        title=f"-{self.bot.username} - BAN Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [Ban Message]({message.jump_url})",
                         colors="#00FFAF",
-                        img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
+                        img_url="https://cdn.discordapp.com/emojis/1068981158081216662.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text=(
+                        msg=(
                             f"<@{self.bot.global_settings_dict['webhook']['webhookUserIdToPingOnCaptcha']}>"
                             if self.bot.global_settings_dict["webhook"]["webhookUserIdToPingOnCaptcha"]
                             else None

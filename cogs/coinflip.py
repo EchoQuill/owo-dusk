@@ -107,6 +107,8 @@ class Coinflip(commands.Cog):
 
             
             if amount_to_gamble > 250000:
+                await self.bot.log(f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!", "#4a270c")
+                notify(f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!", "Coinflip - Exceeded 250k limit")
                 self.exceeded_max_amount = True
             else:
                 self.cmd["cmd_arguments"] = str(amount_to_gamble)

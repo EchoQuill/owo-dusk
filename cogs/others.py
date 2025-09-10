@@ -82,6 +82,15 @@ class Others(commands.Cog):
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
                 if self.bot.settings_dict["autoUse"]["autoCrate"]:
                     await self.bot.put_queue(self.crate_cmd)
+
+                if self.bot.global_settings_dict["webhook"]["enabled"]:
+                    await self.bot.webhookSender(
+                        title=f"Found crate! ✨",
+                        desc=f"**User** <@{self.bot.user.id}> found a crate.",
+                        colors="#00FFAF",
+                        img_url="https://cdn.discordapp.com/emojis/621848189103898654.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    )
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
                 if self.bot.settings_dict["autoUse"]["autoLootbox"]:
@@ -89,6 +98,15 @@ class Others(commands.Cog):
                     # give time for command to run
                     await asyncio.sleep(2.5)
                     self.bot.user_status["no_gems"] = False
+
+                if self.bot.global_settings_dict["webhook"]["enabled"]:
+                    await self.bot.webhookSender(
+                        title=f"Found lootbox! ✨",
+                        desc=f"**User** <@{self.bot.user.id}> found a lootbox.",
+                        colors="#00FFAF",
+                        img_url="https://cdn.discordapp.com/emojis/621847969146339378.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    )
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:

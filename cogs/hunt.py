@@ -56,6 +56,7 @@ class Hunt(commands.Cog):
             "slash_cmd_name": "hunt",
             "removed": False
         }
+        self.was_recently_disabled = False
 
     async def cog_load(self):
         if not self.bot.settings_dict["commands"]["hunt"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
@@ -79,6 +80,21 @@ class Hunt(commands.Cog):
         nick = self.bot.get_nick(message)
         if nick not in message.content:
             return
+        
+        if self.bot.hunt_disabled:
+            # Ensure hunt is currently not in queue
+            if not self.was_recently_disabled:
+                await self.bot.remove_queue(id="hunt")
+                self.was_recently_disabled = True
+            return
+        elif self.was_recently_disabled:
+            self.was_recently_disabled = False
+            self.cmd["cmd_name"] = (
+                    self.bot.alias["hunt"]["shortform"] 
+                    if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
+                    else self.bot.alias["hunt"]["normal"]
+                )
+            await self.bot.put_queue(self.cmd)
         
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'you found:' in message.content.lower() or "caught" in message.content.lower():

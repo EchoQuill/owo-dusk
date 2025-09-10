@@ -108,6 +108,15 @@ class Daily(commands.Cog):
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 
+                if self.bot.global_settings_dict["webhook"]["enabled"]:
+                    await self.bot.webhookSender(
+                        title=f"Claimed daily",
+                        desc=f"**User** <@{self.bot.user.id}> claimed today's daily.",
+                        colors="#00FFAF",
+                        img_url="https://cdn.discordapp.com/emojis/1346253360151400542.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    )
+
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 await self.bot.remove_queue(cmd)
                 await self.bot.set_stat(True)
