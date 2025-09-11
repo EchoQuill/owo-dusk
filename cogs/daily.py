@@ -112,7 +112,7 @@ class Daily(commands.Cog):
                     await self.bot.webhookSender(
                         title=f"Claimed daily",
                         desc=f"**User** <@{self.bot.user.id}> claimed today's daily.",
-                        colors="#00FFAF",
+                        colors="#4B6EA3",
                         img_url="https://cdn.discordapp.com/emojis/1346253360151400542.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                     )

@@ -87,7 +87,7 @@ class Others(commands.Cog):
                     await self.bot.webhookSender(
                         title=f"Found crate! ✨",
                         desc=f"**User** <@{self.bot.user.id}> found a crate.",
-                        colors="#00FFAF",
+                        colors="#E7DA90",
                         img_url="https://cdn.discordapp.com/emojis/621848189103898654.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                     )
@@ -103,7 +103,7 @@ class Others(commands.Cog):
                     await self.bot.webhookSender(
                         title=f"Found lootbox! ✨",
                         desc=f"**User** <@{self.bot.user.id}> found a lootbox.",
-                        colors="#00FFAF",
+                        colors="#E7DA90",
                         img_url="https://cdn.discordapp.com/emojis/621847969146339378.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                     )

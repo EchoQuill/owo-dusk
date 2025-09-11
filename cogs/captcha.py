@@ -314,7 +314,7 @@ class Captcha(commands.Cog):
                     await self.bot.webhookSender(
                         title=f"-{self.bot.username} - CAPTCHA Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
-                        colors="#00FFAF",
+                        colors="#CF5319",
                         img_url="https://cdn.discordapp.com/emojis/755106539122982922.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                         msg=(

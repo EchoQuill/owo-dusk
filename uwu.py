@@ -36,6 +36,7 @@ import discord
 import pytz
 import requests
 from discord.ext import commands, tasks
+from discord import SyncWebhook
 from flask import Flask, jsonify, render_template, request
 from rich.align import Align
 from rich.console import Console
@@ -88,6 +89,9 @@ with open("config/global_settings.json", "r") as config_file:
 
 with open("config/misc.json", "r") as config_file:
     misc_dict = json.load(config_file)
+
+"""with open("config/settings.json", "r") as config_file:
+    settings_dict = json.load(config_file)"""
 
 
 console.rule("[bold blue1]:>", style="navy_blue")
@@ -998,7 +1002,7 @@ class MyClient(commands.Bot):
         if webhook_useless_log:
             await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
 
-    async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None, webhook_url=None):
+    async def webhookSender(self, title=None, desc=None, msg=None, colors=None, img_url=None, author_img_url=None, footer=None, webhook_url=None):
         try:
             if colors:
                 if isinstance(colors, str) and colors.startswith("#"):
@@ -1010,7 +1014,7 @@ class MyClient(commands.Bot):
                 color = discord.Color(0x412280)
 
             emb = discord.Embed(
-                title=msg,
+                title=title,
                 description=desc,
                 color=color
             )
@@ -1021,8 +1025,8 @@ class MyClient(commands.Bot):
             if author_img_url:
                 emb.set_author(name=self.username, icon_url=author_img_url)
             webhook = discord.Webhook.from_url(self.global_settings_dict["webhook"]["webhookUrl"] if not webhook_url else webhook_url, session=self.session)
-            if plain_text:
-                await webhook.send(content=plain_text, embed=emb, username='OwO-Dusk')
+            if msg:
+                await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
             else:
                 await webhook.send(embed=emb, username='OwO-Dusk')
         except discord.Forbidden as e:
@@ -1503,6 +1507,21 @@ if __name__ == "__main__":
 
     if not misc_dict["console"]["hideStarRepoMessage"]:
         console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
+
+        if global_settings_dict["webhook"]["enabled"]:
+            webhook = SyncWebhook.from_url(global_settings_dict["webhook"]["webhookUrl"])
+
+            color = discord.Color(0xc48dc3)
+            emb = discord.Embed(
+                title="Star the github repo!",
+                description="Starring the GitHub repo motivates us to keep adding new and better features! It takes less than 5 minutes to do that, so do star the GitHub repo at https://github.com/echoquill/owo-dusk .",
+                color=color
+            )
+            emb.set_thumbnail(url="https://cdn.discordapp.com/emojis/723856770249916447.gif")
+
+            webhook.send(embed=emb)
+
+
     console.rule(style="navy_blue")
 
 
