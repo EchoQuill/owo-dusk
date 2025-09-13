@@ -141,7 +141,7 @@ class Slots(commands.Cog):
                 self.bot.gain_or_lose-=match
                 
                 self.turns_lost+=1
-                await self.bot.log(f"lost {match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                await self.bot.log(f"lost {match} in slots, net profit - {self.bot.gain_or_lose}", "#993f3f")
                 await self.start_slots()
                 await self.bot.update_gamble_db("losses")
             else:
@@ -161,7 +161,7 @@ class Slots(commands.Cog):
                     self.bot.gain_or_lose+=profit
 
                     self.turns_lost = 0
-                    await self.bot.log(f"won {won_match} in slots, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    await self.bot.log(f"won {won_match} in slots, net profit - {self.bot.gain_or_lose}", "#536448")
                     await self.start_slots()
                     await self.bot.update_gamble_db("wins")
 

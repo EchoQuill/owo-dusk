@@ -143,7 +143,7 @@ class Coinflip(commands.Cog):
                     await self.bot.update_cash(match, reduce=True)
                     self.bot.gain_or_lose-=match
 
-                    await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#993f3f")
                     await self.start_cf()
                     await self.bot.update_gamble_db("losses")
                 else:
@@ -155,7 +155,7 @@ class Coinflip(commands.Cog):
                     await self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
                     
-                    await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#536448")
                     await self.start_cf()
                     await self.bot.update_gamble_db("wins")
             except Exception as e:
