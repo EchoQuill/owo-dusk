@@ -83,9 +83,9 @@ class Others(commands.Cog):
                 if self.bot.settings_dict["autoUse"]["autoCrate"]:
                     await self.bot.put_queue(self.crate_cmd)
 
-                if self.bot.global_settings_dict["webhook"]["enabled"]:
+                if self.bot.global_settings_dict["webhook"]["enabled"] and self.bot.global_settings_dict["webhook"]["others"]["log_crate"]:
                     await self.bot.webhookSender(
-                        title=f"Found crate! ✨",
+                        title="Found crate! ✨",
                         desc=f"**User** <@{self.bot.user.id}> found a crate.",
                         colors="#E7DA90",
                         img_url="https://cdn.discordapp.com/emojis/621848189103898654.gif",
@@ -99,9 +99,9 @@ class Others(commands.Cog):
                     await asyncio.sleep(2.5)
                     self.bot.user_status["no_gems"] = False
 
-                if self.bot.global_settings_dict["webhook"]["enabled"]:
+                if self.bot.global_settings_dict["webhook"]["enabled"] and self.bot.global_settings_dict["webhook"]["others"]["log_lootbox"]:
                     await self.bot.webhookSender(
-                        title=f"Found lootbox! ✨",
+                        title="Found lootbox! ✨",
                         desc=f"**User** <@{self.bot.user.id}> found a lootbox.",
                         colors="#E7DA90",
                         img_url="https://cdn.discordapp.com/emojis/621847969146339378.gif",

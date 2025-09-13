@@ -11,8 +11,8 @@
     },
     "account": {
         "startupDelay": [
-            0.5,
-            3
+            1.5,
+            10.6
         ],
         "commandsStartDelay": [
             0.1,
@@ -31,11 +31,28 @@
         "allowedUsers": []
     },
     "webhook": {
-        "enabled": false,
+        "enabled": true,
         "webhookUselessLog": false,
-        "webhookUrl": "webhook url here",
+        "webhookUrl": "your webhook url here!",
         "webhookCaptchaUrl": null,
-        "webhookUserIdToPingOnCaptcha": 1
+        "webhookUserIdToPingOnCaptcha": 1,
+        "animal_log": {
+            "enabled": true,
+            "rank": {
+                "common": false,
+                "uncommon": false,
+                "rare": false,
+                "epic": false,
+                "mythical": true,
+                "legendary": true,
+                "fabled": true,
+                "hidden": true
+            }
+        },
+        "others": {
+            "log_lootbox": true,
+            "log_crate": true
+        }
     },
     "console": {
         "runConsoleCommandOnCaptcha": false,
