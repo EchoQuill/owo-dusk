@@ -474,6 +474,7 @@ class MyClient(commands.Bot):
         self.global_settings_dict = global_settings_dict
         self.commands_dict = {}
         self.lock = asyncio.Lock()
+        self.webhook_lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
@@ -1023,18 +1024,19 @@ class MyClient(commands.Bot):
                     name=self.username if not author_name else author_name,
                     icon_url=author_img_url,
                 )
-            webhook = discord.Webhook.from_url(
-                (
-                    self.global_settings_dict["webhook"]["webhookUrl"]
-                    if not webhook_url
-                    else webhook_url
-                ),
-                session=self.session,
-            )
-            if msg:
-                await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
-            else:
-                await webhook.send(embed=emb, username='OwO-Dusk')
+            async with self.webhook_lock:
+                webhook = discord.Webhook.from_url(
+                    (
+                        self.global_settings_dict["webhook"]["webhookUrl"]
+                        if not webhook_url
+                        else webhook_url
+                    ),
+                    session=self.session,
+                )
+                if msg:
+                    await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
+                else:
+                    await webhook.send(embed=emb, username='OwO-Dusk')
         except discord.Forbidden as e:
             await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
         except Exception as e:
