@@ -570,7 +570,7 @@ class MyClient(commands.Bot):
             sleep_time = self.random_float(sleep_dict["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
-            await self.set_stat(True, "sleep stop")
+            await self.set_stat(True)
             await self.log("sleeping finished!", "#87af87")
 
     @tasks.loop(seconds=7)
