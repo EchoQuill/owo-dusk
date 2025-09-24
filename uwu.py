@@ -468,13 +468,13 @@ class MyClient(commands.Bot):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
+        self.webhook_session = None
         self.state_event = asyncio.Event()
         self.queue = asyncio.PriorityQueue()
         self.settings_dict = None
         self.global_settings_dict = global_settings_dict
         self.commands_dict = {}
         self.lock = asyncio.Lock()
-        self.webhook_lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
@@ -1024,19 +1024,18 @@ class MyClient(commands.Bot):
                     name=self.username if not author_name else author_name,
                     icon_url=author_img_url,
                 )
-            async with self.webhook_lock:
-                webhook = discord.Webhook.from_url(
-                    (
-                        self.global_settings_dict["webhook"]["webhookUrl"]
-                        if not webhook_url
-                        else webhook_url
-                    ),
-                    session=self.session,
-                )
-                if msg:
-                    await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
-                else:
-                    await webhook.send(embed=emb, username='OwO-Dusk')
+            webhook = discord.Webhook.from_url(
+                (
+                    self.global_settings_dict["webhook"]["webhookUrl"]
+                    if not webhook_url
+                    else webhook_url
+                ),
+                session=self.webhook_session,
+            )
+            if msg:
+                await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
+            else:
+                await webhook.send(embed=emb, username='OwO-Dusk')
         except discord.Forbidden as e:
             await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
         except Exception as e:
@@ -1172,6 +1171,8 @@ class MyClient(commands.Bot):
         self.safety_check_loop.start()
         if self.session is None:
             self.session = aiohttp.ClientSession()
+        if self.webhook_session is None:
+            self.webhook_session = aiohttp.ClientSession()
 
         printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
         listUserIds.append(self.user.id)
