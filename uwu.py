@@ -41,6 +41,7 @@ from flask import Flask, jsonify, render_template, request
 from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
+from queue import Queue
 # Local
 from utils.misspell import misspell_word
 from utils.notification import notify
@@ -459,8 +460,56 @@ def popup_main_loop():
         popup.wait_window()
 
 
-class MyClient(commands.Bot):
+class webhookSender:
+    def __init__(self, webhook_url):
+        self.webhook_url = webhook_url
+        self.queue = Queue()
+        self.loop = asyncio.new_event_loop()
+        self.thread = threading.Thread(
+            target=self.start_loop,
+            daemon=True
+        )
+        self.thread.start()
 
+    def start_loop(self):
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.worker())
+
+    def send(self, data):
+        # Put data to the queue, passed from webhookHandler() function.
+        self.queue.put(data)
+
+    async def custom_send(self, data, webhook):
+        # Task: create queue for this as well in case
+        # Task 2: Reuse session
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                webhook,
+                json=data,
+                headers={"Content-Type": "application/json"},
+            ) as resp:
+                text = await resp.text()
+                print(f"[Webhook] {resp.status}: {text}")
+
+    async def worker(self):
+        """Background task that consumes messages from the thread-safe queue."""
+        async with aiohttp.ClientSession() as session:
+            while True:
+                # Creates new thread for queue.get
+                data = await self.loop.run_in_executor(None, self.queue.get)
+                try:
+                    async with session.post(
+                        self.webhook_url,
+                        json=data, #payload
+                        headers={"Content-Type": "application/json"},
+                    ) as resp:
+                        text = await resp.text()
+                        print(f"[Webhook] {resp.status}: {text}")
+                finally:
+                    self.queue.task_done()
+                    await asyncio.sleep(0.1)
+
+class MyClient(commands.Bot):
     def __init__(self, token, channel_id, global_settings_dict, token_len, *args, **kwargs):
         super().__init__(command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs)
         self.token = token
@@ -468,13 +517,11 @@ class MyClient(commands.Bot):
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
-        self.webhook_session = None
         self.state_event = asyncio.Event()
         self.queue = asyncio.PriorityQueue()
         self.settings_dict = None
         self.global_settings_dict = global_settings_dict
         self.commands_dict = {}
-        self.lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
@@ -998,12 +1045,12 @@ class MyClient(commands.Bot):
                     website_logs.pop(0)
         if webhook_useless_log:
             await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
+            # pass
 
-    async def webhookSender(self, title=None, desc=None, msg=None, colors=None, img_url=None, author_name=None, author_img_url=None, footer=None, webhook_url=None):
+    """async def webhookSender(self, title=None, desc=None, msg=None, colors=None, img_url=None, author_name=None, author_img_url=None, footer=None, webhook_url=None):
         try:
             if colors:
                 if isinstance(colors, str) and colors.startswith("#"):
-                    """Convert to hexadecimal value"""
                     color = discord.Color(int(colors.lstrip("#"), 16))
                 else:
                     color = discord.Color(colors)
@@ -1024,22 +1071,87 @@ class MyClient(commands.Bot):
                     name=self.username if not author_name else author_name,
                     icon_url=author_img_url,
                 )
-            webhook = discord.Webhook.from_url(
-                (
-                    self.global_settings_dict["webhook"]["webhookUrl"]
-                    if not webhook_url
-                    else webhook_url
-                ),
-                session=self.webhook_session,
-            )
-            if msg:
-                await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
-            else:
-                await webhook.send(embed=emb, username='OwO-Dusk')
+
+            async with aiohttp.ClientSession() as session:
+                webhook = discord.Webhook.from_url(
+                    (
+                        self.global_settings_dict["webhook"]["webhookUrl"]
+                        if not webhook_url
+                        else webhook_url
+                    ),
+                    session=session,
+                )
+                print(
+        "current loop:", asyncio.get_running_loop(),
+        "session loop:", session._loop,
+        "webhook object:", webhook
+    )
+                if msg:
+                    await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
+                else:
+                    await webhook.send(embed=emb, username='OwO-Dusk')
         except discord.Forbidden as e:
-            await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
+            #await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
+            print(f"Error - {e}, during webhookSender. Seems like permission missing.")
         except Exception as e:
-            await self.log(f"Error - {e}, during webhookSender.", "#c25560")
+            print("h0", emb)
+            print("h1", title, desc, footer)
+            print(f"Error - {e}, during webhookSender.")
+            #os._exit(0)
+            #await self.log(f"Error - {e}, during webhookSender.", "#c25560")"""
+
+    async def webhookSender(
+        self,
+        title=None,
+        desc=None,
+        msg=None,
+        colors=None,
+        img_url=None,
+        author_name=None,
+        author_img_url=None,
+        footer=None,
+        webhook_url=None
+    ):
+        global webhook_handler
+        if colors:
+            if isinstance(colors, str) and colors.startswith("#"):
+                color = int(colors.lstrip("#"), 16)
+            else:
+                color = int(colors)
+        else:
+            color = 0x412280
+
+        embed = {
+            "title": title,
+            "description": desc,
+            "color": color
+        }
+
+        if footer:
+            embed["footer"] = {"text": footer}
+
+        if img_url:
+            embed["thumbnail"] = {"url": img_url}
+
+        if author_img_url:
+            embed["author"] = {
+                "name": author_name if author_name else "OwO-Dusk",
+                "icon_url": author_img_url
+            }
+
+        payload = {
+            "username": "OwO-Dusk",
+            "embeds": [embed]
+        }
+
+        if msg:
+            payload["content"] = msg
+
+        async with self.webhook_lock:
+            if not webhook_url:
+                webhook_handler.send(payload)
+            else:
+                await webhook_handler.custom_send(payload, webhook_url)
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
@@ -1157,7 +1269,8 @@ class MyClient(commands.Bot):
 
     async def setup_hook(self):
         # Randomise user
-
+        self.lock = asyncio.Lock()
+        self.webhook_lock = asyncio.Lock()
         if self.misc["debug"]["hideUser"]:
             x = [
                 "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
@@ -1171,9 +1284,6 @@ class MyClient(commands.Bot):
         self.safety_check_loop.start()
         if self.session is None:
             self.session = aiohttp.ClientSession()
-        if self.webhook_session is None:
-            self.webhook_session = aiohttp.ClientSession()
-
         printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
         listUserIds.append(self.user.id)
 
@@ -1531,12 +1641,13 @@ if __name__ == "__main__":
 
 
     console.rule(style="navy_blue")
+
+    webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
     
     if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
         try:
             import tkinter as tk
             from tkinter import PhotoImage
-            from queue import Queue
         except Exception as e:
             print(f"ImportError: {e}")
             
