@@ -88,6 +88,7 @@ class Gems(commands.Cog):
         self.available_gems = {}
         self.inventory_check = False
         self.already_checked = False
+        self.cache_gems_in_use = {}
         self.prev_count = 0
         self.count = 0
         self.gem_cmd = {
