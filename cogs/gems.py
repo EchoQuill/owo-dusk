@@ -131,10 +131,10 @@ class Gems(commands.Cog):
             if not full:
                 self.already_checked = True
             else:
-                await self.log(f"Warn: No gems to use.", "#924444")
+                await self.bot.log(f"Warn: No gems to use.", "#924444")
                 self.bot.user_status["no_gems"] = True
                 if not self.bot.hunt_disabled and self.bot.settings_dict["autoUse"]["gems"]["disable_hunts_if_no_gems"]:
-                    await self.log(f"Disabling hunt since there is no gems to be used.", "#C51818")
+                    await self.bot.log(f"Disabling hunt since there is no gems to be used.", "#C51818")
                     """
                     Currently no_gems status isn't being reset after being set
                     """

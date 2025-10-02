@@ -1,5 +1,5 @@
 {
-    "setprefix": "owo",
+    "setprefix": "owo ",
     "useSlashCommands": false,
     "commands": {
         "hunt": {
@@ -51,7 +51,7 @@
             ]
         },
         "pray": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 310,
                 400
@@ -59,7 +59,7 @@
             "userid": [],
             "pingUser": false,
             "customChannel": {
-                "enabled": true,
+                "enabled": false,
                 "channelId": 0
             }
         },
@@ -147,7 +147,7 @@
             "amount": 300
         },
         "coinflip": {
-            "enabled": true,
+            "enabled": false,
             "startValue": 200,
             "multiplierOnLose": 2,
             "cooldown": [
@@ -170,13 +170,11 @@
         "blackjack": {}
     },
     "giveawayJoiner": {
-        "enabled": true,
+        "enabled": false,
         "channelsToJoin": [
             1099453684691243098,
             1168797748343099444,
-            1168797827464429618,
-            817823900486074408,
-            811486588806234174
+            1168797827464429618
         ],
         "cooldown": [
             40,

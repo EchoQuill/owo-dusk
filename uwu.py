@@ -489,10 +489,9 @@ class webhookSender:
                 headers={"Content-Type": "application/json"},
             ) as resp:
                 text = await resp.text()
-                print(f"[Webhook] {resp.status}: {text}")
+                # Task 3: handle webhook ratelimits
 
     async def worker(self):
-        """Background task that consumes messages from the thread-safe queue."""
         async with aiohttp.ClientSession() as session:
             while True:
                 # Creates new thread for queue.get
@@ -503,8 +502,9 @@ class webhookSender:
                         json=data, #payload
                         headers={"Content-Type": "application/json"},
                     ) as resp:
-                        text = await resp.text()
-                        print(f"[Webhook] {resp.status}: {text}")
+                        #text = await resp.text()
+                        #print(f"[Webhook] {resp.status}: {text}")
+                        pass
                 finally:
                     self.queue.task_done()
                     await asyncio.sleep(0.1)
@@ -1045,60 +1045,6 @@ class MyClient(commands.Bot):
                     website_logs.pop(0)
         if webhook_useless_log:
             await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
-            # pass
-
-    """async def webhookSender(self, title=None, desc=None, msg=None, colors=None, img_url=None, author_name=None, author_img_url=None, footer=None, webhook_url=None):
-        try:
-            if colors:
-                if isinstance(colors, str) and colors.startswith("#"):
-                    color = discord.Color(int(colors.lstrip("#"), 16))
-                else:
-                    color = discord.Color(colors)
-            else:
-                color = discord.Color(0x412280)
-
-            emb = discord.Embed(
-                title=title,
-                description=desc,
-                color=color
-            )
-            if footer:
-                emb.set_footer(text=footer)
-            if img_url:
-                emb.set_thumbnail(url=img_url)
-            if author_img_url:
-                emb.set_author(
-                    name=self.username if not author_name else author_name,
-                    icon_url=author_img_url,
-                )
-
-            async with aiohttp.ClientSession() as session:
-                webhook = discord.Webhook.from_url(
-                    (
-                        self.global_settings_dict["webhook"]["webhookUrl"]
-                        if not webhook_url
-                        else webhook_url
-                    ),
-                    session=session,
-                )
-                print(
-        "current loop:", asyncio.get_running_loop(),
-        "session loop:", session._loop,
-        "webhook object:", webhook
-    )
-                if msg:
-                    await webhook.send(content=msg, embed=emb, username='OwO-Dusk')
-                else:
-                    await webhook.send(embed=emb, username='OwO-Dusk')
-        except discord.Forbidden as e:
-            #await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
-            print(f"Error - {e}, during webhookSender. Seems like permission missing.")
-        except Exception as e:
-            print("h0", emb)
-            print("h1", title, desc, footer)
-            print(f"Error - {e}, during webhookSender.")
-            #os._exit(0)
-            #await self.log(f"Error - {e}, during webhookSender.", "#c25560")"""
 
     async def webhookSender(
         self,

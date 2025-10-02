@@ -61,7 +61,6 @@ class Pray(commands.Cog):
         cnf = self.bot.settings_dict['commands'][cmd]
         if not self.startup:
             await self.bot.remove_queue(id="pray")
-            await self.bot.log(f"removed {cmd} from queue", "#d0ff78")
             await self.bot.sleep_till(cnf["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
@@ -79,7 +78,7 @@ class Pray(commands.Cog):
                 try:
                     self.__dict__[f"{cmd}_channel"] = await self.bot.fetch_channel(channelId)
                     self.__dict__[f"{cmd}_channelId"] = channelId
-                    print(f"Fetched {self.__dict__[f"{cmd}_channel"].name} for {cmd}")
+                    #print(f"Fetched {self.__dict__[f"{cmd}_channel"].name} for {cmd}")
                 except Exception as e:
                     await self.bot.log(f"Error - Failed to fetch channel with id {cnf['customChannel']['channelId']}: {e}", "#c25560")
             await self.__dict__[f"{cmd}_channel"].send(f"owo {cmd} {cmd_argument_data}")

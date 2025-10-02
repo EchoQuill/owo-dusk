@@ -16,11 +16,11 @@ import re
 import os
 import asyncio
 
-from utils.misc import is_termux, run_system_command
-from utils.notification import notify
-
 from discord.ext import commands, tasks
 from discord import DMChannel
+
+from utils.misc import is_termux, run_system_command
+from utils.notification import notify
 
 list_captcha = ["human", "captcha", "link", "letterword"]
 

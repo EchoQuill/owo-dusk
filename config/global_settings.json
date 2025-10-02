@@ -7,7 +7,7 @@
         "port": 1200,
         "refreshInterval": 15,
         "password": "areallylongandsecretpassword",
-        "enableHost": true
+        "enableHost": false
     },
     "account": {
         "startupDelay": [
@@ -31,9 +31,9 @@
         "allowedUsers": []
     },
     "webhook": {
-        "enabled": true,
+        "enabled": false,
         "webhookUselessLog": false,
-        "webhookUrl": "your webhook url here!",
+        "webhookUrl": "Your webhook URL here!",
         "webhookCaptchaUrl": null,
         "webhookUserIdToPingOnCaptcha": 1,
         "animal_log": {
@@ -44,6 +44,7 @@
                 "rare": false,
                 "epic": false,
                 "mythical": true,
+                "gem": true,
                 "legendary": true,
                 "fabled": true,
                 "hidden": true
@@ -71,8 +72,8 @@
             }
         },
         "playAudio": {
-            "enabled": false,
-            "path": "filename.mp3"
+            "enabled": true,
+            "path": "Beep.mp3"
         },
         "toastOrPopup": {
             "enabled": true,

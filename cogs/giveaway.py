@@ -13,7 +13,6 @@
 import asyncio
 import time
 
-from datetime import datetime
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 

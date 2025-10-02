@@ -11,13 +11,11 @@
 # (at your option) any later version.
 
 import json
-import pytz
 import asyncio
 import threading
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
-from datetime import datetime, timezone
 
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
