@@ -32,6 +32,7 @@ class Pray(commands.Cog):
         self.startup = True
         # prevents pray/curse from being re-added if it is queued to be queued
         self.pray_curse_ongoing = False
+        
         self.pray_cmd = {
             "cmd_name": "pray",
             "cmd_arguments": None,
@@ -48,6 +49,10 @@ class Pray(commands.Cog):
             "id": "pray" # using pray as id for curse to make it easier to close
         }
         self.cmd_names = []
+        self.pray_channelId = 0
+        self.curse_channelId = 0
+        self.pray_channel = None
+        self.curse_channel = None
 
     async def start_pray_curse(self):
         self.pray_curse_ongoing = True
@@ -68,9 +73,26 @@ class Pray(commands.Cog):
         )
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
-        await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
+        if cnf["customChannel"]["enabled"]:
+            channelId = cnf["customChannel"]["channelId"]
+            if not self.__dict__[f"{cmd}_channel"] or self.__dict__[f"{cmd}_channelId"] != channelId:
+                try:
+                    self.__dict__[f"{cmd}_channel"] = await self.bot.fetch_channel(channelId)
+                    self.__dict__[f"{cmd}_channelId"] = channelId
+                    print(f"Fetched {self.__dict__[f"{cmd}_channel"].name} for {cmd}")
+                except Exception as e:
+                    await self.bot.log(f"Error - Failed to fetch channel with id {cnf['customChannel']['channelId']}: {e}", "#c25560")
+            await self.__dict__[f"{cmd}_channel"].send(f"owo {cmd} {cmd_argument_data}")
+        else:
+            await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
+
         self.pray_curse_ongoing = False
-        if self.startup:
+
+        if cnf["customChannel"]["enabled"]:
+            # It will be a pain to add retry logic for this as we handle this manually instead of relying on command handler.
+            self.startup = False
+            await self.start_pray_curse()
+        elif self.startup:
             """
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
             before owo-dusk is ran, this check is to fix it getting the code stuck.
@@ -80,6 +102,7 @@ class Pray(commands.Cog):
                 self.startup=False
                 await self.start_pray_curse()
 
+        
     async def cog_load(self):
         if (
             not self.bot.settings_dict["commands"]["pray"]["enabled"]
@@ -101,9 +124,6 @@ class Pray(commands.Cog):
             return
         
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
-            """
-            **⏱ | user**! Slow down and try the command again **<t:1734943219:R>**
-            """
             if (
                 f"<@{self.bot.user.id}>** prays for **<@{self.bot.settings_dict['commands']['pray']['userid']}>**!"
                 in message.content
