@@ -7,12 +7,12 @@
         "port": 1200,
         "refreshInterval": 15,
         "password": "areallylongandsecretpassword",
-        "enableHost": true
+        "enableHost": false
     },
     "account": {
         "startupDelay": [
-            0.5,
-            3
+            1.5,
+            10.6
         ],
         "commandsStartDelay": [
             0.1,
@@ -33,9 +33,27 @@
     "webhook": {
         "enabled": false,
         "webhookUselessLog": false,
-        "webhookUrl": "webhook url here",
+        "webhookUrl": "Your webhook URL here!",
         "webhookCaptchaUrl": null,
-        "webhookUserIdToPingOnCaptcha": 1
+        "webhookUserIdToPingOnCaptcha": 1,
+        "animal_log": {
+            "enabled": true,
+            "rank": {
+                "common": false,
+                "uncommon": false,
+                "rare": false,
+                "epic": false,
+                "mythical": true,
+                "gem": true,
+                "legendary": true,
+                "fabled": true,
+                "hidden": true
+            }
+        },
+        "others": {
+            "log_lootbox": true,
+            "log_crate": true
+        }
     },
     "console": {
         "runConsoleCommandOnCaptcha": false,
@@ -47,7 +65,11 @@
         "notifications": {
             "enabled": true,
             "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
-            "bannedContent": "{username} Banned from OwO!"
+            "bannedContent": "{username} Banned from OwO!",
+            "reccur": {
+                "enabled": true,
+                "times_to_reccur": 3
+            }
         },
         "playAudio": {
             "enabled": true,
@@ -74,7 +96,8 @@
                 "bannedContent": "Banned from OwO!"
             },
             "openCaptchaWebsite": false
-        }
+        },
+        "stopCodeIfFailedToSolve": true
     },
     "batteryCheck": {
         "enabled": false,

@@ -37,7 +37,7 @@ class Battle(commands.Cog):
             self.cmd["cmd_name"] = (
                 self.bot.alias["battle"]["shortform"] 
                 if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
-                else self.bot.alias["battle"]["alias"]
+                else self.bot.alias["battle"]["normal"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
 
@@ -47,12 +47,13 @@ class Battle(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        nick = self.bot.get_nick(message)
         
         try:
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if message.embeds:
                     for embed in message.embeds:
-                        if embed.author.name is not None and "goes into battle!" in embed.author.name.lower():
+                        if embed.author.name is not None and f"{nick} goes into battle!" in embed.author.name.lower():
                             if message.reference is not None:
 
                                 """Return if embed"""
@@ -61,10 +62,10 @@ class Battle(commands.Cog):
                                 #print(referenced_message, referenced_message.content)
 
                                 if not referenced_message.embeds and "You found a **weapon crate**!" in referenced_message.content:
-                                    #print("success! - ignoring reply and proceeding!")
+                                    # Ignore reply and proceeding!
                                     pass
                                 else:
-                                    #print("returned from battle embed reply")
+                                    # Return from battle embed reply
                                     return
                                 
                             
@@ -73,7 +74,7 @@ class Battle(commands.Cog):
                             self.cmd["cmd_name"] = (
                                 self.bot.alias["battle"]["shortform"] 
                                 if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
-                                else self.bot.alias["battle"]["alias"]
+                                else self.bot.alias["battle"]["normal"]
                             )
                             await self.bot.put_queue(self.cmd)
         except Exception as e:

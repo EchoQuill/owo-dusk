@@ -56,6 +56,7 @@ class Others(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
+        nick = self.bot.get_nick(message)
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
 
             # Accept Rules
@@ -64,8 +65,11 @@ class Others(commands.Cog):
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:
                     await message.components[0].children[0].click()
 
+            if nick not in message.content:
+                return
+
             # Cash Check
-            elif "you currently have **__" in message.content:
+            if "you currently have **__" in message.content and nick in message.content:
                 """task: add checks for cash at ready."""
                 await self.bot.update_cash(
                     int(re.search(r'(\d{1,3}(?:,\d{3})*)(?= cowoncy)', re.sub(r'[*_]', '', message.content)).group(0).replace(',', '')),
@@ -78,6 +82,15 @@ class Others(commands.Cog):
             elif "** You received a **weapon crate**!" in message.content or "You found a **weapon crate**!" in message.content:
                 if self.bot.settings_dict["autoUse"]["autoCrate"]:
                     await self.bot.put_queue(self.crate_cmd)
+
+                if self.bot.global_settings_dict["webhook"]["enabled"] and self.bot.global_settings_dict["webhook"]["others"]["log_crate"]:
+                    await self.bot.webhookSender(
+                        title="Found crate! ✨",
+                        desc=f"**User** <@{self.bot.user.id}> found a crate.",
+                        colors="#E7DA90",
+                        img_url="https://cdn.discordapp.com/emojis/621848189103898654.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    )
                 
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
                 if self.bot.settings_dict["autoUse"]["autoLootbox"]:
@@ -85,6 +98,15 @@ class Others(commands.Cog):
                     # give time for command to run
                     await asyncio.sleep(2.5)
                     self.bot.user_status["no_gems"] = False
+
+                if self.bot.global_settings_dict["webhook"]["enabled"] and self.bot.global_settings_dict["webhook"]["others"]["log_lootbox"]:
+                    await self.bot.webhookSender(
+                        title="Found lootbox! ✨",
+                        desc=f"**User** <@{self.bot.user.id}> found a lootbox.",
+                        colors="#E7DA90",
+                        img_url="https://cdn.discordapp.com/emojis/621847969146339378.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    )
 
             # Add animals to team
             elif "Create a team with the command `owo team add {animal}`" in message.content:
@@ -111,7 +133,8 @@ class Others(commands.Cog):
                         "cmd_arguments": f"add {animals[i]}",
                         "prefix": True,
                         "checks": False,
-                        "retry_count": 0
+                        "retry_count": 0,
+                        "id": "team"
                     }
                     await self.bot.put_queue(zoo_cmd, priority=True)
                     await asyncio.sleep(self.bot.random.uniform(1.5,2.3))

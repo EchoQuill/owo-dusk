@@ -63,7 +63,7 @@ class Shop(commands.Cog):
         valid_items = [item for item in cnf["itemsToBuy"] if item in range(1, 8)]
 
         if not valid_items:
-            await self.log(f"Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
+            await self.bot.log(f"Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
             return
 
         item = self.bot.random.choice(valid_items)
@@ -83,7 +83,11 @@ class Shop(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        nick = self.bot.get_nick(message)
+
         if not message.channel.id == self.bot.cm.id:
+            return
+        if nick not in message.content:
             return
         
         if "**, you bought a " in message.content:

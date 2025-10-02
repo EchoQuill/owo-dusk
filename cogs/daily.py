@@ -11,14 +11,12 @@
 # (at your option) any later version.
 
 import json
-import pytz
 import asyncio
 import threading
 import re
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
-from datetime import datetime, timezone
 
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
@@ -79,7 +77,9 @@ class Daily(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
+        nick = self.bot.get_nick(message)
+
+        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id and nick in message.content:
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
                 await self.bot.remove_queue(cmd)
@@ -105,6 +105,15 @@ class Daily(commands.Cog):
                     accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
+
+                if self.bot.global_settings_dict["webhook"]["enabled"]:
+                    await self.bot.webhookSender(
+                        title=f"Claimed daily",
+                        desc=f"**User** <@{self.bot.user.id}> claimed today's daily.",
+                        colors="#4B6EA3",
+                        img_url="https://cdn.discordapp.com/emojis/1346253360151400542.gif",
+                        author_img_url="https://i.imgur.com/6zeCgXo.png",
+                    )
 
             if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
                 await self.bot.remove_queue(cmd)

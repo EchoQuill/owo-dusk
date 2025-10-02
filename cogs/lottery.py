@@ -11,13 +11,11 @@
 # (at your option) any later version.
 
 import json
-import pytz
 import asyncio
 import threading
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
-from datetime import datetime, timezone
 
 
 def load_json_dict(file_path="utils/stats.json"):
@@ -83,10 +81,11 @@ class Lottery(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        nick = self.bot.get_nick(message)
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if message.embeds:
                 for embed in message.embeds:
-                    if embed.author.name is not None and "'s Lottery Submission" in embed.author.name:
+                    if embed.author.name is not None and f"{nick}'s Lottery Submission" in embed.author.name:
                         await self.bot.remove_queue(id="lottery")
                         await asyncio.sleep(self.bot.calc_time())
                         await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))

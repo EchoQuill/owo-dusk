@@ -70,6 +70,10 @@ class Sell(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
+        nick = self.bot.get_nick(message)
+        if nick not in message.content:
+            return
+        
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
             if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
                 await self.bot.remove_queue(id="sell")

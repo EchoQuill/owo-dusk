@@ -20,6 +20,7 @@ class Owo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.owo_ongoing = False
+        
 
     async def send_owo(self, startup=False):
         cmd = {

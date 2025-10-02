@@ -57,7 +57,11 @@
                 400
             ],
             "userid": [],
-            "pingUser": false
+            "pingUser": false,
+            "customChannel": {
+                "enabled": false,
+                "channelId": 0
+            }
         },
         "curse": {
             "enabled": false,
@@ -66,7 +70,11 @@
                 400
             ],
             "userid": [],
-            "pingUser": false
+            "pingUser": false,
+            "customChannel": {
+                "enabled": false,
+                "channelId": 0
+            }
         },
         "lottery": {
             "enabled": false,
@@ -85,7 +93,7 @@
         "cookie": {
             "enabled": false,
             "userid": 408785106942164992,
-            "pingUser": true
+            "pingUser": false
         },
         "shop": {
             "enabled": false,
@@ -98,7 +106,7 @@
             ]
         },
         "owo": {
-            "enabled": true,
+            "enabled": false,
             "cooldown": [
                 10,
                 13
@@ -106,7 +114,7 @@
         },
         "autoHuntBot": {
             "enabled": true,
-            "cashToSpend": 10000,
+            "cashToSpend": 1000,
             "upgrader": {
                 "enabled": true,
                 "traits": {
@@ -241,7 +249,7 @@
     
     "autoUse": {
         "gems": {
-            "enabled": false,
+            "enabled": true,
             "order": {
                 "lowestToHighest": true
             },
@@ -259,9 +267,30 @@
                 "empoweredGem": true,
                 "luckyGem": true,
                 "specialGem": false
-            }
+            },
+            "disable_hunts_if_no_gems": false
         },
-        "autoLootbox": false,
-        "autoCrate": false
+        "autoLootbox": true,
+        "autoCrate": true
+    },
+    "customCommands": {
+        "enabled": false,
+        "commands": [
+            {
+                "enabled": true,
+                "command": "custom command 1",
+                "cooldown": 2
+            },
+            {
+                "enabled": true,
+                "command": "custom command 2",
+                "cooldown": 5
+            },
+            {
+                "enabled": true,
+                "command": "custom command 3, add more as needed. keep an eye on , as json's don't end with ','!",
+                "cooldown": 5
+            }
+        ]
     }
 }

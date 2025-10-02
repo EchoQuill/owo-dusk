@@ -19,6 +19,9 @@ import asyncio
 from discord.ext import commands, tasks
 from discord import DMChannel
 
+from utils.misc import is_termux, run_system_command
+from utils.notification import notify
+
 list_captcha = ["human", "captcha", "link", "letterword"]
 
 def get_path(path):
@@ -42,46 +45,16 @@ def get_path(path):
 def clean(msg):
     return re.sub(r"[^a-zA-Z]", "", msg)
 
-def is_termux():
-    termux_prefix = os.environ.get("PREFIX")
-    termux_home = os.environ.get("HOME")
-    
-    if termux_prefix and "com.termux" in termux_prefix:
-        return True
-    elif termux_home and "com.termux" in termux_home:
-        return True
-    else:
-        return os.path.isdir("/data/data/com.termux")
+
 
 on_mobile = is_termux()
 
 if not on_mobile:
     #desktop
-    from plyer import notification
     from playsound3 import playsound
 
 
-def run_system_command(command, timeout, retry=False, delay=5):
-    def target():
-        try:
-            os.system(command)
-        except Exception as e:
-            print(f"Error executing command: {command} - {e}")
 
-    # Create and start a thread to execute the command
-    thread = threading.Thread(target=target)
-    thread.start()
-
-    # Wait for the thread to finish, with a timeout
-    thread.join(timeout)
-
-    # If the thread is still alive after the timeout, terminate it
-    if thread.is_alive():
-        print(f"Error: {command} command failed! (captcha)")
-        if retry:
-            print(f"Retrying '{command}' after {delay}s")
-            time.sleep(delay)
-            run_system_command(command, timeout)
 
 def get_channel_name(channel):
     if isinstance(channel, DMChannel):
@@ -94,10 +67,54 @@ def console_handler(cnf, captcha=True):
     elif cnf["runConsoleCommandOnBan"] and not captcha:
         run_system_command(cnf["commandToRunOnBan"], timeout=5)
 
+def get_reccur_sleep_time(times_to_reccur):
+    if times_to_reccur > 600:
+        # I wonder what would hapeen without this check.
+        return 200
+    return 600/times_to_reccur
+
 
 class Captcha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.sound = None
+        self.reccured = 0
+        self.content_to_notify = ""
+        self.kill_task = None
+
+    async def kill_code(self):
+        await asyncio.sleep(590)
+        if self.bot.captcha:
+            print("captcha not solved within time...")
+            os._exit(0)
+
+
+    @tasks.loop()
+    async def reccur_notifications(self):
+        if self.content_to_notify:
+            """if on_mobile:
+                run_system_command(
+                    f"termux-notification -t '{self.bot.username} captcha!' -c '{self.content_to_notify}' --led-color '#a575ff' --priority 'high'",
+                    timeout=5, 
+                    retry=True
+                    )
+            else:
+                notification.notify(
+                    title=f,
+                    message=,
+                    app_icon=None,
+                    timeout=15
+                )"""
+            notify(self.content_to_notify, f'Captcha - {self.bot.username}!')
+            self.reccured+=1
+
+        times_to_reccur = self.bot.global_settings_dict["captcha"]["notifications"]["reccur"]["times_to_reccur"]
+
+        if self.reccured == times_to_reccur:
+            self.reccur_notifications.cancel()
+
+        await asyncio.sleep(get_reccur_sleep_time(times_to_reccur))
+
 
     def captcha_handler(self, channel, captcha_type):
         if self.bot.misc["hostMode"]:
@@ -105,24 +122,35 @@ class Captcha(commands.Cog):
         cnf = self.bot.global_settings_dict["captcha"]
         channel_name = get_channel_name(channel)
         content = 'captchaContent' if not captcha_type=="Ban" else 'bannedContent'
+
         """Notifications"""
         if cnf["notifications"]["enabled"]:
-            try:
-                if on_mobile:
-                    run_system_command(
-                        f"termux-notification -t '{self.bot.username} captcha!' -c '{cnf['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type)}' --led-color '#a575ff' --priority 'high'",
-                        timeout=5, 
-                        retry=True
-                        )
-                else:
-                    notification.notify(
-                        title=f'{self.bot.username} DETECTED CAPTCHA',
-                        message=cnf['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type),
-                        app_icon=None,
-                        timeout=15
-                        )
-            except Exception as e:
-                print(f"{e} - at notifs")
+            notification_content = cnf['notifications'][content].format(username=self.bot.username,channelname=channel_name,captchatype=captcha_type)
+
+            if cnf["notifications"]["reccur"]["enabled"]:
+                self.reccured = 0
+                self.content_to_notify = notification_content
+                self.reccur_notifications.start()
+            else:
+                try:
+                    """if on_mobile:
+                        run_system_command(
+                            f"termux-notification -t 'Captcha - {self.bot.username}!' -c '{notification_content}' --led-color '#a575ff' --priority 'high'",
+                            timeout=5, 
+                            retry=True
+                            )
+                    else:
+                        notification.notify(
+                            title=f'{self.bot.username} DETECTED CAPTCHA',
+                            message=notification_content,
+                            app_icon=None,
+                            timeout=15
+                            )"""
+                    notify(notification_content, f'Captcha - {self.bot.username}!')
+                except Exception as e:
+                    print(f"{e} - at notifs")
+
+        
                 
         """Play audio file"""
         """
@@ -137,7 +165,7 @@ class Captcha(commands.Cog):
                 if on_mobile:
                     run_system_command(f"termux-media-player play {path}", timeout=5, retry=True)
                 else:
-                    playsound(path, block=False)
+                    self.sound = playsound(path, block=False)
             except Exception as e:
                 print(f"{e} - at audio")
         """Toast/Popup"""
@@ -183,17 +211,61 @@ class Captcha(commands.Cog):
         if cnf["termux"]["openCaptchaWebsite"] and on_mobile:
             run_system_command("termux-open https://owobot.com/captcha", timeout=5, retry=True)
 
+        if cnf["stopCodeIfFailedToSolve"]:
+            """Kill code if failure in solving captcha within time"""
+            self.kill_task = asyncio.create_task(self.kill_code())
+
+    async def handle_solves(self):
+        if self.bot.misc["hostMode"]:
+            return
+        cnf = self.bot.global_settings_dict["captcha"]
+
+        """Play Audio"""
+        if cnf["playAudio"]["enabled"]:
+            try:
+                if on_mobile:
+                    run_system_command(f"termux-media-player stop", timeout=5, retry=True)
+                else:
+                    if self.sound != None:
+                        if self.sound.is_alive():
+                            self.sound.stop()
+            except Exception as e:
+                print(f"{e} - at audio")
+
+        """Reccurrring notification"""
+        if cnf["notifications"]["enabled"] and cnf["notifications"]["reccur"]["enabled"]:
+            try:
+                self.reccur_notifications.cancel()
+            except:
+                pass
+
+        if cnf["stopCodeIfFailedToSolve"]:
+            if not self.kill_task.done():
+                self.kill_task.cancel()
+
+        if self.bot.global_settings_dict["webhook"]["enabled"]:
+            await self.bot.webhookSender(
+                title=f"-{self.bot.username} - Captcha Solved",
+                desc=f"**User** <@{self.bot.user.id}> solved captcha successfully!",
+                colors="#00FFAF",
+                img_url="https://cdn.discordapp.com/emojis/1090553827847045160.gif",
+                author_img_url="https://i.imgur.com/6zeCgXo.png",
+                webhook_url=self.bot.global_settings_dict["webhook"].get("webhookCaptchaUrl", None),
+            )
+
+
     @commands.Cog.listener()
     async def on_message(self, message):
         self.last_msg = time.time()
 
+        # This is likely a part of temporary fix, I forgot.
+        # Doesn't hurt letting it stay!
         if not self.bot.dm:
             if message.author.id == self.bot.owo_bot_id:
                 self.bot.dm = await message.author.create_dm()
             else:
                 # Safe, since only owobot will send captcha messages.
                 return
-
 
         if message.channel.id == self.bot.dm.id and message.author.id == self.bot.owo_bot_id:
             if "I have verified that you are human! Thank you! :3" in message.content:
@@ -202,6 +274,7 @@ class Captcha(commands.Cog):
                 await asyncio.sleep(time_to_sleep)
                 self.bot.command_handler_status["captcha"] = False
                 await self.bot.update_captcha_db()
+                await self.handle_solves()
                 return
 
         if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
@@ -229,21 +302,22 @@ class Captcha(commands.Cog):
                 )  # message attachment check
                 or any(b in clean(message.content) for b in list_captcha)
             ):
+                nick = self.bot.get_nick(message)
+
                 if not get_channel_name(message.channel) == "owo DMs":
-                    display_name = message.guild.me.display_name
-                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", display_name)):
+                    if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", nick)):
                         return
                 self.bot.command_handler_status["captcha"] = True
                 await self.bot.log(f"Captcha detected!", "#d70000")
                 self.captcha_handler(message.channel, "Link")
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        msg=f"-{self.bot.username} [+] CAPTCHA Detected",
+                        title=f"-{self.bot.username} - CAPTCHA Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [OwO Captcha]({message.jump_url})",
-                        colors="#00FFAF",
-                        img_url="https://cdn.discordapp.com/emojis/1171297031772438618.png",
+                        colors="#CF5319",
+                        img_url="https://cdn.discordapp.com/emojis/755106539122982922.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text=(
+                        msg=(
                             f"<@{self.bot.global_settings_dict['webhook']['webhookUserIdToPingOnCaptcha']}>"
                             if self.bot.global_settings_dict['webhook']['webhookUserIdToPingOnCaptcha']
                             else None
@@ -259,19 +333,19 @@ class Captcha(commands.Cog):
                 console_handler(self.bot.global_settings_dict["console"], captcha=False)
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        msg=f"-{self.bot.username} [+] BAN Detected",
+                        title=f"-{self.bot.username} - BAN Detected",
                         desc=f"**User** : <@{self.bot.user.id}>\n**Link** : [Ban Message]({message.jump_url})",
                         colors="#00FFAF",
-                        img_url="https://cdn.discordapp.com/emojis/1213902052879503480.gif",
+                        img_url="https://cdn.discordapp.com/emojis/1068981158081216662.gif",
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
-                        plain_text=(
+                        msg=(
                             f"<@{self.bot.global_settings_dict['webhook']['webhookUserIdToPingOnCaptcha']}>"
                             if self.bot.global_settings_dict["webhook"]["webhookUserIdToPingOnCaptcha"]
                             else None
                         ),
                         webhook_url=self.bot.global_settings_dict["webhook"].get("webhookCaptchaUrl", None),
                     )
-            elif message.embeds:
+            """elif message.embeds:
                 for embed in message.embeds:
                     items = {
                         embed.title if embed.title else "",
@@ -280,7 +354,6 @@ class Captcha(commands.Cog):
                     }
                     for i in items:
                         if any(b in clean(i) for b in list_captcha):
-                            """clean function cleans the captcha message of unwanted symbols etc"""
                             self.bot.command_handler_status["captcha"] = True
                             await self.bot.log(f"Captcha detected...?", "#d70000")
                             break
@@ -294,7 +367,7 @@ class Captcha(commands.Cog):
                             if field.value and any(b in clean(field.value) for b in list_captcha):
                                 self.bot.command_handler_status["captcha"] = True
                                 await self.bot.log(f"Captcha detected...?", "#d70000")
-                                break
+                                break"""
 
 async def setup(bot):
     await bot.add_cog(Captcha(bot))

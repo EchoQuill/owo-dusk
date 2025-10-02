@@ -11,13 +11,11 @@
 # (at your option) any later version.
 
 import json
-import pytz
 import asyncio
 import threading
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
-from datetime import datetime, timezone
 
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
@@ -81,22 +79,24 @@ class Cookie(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        nick = self.bot.get_nick(message)
         if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
-            if "You got a cookie from" in message.content or "Nu! You need to wait" in message.content:
-                """
-                'Nu! You need to wait' will get triggered unlike slow down one
-                as the actual command slowdown is different from this.
-                """
-                await self.bot.remove_queue(id="cookie")
+            if ("You got a cookie from" in message.content or "Nu! You need to wait" in message.content):
+                if nick in message.content or f"<@{self.bot.user.id}>":
+                    """
+                    'Nu! You need to wait' will get triggered unlike slow down one
+                    as the actual command slowdown is different from this.
+                    """
+                    await self.bot.remove_queue(id="cookie")
 
-                await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
-                await self.bot.put_queue(self.cmd, priority=True)
-                with lock:
-                    load_dict()
-                    accounts_dict[str(self.bot.user.id)]["cookie"] = self.bot.time_in_seconds()
-                    with open("utils/stats.json", "w") as f:
-                        json.dump(accounts_dict, f, indent=4)
+                    await asyncio.sleep(self.bot.calc_time())
+                    await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
+                    await self.bot.put_queue(self.cmd, priority=True)
+                    with lock:
+                        load_dict()
+                        accounts_dict[str(self.bot.user.id)]["cookie"] = self.bot.time_in_seconds()
+                        with open("utils/stats.json", "w") as f:
+                            json.dump(accounts_dict, f, indent=4)
 
 
         

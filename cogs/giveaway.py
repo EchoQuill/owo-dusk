@@ -11,11 +11,18 @@
 # (at your option) any later version.
 
 import asyncio
+import time
 
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
-
+def compare_with_timestamp(timestamp, last_ran_time):
+    if last_ran_time <= timestamp:
+        # Probably have not joined giveaway
+        return True
+    else:
+        # Already must have joined giveaway
+        return False
 
 class Giveaway(commands.Cog):
     def __init__(self, bot):
@@ -23,6 +30,8 @@ class Giveaway(commands.Cog):
 
     """Join previous giveaways"""
     async def join_previous_giveaways(self):
+        prev_time = await self.bot.fetch_giveaway_db()
+
         await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
         await self.bot.wait_until_ready()
         
@@ -35,19 +44,22 @@ class Giveaway(commands.Cog):
                 channel = None
             if not channel:
                 # To prevent giving error if channel id is invalid
-                await self.bot.log(f"giveaway channel seems to be invalid", "#ff5f00")
+                await self.bot.log(f"giveaway channel {i} seems to be invalid", "#ff5f00")
                 continue
             await self.bot.set_stat(False)
             async for message in channel.history(limit=self.bot.settings_dict["giveawayJoiner"]["messageRangeToCheck"]):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.settings_dict["giveawayJoiner"]["channelsToJoin"]:
-                            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
-                            if message.components[0].children[0] and not message.components[0].children[0].disabled:
-                                await message.components[0].children[0].click()
-                                await self.bot.log(f"giveaway joined in {message.channel.name}", "#00d7af")
+                            if not prev_time or (prev_time and compare_with_timestamp(message.created_at.timestamp(), prev_time)):
+                                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+                                if message.components[0].children[0] and not message.components[0].children[0].disabled:
+                                    await message.components[0].children[0].click()
+                                    await self.bot.log(f"giveaway joined in {message.channel.name}", "#00d7af")
 
             await self.bot.set_stat(True)
+        # Set prev_time for future use
+        await self.bot.update_giveaway_db(time.time())
 
     """gets executed when the cog is first loaded"""
     async def cog_load(self):
@@ -67,9 +79,12 @@ class Giveaway(commands.Cog):
             if message.embeds:
                 for embed in message.embeds:
                     if embed.author.name is not None and " A New Giveaway Appeared!" in embed.author.name and message.channel.id in self.bot.settings_dict["giveawayJoiner"]["channelsToJoin"]:
-                        await self.bot.sleep_till(self.bot.settings_dict["giveawayJoiner"]["cooldown"])
-                        if message.components[0].children[0] and not message.components[0].children[0].disabled:
-                            await message.components[0].children[0].click()
+                        prev_time = await self.bot.fetch_giveaway_db()
+                        if not prev_time or (prev_time and compare_with_timestamp(message.created_at.timestamp(), prev_time)):
+                            await self.bot.sleep_till(self.bot.settings_dict["giveawayJoiner"]["cooldown"])
+                            if message.components[0].children[0] and not message.components[0].children[0].disabled:
+                                await message.components[0].children[0].click()
+                                await self.bot.log(f"giveaway joined in {message.channel.name}", "#00d7af")
 
 async def setup(bot):
     await bot.add_cog(Giveaway(bot))

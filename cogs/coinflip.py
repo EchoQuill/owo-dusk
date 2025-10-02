@@ -16,6 +16,8 @@ import asyncio
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
+from utils.notification import notify
+
 
 won_pattern = r"you won \*\*<:cowoncy:\d+> ([\d,]+)"
 lose_pattern = r"spent \*\*<:cowoncy:\d+> ([\d,]+)"
@@ -72,7 +74,8 @@ class Coinflip(commands.Cog):
             if goal_system_dict["enabled"] and self.bot.gain_or_lose > goal_system_dict["amount"]:
                 if not self.gamble_flags["goal_reached"]:
                     self.gamble_flags["goal_reached"] = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{cnf['amount']}, stopping coinflip!", "#4a270c")
+                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!", "#4a270c")
+                    notify(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!", "Coinflip - Goal reached")
 
                 return await self.start_cf()
             elif self.gamble_flags["goal_reached"]:
@@ -83,6 +86,8 @@ class Coinflip(commands.Cog):
                 if not self.gamble_flags["no_balance"]:
                     self.gamble_flags["no_balance"] = True
                     await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "#4a270c")
+                    notify(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "Coinflip - Insufficient balance")
+
 
                 return await self.start_cf()
             elif self.gamble_flags["no_balance"]:
@@ -94,6 +99,7 @@ class Coinflip(commands.Cog):
                 if not self.gamble_flags["amount_exceeded"]:
                     self.gamble_flags["amount_exceeded"] = True
                     await self.bot.log(f"Allotted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "#4a270c")
+                    notify(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "Coinflip - Alloted value exceeded")
 
                 return await self.start_cf()
             elif self.gamble_flags["amount_exceeded"]:
@@ -101,6 +107,8 @@ class Coinflip(commands.Cog):
 
             
             if amount_to_gamble > 250000:
+                await self.bot.log(f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!", "#4a270c")
+                notify(f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!", "Coinflip - Exceeded 250k limit")
                 self.exceeded_max_amount = True
             else:
                 self.cmd["cmd_arguments"] = str(amount_to_gamble)
@@ -121,6 +129,11 @@ class Coinflip(commands.Cog):
         if self.exceeded_max_amount:
             return
         
+        nick = self.bot.get_nick(before)
+
+        if nick not in after.content:
+            return
+        
         if "chose" in after.content.lower():
             try:
                 if "and you lost it all... :c" in after.content.lower():
@@ -130,7 +143,7 @@ class Coinflip(commands.Cog):
                     await self.bot.update_cash(match, reduce=True)
                     self.bot.gain_or_lose-=match
 
-                    await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#993f3f")
                     await self.start_cf()
                     await self.bot.update_gamble_db("losses")
                 else:
@@ -142,7 +155,7 @@ class Coinflip(commands.Cog):
                     await self.bot.update_cash(profit)
                     self.bot.gain_or_lose+=profit
                     
-                    await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#ffafaf")
+                    await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#536448")
                     await self.start_cf()
                     await self.bot.update_gamble_db("wins")
             except Exception as e:

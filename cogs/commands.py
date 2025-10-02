@@ -24,6 +24,7 @@ class Commands(commands.Cog):
         self.bot.checks = []
         self.calc_time = timedelta(0)
         self.command_times = deque(maxlen=3)
+        self.updated_between_cd = False
 
         self.last_msg = 0
 
@@ -87,11 +88,21 @@ class Commands(commands.Cog):
             wait_time = max(0, 5 - (now - self.command_times[0]))
             return True, wait_time
         
+    async def sleep_between_commands(self, betweenCommands):
+        if betweenCommands[0] > self.bot.cm_slowmode_cd:
+            await self.bot.sleep_till(betweenCommands)
+        else:
+            await asyncio.sleep(self.bot.random_float([self.bot.cm_slowmode_cd+1, self.bot.cm_slowmode_cd+3]))
+            if not self.updated_between_cd:
+                await self.bot.log(f"Channel has a cooldown of {self.bot.cm_slowmode_cd}s, increasing delay between commands!", "#8f6b09")
+                self.updated_between_cd = True
+        
         
 
     async def start_commands(self):
         await self.bot.sleep_till(self.bot.global_settings_dict["account"]["commandsHandlerStartDelay"])
         await self.bot.shuffle_queue()
+        await self.bot.wait_until_ready()
         self.send_commands.start()
         self.monitor_checks.start()
         #self.watchdog.start()
@@ -110,7 +121,7 @@ class Commands(commands.Cog):
 
             if priority != 0:
                 while (time.time() - self.bot.cmds_state["global"]["last_ran"]) < cnf["betweenCommands"][0]:
-                    await self.bot.sleep_till(cnf["betweenCommands"])
+                    await self.sleep_between_commands(cnf["betweenCommands"])
 
             sleep_req, sleep_time = self.sleep_required()
             if sleep_req:
@@ -140,7 +151,7 @@ class Commands(commands.Cog):
 
         except Exception as e:
             await self.bot.log(f"Error - send_commands() loop: {e}. {cmd.get('cmd_name', None)}", "#c25560")
-            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["commandHandler"]["betweenCommands"])
+            await self.sleep_between_commands(cnf["betweenCommands"])
 
     @tasks.loop(seconds=1)
     async def monitor_checks(self):

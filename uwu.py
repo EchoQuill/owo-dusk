@@ -36,12 +36,15 @@ import discord
 import pytz
 import requests
 from discord.ext import commands, tasks
+from discord import SyncWebhook
 from flask import Flask, jsonify, render_template, request
 from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
+from queue import Queue
 # Local
 from utils.misspell import misspell_word
+from utils.notification import notify
 
 
 """Cntrl+c detect"""
@@ -88,6 +91,9 @@ with open("config/global_settings.json", "r") as config_file:
 with open("config/misc.json", "r") as config_file:
     misc_dict = json.load(config_file)
 
+"""with open("config/settings.json", "r") as config_file:
+    settings_dict = json.load(config_file)"""
+
 
 console.rule("[bold blue1]:>", style="navy_blue")
 console_width = console.size.width
@@ -102,7 +108,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.1.1"
+version = "2.2.0"
 debug_print = True
 
 
@@ -410,7 +416,6 @@ def popup_main_loop():
 
     while True:
         msg, username, channelname, captchatype = popup_queue.get()
-        print(msg, username, channelname, captchatype)
         # Create a new popup window
         popup = tk.Toplevel(root)
         popup.configure(bg="#000000")
@@ -455,11 +460,60 @@ def popup_main_loop():
         popup.wait_window()
 
 
-class MyClient(commands.Bot):
+class webhookSender:
+    def __init__(self, webhook_url):
+        self.webhook_url = webhook_url
+        self.queue = Queue()
+        self.loop = asyncio.new_event_loop()
+        self.thread = threading.Thread(
+            target=self.start_loop,
+            daemon=True
+        )
+        self.thread.start()
 
-    def __init__(self, token, channel_id, global_settings_dict, *args, **kwargs):
-        super().__init__(command_prefix="-", self_bot=True, *args, **kwargs)
+    def start_loop(self):
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.worker())
+
+    def send(self, data):
+        # Put data to the queue, passed from webhookHandler() function.
+        self.queue.put(data)
+
+    async def custom_send(self, data, webhook):
+        # Task: create queue for this as well in case
+        # Task 2: Reuse session
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                webhook,
+                json=data,
+                headers={"Content-Type": "application/json"},
+            ) as resp:
+                text = await resp.text()
+                # Task 3: handle webhook ratelimits
+
+    async def worker(self):
+        async with aiohttp.ClientSession() as session:
+            while True:
+                # Creates new thread for queue.get
+                data = await self.loop.run_in_executor(None, self.queue.get)
+                try:
+                    async with session.post(
+                        self.webhook_url,
+                        json=data, #payload
+                        headers={"Content-Type": "application/json"},
+                    ) as resp:
+                        #text = await resp.text()
+                        #print(f"[Webhook] {resp.status}: {text}")
+                        pass
+                finally:
+                    self.queue.task_done()
+                    await asyncio.sleep(0.1)
+
+class MyClient(commands.Bot):
+    def __init__(self, token, channel_id, global_settings_dict, token_len, *args, **kwargs):
+        super().__init__(command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs)
         self.token = token
+        self.token_len = token_len
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
         self.session = None
@@ -468,19 +522,22 @@ class MyClient(commands.Bot):
         self.settings_dict = None
         self.global_settings_dict = global_settings_dict
         self.commands_dict = {}
-        self.lock = asyncio.Lock()
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
         self.dm, self.cm = None,None
+        self.hunt_disabled = False
         self.username = None
+        self.nick_name = None
         self.last_cmd_ran = None
         self.reaction_bot_id = 519287796549156864
         self.owo_bot_id = 408785106942164992
         self.cmd_counter = itertools.count()
+        self.cmd_priorities = {}
 
         # discord.py-self's module sets global random to fixed seed. reset that, locally.
         self.random = random.Random()
+        # print(f"These will be printed at start: {self.random.randint(1,2)} {self.random.randint(1,5)} {self.random.uniform(3,6.2)}")
 
         # Task: Update code to have checks using status instead of individual variables
         self.user_status = {
@@ -514,7 +571,7 @@ class MyClient(commands.Bot):
                 "last_ran": 0
             }
 
-    async def set_stat(self, value, debug_note=None):
+    async def set_stat(self, value):
         if value:
             self.command_handler_status["state"] = True
             self.state_event.set()
@@ -528,6 +585,7 @@ class MyClient(commands.Bot):
         self.command_handler_status["hold_handler"] = True
         await self.sleep_till(self.global_settings_dict["channelSwitcher"]["delayBeforeSwitch"])
         self.cm = channel
+        self.channel_id = self.cm.id
         self.command_handler_status["hold_handler"] = False
 
     @tasks.loop(seconds=30)
@@ -559,7 +617,7 @@ class MyClient(commands.Bot):
             sleep_time = self.random_float(sleep_dict["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
-            await self.set_stat(True, "sleep stop")
+            await self.set_stat(True)
             await self.log("sleeping finished!", "#87af87")
 
     @tasks.loop(seconds=7)
@@ -627,14 +685,45 @@ class MyClient(commands.Bot):
                 result = await cursor.fetchall()
                 return result
 
+    async def update_priorities(self):
+        # Check if already in db
+        res = await self.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
+        if res:
+            for row in res:
+                # 0 -> user_id
+                # 1 -> command_name
+                # 2 -> priority
+                self.cmd_priorities[row[1]] = int(row[2])
+        else:
+            # Group items using tiers
+            tiers_map = {}
+            for key, value in self.misc["command_info"].items():
+                tiers_map[value["priority"]] = tiers_map.get(value["priority"], []) + [key]
+
+            # randomising based on these tiers
+            base_priority = 0
+            for tier in sorted(tiers_map):
+                temp_list = tiers_map[tier]
+                self.random.shuffle(temp_list)
+                for item in temp_list:
+                    # This way base_priority will remain above 0, ensuring it doesn't hit quick send.
+                    base_priority+=1
+                    self.cmd_priorities[item] = base_priority
+                    await self.update_database(
+                        """INSERT OR REPLACE INTO command_priority (user_id, command_name, priority)
+                        VALUES (?, ?, ?)""",
+                        (str(self.user.id), item, base_priority)
+                    )
+
+        # print(self.user.name, "->", self.cmd_priorities)
+
     async def update_cash_db(self):
-        """Update values in database"""
         hr = get_hour()
 
         await self.update_database(
             """UPDATE cowoncy_earnings
             SET earnings = ?
-            WHERE user_id = ? AND hour = ?;""",
+            WHERE user_id = ? AND hour = ?""",
             (self.user_status["net_earnings"], self.user.id, hr)
         )
 
@@ -648,6 +737,21 @@ class MyClient(commands.Bot):
             "UPDATE user_stats SET captchas = captchas + 1 WHERE user_id = ?",
             (self.user.id,)
         )
+
+    async def update_giveaway_db(self, last_ran):
+        await self.update_database(
+            "UPDATE user_stats SET giveaways = ? WHERE user_id = ?",
+            (last_ran, self.user.id)
+        )
+
+    async def fetch_giveaway_db(self):
+        results = await self.get_from_db(
+            "SELECT giveaways FROM user_stats WHERE user_id = ?", 
+            (self.user.id,)
+        )
+        if results:
+            return results[0]["giveaways"]
+        return None
 
     async def populate_stats_db(self):
         await self.update_database(
@@ -789,7 +893,9 @@ class MyClient(commands.Bot):
             "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
-            "slots": self.settings_dict["gamble"]["slots"]["enabled"]
+            "slots": self.settings_dict["gamble"]["slots"]["enabled"],
+            "customcommands": self.settings_dict["customCommands"]["enabled"],
+            "test": False # remove this
         }
 
     """To make the code cleaner when accessing cooldowns from config."""
@@ -822,7 +928,7 @@ class MyClient(commands.Bot):
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False, quick=False):
-        cnf = self.misc["command_info"]
+        # cnf = self.misc["command_info"]
         try:
             while (
                 not self.command_handler_status["state"]
@@ -839,14 +945,18 @@ class MyClient(commands.Bot):
                 await asyncio.sleep(self.random.uniform(1.4, 2.9))
 
             if self.cmds_state[cmd_data["id"]]["in_queue"]:
-                # Ensure command already in queue is not readded to prevent spam
-                await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
-                return
+                # Add exception for custom commands
+                if cmd_data["id"] != "customcommand":
+                    # Ensure command already in queue is not readded to prevent spam
+                    await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
+                    return
 
             # Get priority
-            priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
+            # priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
+            priority_int = self.cmd_priorities.get(cmd_data["id"])
+
             if not priority_int and priority_int!=0:
-                await self.log(f"Error - command with id: {cmd_data['id']} do not have a priority set in misc.json", "#c25560")
+                await self.log(f"Error - command with id: {cmd_data['id']} is missing priority.", "#c25560")
                 return
 
             async with self.lock:
@@ -936,37 +1046,58 @@ class MyClient(commands.Bot):
         if webhook_useless_log:
             await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
 
-    async def webhookSender(self, msg=None, desc=None, plain_text=None, colors=None, img_url=None, author_img_url=None, footer=None, webhook_url=None):
-        try:
-            if colors:
-                if isinstance(colors, str) and colors.startswith("#"):
-                    """Convert to hexadecimal value"""
-                    color = discord.Color(int(colors.lstrip("#"), 16))
-                else:
-                    color = discord.Color(colors)
+    async def webhookSender(
+        self,
+        title=None,
+        desc=None,
+        msg=None,
+        colors=None,
+        img_url=None,
+        author_name=None,
+        author_img_url=None,
+        footer=None,
+        webhook_url=None
+    ):
+        global webhook_handler
+        if colors:
+            if isinstance(colors, str) and colors.startswith("#"):
+                color = int(colors.lstrip("#"), 16)
             else:
-                color = discord.Color(0x412280)
+                color = int(colors)
+        else:
+            color = 0x412280
 
-            emb = discord.Embed(
-                title=msg,
-                description=desc,
-                color=color
-            )
-            if footer:
-                emb.set_footer(text=footer)
-            if img_url:
-                emb.set_thumbnail(url=img_url)
-            if author_img_url:
-                emb.set_author(name=self.username, icon_url=author_img_url)
-            webhook = discord.Webhook.from_url(self.global_settings_dict["webhook"]["webhookUrl"] if not webhook_url else webhook_url, session=self.session)
-            if plain_text:
-                await webhook.send(content=plain_text, embed=emb, username='OwO-Dusk')
+        embed = {
+            "title": title,
+            "description": desc,
+            "color": color
+        }
+
+        if footer:
+            embed["footer"] = {"text": footer}
+
+        if img_url:
+            embed["thumbnail"] = {"url": img_url}
+
+        if author_img_url:
+            embed["author"] = {
+                "name": author_name if author_name else "OwO-Dusk",
+                "icon_url": author_img_url
+            }
+
+        payload = {
+            "username": "OwO-Dusk",
+            "embeds": [embed]
+        }
+
+        if msg:
+            payload["content"] = msg
+
+        async with self.webhook_lock:
+            if not webhook_url:
+                webhook_handler.send(payload)
             else:
-                await webhook.send(embed=emb, username='OwO-Dusk')
-        except discord.Forbidden as e:
-            await self.log(f"Error - {e}, during webhookSender. Seems like permission missing.", "#c25560")
-        except Exception as e:
-            await self.log(f"Error - {e}, during webhookSender.", "#c25560")
+                await webhook_handler.custom_send(payload, webhook_url)
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
@@ -1043,7 +1174,7 @@ class MyClient(commands.Bot):
         return time_now.timestamp()
 
     async def check_for_cash(self):
-        await asyncio.sleep(self.random.uniform(4.5, 6.4))
+        await asyncio.sleep(self.random.uniform(4.5, 34.4))
         await self.put_queue(
             {
                 "cmd_name": self.alias["cash"]["normal"],
@@ -1070,9 +1201,22 @@ class MyClient(commands.Bot):
                 self.user_status["net_earnings"] += amount
         await self.update_cash_db()
 
+    def get_nick(self, msg):
+        if not msg.guild:
+            return ""
+        else:
+            user = msg.guild.me
+            if user.nick:
+                return user.nick
+            elif user.display_name:
+                return user.display_name
+            else:
+                return user.name
+
     async def setup_hook(self):
         # Randomise user
-
+        self.lock = asyncio.Lock()
+        self.webhook_lock = asyncio.Lock()
         if self.misc["debug"]["hideUser"]:
             x = [
                 "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
@@ -1086,12 +1230,14 @@ class MyClient(commands.Bot):
         self.safety_check_loop.start()
         if self.session is None:
             self.session = aiohttp.ClientSession()
-
         printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
         listUserIds.append(self.user.id)
 
+        await self.update_priorities()
+
         # Fetch the channel
         self.cm = self.get_channel(self.channel_id)
+
         if not self.cm:
             try:
                 self.cm = await self.fetch_channel(self.channel_id)
@@ -1104,6 +1250,10 @@ class MyClient(commands.Bot):
             except discord.HTTPException as e:
                 await self.log(f"Failed to fetch channel {self.channel_id}: {e}", "#c25560")
                 return
+
+        self.cm_slowmode_cd = self.cm.slowmode_delay
+
+        # self.nick_name = self.cm.guild.me.nick
 
         # self.dm = await (await self.fetch_user(self.owo_bot_id)).create_dm()
         # remove temp fix in `cogs/captcha.py` if uncommenting
@@ -1143,8 +1293,11 @@ class MyClient(commands.Bot):
         # Start various tasks and updates
         # self.config_update_checker.start()
         # disabled since unnecessory
+        if self.token_len>1:
+            time_to_sleep = self.random_float(global_settings_dict["account"]["startupDelay"])
+            await self.log(f"{self.username} sleeping {time_to_sleep}s before starting")
+            await asyncio.sleep(time_to_sleep)
 
-        await asyncio.sleep(self.random_float(global_settings_dict["account"]["startupDelay"]))
         await self.update_config()
 
         if self.global_settings_dict["offlineStatus"]:
@@ -1234,6 +1387,9 @@ def create_database(db_path="utils/data/db.sqlite"):
     c.execute(
         "CREATE TABLE IF NOT EXISTS meta_data (key TEXT PRIMARY KEY, value INTEGER)"
     )
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS command_priority (user_id TEXT, command_name TEXT, priority INTEGER, PRIMARY KEY (user_id, command_name))"
+    )
     # Switch to WAL mode.
     c.execute("PRAGMA journal_mode=WAL;")
 
@@ -1247,6 +1403,51 @@ def create_database(db_path="utils/data/db.sqlite"):
     # -- meta data
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("gamble_winrate_last_checked", 0))
     c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("cowoncy_earnings_last_checked", 0))
+
+    # `INSERT OR UPDATE` is not used since we will be comparing old value (if any) ------ (check!!)
+    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("version", version))
+
+    # -- command priority
+    c.execute("SELECT * FROM command_priority WHERE user_id = ?", ("default",))
+    rows = c.fetchall()
+    populate = False
+    if not rows:
+        populate = True
+
+    if not populate:
+        """for key, value in misc_dict["command_info"].items():
+            
+            for idx, row in enumerate(rows[:]):
+                # Order should be same unless user makes changes which does indeed require a refetch
+                if key != row[1] or value["priority"] != row[2]:
+                    c.execute("DELETE FROM command_priority")
+                    populate = True
+                    break
+                rows.pop(idx)
+        if rows:
+            c.execute("DELETE FROM command_priority")
+            populate = True"""
+
+        ###
+
+        # 0 -> user_id
+        # 1 -> command_name
+        # 2 -> priority
+        temp_list = [(row[1], int(row[2])) for row in rows]
+        for key, value in misc_dict["command_info"].items():
+            if not (key, value["priority"]) in temp_list:
+                c.execute("DELETE FROM command_priority")
+                populate = True
+                break
+
+    if populate:
+        for key, value in misc_dict["command_info"].items():
+            # We will be putting a `DEFAULT` value here to make it easier to compare to misc.json.
+            # This is to ensure we do update in two cases:
+            # 1) when priority is changed
+            # 3) when a new item is added to priority
+            c.execute("INSERT OR IGNORE INTO command_priority (user_id, command_name, priority) VALUES (?, ?, ?)", ("default", key, value.get("priority")))
+
 
     # -- commands
     for cmd in misc_dict["command_info"].keys():
@@ -1270,45 +1471,25 @@ def fetch_json(url, description="data"):
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
-        thread = Thread(target=run_bot, args=(token, channel_id, global_settings_dict))
+        thread = Thread(target=run_bot, args=(token, channel_id, global_settings_dict, len(tokens_and_channels)))
         thread.start()
         threads.append(thread)
     for thread in threads:
         thread.join()
 
-def run_bot(token, channel_id, global_settings_dict):
-    try:
-        logging.getLogger("discord.client").setLevel(logging.ERROR)
-        client = MyClient(token, channel_id, global_settings_dict)
 
-        if not on_mobile:
-            try:
-                client.run(token, log_level=logging.ERROR)
-
-            except CurlError as e:
-                if "WS_SEND" in str(e) and "55" in str(e):
-                    printBox("Broken pipe error detected. Restarting bot...", "bold red")
-                    # add a restart of client.run after exiting cleanly here!
-                else:
-                    printBox(f"Curl error: {e}", "bold red")
-        else:
-            client.run(token, log_level=logging.ERROR)
-
-    except Exception as e:
-        printBox(f"Error starting bot: {e}", "bold red")
-
-def run_bot(token, channel_id, global_settings_dict):
+def run_bot(token, channel_id, global_settings_dict, token_len):
     try:
         logging.getLogger("discord.client").setLevel(logging.ERROR)
 
         while True:
-            client = MyClient(token, channel_id, global_settings_dict)
+            client = MyClient(token, channel_id, global_settings_dict, token_len)
 
             if not on_mobile:
                 try:
                     client.run(token, log_level=logging.ERROR)
 
-                except CurlError as e:
+                    """except CurlError as e:
                     if "WS_SEND" in str(e) and "55" in str(e):
                         printBox("Broken pipe error detected. Restarting bot...", "bold red")
                         # Restart the loop with a new client instance.
@@ -1316,7 +1497,7 @@ def run_bot(token, channel_id, global_settings_dict):
                     else:
                         printBox(f"Curl error: {e}", "bold red")
                         # Don't retry unknown curl errors.
-                        break 
+                        break """
                 except Exception as e:
                     printBox(f"Unknown error when running bot: {e}", "bold red")
 
@@ -1336,6 +1517,7 @@ def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
 
 if __name__ == "__main__":
+    notify("OwO-Dusk starting... If any issue arises visit out discord support server (link available in console or github)", "Starting OwO-Dusk! :>")
     try:
         discord_cur_version = import_ver("discord.py-self")
         discord_req_version = "2.1.0a5097+g20ae80b3"
@@ -1389,18 +1571,29 @@ if __name__ == "__main__":
 
     if not misc_dict["console"]["hideStarRepoMessage"]:
         console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
+
+        if global_settings_dict["webhook"]["enabled"]:
+            webhook = SyncWebhook.from_url(global_settings_dict["webhook"]["webhookUrl"])
+
+            color = discord.Color(0xc48dc3)
+            emb = discord.Embed(
+                title="Star the github repo!",
+                description="Starring the GitHub repo motivates us to keep adding new and better features! It takes less than 5 minutes to do that, so do star the GitHub repo at https://github.com/echoquill/owo-dusk .",
+                color=color
+            )
+            emb.set_thumbnail(url="https://cdn.discordapp.com/emojis/723856770249916447.gif")
+
+            webhook.send(embed=emb)
+
+
     console.rule(style="navy_blue")
 
-
-    if not on_mobile:
-        # To catch `Broken pipe` error
-        from curl_cffi.curl import CurlError
+    webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
     
     if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
         try:
             import tkinter as tk
             from tkinter import PhotoImage
-            from queue import Queue
         except Exception as e:
             print(f"ImportError: {e}")
             
