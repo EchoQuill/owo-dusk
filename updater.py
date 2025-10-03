@@ -19,9 +19,9 @@ from time import sleep
 console = Console()
 
 CONFIG_FILES = [
-    "configs/settings.json",
-    "configs/global_settings.json",
-    "configs/misc.json"
+    "config/settings.json",
+    "config/global_settings.json",
+    "config/misc.json"
 ]
 
 prev_configs = {}
