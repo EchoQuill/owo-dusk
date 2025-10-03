@@ -108,7 +108,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.2.0"
+version = "2.2.1"
 debug_print = True
 
 
@@ -889,7 +889,7 @@ class MyClient(commands.Bot):
             "lottery": commands_dict["lottery"]["enabled"],
             "others": True,
             "owo": commands_dict["owo"]["enabled"] and not reaction_bot_dict["owo"],
-            "pray": commands_dict["pray"]["enabled"] and not reaction_bot_dict["pray_and_curse"],
+            "pray": (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"]) and not reaction_bot_dict["pray_and_curse"],
             "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
