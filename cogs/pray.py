@@ -82,6 +82,7 @@ class Pray(commands.Cog):
                 except Exception as e:
                     await self.bot.log(f"Error - Failed to fetch channel with id {cnf['customChannel']['channelId']}: {e}", "#c25560")
             await self.__dict__[f"{cmd}_channel"].send(f"owo {cmd} {cmd_argument_data}")
+            await self.bot.log(f"{cmd}ed successfully in channel {self.__dict__[f"{cmd}_channel"].name}", "#4a3466")
         else:
             await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
 
@@ -133,11 +134,11 @@ class Pray(commands.Cog):
                 or "Slow down and try the command again" in message.content
             ):
                 if not self.pray_curse_ongoing:
-                    await self.bot.log("prayed/cursed successfully!", "#d0ff78")
+                    await self.bot.log("prayed/cursed successfully!", "#4a3466")
                     self.startup = False
                     await self.start_pray_curse()
                 else:
-                    await self.bot.log("ongoing pray/curse", "#d0ff78")
+                    await self.bot.log("ongoing pray/curse", "#4a3466")
 
 
 async def setup(bot):
