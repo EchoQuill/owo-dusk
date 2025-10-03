@@ -108,7 +108,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.2.1"
+version = "2.2.3"
 debug_print = True
 
 
@@ -613,7 +613,7 @@ class MyClient(commands.Bot):
         sleep_dict = self.settings_dict["sleep"]
         await asyncio.sleep(self.random_float(sleep_dict["checkTime"]))
         if self.random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
-            await self.set_stat(False, "sleep")
+            await self.set_stat(False)
             sleep_time = self.random_float(sleep_dict["sleeptime"])
             await self.log(f"sleeping for {sleep_time}", "#87af87")
             await asyncio.sleep(sleep_time)
@@ -1136,7 +1136,7 @@ class MyClient(commands.Bot):
             if not disable_log:
                 await self.log(f"Ran: {msg}", color if color else "#5432a8")
             if misspelled:
-                await self.set_stat(False, "misspell")
+                await self.set_stat(False)
                 time = self.calculate_correction_time(message)
                 await self.log(f"correcting: {msg} -> {message} in {time}s", "#422052")
                 await asyncio.sleep(time)
@@ -1145,7 +1145,7 @@ class MyClient(commands.Bot):
                         await channel.send(message, silent=silent)
                 else:
                     await channel.send(message, silent=silent)
-                await self.set_stat(True, "misspell stop")
+                await self.set_stat(True)
 
     async def slashCommandSender(self, msg, color, **kwargs):
         try:
