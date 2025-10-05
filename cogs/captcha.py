@@ -276,8 +276,14 @@ class Captcha(commands.Cog):
                 await self.bot.update_captcha_db()
                 await self.handle_solves()
                 return
+            
+        channels = [self.bot.dm.id, self.bot.cm.id]
+        if self.bot.settings_dict["commands"]["pray"]["customChannel"]["enabled"]:
+            channels.append(self.bot.settings_dict["commands"]["pray"]["customChannel"]["channelId"])
+        if self.bot.settings_dict["commands"]["curse"]["customChannel"]["enabled"]:
+            channels.append(self.bot.settings_dict["commands"]["curse"]["customChannel"]["channelId"])
 
-        if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
+        if message.channel.id in channels and message.author.id == self.bot.owo_bot_id:
             """Handle normally expected captcha"""
             if (
                 (
