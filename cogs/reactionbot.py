@@ -104,9 +104,8 @@ class Reactionbot(commands.Cog):
         if hunt and battle:
             await self.send_cmd("hunt")
             await self.send_cmd("battle")
-        else:
-            cmd = "hunt" if hunt else "battle"
-            await self.send_cmd(cmd)
+        elif hunt or battle:
+            await self.send_cmd("hunt" if hunt else "battle")
 
         """OwO/UwU"""
         if self.check_cmd_state("owo"):
