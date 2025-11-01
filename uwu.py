@@ -904,7 +904,7 @@ class MyClient(commands.Bot):
             "owo": commands_dict["owo"]["enabled"] and not reaction_bot_dict["owo"],
             "pray": (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"]) and not reaction_bot_dict["pray_and_curse"],
             "reactionbot": reactionbot,
-            "sell": commands_dict["sell"]["enabled"],
+            "sell": commands_dict["sell"]["enabled"] or commands_dict["sac"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
             "customcommands": self.settings_dict["customCommands"]["enabled"],
