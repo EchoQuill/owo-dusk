@@ -872,6 +872,19 @@ class MyClient(commands.Bot):
     def refresh_commands_dict(self):
         commands_dict = self.settings_dict["commands"]
         reaction_bot_dict = self.settings_dict["defaultCooldowns"]["reactionBot"]
+
+        # Reaction Bot:
+        if (
+            (reaction_bot_dict["hunt_and_battle"] and (commands_dict["hunt"]["enabled"] or commands_dict["battle"]["enabled"]))
+            or
+            (reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"])
+            or
+            reaction_bot_dict["pray_and_curse"] and (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"])
+        ):
+            reactionbot = True
+        else:
+            reactionbot = False
+
         self.commands_dict = {
             "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "captcha": True,
@@ -890,7 +903,7 @@ class MyClient(commands.Bot):
             "others": True,
             "owo": commands_dict["owo"]["enabled"] and not reaction_bot_dict["owo"],
             "pray": (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"]) and not reaction_bot_dict["pray_and_curse"],
-            "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
+            "reactionbot": reactionbot,
             "sell": commands_dict["sell"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
