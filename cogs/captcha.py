@@ -130,7 +130,11 @@ class Captcha(commands.Cog):
             if cnf["notifications"]["reccur"]["enabled"]:
                 self.reccured = 0
                 self.content_to_notify = notification_content
-                self.reccur_notifications.start()
+                try:
+                    self.reccur_notifications.start()
+                except:
+                    # In case code sends one command after captcha, triggering captcha message twice.
+                    pass
             else:
                 try:
                     """if on_mobile:
