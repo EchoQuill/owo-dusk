@@ -77,6 +77,7 @@ class Coinflip(commands.Cog):
                     await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!", "#4a270c")
                     notify(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!", "Coinflip - Goal reached")
 
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
                 return await self.start_cf()
             elif self.gamble_flags["goal_reached"]:
                 self.gamble_flags["goal_reached"] = False
@@ -88,7 +89,7 @@ class Coinflip(commands.Cog):
                     await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "#4a270c")
                     notify(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "Coinflip - Insufficient balance")
 
-
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
                 return await self.start_cf()
             elif self.gamble_flags["no_balance"]:
                 await self.bot.log(f"Balance regained! ({self.bot.user_status["balance"]}) - restarting coinflip!", "#4a270c")
@@ -101,6 +102,7 @@ class Coinflip(commands.Cog):
                     await self.bot.log(f"Allotted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "#4a270c")
                     notify(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "Coinflip - Alloted value exceeded")
 
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
                 return await self.start_cf()
             elif self.gamble_flags["amount_exceeded"]:
                 self.gamble_flags["amount_exceeded"] = False

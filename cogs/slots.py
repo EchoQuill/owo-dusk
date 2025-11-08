@@ -79,6 +79,7 @@ class Slots(commands.Cog):
                     await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "#4a270c")
                     notify(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping slots!", "Slots - Goal reached")
 
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
                 return await self.start_slots()
             elif self.gamble_flags["goal_reached"]:
                 self.gamble_flags["goal_reached"] = False
@@ -90,6 +91,7 @@ class Slots(commands.Cog):
                     await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping slots!", "#4a270c")
                     notify(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping slots!", "Slots - Insufficient balance")
 
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
                 return await self.start_slots()
             elif self.gamble_flags["no_balance"]:
                 await self.bot.log(f"Balance regained! ({self.bot.user_status["balance"]}) - restarting slots!", "#4a270c")
@@ -102,6 +104,7 @@ class Slots(commands.Cog):
                     await self.bot.log(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping slots!", "#4a270c")
                     notify(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping slots!", "Slots - Alloted value exceeded")
 
+                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
                 return await self.start_slots()
             elif self.gamble_flags["amount_exceeded"]:
                 self.gamble_flags["amount_exceeded"] = False

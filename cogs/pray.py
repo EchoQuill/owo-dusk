@@ -72,6 +72,7 @@ class Pray(commands.Cog):
         )
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
+
         if cnf["customChannel"]["enabled"]:
             channelId = cnf["customChannel"]["channelId"]
             if not self.__dict__[f"{cmd}_channel"] or self.__dict__[f"{cmd}_channelId"] != channelId:
@@ -107,7 +108,9 @@ class Pray(commands.Cog):
         if (
             not self.bot.settings_dict["commands"]["pray"]["enabled"]
             and not self.bot.settings_dict["commands"]["curse"]["enabled"]
-        ) or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]:
+        ) or (
+            self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["pray_and_curse"]
+        ):
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.pray"))
             except ExtensionNotLoaded:
