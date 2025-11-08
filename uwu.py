@@ -45,6 +45,7 @@ from queue import Queue
 # Local
 from utils.misspell import misspell_word
 from utils.notification import notify
+from utils.webhook import webhookSender
 
 
 """Cntrl+c detect"""
@@ -460,54 +461,7 @@ def popup_main_loop():
         popup.wait_window()
 
 
-class webhookSender:
-    def __init__(self, webhook_url):
-        self.webhook_url = webhook_url
-        self.queue = Queue()
-        self.loop = asyncio.new_event_loop()
-        self.thread = threading.Thread(
-            target=self.start_loop,
-            daemon=True
-        )
-        self.thread.start()
 
-    def start_loop(self):
-        asyncio.set_event_loop(self.loop)
-        self.loop.run_until_complete(self.worker())
-
-    def send(self, data):
-        # Put data to the queue, passed from webhookHandler() function.
-        self.queue.put(data)
-
-    async def custom_send(self, data, webhook):
-        # Task: create queue for this as well in case
-        # Task 2: Reuse session
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                webhook,
-                json=data,
-                headers={"Content-Type": "application/json"},
-            ) as resp:
-                text = await resp.text()
-                # Task 3: handle webhook ratelimits
-
-    async def worker(self):
-        async with aiohttp.ClientSession() as session:
-            while True:
-                # Creates new thread for queue.get
-                data = await self.loop.run_in_executor(None, self.queue.get)
-                try:
-                    async with session.post(
-                        self.webhook_url,
-                        json=data, #payload
-                        headers={"Content-Type": "application/json"},
-                    ) as resp:
-                        #text = await resp.text()
-                        #print(f"[Webhook] {resp.status}: {text}")
-                        pass
-                finally:
-                    self.queue.task_done()
-                    await asyncio.sleep(0.1)
 
 class MyClient(commands.Bot):
     def __init__(self, token, channel_id, global_settings_dict, token_len, *args, **kwargs):
