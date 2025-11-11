@@ -46,6 +46,7 @@ from queue import Queue
 from utils.misspell import misspell_word
 from utils.notification import notify
 from utils.webhook import webhookSender
+from utils.database import databaseWorker
 
 
 """Cntrl+c detect"""
@@ -623,7 +624,7 @@ class MyClient(commands.Bot):
 
             await self.start_cogs()
 
-    async def update_database(self, sql, params=None):
+    """async def update_database(self, sql, params=None):
         async with aiosqlite.connect("utils/data/db.sqlite", timeout=5) as db:
             await db.execute("PRAGMA journal_mode=WAL;")
             await db.execute("PRAGMA synchronous=NORMAL;")
@@ -637,11 +638,11 @@ class MyClient(commands.Bot):
             db.row_factory = aiosqlite.Row
             async with db.execute(sql, params or ()) as cursor:
                 result = await cursor.fetchall()
-                return result
+                return result"""
 
     async def update_priorities(self):
         # Check if already in db
-        res = await self.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
+        res = await database_handler.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
         if res:
             for row in res:
                 # 0 -> user_id
@@ -663,7 +664,7 @@ class MyClient(commands.Bot):
                     # This way base_priority will remain above 0, ensuring it doesn't hit quick send.
                     base_priority+=1
                     self.cmd_priorities[item] = base_priority
-                    await self.update_database(
+                    database_handler.update_database(
                         """INSERT OR REPLACE INTO command_priority (user_id, command_name, priority)
                         VALUES (?, ?, ?)""",
                         (str(self.user.id), item, base_priority)
@@ -674,32 +675,32 @@ class MyClient(commands.Bot):
     async def update_cash_db(self):
         hr = get_hour()
 
-        await self.update_database(
+        database_handler.update_database(
             """UPDATE cowoncy_earnings
             SET earnings = ?
             WHERE user_id = ? AND hour = ?""",
             (self.user_status["net_earnings"], self.user.id, hr)
         )
 
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE user_stats SET cowoncy = ? WHERE user_id = ?",
             (self.user_status["balance"], self.user.id)
         )
 
     async def update_captcha_db(self):
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE user_stats SET captchas = captchas + 1 WHERE user_id = ?",
             (self.user.id,)
         )
 
     async def update_giveaway_db(self, last_ran):
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE user_stats SET giveaways = ? WHERE user_id = ?",
             (last_ran, self.user.id)
         )
 
     async def fetch_giveaway_db(self):
-        results = await self.get_from_db(
+        results = await database_handler.get_from_db(
             "SELECT giveaways FROM user_stats WHERE user_id = ?", 
             (self.user.id,)
         )
@@ -708,7 +709,7 @@ class MyClient(commands.Bot):
         return None
 
     async def populate_stats_db(self):
-        await self.update_database(
+        database_handler.update_database(
             "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (self.user.id, 0, 0, 0, 0, 0, 0)
         )
@@ -718,12 +719,12 @@ class MyClient(commands.Bot):
 
         for i in range(24):
             if not update:
-                await self.update_database(
+                database_handler.update_database(
                     "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
                     (self.user.id, i, 0)
                 )
 
-        rows = await self.get_from_db(
+        rows = await database_handler.get_from_db(
             "SELECT value FROM meta_data WHERE key = ?", 
             ("cowoncy_earnings_last_checked",)
         )
@@ -735,7 +736,7 @@ class MyClient(commands.Bot):
             cur_hr = get_hour()
             last_cash = 0
             for hr in range(cur_hr+1):
-                hr_row = await self.get_from_db(
+                hr_row = await database_handler.get_from_db(
                     "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? AND hour = ?", 
                     (self.user.id, hr)
                 )
@@ -743,7 +744,7 @@ class MyClient(commands.Bot):
                 if hr_row and hr_row[0]["earnings"] != 0:
                     last_cash = hr_row[0]["earnings"]
                 elif last_cash != 0:
-                    await self.update_database(
+                    database_handler.update_database(
                         "UPDATE cowoncy_earnings SET earnings = ? WHERE hour = ? AND user_id = ?",
                         (last_cash, hr, self.user.id)
                     )
@@ -751,19 +752,19 @@ class MyClient(commands.Bot):
             return
 
         for i in range(24):
-            await self.update_database(
+            database_handler.update_database(
                 "UPDATE cowoncy_earnings SET earnings = 0 WHERE user_id = ? AND hour = ?",
                 (self.user.id, i)
             )
 
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE meta_data SET value = ? WHERE key = ?",
             (today_str, "cowoncy_earnings_last_checked")
         )
 
     async def fetch_net_earnings(self):
         self.user_status["net_earnings"] = 0
-        rows = await self.get_from_db(
+        rows = await database_handler.get_from_db(
             "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? ORDER BY hour",
             (self.user.id,)
         )
@@ -778,7 +779,7 @@ class MyClient(commands.Bot):
     async def reset_gamble_wins_or_losses(self):
         today_str = get_date()
 
-        rows = await self.get_from_db(
+        rows = await database_handler.get_from_db(
             "SELECT value FROM meta_data WHERE key = ?", 
             ("gamble_winrate_last_checked",)
         )
@@ -789,18 +790,18 @@ class MyClient(commands.Bot):
             return
 
         for hour in range(24):
-            await self.update_database(
+            database_handler.update_database(
                 "UPDATE gamble_winrate SET wins = 0, losses = 0, net = 0 WHERE hour = ?",
                 (hour,)
             )
 
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE meta_data SET value = ? WHERE key = ?",
             (today_str, "gamble_winrate_last_checked")
         )
 
     async def update_cmd_db(self, cmd):
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE commands SET count = count + 1 WHERE name = ?",
             (cmd,)
         )
@@ -811,7 +812,7 @@ class MyClient(commands.Bot):
         if item not in {"wins", "losses"}:
             raise ValueError("Invalid column name.")
 
-        await self.update_database(
+        database_handler.update_database(
             f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?",
             (hr,)
         )
@@ -1556,6 +1557,8 @@ if __name__ == "__main__":
     console.rule(style="navy_blue")
 
     webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
+    database_handler = databaseWorker()
+
     
     if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
         try:
