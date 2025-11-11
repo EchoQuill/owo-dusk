@@ -38,7 +38,7 @@ class Reactionbot(commands.Cog):
             "owo": self.bot.alias["owo"]["normal"]
         }
 
-        arg = None
+        arg = ""
         if id in {"pray", "curse"} and commands_dict[id]["userid"]:
             user_id = self.bot.random.choice(commands_dict[id]["userid"])
             if commands_dict[id]["pingUser"]:
