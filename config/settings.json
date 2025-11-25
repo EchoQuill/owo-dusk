@@ -114,7 +114,7 @@
         },
         "autoHuntBot": {
             "enabled": true,
-            "cashToSpend": 1000,
+            "cashToSpend": 10000,
             "upgrader": {
                 "enabled": true,
                 "traits": {

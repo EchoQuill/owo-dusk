@@ -130,7 +130,11 @@ class Captcha(commands.Cog):
             if cnf["notifications"]["reccur"]["enabled"]:
                 self.reccured = 0
                 self.content_to_notify = notification_content
-                self.reccur_notifications.start()
+                try:
+                    self.reccur_notifications.start()
+                except:
+                    # In case code sends one command after captcha, triggering captcha message twice.
+                    pass
             else:
                 try:
                     """if on_mobile:
@@ -276,8 +280,14 @@ class Captcha(commands.Cog):
                 await self.bot.update_captcha_db()
                 await self.handle_solves()
                 return
+            
+        channels = [self.bot.dm.id, self.bot.cm.id]
+        if self.bot.settings_dict["commands"]["pray"]["customChannel"]["enabled"]:
+            channels.append(self.bot.settings_dict["commands"]["pray"]["customChannel"]["channelId"])
+        if self.bot.settings_dict["commands"]["curse"]["customChannel"]["enabled"]:
+            channels.append(self.bot.settings_dict["commands"]["curse"]["customChannel"]["channelId"])
 
-        if message.channel.id in {self.bot.dm.id, self.bot.cm.id} and message.author.id == self.bot.owo_bot_id:
+        if message.channel.id in channels and message.author.id == self.bot.owo_bot_id:
             """Handle normally expected captcha"""
             if (
                 (

@@ -38,10 +38,19 @@ class Reactionbot(commands.Cog):
             "owo": self.bot.alias["owo"]["normal"]
         }
 
+        arg = ""
+        if id in {"pray", "curse"} and commands_dict[id]["userid"]:
+            user_id = self.bot.random.choice(commands_dict[id]["userid"])
+            if commands_dict[id]["pingUser"]:
+                arg = f"<@{user_id}>"
+            else:
+                arg = str(user_id)
+
         base = {
             "cmd_name": cmd_name.get(id, id),
             "prefix": id != "owo",
             "checks": False,
+            "cmd_arguments": arg,
             "slash_cmd_name": id if id in {"hunt", "battle"} else None,
             "id": id if id!="curse" else "pray"
         }
@@ -92,9 +101,8 @@ class Reactionbot(commands.Cog):
         if hunt and battle:
             await self.send_cmd("hunt")
             await self.send_cmd("battle")
-        else:
-            cmd = "hunt" if hunt else "battle"
-            await self.send_cmd(cmd)
+        elif hunt or battle:
+            await self.send_cmd("hunt" if hunt else "battle")
 
         """OwO/UwU"""
         if self.check_cmd_state("owo"):
@@ -120,13 +128,13 @@ class Reactionbot(commands.Cog):
         curse = self.check_cmd_state("curse")
         owo = self.check_cmd_state("owo")
 
-        if hunt or battle or pray or curse or owo:
-            asyncio.create_task(self.startup_handler())
-        else:
+        if not (hunt or battle or pray or curse or owo):
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.reactionbot"))
             except ExtensionNotLoaded:
                 pass
+        else:
+            asyncio.create_task(self.startup_handler())
 
 
     @commands.Cog.listener()

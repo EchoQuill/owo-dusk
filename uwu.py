@@ -45,6 +45,8 @@ from queue import Queue
 # Local
 from utils.misspell import misspell_word
 from utils.notification import notify
+from utils.webhook import webhookSender
+from utils.database import databaseWorker
 
 
 """Cntrl+c detect"""
@@ -108,7 +110,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.2.5"
+version = "2.2.6"
 debug_print = True
 
 
@@ -460,54 +462,7 @@ def popup_main_loop():
         popup.wait_window()
 
 
-class webhookSender:
-    def __init__(self, webhook_url):
-        self.webhook_url = webhook_url
-        self.queue = Queue()
-        self.loop = asyncio.new_event_loop()
-        self.thread = threading.Thread(
-            target=self.start_loop,
-            daemon=True
-        )
-        self.thread.start()
 
-    def start_loop(self):
-        asyncio.set_event_loop(self.loop)
-        self.loop.run_until_complete(self.worker())
-
-    def send(self, data):
-        # Put data to the queue, passed from webhookHandler() function.
-        self.queue.put(data)
-
-    async def custom_send(self, data, webhook):
-        # Task: create queue for this as well in case
-        # Task 2: Reuse session
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                webhook,
-                json=data,
-                headers={"Content-Type": "application/json"},
-            ) as resp:
-                text = await resp.text()
-                # Task 3: handle webhook ratelimits
-
-    async def worker(self):
-        async with aiohttp.ClientSession() as session:
-            while True:
-                # Creates new thread for queue.get
-                data = await self.loop.run_in_executor(None, self.queue.get)
-                try:
-                    async with session.post(
-                        self.webhook_url,
-                        json=data, #payload
-                        headers={"Content-Type": "application/json"},
-                    ) as resp:
-                        #text = await resp.text()
-                        #print(f"[Webhook] {resp.status}: {text}")
-                        pass
-                finally:
-                    self.queue.task_done()
-                    await asyncio.sleep(0.1)
 
 class MyClient(commands.Bot):
     def __init__(self, token, channel_id, global_settings_dict, token_len, *args, **kwargs):
@@ -669,7 +624,7 @@ class MyClient(commands.Bot):
 
             await self.start_cogs()
 
-    async def update_database(self, sql, params=None):
+    """async def update_database(self, sql, params=None):
         async with aiosqlite.connect("utils/data/db.sqlite", timeout=5) as db:
             await db.execute("PRAGMA journal_mode=WAL;")
             await db.execute("PRAGMA synchronous=NORMAL;")
@@ -683,11 +638,11 @@ class MyClient(commands.Bot):
             db.row_factory = aiosqlite.Row
             async with db.execute(sql, params or ()) as cursor:
                 result = await cursor.fetchall()
-                return result
+                return result"""
 
     async def update_priorities(self):
         # Check if already in db
-        res = await self.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
+        res = await database_handler.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
         if res:
             for row in res:
                 # 0 -> user_id
@@ -709,7 +664,7 @@ class MyClient(commands.Bot):
                     # This way base_priority will remain above 0, ensuring it doesn't hit quick send.
                     base_priority+=1
                     self.cmd_priorities[item] = base_priority
-                    await self.update_database(
+                    database_handler.update_database(
                         """INSERT OR REPLACE INTO command_priority (user_id, command_name, priority)
                         VALUES (?, ?, ?)""",
                         (str(self.user.id), item, base_priority)
@@ -720,32 +675,32 @@ class MyClient(commands.Bot):
     async def update_cash_db(self):
         hr = get_hour()
 
-        await self.update_database(
+        database_handler.update_database(
             """UPDATE cowoncy_earnings
             SET earnings = ?
             WHERE user_id = ? AND hour = ?""",
             (self.user_status["net_earnings"], self.user.id, hr)
         )
 
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE user_stats SET cowoncy = ? WHERE user_id = ?",
             (self.user_status["balance"], self.user.id)
         )
 
     async def update_captcha_db(self):
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE user_stats SET captchas = captchas + 1 WHERE user_id = ?",
             (self.user.id,)
         )
 
     async def update_giveaway_db(self, last_ran):
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE user_stats SET giveaways = ? WHERE user_id = ?",
             (last_ran, self.user.id)
         )
 
     async def fetch_giveaway_db(self):
-        results = await self.get_from_db(
+        results = await database_handler.get_from_db(
             "SELECT giveaways FROM user_stats WHERE user_id = ?", 
             (self.user.id,)
         )
@@ -754,7 +709,7 @@ class MyClient(commands.Bot):
         return None
 
     async def populate_stats_db(self):
-        await self.update_database(
+        database_handler.update_database(
             "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (self.user.id, 0, 0, 0, 0, 0, 0)
         )
@@ -764,12 +719,12 @@ class MyClient(commands.Bot):
 
         for i in range(24):
             if not update:
-                await self.update_database(
+                database_handler.update_database(
                     "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
                     (self.user.id, i, 0)
                 )
 
-        rows = await self.get_from_db(
+        rows = await database_handler.get_from_db(
             "SELECT value FROM meta_data WHERE key = ?", 
             ("cowoncy_earnings_last_checked",)
         )
@@ -781,7 +736,7 @@ class MyClient(commands.Bot):
             cur_hr = get_hour()
             last_cash = 0
             for hr in range(cur_hr+1):
-                hr_row = await self.get_from_db(
+                hr_row = await database_handler.get_from_db(
                     "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? AND hour = ?", 
                     (self.user.id, hr)
                 )
@@ -789,7 +744,7 @@ class MyClient(commands.Bot):
                 if hr_row and hr_row[0]["earnings"] != 0:
                     last_cash = hr_row[0]["earnings"]
                 elif last_cash != 0:
-                    await self.update_database(
+                    database_handler.update_database(
                         "UPDATE cowoncy_earnings SET earnings = ? WHERE hour = ? AND user_id = ?",
                         (last_cash, hr, self.user.id)
                     )
@@ -797,19 +752,19 @@ class MyClient(commands.Bot):
             return
 
         for i in range(24):
-            await self.update_database(
+            database_handler.update_database(
                 "UPDATE cowoncy_earnings SET earnings = 0 WHERE user_id = ? AND hour = ?",
                 (self.user.id, i)
             )
 
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE meta_data SET value = ? WHERE key = ?",
             (today_str, "cowoncy_earnings_last_checked")
         )
 
     async def fetch_net_earnings(self):
         self.user_status["net_earnings"] = 0
-        rows = await self.get_from_db(
+        rows = await database_handler.get_from_db(
             "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? ORDER BY hour",
             (self.user.id,)
         )
@@ -824,7 +779,7 @@ class MyClient(commands.Bot):
     async def reset_gamble_wins_or_losses(self):
         today_str = get_date()
 
-        rows = await self.get_from_db(
+        rows = await database_handler.get_from_db(
             "SELECT value FROM meta_data WHERE key = ?", 
             ("gamble_winrate_last_checked",)
         )
@@ -835,18 +790,18 @@ class MyClient(commands.Bot):
             return
 
         for hour in range(24):
-            await self.update_database(
+            database_handler.update_database(
                 "UPDATE gamble_winrate SET wins = 0, losses = 0, net = 0 WHERE hour = ?",
                 (hour,)
             )
 
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE meta_data SET value = ? WHERE key = ?",
             (today_str, "gamble_winrate_last_checked")
         )
 
     async def update_cmd_db(self, cmd):
-        await self.update_database(
+        database_handler.update_database(
             "UPDATE commands SET count = count + 1 WHERE name = ?",
             (cmd,)
         )
@@ -857,7 +812,7 @@ class MyClient(commands.Bot):
         if item not in {"wins", "losses"}:
             raise ValueError("Invalid column name.")
 
-        await self.update_database(
+        database_handler.update_database(
             f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?",
             (hr,)
         )
@@ -872,6 +827,19 @@ class MyClient(commands.Bot):
     def refresh_commands_dict(self):
         commands_dict = self.settings_dict["commands"]
         reaction_bot_dict = self.settings_dict["defaultCooldowns"]["reactionBot"]
+
+        # Reaction Bot:
+        if (
+            (reaction_bot_dict["hunt_and_battle"] and (commands_dict["hunt"]["enabled"] or commands_dict["battle"]["enabled"]))
+            or
+            (reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"])
+            or
+            reaction_bot_dict["pray_and_curse"] and (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"])
+        ):
+            reactionbot = True
+        else:
+            reactionbot = False
+
         self.commands_dict = {
             "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
             "captcha": True,
@@ -890,8 +858,8 @@ class MyClient(commands.Bot):
             "others": True,
             "owo": commands_dict["owo"]["enabled"] and not reaction_bot_dict["owo"],
             "pray": (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"]) and not reaction_bot_dict["pray_and_curse"],
-            "reactionbot": reaction_bot_dict["hunt_and_battle"] or reaction_bot_dict["owo"] or reaction_bot_dict["pray_and_curse"],
-            "sell": commands_dict["sell"]["enabled"],
+            "reactionbot": reactionbot,
+            "sell": commands_dict["sell"]["enabled"] or commands_dict["sac"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
             "customcommands": self.settings_dict["customCommands"]["enabled"],
@@ -1589,6 +1557,8 @@ if __name__ == "__main__":
     console.rule(style="navy_blue")
 
     webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
+    database_handler = databaseWorker()
+
     
     if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
         try:
