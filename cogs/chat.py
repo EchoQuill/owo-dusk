@@ -24,7 +24,7 @@ class Chat(commands.Cog):
 
         if message.author.id in [self.bot.user.id, 1209017744696279041] + cnf["allowedUsers"]:
             if f"{cnf['prefix']}{cnf['commandToStopUser']}" in message.content.lower():
-                await self.bot.log("stopping owo-dusk..","#87875f")
+                await self.bot.log("stopping owo-dusk.. Please be warned that this sometimes doesn't work as expected. Please don't rely on it much.","#87875f")
                 self.bot.command_handler_status["sleep"]=True
 
             elif f"{cnf['prefix']}{cnf['commandToStartUser']}" in message.content.lower():
