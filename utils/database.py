@@ -46,7 +46,7 @@ class databaseWorker:
             while True:
                 # Get queued SQL statements from thread-safe queue
                 sql, params = await self.loop.run_in_executor(None, self.queue.get)
-                print(sql)
+                # print(sql)
                 try:
                     await db.execute(sql, params or ())
                     await db.commit()
