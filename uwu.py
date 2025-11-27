@@ -1002,7 +1002,7 @@ class MyClient(commands.Bot):
             )
             with lock:
                 if self.misc["debug"]["logInTextFile"]:
-                    with open("logs.txt", "a") as log:
+                    with open("logs.txt", "a", encoding="utf-8") as log:
                         log.write(f"{content_to_print}\n")
         else:
             console.print(f"{self.username}| {text}".center(console_width - 2), style=color)
