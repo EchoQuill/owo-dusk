@@ -7,8 +7,8 @@ Portions of this file are based on code by EchoQuill, licensed under the
 GNU General Public License v3.0 (GPL-3.0).
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
+it under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 */
 
@@ -24,11 +24,16 @@ if (password) {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
-  await handle_charts();
+  await handle_charts(); // Initial chart load
+  await update_stat_cards(); // Initial stat card load
   setInterval(async () => {
     const data = await fetch_data("/api/console", false);
     console.log(data);
     logMessage(data);
+    await update_stat_cards(); // Update stat cards every 3 seconds
+    // If you want to re-render charts for real-time updates (more resource-intensive)
+    // You would call handle_charts() here or specific chart update functions.
+    // For now, we are focusing on the numerical stats.
   }, 3000);
 });
 
@@ -159,8 +164,9 @@ async function handle_weekly_runtimes_chart() {
     }
   });
 
-  var ctx = document.getElementById('total_uptime_card');
-  ctx.innerText = uptime_calc(data.current_uptime);
+  // Removed direct update here, moved to update_stat_cards() for real-time updates
+  // var ctx = document.getElementById('total_uptime_card');
+  // ctx.innerText = uptime_calc(data.current_uptime);
 }
 
 async function handle_cowoncy_earnings_chart() {
@@ -210,10 +216,11 @@ async function handle_cowoncy_earnings_chart() {
     }
   });
 
-  var ctx = document.getElementById('total_cash_card');
-  ctx.innerText = data.total_cash;
-  var ctx = document.getElementById('total_captchas_card');
-  ctx.innerText = data.total_captchas;
+  // Removed direct updates here, moved to update_stat_cards() for real-time updates
+  // var ctx = document.getElementById('total_cash_card');
+  // ctx.innerText = data.total_cash;
+  // var ctx = document.getElementById('total_captchas_card');
+  // ctx.innerText = data.total_captchas;
 
 }
 
@@ -245,12 +252,13 @@ async function handle_total_commands_chart() {
     }
   });
 
-  let temp = 0;
-  for (let i = 0; i < data.count.length; i++) {
-    temp += data.count[i];
-  }
-  var ctx = document.getElementById('total_commands_card');
-  ctx.innerText = temp;
+  // Removed direct update here, moved to update_stat_cards() for real-time updates
+  // let temp = 0;
+  // for (let i = 0; i < data.count.length; i++) {
+  //   temp += data.count[i];
+  // }
+  // var ctx = document.getElementById('total_commands_card');
+  // ctx.innerText = temp;
 }
 
 
@@ -276,7 +284,7 @@ async function fetch_data(api_addr, is_json=true) {
       return data; // Return early if not JSON
     }
 
-    
+
     if (data.status !== "success") {
       throw new Error("API returned an error");
     } else {
@@ -301,6 +309,32 @@ async function handle_charts() {
   await handle_cowoncy_earnings_chart();
   await handle_weekly_runtimes_chart();
   await handle_gamble_earnings_chart();
+}
+
+// New/Modified function to update stat cards, now including Uptime and Commands
+async function update_stat_cards() {
+  // Update Total Cash and Captchas
+  const cowoncyData = await fetch_data("/api/fetch_cowoncy_data");
+  if (cowoncyData) {
+    document.getElementById('total_cash_card').innerText = cowoncyData.total_cash;
+    document.getElementById('total_captchas_card').innerText = cowoncyData.total_captchas;
+  }
+
+  // Update Daily Uptime
+  const runtimeData = await fetch_data("/api/fetch_weekly_runtime");
+  if (runtimeData && runtimeData.current_uptime) {
+    document.getElementById('total_uptime_card').innerText = uptime_calc(runtimeData.current_uptime);
+  }
+
+  // Update Commands
+  const cmdData = await fetch_data("/api/fetch_cmd_data");
+  if (cmdData && cmdData.count) {
+    let totalCommands = 0;
+    for (let i = 0; i < cmdData.count.length; i++) {
+      totalCommands += cmdData.count[i];
+    }
+    document.getElementById('total_commands_card').innerText = totalCommands;
+  }
 }
 
 function uptime_calc(arr) {
