@@ -55,6 +55,8 @@ class Battle(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and f"{nick} goes into battle!" in embed.author.name:
+                            if self.bot.settings_dict["commands"]["battle"]["show_streak"]:
+                                await self.bot.log(f"{embed.footer.text}", "#afafff")
                             if message.reference is not None:
 
                                 """Return if embed"""
