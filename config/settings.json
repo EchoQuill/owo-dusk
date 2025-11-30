@@ -16,7 +16,8 @@
                 15,
                 17
             ],
-            "useShortForm": true
+            "useShortForm": true,
+            "show_streak": true
         },
         "sell": {
             "enabled": false,
