@@ -17,7 +17,9 @@
                 17
             ],
             "useShortForm": true,
-            "show_streak": true
+            "showStreak": false,
+            "notifyLoss": false,
+            "color": "#afafff"
         },
         "sell": {
             "enabled": false,
