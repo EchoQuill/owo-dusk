@@ -1,35 +1,13 @@
 # Contributing Guidelines
 
-Hey there! Thanks for wanting to contribute. Just a few (very chill but important) rules:
+Hey there, Thanks for wanting to contribute! OwO-Dusk being an open source and free project, we welcome any PR.
+Just a few things:
 
-- **Please don't give me a heart attack** by stuffing everything into one massive PR.
-- **One feature = one pull request**. It's easier to review, test, and merge.
-- **Major changes? Talk to me first!** Open an issue or discussion before you start so we're on the same page. You may also dm me on `@echoquill` on discord.
-- **Keep the code clean** There is currently no specific formatting used for the code, but make it as clean, short and neat as possible. Try your best to keep variable, function names simple!
+1) Keep one Pull Request for one feature, Don't put everything into one PR.
+2) If major changes please contact me through discord - @echoquill
+3) For commit messages put `feat` `chore` `refactor` `fix` etc as required
 
+That should mostly be it. I would also appriciate it if you check whether `beta` branch is more updated than `main` and making the PR there instead. This is not required but will help me lots!
+(If bug fixes feel free to use `main` branch!)
 
-## 🛠️ Local Setup
-
-To run the project:
-
-```bash
-git clone https://github.com/echoquill/owo-dusk.git
-cd owo-dusk
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-python setup.py
-python uwu.py # Enter token etc through setup
-```
-
-
-## ✅ Commit Messages
-
-```
-Use clear and simple commit messages like:
-
-- `fix: fixes a bug
-- `feat: added a feature`
-- `refactor: cleanup code`
-
-just make it understandable!
-```
+Thanks again :>
