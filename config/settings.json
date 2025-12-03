@@ -17,7 +17,8 @@
                 17
             ],
             "useShortForm": true,
-            "show_streak": true
+            "showStreakInConsole": false,
+            "notifyStreakLoss": false
         },
         "sell": {
             "enabled": false,

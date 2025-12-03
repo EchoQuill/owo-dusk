@@ -13,6 +13,7 @@
 import asyncio
 
 from discord.ext import commands
+from utils.notification import notify
 
 
 class Battle(commands.Cog):
@@ -55,8 +56,12 @@ class Battle(commands.Cog):
                 if message.embeds:
                     for embed in message.embeds:
                         if embed.author.name is not None and f"{nick} goes into battle!" in embed.author.name:
-                            if self.bot.settings_dict["commands"]["battle"]["show_streak"]:
-                                await self.bot.log(f"{embed.footer.text}", "#afafff")
+                            if embed.footer:
+                                if self.bot.settings_dict["commands"]["battle"]["showStreakInConsole"]:
+                                    await self.bot.log(f"{embed.footer.text}", "#292252")
+                                if f"You lost your streak of" in embed.footer.text:
+                                    if self.bot.settings_dict["commands"]["battle"]["notifyStreakLoss"]:
+                                        notify(embed.footer.text, "You lost your streak!")
                             if message.reference is not None:
 
                                 """Return if embed"""
