@@ -48,14 +48,12 @@ class Battle(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        nick = self.bot.get_nick(message)
-        #print(f"attempting to get battle through nick {nick}")
-        
         try:
             if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
                 if message.embeds:
                     for embed in message.embeds:
-                        if embed.author.name is not None and f"{nick} goes into battle!" in embed.author.name:
+                        if embed.author.name is not None and f"{self.bot.user.display_name} goes into battle!" in embed.author.name:
+                            print("Battle embed detected")
                             if embed.footer:
                                 if self.bot.settings_dict["commands"]["battle"]["showStreakInConsole"]:
                                     await self.bot.log(f"{embed.footer.text}", "#292252")
@@ -85,6 +83,8 @@ class Battle(commands.Cog):
                                 else self.bot.alias["battle"]["normal"]
                             )
                             await self.bot.put_queue(self.cmd)
+                        elif embed.author.name is not None:
+                            print(embed.author.name)
         except Exception as e:
             await self.bot.log(f"Error - {e}, During battle on_message()", "#c25560")
 
