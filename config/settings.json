@@ -16,7 +16,9 @@
                 15,
                 17
             ],
-            "useShortForm": true
+            "useShortForm": true,
+            "showStreakInConsole": false,
+            "notifyStreakLoss": false
         },
         "sell": {
             "enabled": false,

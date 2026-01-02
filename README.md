@@ -72,7 +72,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
 ---
 * https://github.com/BridgeSenseDev/Dank-Memer-Grinder
 > inspired cogs part and code structure. I also learned Python from this project :>.
-* https://github.com/TahaGorme/slashy & https://github.com/Trixiacute/
+* https://github.com/TahaGorme/slashy
 > inspired website dashboard. Alot of js code was stolen from slashy; before 2.1.0^ script.js was an entire copy of slashy's (with permission ofc).
  
 
