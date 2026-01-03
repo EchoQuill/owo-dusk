@@ -189,8 +189,6 @@ class Hunt(commands.Cog):
                     if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
                     else self.bot.alias["hunt"]["normal"]
                 )
-
-                
                 await self.bot.put_queue(self.cmd)
 
                 
