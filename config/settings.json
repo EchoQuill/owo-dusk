@@ -169,7 +169,15 @@
                 18
             ]
         },
-        "blackjack": {}
+        "blackjack": {
+            "enabled": false,
+            "startValue": 200,
+            "multiplierOnLose": 2,
+            "cooldown": [
+                16,
+                18
+            ]
+        }
     },
     "giveawayJoiner": {
         "enabled": false,
