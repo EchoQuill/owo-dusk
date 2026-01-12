@@ -110,8 +110,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.2.9"
-debug_print = True
+version = "2.3.0"
 
 
 """FLASK APP"""
@@ -412,54 +411,74 @@ if global_settings_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc, daemon=True)
     loop_thread.start()
 
+
 def popup_main_loop():
     root = tk.Tk()
-    root.withdraw()  # Hide the root window
+    root.withdraw()
 
-    while True:
-        msg, username, channelname, captchatype = popup_queue.get()
-        # Create a new popup window
+    def check_queue():
+        if popup_queue.qsize() != 0:
+            # Should not be empty as size not 0
+            msg, username, channelname, captchatype = popup_queue.get_nowait()
+        else:
+            root.after(100, check_queue)
+            return
+
         popup = tk.Toplevel(root)
         popup.configure(bg="#000000")
+        popup.title("OwO-dusk - Notifs")
+
         try:
-            icon_path = "static/imgs/logo.png"  # Path to your icon image file
+            icon_path = "static/imgs/logo.png"
             icon = tk.PhotoImage(file=icon_path)
             popup.iconphoto(True, icon)
         except Exception as e:
             print(f"Failed to load icon: {e}")
-        # Determine screen dimensions
+
+        # Fetch screen width and height
         screen_width = popup.winfo_screenwidth()
         screen_height = popup.winfo_screenheight()
-        # Calculate popup window position and size
-        popup_width = min(500, int(screen_width * 0.8))  # Limit maximum width to 500px or 80% of screen width
-        popup_height = min(300, int(screen_height * 0.8))  # Limit maximum height to 300px or 80% of screen height
+
+        popup_width = min(500, int(screen_width * 0.8))
+        popup_height = min(300, int(screen_height * 0.8))
+
         x_position = (screen_width - popup_width) // 2
         y_position = (screen_height - popup_height) // 2
+
         popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
-        popup.title("OwO-dusk - Notifs")
-        label_text = msg.format(username=username, channelname=channelname, captchatype=captchatype)
+
+        label_text = msg.format(
+            username=username,
+            channelname=channelname,
+            captchatype=captchatype
+        )
+
         label = tk.Label(
-            popup, 
-            text=label_text, 
-            wraplength=popup_width - 40, 
-            justify="left", 
-            padx=20, 
-            pady=20, 
-            bg="#000000", 
+            popup,
+            text=label_text,
+            wraplength=popup_width - 40,
+            justify="left",
+            padx=20,
+            pady=20,
+            bg="#000000",
             fg="#be7dff"
         )
         label.pack(fill="both", expand=True)
+
         button = tk.Button(popup, text="OK", command=popup.destroy)
         button.pack(pady=10)
-        try:
-            popup.grab_set()  # Restrict input focus to the popup
-        except tk.TclError as e:
-            print(f"Grab failed: {e}")
-        finally:
-            popup.focus_set()  # Ensure the popup has focus
-            popup.lift()  # Bring the popup to the top
 
-        popup.wait_window()
+        # Directly calling these fuctions may cause issues
+        # popup.after helps ensure that doesn't happen
+        popup.after(0, popup.lift)
+        popup.after(0, popup.focus_force)
+
+        # Restart queue check if window destroyed
+        popup.bind("<Destroy>", lambda e: root.after(100, check_queue))
+
+    check_queue()
+    root.mainloop()
+
 
 
 
