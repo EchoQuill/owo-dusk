@@ -55,7 +55,7 @@ class Pray(commands.Cog):
         self.curse_channel = None
 
     async def safe_send_message(self, cmd, cmd_argument_data):
-        while self.bot.captcha:
+        while self.bot.command_handler_status["captcha"]:
             await asyncio.sleep(0.5)
 
         channel = self.__dict__[f"{cmd}_channel"]
