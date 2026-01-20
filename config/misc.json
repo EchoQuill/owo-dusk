@@ -25,6 +25,7 @@
         "huntbot": {"priority": 5, "basecd": 1, "log_color": "#39578c"},
         "coinflip": {"priority": 5, "basecd": 15, "log_color": "#dabfae"},
         "slots": {"priority": 5, "basecd": 15, "log_color": "#dabfae"},
+        "blackjack": {"priority": 5, "basecd": 15, "log_color": "#dabfae"},
         "pray": {"priority": 6, "basecd": 300, "log_color": "#a5c7e3"},
         "cookie": {"priority": 7, "basecd": 5, "log_color": "#a5c7e3"},
         "daily": {"priority": 7, "basecd": 5, "log_color": "#6a9882"},
