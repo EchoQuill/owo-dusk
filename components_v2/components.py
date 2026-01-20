@@ -242,7 +242,6 @@ class accessory:
                 and message_details["message_flag"]
                 and message_details["message_author_id"]
             ):
-                print("yess we did it")
                 self._message_channel_id = message_details["message_channel"]
                 self._message_id = message_details["message_id"]
                 self._message_flag = message_details["message_flag"]
@@ -253,8 +252,6 @@ class accessory:
 
     async def click(self, session, headers, guild_id):
         if self.is_clickable_button:
-            print("Attempting a click on the button element..")
-
             if (
                 self._message_channel_id
                 and self._message_id
