@@ -31,8 +31,7 @@ class Coinflip(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            
-            "id": "coinflip"
+            "id": "coinflip",
         }
         self.turns_lost = 0
         self.exceeded_max_amount = False
@@ -40,9 +39,8 @@ class Coinflip(commands.Cog):
         self.gamble_flags = {
             "goal_reached": False,
             "amount_exceeded": False,
-            "no_balance": False
+            "no_balance": False,
         }
-
 
     async def cog_load(self):
         if not self.bot.settings_dict["gamble"]["coinflip"]["enabled"]:
@@ -54,73 +52,123 @@ class Coinflip(commands.Cog):
                 print(e)
         else:
             asyncio.create_task(self.start_cf(startup=True))
-            
+
     async def cog_unload(self):
         await self.bot.remove_queue(id="coinflip")
 
     async def start_cf(self, startup=False):
         cnf = self.bot.settings_dict["gamble"]["coinflip"]
-        goal_system_dict = self.bot.settings_dict['gamble']['goalSystem']
+        goal_system_dict = self.bot.settings_dict["gamble"]["goalSystem"]
         try:
             if startup:
-                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
+                )
             else:
                 await self.bot.remove_queue(id="coinflip")
                 await self.bot.sleep_till(cnf["cooldown"])
-            
-            amount_to_gamble = int(cnf["startValue"]*(cnf["multiplierOnLose"]**self.turns_lost))
+
+            amount_to_gamble = int(
+                cnf["startValue"] * (cnf["multiplierOnLose"] ** self.turns_lost)
+            )
 
             # Goal system check
-            if goal_system_dict["enabled"] and self.bot.gain_or_lose > goal_system_dict["amount"]:
+            if (
+                goal_system_dict["enabled"]
+                and self.bot.gain_or_lose > goal_system_dict["amount"]
+            ):
                 if not self.gamble_flags["goal_reached"]:
                     self.gamble_flags["goal_reached"] = True
-                    await self.bot.log(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!", "#4a270c")
-                    notify(f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!", "Coinflip - Goal reached")
+                    await self.bot.log(
+                        f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!",
+                        "#4a270c",
+                    )
+                    notify(
+                        f"goal reached - {self.bot.gain_or_lose}/{goal_system_dict['amount']}, stopping coinflip!",
+                        "Coinflip - Goal reached",
+                    )
 
-                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
+                )
                 return await self.start_cf()
             elif self.gamble_flags["goal_reached"]:
                 self.gamble_flags["goal_reached"] = False
 
             # Balance check
-            if amount_to_gamble > self.bot.user_status["balance"] and not self.bot.settings_dict["cashCheck"]:
+            if (
+                amount_to_gamble > self.bot.user_status["balance"]
+                and not self.bot.settings_dict["cashCheck"]
+            ):
                 if not self.gamble_flags["no_balance"]:
                     self.gamble_flags["no_balance"] = True
-                    await self.bot.log(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "#4a270c")
-                    notify(f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status["balance"]}), stopping coinflip!", "Coinflip - Insufficient balance")
+                    await self.bot.log(
+                        f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status['balance']}), stopping coinflip!",
+                        "#4a270c",
+                    )
+                    notify(
+                        f"Amount to gamle next ({amount_to_gamble}) exceeds bot balance ({self.bot.user_status['balance']}), stopping coinflip!",
+                        "Coinflip - Insufficient balance",
+                    )
 
-                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
+                )
                 return await self.start_cf()
             elif self.gamble_flags["no_balance"]:
-                await self.bot.log(f"Balance regained! ({self.bot.user_status["balance"]}) - restarting coinflip!", "#4a270c")
+                await self.bot.log(
+                    f"Balance regained! ({self.bot.user_status['balance']}) - restarting coinflip!",
+                    "#4a270c",
+                )
                 self.gamble_flags["no_balance"] = False
 
             # Allotted value check
-            if (self.bot.gain_or_lose + (self.bot.settings_dict["gamble"]["allottedAmount"] - amount_to_gamble) <=0):
+            if (
+                self.bot.gain_or_lose
+                + (
+                    self.bot.settings_dict["gamble"]["allottedAmount"]
+                    - amount_to_gamble
+                )
+                <= 0
+            ):
                 if not self.gamble_flags["amount_exceeded"]:
                     self.gamble_flags["amount_exceeded"] = True
-                    await self.bot.log(f"Allotted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "#4a270c")
-                    notify(f"Alloted value ({self.bot.settings_dict["gamble"]["allottedAmount"]}) exceeded, stopping coinflip!", "Coinflip - Alloted value exceeded")
+                    await self.bot.log(
+                        f"Allotted value ({self.bot.settings_dict['gamble']['allottedAmount']}) exceeded, stopping coinflip!",
+                        "#4a270c",
+                    )
+                    notify(
+                        f"Alloted value ({self.bot.settings_dict['gamble']['allottedAmount']}) exceeded, stopping coinflip!",
+                        "Coinflip - Alloted value exceeded",
+                    )
 
-                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"])
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
+                )
                 return await self.start_cf()
             elif self.gamble_flags["amount_exceeded"]:
                 self.gamble_flags["amount_exceeded"] = False
 
-            
             if amount_to_gamble > 250000:
-                await self.bot.log(f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!", "#4a270c")
-                notify(f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!", "Coinflip - Exceeded 250k limit")
+                await self.bot.log(
+                    f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!",
+                    "#4a270c",
+                )
+                notify(
+                    f"Value to gamble ({amount_to_gamble}) exceeded 250k threshhold, stopping coinflip!",
+                    "Coinflip - Exceeded 250k limit",
+                )
                 self.exceeded_max_amount = True
             else:
                 self.cmd["cmd_arguments"] = str(amount_to_gamble)
                 if cnf["options"]:
-                    self.cmd["cmd_arguments"]+=f" {self.bot.random.choice(cnf['options'])}"
+                    self.cmd["cmd_arguments"] += (
+                        f" {self.bot.random.choice(cnf['options'])}"
+                    )
                 await self.bot.put_queue(self.cmd)
 
         except Exception as e:
             await self.bot.log(f"Error - {e}, During coinflip start_cf()", "#c25560")
-
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -130,39 +178,53 @@ class Coinflip(commands.Cog):
             return
         if self.exceeded_max_amount:
             return
-        
+
         nick = self.bot.get_nick(before)
 
         if nick not in after.content:
             return
-        
+
         if "chose" in after.content.lower():
             try:
                 if "and you lost it all... :c" in after.content.lower():
-                    self.turns_lost+=1
-                    match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
+                    self.turns_lost += 1
+                    match = int(
+                        re.search(lose_pattern, after.content).group(1).replace(",", "")
+                    )
 
-                    await self.bot.update_cash(match, reduce=True)
-                    self.bot.gain_or_lose-=match
+                    self.bot.update_cash(match, reduce=True)
+                    self.bot.gain_or_lose -= match
 
-                    await self.bot.log(f"lost {match} in cf, net profit - {self.bot.gain_or_lose}", "#993f3f")
+                    await self.bot.log(
+                        f"lost {match} in cf, net profit - {self.bot.gain_or_lose}",
+                        "#993f3f",
+                    )
                     await self.start_cf()
-                    await self.bot.update_gamble_db("losses")
+                    self.bot.update_gamble_db("losses")
                 else:
-                    won_match = int(re.search(won_pattern, after.content).group(1).replace(",",""))
-                    lose_match = int(re.search(lose_pattern, after.content).group(1).replace(",",""))
+                    won_match = int(
+                        re.search(won_pattern, after.content).group(1).replace(",", "")
+                    )
+                    lose_match = int(
+                        re.search(lose_pattern, after.content).group(1).replace(",", "")
+                    )
                     self.turns_lost = 0
-                    profit = won_match-lose_match
+                    profit = won_match - lose_match
 
-                    await self.bot.update_cash(profit)
-                    self.bot.gain_or_lose+=profit
-                    
-                    await self.bot.log(f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}", "#536448")
+                    self.bot.update_cash(profit)
+                    self.bot.gain_or_lose += profit
+
+                    await self.bot.log(
+                        f"won {won_match} in cf, net profit - {self.bot.gain_or_lose}",
+                        "#536448",
+                    )
                     await self.start_cf()
-                    await self.bot.update_gamble_db("wins")
+                    self.bot.update_gamble_db("wins")
             except Exception as e:
-                await self.bot.log(f"Error - {e}, During coinflip on_message_edit()", "#c25560")
+                await self.bot.log(
+                    f"Error - {e}, During coinflip on_message_edit()", "#c25560"
+                )
+
 
 async def setup(bot):
     await bot.add_cog(Coinflip(bot))
-

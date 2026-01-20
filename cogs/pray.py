@@ -32,13 +32,13 @@ class Pray(commands.Cog):
         self.startup = True
         # prevents pray/curse from being re-added if it is queued to be queued
         self.pray_curse_ongoing = False
-        
+
         self.pray_cmd = {
             "cmd_name": "pray",
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "id": "pray"
+            "id": "pray",
         }
 
         self.curse_cmd = {
@@ -46,7 +46,7 @@ class Pray(commands.Cog):
             "cmd_arguments": None,
             "prefix": True,
             "checks": True,
-            "id": "pray" # using pray as id for curse to make it easier to close
+            "id": "pray",  # using pray as id for curse to make it easier to close
         }
         self.cmd_names = []
         self.pray_channelId = 0
@@ -61,38 +61,52 @@ class Pray(commands.Cog):
         channel = self.__dict__[f"{cmd}_channel"]
 
         await channel.send(f"owo {cmd} {cmd_argument_data}")
-        await self.bot.log(f"{cmd} send successfully in channel {channel.name}", "#4a3466")
+        await self.bot.log(
+            f"{cmd} send successfully in channel {channel.name}", "#4a3466"
+        )
 
     async def start_pray_curse(self):
         self.pray_curse_ongoing = True
-        cmds = [cmd for cmd in ["pray", "curse"] if self.bot.settings_dict['commands'][cmd]['enabled']]
-        cmd = self.bot.random.choice(cmds) # pick a random enabled cmd
-        cnf = self.bot.settings_dict['commands'][cmd]
+        cmds = [
+            cmd
+            for cmd in ["pray", "curse"]
+            if self.bot.settings_dict["commands"][cmd]["enabled"]
+        ]
+        cmd = self.bot.random.choice(cmds)  # pick a random enabled cmd
+        cnf = self.bot.settings_dict["commands"][cmd]
         if not self.startup:
             await self.bot.remove_queue(id="pray")
             await self.bot.sleep_till(cnf["cooldown"])
             self.__dict__[f"{cmd}_cmd"]["checks"] = True
         else:
-            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
+            await self.bot.sleep_till(
+                self.bot.settings_dict["defaultCooldowns"]["shortCooldown"]
+            )
             self.__dict__[f"{cmd}_cmd"]["checks"] = False
 
-        cmd_argument_data = cmd_argument(
-            cnf['userid'], cnf['pingUser']
-        )
+        cmd_argument_data = cmd_argument(cnf["userid"], cnf["pingUser"])
 
         self.__dict__[f"{cmd}_cmd"]["cmd_arguments"] = cmd_argument_data
 
         if cnf["customChannel"]["enabled"]:
             channelId = cnf["customChannel"]["channelId"]
-            if not self.__dict__[f"{cmd}_channel"] or self.__dict__[f"{cmd}_channelId"] != channelId:
+            if (
+                not self.__dict__[f"{cmd}_channel"]
+                or self.__dict__[f"{cmd}_channelId"] != channelId
+            ):
                 try:
-                    self.__dict__[f"{cmd}_channel"] = await self.bot.fetch_channel(channelId)
+                    self.__dict__[f"{cmd}_channel"] = await self.bot.fetch_channel(
+                        channelId
+                    )
                     self.__dict__[f"{cmd}_channelId"] = channelId
 
                 except Exception as e:
-                    await self.bot.log(f"Error - Failed to fetch channel with id {cnf['customChannel']['channelId']}: {e}", "#c25560")
+                    await self.bot.log(
+                        f"Error - Failed to fetch channel with id {cnf['customChannel']['channelId']}: {e}",
+                        "#c25560",
+                    )
             await self.safe_send_message(cmd, cmd_argument_data)
-            
+
         else:
             await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
 
@@ -107,12 +121,13 @@ class Pray(commands.Cog):
             Sometimes the pray/curse may have already ran twice within 5 mins after a successful run
             before owo-dusk is ran, this check is to fix it getting the code stuck.
             """
-            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
+            await self.bot.sleep_till(
+                self.bot.settings_dict["defaultCooldowns"]["shortCooldown"]
+            )
             if self.startup:
-                self.startup=False
+                self.startup = False
                 await self.start_pray_curse()
 
-        
     async def cog_load(self):
         if (
             not self.bot.settings_dict["commands"]["pray"]["enabled"]
@@ -134,8 +149,11 @@ class Pray(commands.Cog):
     async def on_message(self, message):
         if f"<@{self.bot.user.id}>" not in message.content:
             return
-        
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
+
+        if (
+            message.channel.id == self.bot.cm.id
+            and message.author.id == self.bot.owo_bot_id
+        ):
             if (
                 f"<@{self.bot.user.id}>** prays for **<@{self.bot.settings_dict['commands']['pray']['userid']}>**!"
                 in message.content

@@ -48,7 +48,7 @@ def convert_small_numbers(small_number):
         "⁸": "8",
         "⁹": "9",
     }
-    normal_string = ''.join(numbers.get(char, char) for char in small_number)
+    normal_string = "".join(numbers.get(char, char) for char in small_number)
     return int(normal_string)
 
 
@@ -77,9 +77,11 @@ def find_gems_available(message):
                 break
     return available_gems
 
+
 def len_gems_in_use(msg):
     to_check = ("gem1", "gem3", "gem4", "star")
     return sum(1 for gem in to_check if gem in msg)
+
 
 class Gems(commands.Cog):
     def __init__(self, bot):
@@ -96,13 +98,13 @@ class Gems(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": False,
-            "id": "gems"
+            "id": "gems",
         }
         self.inv_cmd = {
             "cmd_name": self.bot.alias["inv"]["normal"],
             "prefix": True,
             "checks": True,
-            "id": "inv"
+            "id": "inv",
         }
 
     def enabled_gem_types(self):
@@ -111,18 +113,18 @@ class Gems(commands.Cog):
             "huntGem": cnf["huntGem"],
             "empoweredGem": cnf["empoweredGem"],
             "luckyGem": cnf["luckyGem"],
-            "specialGem": cnf["specialGem"]
+            "specialGem": cnf["specialGem"],
         }
-    
+
     async def use_gems(self, available_gems, gems_in_use=None, full=False):
         if not full:
             result = self.find_specific_gems_to_use(gems_in_use, available_gems)
         else:
             result = self.find_gems_to_use(available_gems)
         if result:
-            self.gem_cmd["cmd_arguments"]=""
+            self.gem_cmd["cmd_arguments"] = ""
             for item in result:
-                self.gem_cmd["cmd_arguments"]+=f"{item[1:]} "
+                self.gem_cmd["cmd_arguments"] += f"{item[1:]} "
             await self.bot.put_queue(self.gem_cmd, priority=True)
             self.reduce_used_gems(result)
             if self.bot.hunt_disabled:
@@ -131,23 +133,28 @@ class Gems(commands.Cog):
             if not full:
                 self.already_checked = True
             else:
-                await self.bot.log(f"Warn: No gems to use.", "#924444")
+                await self.bot.log("Warn: No gems to use.", "#924444")
                 self.bot.user_status["no_gems"] = True
-                if not self.bot.hunt_disabled and self.bot.settings_dict["autoUse"]["gems"]["disable_hunts_if_no_gems"]:
-                    await self.bot.log(f"Disabling hunt since there is no gems to be used.", "#C51818")
+                if (
+                    not self.bot.hunt_disabled
+                    and self.bot.settings_dict["autoUse"]["gems"][
+                        "disable_hunts_if_no_gems"
+                    ]
+                ):
+                    await self.bot.log(
+                        "Disabling hunt since there is no gems to be used.", "#C51818"
+                    )
                     """
                     Currently no_gems status isn't being reset after being set
                     """
                     self.bot.hunt_disabled = True
 
-
-    
     def fetch_gems_in_use(self, msg):
         gem_type_map = {
             "gem1": "huntGem",
             "gem4": "luckyGem",
             "gem3": "empoweredGem",
-            "star": "specialGem"
+            "star": "specialGem",
         }
 
         tier_prefix_map = {
@@ -157,7 +164,7 @@ class Gems(commands.Cog):
             "e": "epic",
             "m": "mythical",
             "l": "legendary",
-            "f": "fabled"
+            "f": "fabled",
         }
 
         result = []
@@ -168,21 +175,18 @@ class Gems(commands.Cog):
             if key in msg:
                 for prefix, tier in tier_prefix_map.items():
                     if f"{prefix}{key}" in msg:
-                        result.append({
-                            "gem_type": value,
-                            "gem_tier": tier
-                        })
+                        result.append({"gem_type": value, "gem_tier": tier})
                         gems_in_use.append(value)
 
         gems_not_in_use = [x for x in all_gem_type if x not in gems_in_use]
-        
+
         gems_required_to_use = self.enabled_gem_types()
         for gem in gems_not_in_use:
             if gems_required_to_use[gem]:
                 return result, True
 
         return result, False
-    
+
     def reduce_used_gems(self, used_gem_ids):
         for gem_id in used_gem_ids:
             for _, gems in self.available_gems.items():
@@ -195,13 +199,16 @@ class Gems(commands.Cog):
                     break
 
     def find_gems_to_use(self, available_gems):
-        gem_type = {
-            0: "huntGem",
-            1: "empoweredGem",
-            2: "luckyGem",
-            3: "specialGem"
-        }
-        tier_order = ['fabled', 'legendary', 'mythical', 'epic', 'rare', 'uncommon', 'common']
+        gem_type = {0: "huntGem", 1: "empoweredGem", 2: "luckyGem", 3: "specialGem"}
+        tier_order = [
+            "fabled",
+            "legendary",
+            "mythical",
+            "epic",
+            "rare",
+            "uncommon",
+            "common",
+        ]
         cnf = self.bot.settings_dict["autoUse"]["gems"]
 
         if cnf["order"]["lowestToHighest"]:
@@ -217,21 +224,26 @@ class Gems(commands.Cog):
             for gem_id in gem_tiers[tier]:
                 gem_index = gem_tiers[tier].index(gem_id)
                 gem_type_key = gem_type[gem_index]
-                if cnf["gemsToUse"].get(gem_type_key) and available_gems[tier].get(gem_id, 0) > 0:
+                if (
+                    cnf["gemsToUse"].get(gem_type_key)
+                    and available_gems[tier].get(gem_id, 0) > 0
+                ):
                     current_group.append(gem_id)
 
             if current_group:
                 grouped_gem_list.append(current_group)
 
         return self.process_result(grouped_gem_list)
-    
+
     def find_specific_gems_to_use(self, gems_in_use, available_gems):
-        temp_available_gems = {tier: gems.copy() for tier, gems in available_gems.items()}
+        temp_available_gems = {
+            tier: gems.copy() for tier, gems in available_gems.items()
+        }
         gem_type_map = {
             "huntGem": ["057", "056", "055", "054", "053", "052", "051"],
             "empoweredGem": ["071", "070", "069", "068", "067", "066", "065"],
-            "luckyGem":  ["078", "077", "076", "075", "074", "073", "072"],
-            "specialGem": ["085", "084", "083", "082", "081", "080", "079"]
+            "luckyGem": ["078", "077", "076", "075", "074", "073", "072"],
+            "specialGem": ["085", "084", "083", "082", "081", "080", "079"],
         }
 
         for item in gems_in_use:
@@ -247,17 +259,16 @@ class Gems(commands.Cog):
 
         return self.find_gems_to_use(temp_available_gems)
 
-
-
-
     def process_result(self, result):
         # Find the group with the highest number of items
         max_group = max(result, key=len, default=None)
         return max_group
 
-
     async def cog_load(self):
-        if not self.bot.settings_dict["commands"]["hunt"]["enabled"] or not self.bot.settings_dict["autoUse"]["gems"]["enabled"]:
+        if (
+            not self.bot.settings_dict["commands"]["hunt"]["enabled"]
+            or not self.bot.settings_dict["autoUse"]["gems"]["enabled"]
+        ):
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.gems"))
             except ExtensionNotLoaded:
@@ -266,15 +277,17 @@ class Gems(commands.Cog):
     async def cog_unload(self):
         await self.bot.remove_queue(id="gems")
 
-
     @commands.Cog.listener()
     async def on_message(self, message):
         nick = self.bot.get_nick(message)
-        if message.channel.id != self.bot.channel_id or message.author.id != self.bot.owo_bot_id:
+        if (
+            message.channel.id != self.bot.channel_id
+            or message.author.id != self.bot.owo_bot_id
+        ):
             return
         if nick not in message.content:
             return
-        
+
         if "caught" in message.content:
             if self.bot.user_status["no_gems"]:
                 return
@@ -305,14 +318,15 @@ class Gems(commands.Cog):
                     await self.bot.put_queue(self.inv_cmd, priority=True)
                     self.cache_gems_in_use = result
 
-
         elif "'s Inventory ======**" in message.content:
             await self.bot.remove_queue(id="inv")
             self.available_gems = find_gems_available(message.content)
             self.already_checked = False
             if self.inventory_check:
                 await self.use_gems(self.available_gems, full=True)
-                await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
+                )
                 self.inventory_check = False
                 self.cache_gems_in_use = {}
             elif self.cache_gems_in_use:
@@ -322,7 +336,6 @@ class Gems(commands.Cog):
             # Task 4: make commands trigger stat instead of manual to avoid such issues and also avoids permanent stop incase of fails
             await self.bot.set_stat(True)
 
-                
 
 async def setup(bot):
     await bot.add_cog(Gems(bot))

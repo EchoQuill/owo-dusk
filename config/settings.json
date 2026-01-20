@@ -169,7 +169,23 @@
                 18
             ]
         },
-        "blackjack": {}
+        "blackjack": {
+            "enabled": false,
+            "startValue": 200,
+            "multiplierOnLose": 2,
+            "cooldown": [
+                16,
+                18
+            ]
+        }
+    },
+    "bossBattle": {
+        "enabled": true,
+        "joinChancePercent": 50,
+        "joinAllGuilds": {
+            "enabled": true,
+            "guildIdsToIgnore": []
+        }
     },
     "giveawayJoiner": {
         "enabled": false,

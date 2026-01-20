@@ -25,14 +25,15 @@ class ChannelSwitcher(commands.Cog):
 
     @tasks.loop()
     async def switch_channel_loop(self):
-        await self.bot.sleep_till(self.bot.global_settings_dict["channelSwitcher"]["interval"])
+        await self.bot.sleep_till(
+            self.bot.global_settings_dict["channelSwitcher"]["interval"]
+        )
         status, resp = await self.change_channel()
 
         if not status:
             await self.bot.log(f"Error - {resp}", "#c25560")
         else:
             await self.bot.log(f"Channel switcher: {resp}", "#9dc3f5")
-
 
     """def check_channel(self):
         cnf = self.bot.global_settings_dict["channelSwitcher"]
@@ -49,8 +50,6 @@ class ChannelSwitcher(commands.Cog):
             if self.bot.channel_id not in available_channels:
                 # add channel to json"""
 
-        
-
     async def change_channel(self):
         cnf = self.bot.global_settings_dict["channelSwitcher"]
         current_channel_id = self.bot.cm.id
@@ -62,7 +61,9 @@ class ChannelSwitcher(commands.Cog):
                 break
 
         available_channels = item["channels"] if item else []
-        valid_channels = [cid for cid in available_channels if cid != current_channel_id]
+        valid_channels = [
+            cid for cid in available_channels if cid != current_channel_id
+        ]
         # Temporary
         if self.default_channel_id not in valid_channels:
             valid_channels.append(self.default_channel_id)
@@ -75,10 +76,16 @@ class ChannelSwitcher(commands.Cog):
                     no_activity = await self.ensure_no_activity(new_channel)
                     if no_activity:
                         await self.bot.empty_checks_and_switch(new_channel)
-                        return True, f"Switched successfully to channel {new_channel.name}"
+                        return (
+                            True,
+                            f"Switched successfully to channel {new_channel.name}",
+                        )
             except Exception as e:
-                await self.bot.log(f"Error - Failed to fetch channel with id {channel_id}: {e}", "#c25560")
-            
+                await self.bot.log(
+                    f"Error - Failed to fetch channel with id {channel_id}: {e}",
+                    "#c25560",
+                )
+
             valid_channels.remove(channel_id)
         return False, "Failed to switch channel - No active channels found."
 
@@ -96,11 +103,11 @@ class ChannelSwitcher(commands.Cog):
             except ExtensionNotLoaded:
                 pass
         else:
-
             self.switch_channel_loop.start()
 
     async def cog_unload(self):
         self.switch_channel_loop.cancel()
+
 
 async def setup(bot):
     await bot.add_cog(ChannelSwitcher(bot))

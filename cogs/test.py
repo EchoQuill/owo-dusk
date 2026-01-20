@@ -14,6 +14,7 @@ import json
 
 from discord.ext import commands
 
+
 class Test(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -32,7 +33,6 @@ class Test(commands.Cog):
         # Only parse JSON if channel id.
         if f'"channel_id":"{self.bot.channel_id}"' in msg:
             parsed_msg = json.loads(msg)
-
 
 
 async def setup(bot):

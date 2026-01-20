@@ -32,7 +32,7 @@ class Sell(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "id": "sell"
+            "id": "sell",
         }
 
         self.sac_cmd = {
@@ -40,9 +40,8 @@ class Sell(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "id": "sell"
+            "id": "sell",
         }
-        
 
     def fetch_arguments(self, cmd):
         return " ".join(self.bot.settings_dict["commands"][cmd]["rarity"])
@@ -53,48 +52,96 @@ class Sell(commands.Cog):
         await self.bot.put_queue(cmd)
 
     async def cog_load(self):
-        if not self.bot.settings_dict["commands"]["sell"]["enabled"] and not self.bot.settings_dict["commands"]["sac"]["enabled"]:
+        if (
+            not self.bot.settings_dict["commands"]["sell"]["enabled"]
+            and not self.bot.settings_dict["commands"]["sac"]["enabled"]
+        ):
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.sell"))
             except ExtensionNotLoaded:
                 pass
         else:
-            if (self.bot.settings_dict["commands"]["sell"]["enabled"] and self.bot.settings_dict["commands"]["sac"]["enabled"]) or (self.bot.settings_dict["commands"]["sell"]["enabled"]):
+            if (
+                self.bot.settings_dict["commands"]["sell"]["enabled"]
+                and self.bot.settings_dict["commands"]["sac"]["enabled"]
+            ) or (self.bot.settings_dict["commands"]["sell"]["enabled"]):
                 # start sell first.
-                asyncio.create_task(self.sell_sac_queue(self.sell_cmd, self.bot.settings_dict["commands"]["sell"]["cooldown"]))
+                asyncio.create_task(
+                    self.sell_sac_queue(
+                        self.sell_cmd,
+                        self.bot.settings_dict["commands"]["sell"]["cooldown"],
+                    )
+                )
             else:
-                asyncio.create_task(self.sell_sac_queue(self.sac_cmd, self.bot.settings_dict["commands"]["sac"]["cooldown"]))
+                asyncio.create_task(
+                    self.sell_sac_queue(
+                        self.sac_cmd,
+                        self.bot.settings_dict["commands"]["sac"]["cooldown"],
+                    )
+                )
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="sell")
-    
+
     @commands.Cog.listener()
     async def on_message(self, message):
         nick = self.bot.get_nick(message)
         if nick not in message.content:
             return
-        
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
-            if 'for a total of **<:cowoncy:416043450337853441>' in message.content.lower():
+
+        if (
+            message.channel.id == self.bot.cm.id
+            and message.author.id == self.bot.owo_bot_id
+        ):
+            if (
+                "for a total of **<:cowoncy:416043450337853441>"
+                in message.content.lower()
+            ):
                 await self.bot.remove_queue(id="sell")
 
                 if self.bot.settings_dict["cashCheck"]:
                     try:
-                        await self.bot.update_cash(int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', '')))
-                    except:
-                        await self.bot.log(f"failed to fetch cowoncy from sales", "#af0087")
-                
-                if self.bot.settings_dict["commands"]["sac"]["enabled"]:
-                    await self.sell_sac_queue(self.sac_cmd, self.bot.settings_dict["commands"]["sac"]["cooldown"])
-                else:
-                    await self.sell_sac_queue(self.sell_cmd, self.bot.settings_dict["commands"]["sell"]["cooldown"])
+                        self.bot.update_cash(
+                            int(
+                                re.search(
+                                    r"for a total of \*\*<:cowoncy:\d+> ([\d,]+)",
+                                    message.content,
+                                )
+                                .group(1)
+                                .replace(",", "")
+                            )
+                        )
+                    except Exception:
+                        await self.bot.log(
+                            "failed to fetch cowoncy from sales", "#af0087"
+                        )
 
-            elif "sacrificed" in message.content and "for a total of" in message.content.lower():
+                if self.bot.settings_dict["commands"]["sac"]["enabled"]:
+                    await self.sell_sac_queue(
+                        self.sac_cmd,
+                        self.bot.settings_dict["commands"]["sac"]["cooldown"],
+                    )
+                else:
+                    await self.sell_sac_queue(
+                        self.sell_cmd,
+                        self.bot.settings_dict["commands"]["sell"]["cooldown"],
+                    )
+
+            elif (
+                "sacrificed" in message.content
+                and "for a total of" in message.content.lower()
+            ):
                 await self.bot.remove_queue(id="sell")
                 if self.bot.settings_dict["commands"]["sell"]["enabled"]:
-                    await self.sell_sac_queue(self.sell_cmd, self.bot.settings_dict["commands"]["sell"]["cooldown"])
+                    await self.sell_sac_queue(
+                        self.sell_cmd,
+                        self.bot.settings_dict["commands"]["sell"]["cooldown"],
+                    )
                 else:
-                    await self.sell_sac_queue(self.sac_cmd, self.bot.settings_dict["commands"]["sac"]["cooldown"])
+                    await self.sell_sac_queue(
+                        self.sac_cmd,
+                        self.bot.settings_dict["commands"]["sac"]["cooldown"],
+                    )
 
 
 async def setup(bot):
