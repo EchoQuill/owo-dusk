@@ -10,7 +10,6 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-import threading
 import time
 import re
 import os
@@ -84,7 +83,7 @@ class Captcha(commands.Cog):
 
     async def kill_code(self):
         await asyncio.sleep(590)
-        if self.bot.captcha:
+        if self.bot.command_handler_status["captcha"]:
             print("captcha not solved within time...")
             os._exit(0)
 
@@ -132,7 +131,7 @@ class Captcha(commands.Cog):
                 self.content_to_notify = notification_content
                 try:
                     self.reccur_notifications.start()
-                except:
+                except Exception:
                     # In case code sends one command after captcha, triggering captcha message twice.
                     pass
             else:
@@ -228,9 +227,9 @@ class Captcha(commands.Cog):
         if cnf["playAudio"]["enabled"]:
             try:
                 if on_mobile:
-                    run_system_command(f"termux-media-player stop", timeout=5, retry=True)
+                    run_system_command("termux-media-player stop", timeout=5, retry=True)
                 else:
-                    if self.sound != None:
+                    if self.sound is not None:
                         if self.sound.is_alive():
                             self.sound.stop()
             except Exception as e:
@@ -240,7 +239,7 @@ class Captcha(commands.Cog):
         if cnf["notifications"]["enabled"] and cnf["notifications"]["reccur"]["enabled"]:
             try:
                 self.reccur_notifications.cancel()
-            except:
+            except Exception:
                 pass
 
         if cnf["stopCodeIfFailedToSolve"]:
@@ -318,7 +317,7 @@ class Captcha(commands.Cog):
                     if not any(user in message.content for user in (self.bot.user.name, f"<@{self.bot.user.id}>", nick, self.bot.user.display_name)):
                         return
                 self.bot.command_handler_status["captcha"] = True
-                await self.bot.log(f"Captcha detected!", "#d70000")
+                await self.bot.log("Captcha detected!", "#d70000")
                 self.captcha_handler(message.channel, "Link")
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
@@ -338,7 +337,7 @@ class Captcha(commands.Cog):
 
             elif "**☠ |** You have been banned" in message.content:
                 self.bot.command_handler_status["captcha"] = True
-                await self.bot.log(f"Ban detected!", "#d70000")
+                await self.bot.log("Ban detected!", "#d70000")
                 self.captcha_handler(message.channel, "Ban")
                 console_handler(self.bot.global_settings_dict["console"], captcha=False)
                 if self.bot.global_settings_dict["webhook"]["enabled"]:

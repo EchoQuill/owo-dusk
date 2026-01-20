@@ -40,7 +40,7 @@ class Giveaway(commands.Cog):
         for i in self.bot.settings_dict["giveawayJoiner"]["channelsToJoin"]:
             try:
                 channel = await self.bot.fetch_channel(i)
-            except:
+            except Exception:
                 channel = None
             if not channel:
                 # To prevent giving error if channel id is invalid

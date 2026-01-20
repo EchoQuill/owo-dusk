@@ -30,7 +30,6 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from threading import Thread
 # Third-Party Libraries
-import aiosqlite
 import aiohttp
 import discord
 import pytz
@@ -43,10 +42,12 @@ from rich.console import Console
 from rich.panel import Panel
 from queue import Queue
 # Local
+import components_v2
 from utils.misspell import misspell_word
 from utils.notification import notify
 from utils.webhook import webhookSender
 from utils.database import databaseWorker
+
 
 
 """Cntrl+c detect"""
@@ -63,10 +64,10 @@ def compare_versions(current_version, latest_version):
     current = list(map(int, current_version.split(".")))
     latest = list(map(int, latest_version.split(".")))
 
-    for c, l in zip(current, latest):
-        if l > c:
+    for cur, lat in zip(current, latest):
+        if lat > cur:
             return True
-        elif l < c:
+        elif lat < cur:
             return False
 
     if len(latest) > len(current):
@@ -374,7 +375,7 @@ def batteryCheckFunc():
                     battery_status = os.popen("termux-battery-status").read()
                 except Exception as e:
                     console.print(
-                        f"system - Battery check failed!!".center(console_width - 2),
+                        f"system - Battery check failed!! - {e}".center(console_width - 2),
                         style="red ",
                     )
                 battery_data = json.loads(battery_status)
@@ -400,7 +401,7 @@ def batteryCheckFunc():
                             break
                 except Exception as e:
                     console.print(
-                        f"-system - Battery check failed!!.".center(console_width - 2),
+                        f"-system - Battery check failed!! - {e}".center(console_width - 2),
                         style="red ",
                     )
     except Exception as e:
@@ -570,7 +571,7 @@ class MyClient(commands.Bot):
                 status=discord.Status.invisible, activity=self.activity
             )
                 self.presence.stop()
-            except:
+            except Exception:
                 pass
         else:
             self.presence.stop()
@@ -628,7 +629,7 @@ class MyClient(commands.Bot):
                     await self.log(f"Error - Failed to load extension {extension}: {e}", "#c25560")
 
         if "cogs.captcha" not in self.extensions:
-            await self.log(f"Error - Failed to load captcha extension,\nStopping code!!", "#c25560")
+            await self.log("Error - Failed to load captcha extension,\nStopping code!!", "#c25560")
             os._exit(0)
 
     async def update_config(self):
@@ -883,7 +884,7 @@ class MyClient(commands.Bot):
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
             "customcommands": self.settings_dict["customCommands"]["enabled"],
-            "test": False # remove this
+            "boss": True # remove this
         }
 
     """To make the code cleaner when accessing cooldowns from config."""
@@ -959,7 +960,7 @@ class MyClient(commands.Bot):
 
     async def remove_queue(self, cmd_data=None, id=None):
         if not cmd_data and not id:
-            await self.log(f"Error: No id or command data provided for removing item from queue.", "#c25560")
+            await self.log("Error: No id or command data provided for removing item from queue.", "#c25560")
             return
         try:
             async with self.lock:
@@ -1216,6 +1217,8 @@ class MyClient(commands.Bot):
             self.username = self.user.name
 
         self.safety_check_loop.start()
+        self.local_headers = await components_v2.headers.generate_headers()
+        self.local_headers["Authorization"] = self.token
         if self.session is None:
             self.session = aiohttp.ClientSession()
         printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
@@ -1296,6 +1299,7 @@ class MyClient(commands.Bot):
 
         if self.settings_dict["cashCheck"]:
             asyncio.create_task(self.check_for_cash())
+
 
 def get_local_ip():
     if not global_settings_dict["website"]["enableHost"]:
@@ -1423,7 +1427,7 @@ def create_database(db_path="utils/data/db.sqlite"):
         # 2 -> priority
         temp_list = [(row[1], int(row[2])) for row in rows]
         for key, value in misc_dict["command_info"].items():
-            if not (key, value["priority"]) in temp_list:
+            if (key, value["priority"]) not in temp_list:
                 c.execute("DELETE FROM command_priority")
                 populate = True
                 break
@@ -1500,9 +1504,6 @@ def run_bot(token, channel_id, global_settings_dict, token_len):
 
     except Exception as e:
         printBox(f"Error starting bot: {e}", "bold red")
-
-def install_package(package_name):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
 
 if __name__ == "__main__":
     notify("OwO-Dusk starting... If any issue arises visit out discord support server (link available in console or github)", "Starting OwO-Dusk! :>")
@@ -1583,7 +1584,6 @@ if __name__ == "__main__":
     if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
         try:
             import tkinter as tk
-            from tkinter import PhotoImage
         except Exception as e:
             print(f"ImportError: {e}")
             

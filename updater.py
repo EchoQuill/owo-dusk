@@ -54,7 +54,7 @@ def deep_merge(old, new):
             if isinstance(old_value, dict) and isinstance(new_value, dict):
                 # Recursive
                 result[key] = deep_merge(old_value, new_value)
-            elif type(old_value) == type(new_value):
+            elif type(old_value) is type(new_value):
                 result[key] = old_value
             else:
                 result[key] = new_value

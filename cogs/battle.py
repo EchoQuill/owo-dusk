@@ -32,7 +32,7 @@ class Battle(commands.Cog):
         if not self.bot.settings_dict["commands"]["battle"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.battle"))
-            except:
+            except Exception:
                 pass
         else:
             self.cmd["cmd_name"] = (
@@ -56,7 +56,7 @@ class Battle(commands.Cog):
                             if embed.footer:
                                 if self.bot.settings_dict["commands"]["battle"]["showStreakInConsole"]:
                                     await self.bot.log(f"{embed.footer.text}", "#292252")
-                                if f"You lost in " in embed.footer.text:
+                                if "You lost your streak of" in embed.footer.text:
                                     if self.bot.settings_dict["commands"]["battle"]["notifyStreakLoss"]:
                                         notify(embed.footer.text, "You lost your streak!")
                             if message.reference is not None:

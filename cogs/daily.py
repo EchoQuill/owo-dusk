@@ -26,7 +26,6 @@ cmd = {
     "cmd_name": "daily",
     "prefix": True,
     "checks": True,
-    
     "id": "daily"
 }
 
@@ -108,7 +107,7 @@ class Daily(commands.Cog):
 
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
-                        title=f"Claimed daily",
+                        title="Claimed daily",
                         desc=f"**User** <@{self.bot.user.id}> claimed today's daily.",
                         colors="#4B6EA3",
                         img_url="https://cdn.discordapp.com/emojis/1346253360151400542.gif",

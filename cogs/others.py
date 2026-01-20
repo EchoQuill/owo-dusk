@@ -65,7 +65,7 @@ class Others(commands.Cog):
                 if message.components[0].children[0] and not message.components[0].children[0].disabled:
                     await message.components[0].children[0].click()
 
-            if nick not in message.content:
+            if nick not in message.content and self.bot.user.display_name not in message.content:
                 return
 
             # Cash Check
@@ -95,6 +95,7 @@ class Others(commands.Cog):
             elif "** You received a **lootbox**!" in message.content or "You found a **lootbox**!" in message.content:
                 if self.bot.settings_dict["autoUse"]["autoLootbox"]:
                     await self.bot.put_queue(self.lootbox_cmd)
+                    print("lootbox is now under queue!")
                     # give time for command to run
                     await asyncio.sleep(2.5)
                     self.bot.user_status["no_gems"] = False

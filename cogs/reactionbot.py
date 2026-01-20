@@ -75,6 +75,7 @@ class Reactionbot(commands.Cog):
         priority_dict = self.bot.misc["command_info"]
         last_time = self.cmd_states[cmd_id]
         # The 5s here is incase of delays.
+        print(f"currently checking cmd_retry req -> {cmd}\nvalidaty {(time.time() - last_time) > priority_dict[cmd_id]["basecd"]+5} based on {priority_dict[cmd_id]["basecd"]+5}")
         return (time.time() - last_time) > priority_dict[cmd_id]["basecd"]+5
 
     @tasks.loop(seconds=5)
@@ -82,6 +83,7 @@ class Reactionbot(commands.Cog):
         enabled_dict = self.check_cmd_state(cmd=None, return_dict=True)
         for cmd, state in enabled_dict.items():
             if state and self.cmd_retry_required(cmd):
+                print(f"REACTION : Command {cmd} in stuck -> retrying")
                 await self.send_cmd(cmd)
 
     async def send_cmd(self, cmd):
@@ -99,6 +101,7 @@ class Reactionbot(commands.Cog):
 
         """Hunt/Battle"""
         if hunt and battle:
+            print("starting hunt and battle!")
             await self.send_cmd("hunt")
             await self.send_cmd("battle")
         elif hunt or battle:

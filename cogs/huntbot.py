@@ -149,7 +149,7 @@ class Huntbot(commands.Cog):
                 await self.bot.remove_queue(id="upgrade")
             elif "Here is your password!" in message.content:
                 ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
-                await self.bot.log(f"huntbot receieved password, attempting to solve!", "#afaf87")
+                await self.bot.log("huntbot receieved password, attempting to solve!", "#afaf87")
                 await self.send_ah(
                     timeToSleep=self.bot.settings_dict["defaultCooldowns"]["briefCooldown"],
                     ans=ans,

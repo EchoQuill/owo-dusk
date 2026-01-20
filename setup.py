@@ -12,12 +12,11 @@
 
 import os
 import sys
-import json
 import subprocess
 
 try:
     os.system("cls") if os.name == "nt" else os.system("clear")
-except:
+except Exception:
     pass
 print(
     "\033[1;32mwelcome to OwO-Dusk\nThis setup will guide you through with the setup of OwO-Dusk\nThankyou for your trust in OwO-Dusk\033[m"
@@ -52,7 +51,7 @@ if scratchSetup:
     try:
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-        except:
+        except Exception:
             if is_termux():
                 print('\033[1;36m[0]attempting to retry installing requirements.txt, after ensuring pkgs are uptodate\033[m')
                 subprocess.check_call(["pkg", "update", "-y"])
@@ -117,61 +116,6 @@ if scratchSetup:
     print()
     import discord
     import asyncio
-
-    # version check
-    def compare_versions(current_version, latest_version):
-        current_version = current_version.lstrip("v")
-        latest_version = latest_version.lstrip("v")
-
-        current = list(map(int, current_version.split(".")))
-        latest = list(map(int, latest_version.split(".")))
-
-        for c, l in zip(current, latest):
-            if l > c:
-                return True
-            elif l < c:
-                return False
-
-        if len(latest) > len(current):
-            return any(x > 0 for x in latest[len(current):])
-        
-        return False
-
-    # ---CHECK VERSIONS---#
-
-    """print("\033[1;36m[0]attempting to check versions\033[m")
-    try:
-        import requests
-        print('\033[1;36m[0]--imported requests module\033[m')
-        ver_check = requests.get("https://echoquill.github.io/owo-dusk-api/version.json").json()["version"]
-        print(f'\033[1;36m[0]--recieved current latest version for owo-dusk on github - v{ver_check}\033[m')
-        version = "2.0.0"
-        print(f'\033[1;36m[0]current version of owo-dusk - {version}')
-
-        if compare_versions(version, ver_check):
-            print(
-                "[0]seems like there is a new version for OwO-dusk available in GitHub\033[m"
-            )
-            while True:
-                o = input(
-                    "\033[1;34mWould you like to stop the installation process or continue?\n(continue = c / stop = s):\n\033[m"
-                ).lower()
-
-                if o in ["c", "s"]:
-                    if o == "s":
-                        print("\033[1;36m[0]Stopping the installation process...\033[m")
-                        sys.exit(0)
-                    else:
-                        print(
-                            "\033[1;36m[0]Continuing the installation process...\033[m"
-                        )
-                        break
-                else:
-                    print(
-                        "\033[1;33m[!]Please enter 'c' for continue or 's' for stop.\033[m"
-                    )
-    except Exception as e:
-        print(f"\033[1;31m[x]error when trying to check versions:-\n {e}\033[m")"""
 
     # ---EDIT TOKENS.TXT---#
     while True:

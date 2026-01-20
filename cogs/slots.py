@@ -151,7 +151,7 @@ class Slots(commands.Cog):
                 if ("<:eggplant:417475705719226369>" in after.content.lower()
                 and "and won" in after.content.lower()):
                     """Didn't lose case but earned nothing"""
-                    await self.bot.log(f"didn't win or lose slots", "#ffafaf")
+                    await self.bot.log("didn't win or lose slots", "#ffafaf")
                     await self.start_slots()
 
                 elif "and won" in after.content.lower():

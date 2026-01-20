@@ -54,6 +54,15 @@ class Pray(commands.Cog):
         self.pray_channel = None
         self.curse_channel = None
 
+    async def safe_send_message(self, cmd, cmd_argument_data):
+        while self.bot.command_handler_status["captcha"]:
+            await asyncio.sleep(0.5)
+
+        channel = self.__dict__[f"{cmd}_channel"]
+
+        await channel.send(f"owo {cmd} {cmd_argument_data}")
+        await self.bot.log(f"{cmd} send successfully in channel {channel.name}", "#4a3466")
+
     async def start_pray_curse(self):
         self.pray_curse_ongoing = True
         cmds = [cmd for cmd in ["pray", "curse"] if self.bot.settings_dict['commands'][cmd]['enabled']]
@@ -79,11 +88,11 @@ class Pray(commands.Cog):
                 try:
                     self.__dict__[f"{cmd}_channel"] = await self.bot.fetch_channel(channelId)
                     self.__dict__[f"{cmd}_channelId"] = channelId
-                    #print(f"Fetched {self.__dict__[f"{cmd}_channel"].name} for {cmd}")
+
                 except Exception as e:
                     await self.bot.log(f"Error - Failed to fetch channel with id {cnf['customChannel']['channelId']}: {e}", "#c25560")
-            await self.__dict__[f"{cmd}_channel"].send(f"owo {cmd} {cmd_argument_data}")
-            await self.bot.log(f"{cmd}ed successfully in channel {self.__dict__[f"{cmd}_channel"].name}", "#4a3466")
+            await self.safe_send_message(cmd, cmd_argument_data)
+            
         else:
             await self.bot.put_queue(self.__dict__[f"{cmd}_cmd"], priority=True)
 

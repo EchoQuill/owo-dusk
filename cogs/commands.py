@@ -45,9 +45,9 @@ class Commands(commands.Cog):
         
 
         if time.time() - self.last_msg >= cd:
-            await self.bot.log(f"UNABLE TO DETECT MESSAGES!", "#8b1657")
+            await self.bot.log("UNABLE TO DETECT MESSAGES!", "#8b1657")
             self.bot.command_handler_status["captcha"] = True # Prevent any further messages
-            await self.bot.log(f"Code was stopped for obvious reasons, please report logs of when this happened along with any errors to @echoquill\nYou may report through either dms or support server!", "#8b1657")
+            await self.bot.log("Code was stopped for obvious reasons, please report logs of when this happened along with any errors to @echoquill\nYou may report through either dms or support server!", "#8b1657")
 
             print("attempting to trigger retry!")
             await self.bot.close()
@@ -64,7 +64,7 @@ class Commands(commands.Cog):
         if req != 1000:
             threshold = req+10
         else:
-            await self.bot.log(f"Disabling watchdog since no valid cooldown found", "#13353a")
+            await self.bot.log("Disabling watchdog since no valid cooldown found", "#13353a")
             # Rest would daily, cookie etc which doesnt really cause much issues even in case of failure.
             # It would be safe to assume nothing wrong will happen (hopefully)
             return None

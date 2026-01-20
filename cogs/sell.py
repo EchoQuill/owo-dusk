@@ -81,8 +81,8 @@ class Sell(commands.Cog):
                 if self.bot.settings_dict["cashCheck"]:
                     try:
                         await self.bot.update_cash(int(re.search(r'for a total of \*\*<:cowoncy:\d+> ([\d,]+)', message.content).group(1).replace(',', '')))
-                    except:
-                        await self.bot.log(f"failed to fetch cowoncy from sales", "#af0087")
+                    except Exception:
+                        await self.bot.log("failed to fetch cowoncy from sales", "#af0087")
                 
                 if self.bot.settings_dict["commands"]["sac"]["enabled"]:
                     await self.sell_sac_queue(self.sac_cmd, self.bot.settings_dict["commands"]["sac"]["cooldown"])
