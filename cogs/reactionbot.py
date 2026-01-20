@@ -78,9 +78,6 @@ class Reactionbot(commands.Cog):
         priority_dict = self.bot.misc["command_info"]
         last_time = self.cmd_states[cmd_id]
         # The 5s here is incase of delays.
-        print(
-            f"currently checking cmd_retry req -> {cmd}\nvalidaty {(time.time() - last_time) > priority_dict[cmd_id]['basecd'] + 5} based on {priority_dict[cmd_id]['basecd'] + 5}"
-        )
         return (time.time() - last_time) > priority_dict[cmd_id]["basecd"] + 5
 
     @tasks.loop(seconds=5)
