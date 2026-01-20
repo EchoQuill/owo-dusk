@@ -539,6 +539,7 @@ class MyClient(commands.Bot):
             command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs
         )
         self.token = token
+        self.boss_channel_id = 0
         self.token_len = token_len
         self.channel_id = int(channel_id)
         self.list_channel = [self.channel_id]
@@ -797,31 +798,52 @@ class MyClient(commands.Bot):
     def populate_stats_db(self):
         database_handler.update_database(
             "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy, boss, boss_ticket) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (self.user.id, 0, 0, 0, 0, 0, 0, 0, 0),
+            (self.user.id, 0, 0, 0, 0, 0, 0, 0, 3),
         )
 
     def update_stats_db(self, column_name, value):
-        if column_name not in {"daily", "lottery", "cookie", "giveaways"}:
+        if column_name not in {"daily", "lottery", "cookie", "giveaways", "boss"}:
             # Captcha and cowoncy handled seperately
             raise ValueError("Invalid column name.")
 
         database_handler.update_database(
-            "UPDATE user_stats SET ? = ? WHERE user_id = ?",
-            (column_name, value, self.user.id),
+            f"UPDATE user_stats SET {column_name} = ? WHERE user_id = ?",
+            (value, self.user.id),
         )
 
-    def consume_boss_ticket(self):
-        database_handler.update_database(
-            "UPDATE user_stats SET boss_ticket = boss_ticket - 1 WHERE user_id = ?",
+    def consume_boss_ticket(self, revert=False):
+        if not revert:
+            database_handler.update_database(
+                "UPDATE user_stats SET boss_ticket = boss_ticket - 1 WHERE user_id = ?",
+                (self.user.id,),
+            )
+        else:
+            database_handler.update_database(
+                "UPDATE user_stats SET boss_ticket = boss_ticket + 1 WHERE user_id = ?",
+                (self.user.id,),
+            )
+
+    async def fetch_boss_stats(self):
+        results = await database_handler.get_from_db(
+            "SELECT boss, boss_ticket FROM user_stats WHERE user_id = ?",
             (self.user.id,),
         )
+        if results:
+            return results[0]["boss"], results[0]["boss_ticket"]
+        return None, None
 
-    def reset_boss_ticket(self):
-        # We have a total of 3 tickets per day.
-        database_handler.update_database(
-            "UPDATE user_stats SET boss_ticket = ? WHERE user_id = ?",
-            (3, self.user.id),
-        )
+    def reset_boss_ticket(self, empty=False):
+        if not empty:
+            # We have a total of 3 tickets per day.
+            database_handler.update_database(
+                "UPDATE user_stats SET boss_ticket = ? WHERE user_id = ?",
+                (3, self.user.id),
+            )
+        else:
+            database_handler.update_database(
+                "UPDATE user_stats SET boss_ticket = ? WHERE user_id = ?",
+                (0, self.user.id),
+            )
 
     async def populate_cowoncy_earnings(self, update=False):
         today_str = get_date()
@@ -956,6 +978,7 @@ class MyClient(commands.Bot):
             "battle": commands_dict["battle"]["enabled"]
             and not reaction_bot_dict["hunt_and_battle"],
             "blackjack": self.settings_dict["gamble"]["blackjack"]["enabled"],
+            "boss": self.settings_dict["bossBattle"]["enabled"],
             "captcha": True,
             "channelswitcher": self.global_settings_dict["channelSwitcher"]["enabled"],
             "chat": True,
@@ -981,7 +1004,6 @@ class MyClient(commands.Bot):
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
             "customcommands": self.settings_dict["customCommands"]["enabled"],
-            "boss": True,  # remove this
         }
 
     """To make the code cleaner when accessing cooldowns from config."""
@@ -1299,6 +1321,11 @@ class MyClient(commands.Bot):
         time_now = datetime.now(timezone.utc).astimezone(pytz.timezone("US/Pacific"))
         return time_now.timestamp()
 
+    def pst_midnight_timestamp(self):
+        now = datetime.now(timezone.utc).astimezone(pytz.timezone("US/Pacific"))
+        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        return midnight.timestamp()
+
     async def check_for_cash(self):
         await asyncio.sleep(self.random.uniform(4.5, 34.4))
         await self.put_queue(
@@ -1526,6 +1553,7 @@ def start_runtime_loop(path="utils/data/weekly_runtime.json"):
         loop_thread.start()
 
     except Exception as e:
+        # Re-attempt here once fixing the runtime json file
         print(f"Error when attempting to start runtime handler:\n{e}")
 
 

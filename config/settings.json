@@ -179,6 +179,14 @@
             ]
         }
     },
+    "bossBattle": {
+        "enabled": true,
+        "joinChancePercent": 50,
+        "joinAllGuilds": {
+            "enabled": true,
+            "guildIdsToIgnore": []
+        }
+    },
     "giveawayJoiner": {
         "enabled": false,
         "channelsToJoin": [

@@ -299,7 +299,7 @@ class Captcha(commands.Cog):
                 await self.handle_solves()
                 return
 
-        channels = [self.bot.dm.id, self.bot.cm.id]
+        channels = [self.bot.dm.id, self.bot.cm.id, self.bot.boss_channel_id]
         if self.bot.settings_dict["commands"]["pray"]["customChannel"]["enabled"]:
             channels.append(
                 self.bot.settings_dict["commands"]["pray"]["customChannel"]["channelId"]

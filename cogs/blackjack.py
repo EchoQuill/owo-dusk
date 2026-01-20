@@ -41,7 +41,6 @@ def find_optimal_move(e_hand, u_hand, soft=False):
 def fetch_bj_hands(embed):
     dealer_field_name = embed.fields[0].name if len(embed.fields) > 0 else None
     field_name = embed.fields[1].name if len(embed.fields) > 1 else None
-    print(field_name, dealer_field_name)
 
     if dealer_field_name and field_name:
         soft = True if "*" in field_name else False

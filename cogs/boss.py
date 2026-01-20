@@ -11,63 +11,59 @@
 # (at your option) any later version.
 
 from discord.ext import commands
-import threading
 import asyncio
 import json
 
 import components_v2 as comp
-
-
-def load_json_dict(file_path="utils/stats.json"):
-    with open(file_path, "r") as config_file:
-        return json.load(config_file)
-
-
-lock = threading.Lock()
-
-
-def load_dict():
-    global accounts_dict
-    accounts_dict = load_json_dict()
-
-
-load_dict()
+from discord.ext.commands import ExtensionNotLoaded
 
 
 class Boss(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.clicked = False
+        self.boss_tickets = 3
+        self.sleeping = True
+
+    def should_join(self, percentage):
+        boss_dict = self.bot.settings_dict["bossBattle"]
+        random_num = self.bot.random.randint(1, 100)
+        return random_num > (100 - boss_dict["joinChancePercent"])
 
     async def cog_load(self):
-        print("loaded!")
+        if not self.bot.settings_dict["bossBattle"]["enabled"]:
+            try:
+                asyncio.create_task(self.bot.unload_cog("cogs.daily"))
+            except ExtensionNotLoaded:
+                pass
+        else:
+            asyncio.create_task(self.time_check())
 
-    async def fetch_json(self):
-        if str(self.bot.user.id) in accounts_dict:
-            self.current_time_seconds = self.bot.time_in_seconds()
-            self.last_daily_time = accounts_dict[str(self.bot.user.id)].get("daily", 0)
+    async def wait_till_reset_day(self):
+        self.sleeping = True
+        time_to_sleep = self.bot.calc_time()
+        await self.bot.log(f"Sleeping boss battle till {time_to_sleep}", "#143B02")
+        await asyncio.sleep(time_to_sleep)
+        await self.time_check()
+        self.sleeping = False
 
-            # Time difference calculation
-            self.time_diff = self.current_time_seconds - self.last_daily_time
+    async def time_check(self):
+        last_reset_ts, self.boss_tickets = await self.bot.fetch_boss_stats()
 
-            if self.time_diff < 0:
-                self.last_daily_time = self.current_time_seconds
-            if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                await asyncio.sleep(
-                    self.bot.calc_time()
-                )  # Wait until next 12:00 AM PST
+        today_midnight_ts = self.bot.pst_midnight_timestamp()
 
-            await self.bot.sleep_till(
-                self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
-            )
+        if not last_reset_ts or last_reset_ts < today_midnight_ts:
+            # Resetting incase new run or reset timing
+            self.bot.reset_boss_ticket()
+            self.boss_tickets = 3
 
-            with lock:
-                load_dict()
-                accounts_dict[str(self.bot.user.id)]["daily"] = (
-                    self.bot.time_in_seconds()
-                )
-                with open("utils/stats.json", "w") as f:
-                    json.dump(accounts_dict, f, indent=4)
+            # update database
+            self.bot.update_stats_db("boss", today_midnight_ts)
+
+        self.sleeping = False
+
+    def consume_boss_ticket(self):
+        self.boss_tickets -= 1
+        self.bot.consume_boss_ticket()
 
     @commands.Cog.listener()
     async def on_socket_raw_receive(self, msg):
@@ -78,7 +74,13 @@ class Boss(commands.Cog):
         Right now we are getting the message object directly through on_socket_raw_receive
         we may want to consider getting message once and sharing them instead to reduce unneccesory parsing of raw input.
         """
-        if self.clicked:
+
+        if self.boss_tickets <= 0 or self.sleeping:
+            if not self.sleeping:
+                await self.bot.log(
+                    "Don't have enough boss tickets to join boss battle..", "#143B02"
+                )
+                await self.wait_till_reset_day()
             return
 
         parsed_msg = json.loads(msg)
@@ -86,6 +88,12 @@ class Boss(commands.Cog):
             return
 
         message = comp.message.get_message_obj(parsed_msg["d"])
+
+        if (
+            not self.bot.settings_dict["bossBattle"]["joinAllGuilds"]["enabled"]
+            and message.channel_id != self.bot.cm.id
+        ):
+            return
 
         if message.author.id == self.bot.owo_bot_id:
             if message.components:
@@ -96,7 +104,14 @@ class Boss(commands.Cog):
                             component.component[0].content
                             and "runs away" in component.component[0].content
                         ):
-                            await self.bot.log("Boss component Detected!", "#B5C1CE")
+                            if not self.should_join(
+                                self.bot.settings_dict["bossBattle"][
+                                    "joinChancePercent"
+                                ]
+                            ):
+                                await self.bot.log("Skipping boss battle..", "#6F7C8A")
+                                return
+
                             # Boss Fight button
                             if (
                                 component.accessory
@@ -106,19 +121,47 @@ class Boss(commands.Cog):
                                     boss_channel = await self.bot.fetch_channel(
                                         message.channel_id
                                     )
-                                    await self.bot.log(
-                                        "Boss component - clicking..", "#B5C1CE"
-                                    )
-                                    await asyncio.sleep(0.5)
-                                    await component.accessory.click(
-                                        self.bot.ws.session_id,
-                                        self.bot.local_headers,
-                                        boss_channel.guild.id,
-                                    )
-                                    await self.bot.log(
-                                        "Boss component - clicked!", "#B5C1CE"
-                                    )
-                                    self.clicked = True
+
+                                    if boss_channel:
+                                        self.bot.boss_channel_id = boss_channel.id
+                                        cnf = self.bot.settings_dict["bossBattle"][
+                                            "joinAllGuilds"
+                                        ]
+                                        if (
+                                            cnf["enabled"]
+                                            and boss_channel.guild.id
+                                            in cnf["guildIdsToIgnore"]
+                                        ):
+                                            # Skip incase in guild ignore list.
+                                            return
+
+                                        await asyncio.sleep(0.5)
+                                        click_status = await component.accessory.click(
+                                            self.bot.ws.session_id,
+                                            self.bot.local_headers,
+                                            boss_channel.guild.id,
+                                        )
+                                        if click_status:
+                                            await self.bot.log(
+                                                "Joined Boss battle!", "#B5C1CE"
+                                            )
+
+                    if component.component_name == "text_display":
+                        if (
+                            "Are you sure you want to use another boss ticket?"
+                            in component.content
+                        ):
+                            await self.bot.log(
+                                "Boss battle was already joined..", "#B5C1CE"
+                            )
+                            # redo changes made earlier..
+                            self.bot.consume_boss_ticket(revert=True)
+                            self.boss_tickets += 1
+
+                        if "You don't have any boss tickets!" in component.content:
+                            # Reset previous entry
+                            self.boss_tickets = 0
+                            self.bot.reset_boss_ticket(empty=True)
 
 
 async def setup(bot):
