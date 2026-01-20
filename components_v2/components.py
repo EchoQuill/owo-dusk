@@ -278,8 +278,6 @@ class accessory:
                         if resp.status != 204:
                             text = await resp.text()
                             print(f"Button click failed ({resp.status}): {text}")
-                        else:
-                            print("YOOO YES LETS GOO TIME TO SLEEP!")
         else:
             print(
                 f"Code attempted to click on a button... but not a clickable button  -> {self.custom_id}"
