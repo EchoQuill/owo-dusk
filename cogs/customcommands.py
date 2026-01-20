@@ -16,6 +16,7 @@ import time
 from discord.ext import commands, tasks
 from discord.ext.commands import ExtensionNotLoaded
 
+
 def find_least_gap(list_to_check):
     if len(list_to_check) < 2:
         return None
@@ -23,7 +24,7 @@ def find_least_gap(list_to_check):
     final_result = {
         "min": list_to_check[0],
         "max": list_to_check[1],
-        "diff": abs(list_to_check[1] - list_to_check[0])
+        "diff": abs(list_to_check[1] - list_to_check[0]),
     }
 
     for i in range(len(list_to_check) - 1):
@@ -37,6 +38,7 @@ def find_least_gap(list_to_check):
             final_result["diff"] = diff if diff > 0 else 1
 
     return final_result
+
 
 class CustomCommands(commands.Cog):
     def __init__(self, bot):
@@ -56,15 +58,11 @@ class CustomCommands(commands.Cog):
                 "last_ran": 0
             }"""
 
-    
-            
     def approximate_minimum_cooldown(self):
         commands_dict = self.bot.settings_dict["customCommands"]["commands"]
 
         cooldowns_list = [
-            item["cooldown"]
-            for item in commands_dict
-            if item.get("enabled")
+            item["cooldown"] for item in commands_dict if item.get("enabled")
         ]
 
         if not cooldowns_list:
@@ -72,47 +70,37 @@ class CustomCommands(commands.Cog):
             return 1
 
         # Sort in ascending order
-        cooldowns_list = sorted(cooldowns_list) 
+        cooldowns_list = sorted(cooldowns_list)
         result = find_least_gap(cooldowns_list)
 
         if result:
             return min(result["diff"], min(cooldowns_list))
         else:
             return cooldowns_list[0]
-        
 
     def search_cmd_tracker(self, cmd_dict):
         matches = []
         for idx, cmd_data in enumerate(self.cmd_tracker):
             if cmd_data["basedict"] == cmd_dict:
-                matches.append({
-                    "index": idx,
-                    "data": cmd_data
-                })
+                matches.append({"index": idx, "data": cmd_data})
 
         return matches
-    
+
     def fetch_last_ran_diff(self, last_ran, cooldown):
         # Checks if command can be ran or not.
         if last_ran != 0:
-            cd = (time.monotonic() - last_ran)
-            return {
-                "required": cd > cooldown,
-                "cooldown": cd
-            }
+            cd = time.monotonic() - last_ran
+            return {"required": cd > cooldown, "cooldown": cd}
         else:
-            return {
-                "required": False,
-                "cooldown": 0
-            }
-    
+            return {"required": False, "cooldown": 0}
+
     async def run_cmd(self, cmd_data, tracker_idx=None):
         cmd = {
             "cmd_name": cmd_data["command"],
             "prefix": False,
             "checks": False,
             "id": "customcommand",
-            "removed": False
+            "removed": False,
         }
 
         await self.bot.put_queue(cmd)
@@ -121,12 +109,8 @@ class CustomCommands(commands.Cog):
             self.cmd_tracker[tracker_idx]["last_ran"] = time.monotonic()
         else:
             self.cmd_tracker.append(
-                {
-                    "basedict": cmd_data,
-                    "last_ran": time.monotonic()
-                }
+                {"basedict": cmd_data, "last_ran": time.monotonic()}
             )
-
 
     @tasks.loop()
     async def command_handler(self):
@@ -140,17 +124,17 @@ class CustomCommands(commands.Cog):
             if not results:
                 await self.run_cmd(cmd_dict)
             else:
-                cd_info_dict = self.fetch_last_ran_diff(results[0]["data"]["last_ran"], cmd_dict["cooldown"])
+                cd_info_dict = self.fetch_last_ran_diff(
+                    results[0]["data"]["last_ran"], cmd_dict["cooldown"]
+                )
                 if cd_info_dict["required"]:
                     await self.run_cmd(cmd_dict, results[0]["index"])
 
                 if len(results) != 1:
-                    #multiple data detected
+                    # multiple data detected
                     pass
 
-
         await asyncio.sleep(cd)
-
 
     async def cog_load(self):
         if not self.bot.settings_dict["customCommands"]["enabled"]:

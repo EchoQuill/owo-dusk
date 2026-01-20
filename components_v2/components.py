@@ -1,5 +1,6 @@
 import aiohttp
 
+
 class component_names:
     # All components to be handled
     ACTIONS_ROW_COMPONENT = 1
@@ -20,13 +21,14 @@ class component_names:
     CONTAINER_COMPONENT = 17
     LABEL_COMPONENT = 18
 
+
 BUTTON_STYLES = {
     # 6 -> Premium. Unwanted so not including.
     1: "primary",
     2: "secondary",
     3: "success",
     4: "danger",
-    5: "link"
+    5: "link",
 }
 
 COMPONENT_NAMES = {
@@ -45,8 +47,9 @@ COMPONENT_NAMES = {
     component_names.FILE_COMPONENT_TYPE: "file",
     component_names.SEPARATOR_COMPONENT: "separator",
     component_names.CONTAINER_COMPONENT: "container",
-    component_names.LABEL_COMPONENT: "label"
+    component_names.LABEL_COMPONENT: "label",
 }
+
 
 def get_component_name(i: int):
     return COMPONENT_NAMES[i]
@@ -64,52 +67,30 @@ def walker(components: list, message_details=None):
 
         if component_type == component_names.BUTTON_COMPONENT:
             # Accessing -> BUTTON_LIST.{element_name}
-            BUTTONS_LIST.append(
-                button(component)
-            )
+            BUTTONS_LIST.append(button(component))
         elif component_type == component_names.SELECT_MENU_COMPONENT:
-            COMPONENTS_LIST.append(
-                select_menu(component)
-            )
+            COMPONENTS_LIST.append(select_menu(component))
         elif component_type == component_names.SECTION_COMPONENT:
             # Both accessory and components are bundled together.
             # Currently only a thumbnail or button component..
             section_component = True
-            COMPONENTS_LIST.append(
-                section(component, message_details)  
-            )
+            COMPONENTS_LIST.append(section(component, message_details))
         elif component_type == component_names.TEXT_DISPLAY_COMPONENT:
             # Markdown text
-            COMPONENTS_LIST.append(
-                text_display(component)
-            )
+            COMPONENTS_LIST.append(text_display(component))
         elif component_type == component_names.THUMBNAIL_COMPONENT:
             # Accessory can be either a thumbail or a button
             # Hence accessory class can be used here.
-            COMPONENTS_LIST.append(
-                accessory(
-                    component,
-                    message_details
-                )
-            )
+            COMPONENTS_LIST.append(accessory(component, message_details))
         elif component_type == component_names.MEDIA_GALLERY_COMPONENT:
-            COMPONENTS_LIST.append(
-                media_gallery(
-                    component
-                )
-            )
+            COMPONENTS_LIST.append(media_gallery(component))
         elif component_type == component_names.LABEL_COMPONENT:
-            COMPONENTS_LIST.append(
-                label(
-                    component
-                )
-            )
+            COMPONENTS_LIST.append(label(component))
 
         if not section_component:
             if component.get("components"):
                 nested_components_list, nested_buttons_list = walker(
-                    component.get("components"),
-                    message_details
+                    component.get("components"), message_details
                 )
 
                 COMPONENTS_LIST = COMPONENTS_LIST + nested_components_list
@@ -118,19 +99,12 @@ def walker(components: list, message_details=None):
             if component.get("accessory"):
                 # For ease of development, accessory is going to be treated as either
                 # a component or a button since accessory only contains a thumbnail or a button
-                cur_accessory = accessory(
-                    component["accessory"],
-                    message_details
-                )
+                cur_accessory = accessory(component["accessory"], message_details)
 
                 if cur_accessory.component_name != "button":
-                    COMPONENTS_LIST.append(
-                        cur_accessory
-                    )
+                    COMPONENTS_LIST.append(cur_accessory)
                 else:
-                    BUTTONS_LIST.append(
-                        cur_accessory
-                    )
+                    BUTTONS_LIST.append(cur_accessory)
 
     return COMPONENTS_LIST, BUTTONS_LIST
 
@@ -140,16 +114,20 @@ class emoji:
         self.id = int(data.get("id", 0))
         self.name = data.get("name")
 
+
 class button:
     def __init__(self, component: dict):
         self.component_name = COMPONENT_NAMES[component["type"]]
-        self.style = BUTTON_STYLES[component["style"]] if component.get("style") else None
+        self.style = (
+            BUTTON_STYLES[component["style"]] if component.get("style") else None
+        )
         self.label = component.get("label")
         self.custom_id = component.get("custom_id")
         if component.get("emoji"):
             self.emoji = emoji(component.get("emoji"))
         self.url = component.get("url")
         self.disabled = component.get("disabled", False)
+
 
 class select_menu_options:
     # Menu inside select menu
@@ -158,6 +136,7 @@ class select_menu_options:
         self.label = data.get("label")
         self.value = data.get("value")
         self.description = data.get("description")
+
 
 class select_menu:
     # Actual select menu
@@ -174,12 +153,11 @@ class select_menu:
 class section:
     def __init__(self, component: dict, message_details=None):
         self.component_name = COMPONENT_NAMES[component["type"]]
-        self.accessory = accessory(
-            component.get("accessory", {}),
-            message_details
-        )
+        self.accessory = accessory(component.get("accessory", {}), message_details)
 
-        self.component, self.buttons = walker(component.get("components", []), message_details)
+        self.component, self.buttons = walker(
+            component.get("components", []), message_details
+        )
 
 
 class text_display:
@@ -188,24 +166,20 @@ class text_display:
         self.id = component.get("id")
         self.content = component.get("content")
 
+
 class media_gallery_item:
     def __init__(self, data: dict):
-        self.media = media(
-            data.get("media")
-        )
+        self.media = media(data.get("media"))
         self.description = data.get("description")
+
 
 class media_gallery:
     def __init__(self, component: dict):
         self.component_name = COMPONENT_NAMES[component["type"]]
         self.items = []
         for item in component.get("items", []):
-            self.items.append(
-                media_gallery_item(
-                    item
-                )
-            )
-        
+            self.items.append(media_gallery_item(item))
+
 
 class label:
     def __init__(self, component: dict):
@@ -221,10 +195,11 @@ class media:
         self.url = data.get("url")
         self.proxy_url = data.get("proxy_url")
 
+
 class accessory:
     # Accessory of the message
     # Always a thumbnail or button component!
-    def __init__(self, data: dict, message_details = None):
+    def __init__(self, data: dict, message_details=None):
         self.component_name = COMPONENT_NAMES[data.get("type")]
         self.id = data.get("id")
         self.url = data.get("url")
@@ -249,7 +224,12 @@ class accessory:
             and not self.disabled
         )
         if self.is_clickable_button and message_details:
-            if message_details["message_channel"] and message_details["message_id"] and message_details["message_flag"] and message_details["message_author_id"]:
+            if (
+                message_details["message_channel"]
+                and message_details["message_id"]
+                and message_details["message_flag"]
+                and message_details["message_author_id"]
+            ):
                 print("yess we did it")
                 self._message_channel_id = message_details["message_channel"]
                 self._message_id = message_details["message_id"]
@@ -258,13 +238,17 @@ class accessory:
 
         else:
             self.is_clickable_button = False
-        
 
     async def click(self, session, headers, guild_id):
         if self.is_clickable_button:
             print("Attempting a click on the button element..")
 
-            if self._message_channel_id and self._message_id and self._message_flag and self._author_id:
+            if (
+                self._message_channel_id
+                and self._message_id
+                and self._message_flag
+                and self._author_id
+            ):
                 req_json = {
                     "type": 3,
                     "application_id": str(self._author_id),
@@ -273,19 +257,22 @@ class accessory:
                     "message_id": self._message_id,
                     "session_id": session,
                     "message_flags": self._message_flag,
-                    "data": {
-                        "component_type": 2,
-                        "custom_id": self.custom_id
-                    }
+                    "data": {"component_type": 2, "custom_id": self.custom_id},
                 }
 
                 async with aiohttp.ClientSession() as http:
-                    async with http.post("https://discord.com/api/v9/interactions", json=req_json, headers=headers) as resp:
+                    async with http.post(
+                        "https://discord.com/api/v9/interactions",
+                        json=req_json,
+                        headers=headers,
+                    ) as resp:
                         if resp.status != 204:
                             text = await resp.text()
                             print(f"Button click failed ({resp.status}): {text}")
                         else:
                             print("YOOO YES LETS GOO TIME TO SLEEP!")
         else:
-            print(f"Code attempted to click on a button... but not a clickable button  -> {self.custom_id}")
+            print(
+                f"Code attempted to click on a button... but not a clickable button  -> {self.custom_id}"
+            )
             print()

@@ -1,7 +1,7 @@
 # This file includes code originally authored by realphandat.
 # Source: "phandat-selfbot" (https://github.com/realphandat/phandat-selfbot)
 # This file is licensed under the GNU General Public License v3.0 (GPL-3.0).
-# 
+#
 # This project as a whole is also licensed under the GNU General Public License v3.0.
 
 # This file is part of owo-dusk.
@@ -24,10 +24,10 @@ import base64
 
 priority_groups = [
     list("abdegkmpqstvwxyz"),  # First priority
-    list("fho"),               # Second priority
-    list("cnru"),              # Third priority
-    list("jl"),                # Fourth priority
-    list("i"),                 # Fifth priority
+    list("fho"),  # Second priority
+    list("cnru"),  # Third priority
+    list("jl"),  # Fourth priority
+    list("i"),  # Fifth priority
 ]
 
 encoded_image_dict = {
@@ -56,13 +56,15 @@ encoded_image_dict = {
     "w": "iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAALUlEQVQoFWN0mv3/PwMU7EtlZAQxCYkxwTSQQo9qgobWIA8IRuTYJzaC6ecnACGvDc/Z7HB/AAAAAElFTkSuQmCC",
     "x": "iVBORw0KGgoAAAANSUhEUgAAAAwAAAANCAYAAACdKY9CAAAAgklEQVQoFZWSiw2AIAxEi6PpKm6lqzgbesRnygVNJMGW3gcaG7XWmLfre8WvDacoiXsdaxTyHJc9Hs70BlDPZNUmd82EnGPQbnARoEfxihpljRzBMO0EAl0EEeH/plG6M3XFjLUbcgGiPwVO9+NGZIhgXQ8qurOf2/xoPJiVt3kCPwGLgnhJFhDySgAAAABJRU5ErkJggg==",
     "y": "iVBORw0KGgoAAAANSUhEUgAAAA0AAAASCAYAAACAa1QyAAAAPklEQVQoFWN0mv3/PwMU7EtlZISx0WlkdUzoksTwRzVBQ2mQBwQjckwTE7EgNfTzE9YEiuxkbImYfs6jn00ArlAN2LER5EoAAAAASUVORK5CYII=",
-    "z": "iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAT0lEQVQoFWN0mv3/PwOJgIlE9WDlZGliJGQTuvP3pTIy4tWETQPIEpyacGnAqQmfBqyaCGnA0ESMBhRNxGqAa0LXAJLABxhJ1QAyjKwUAQA6fySifLwVygAAAABJRU5ErkJggg=="
+    "z": "iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAT0lEQVQoFWN0mv3/PwOJgIlE9WDlZGliJGQTuvP3pTIy4tWETQPIEpyacGnAqQmfBqyaCGnA0ESMBhRNxGqAa0LXAJLABxhJ1QAyjKwUAQA6fySifLwVygAAAABJRU5ErkJggg==",
 }
+
 
 def decode_base64_to_image(b64_string):
     raw_bytes = base64.b64decode(b64_string)
     buffer = io.BytesIO(raw_bytes)
     return Image.open(buffer)
+
 
 async def solveHbCaptcha(captcha_url, session):
     checks = []

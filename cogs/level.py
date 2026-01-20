@@ -18,15 +18,16 @@ from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
 
-
 quotes_url = "https://favqs.com/api/qotd"
+
 
 def generate_random_string(min, max):
     """something like a list?"""
-    characters = string.ascii_lowercase + ' '
-    length = random.randint(min,max)
+    characters = string.ascii_lowercase + " "
+    length = random.randint(min, max)
     random_string = "".join(random.choice(characters) for _ in range(length))
     return random_string
+
 
 async def fetch_quotes(session):
     async with session.get(quotes_url) as response:
@@ -36,21 +37,14 @@ async def fetch_quotes(session):
             return quote
 
 
-
 class Level(commands.Cog):
     def __init__(self, bot):
-        
         self.bot = bot
         self.last_level_grind_message = None
-        self.cmd = {
-            "cmd_name": None,
-            "prefix": False,
-            "checks": True,
-            "id": "level"
-        }
+        self.cmd = {"cmd_name": None, "prefix": False, "checks": True, "id": "level"}
 
     async def start_level_grind(self):
-        #await asyncio.sleep(1)
+        # await asyncio.sleep(1)
         await self.bot.remove_queue(id="level")
         cnf = self.bot.settings_dict["commands"]["lvlGrind"]
         try:
@@ -58,15 +52,17 @@ class Level(commands.Cog):
             if cnf["useQuoteInstead"]:
                 self.last_level_grind_message = await fetch_quotes(self.bot.session)
             else:
-                self.last_level_grind_message = generate_random_string(cnf["minLengthForRandomString"], cnf["maxLengthForRandomString"])
+                self.last_level_grind_message = generate_random_string(
+                    cnf["minLengthForRandomString"], cnf["maxLengthForRandomString"]
+                )
             self.cmd["cmd_name"] = self.last_level_grind_message
 
             await self.bot.put_queue(self.cmd)
         except Exception as e:
             await self.bot.log(f"Error - start_level_grind(): {e}", "#c25560")
-        
-    
+
     """gets executed when the cog is first loaded"""
+
     async def cog_load(self):
         if not self.bot.settings_dict["commands"]["lvlGrind"]["enabled"]:
             try:
@@ -81,10 +77,13 @@ class Level(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.user.id:
+        if (
+            message.channel.id == self.bot.cm.id
+            and message.author.id == self.bot.user.id
+        ):
             if self.last_level_grind_message == message.content:
                 await self.start_level_grind()
-                
+
 
 async def setup(bot):
     await bot.add_cog(Level(bot))

@@ -1,17 +1,20 @@
 import json
 from components_v2.components import walker
 
+
 class author:
     # The user who send the message.
     def __init__(self, data: dict):
         self.name = data.get("username")
         self.id = int(data.get("id", 0))
 
+
 class emoji:
     # Emoji, likely to be inside `button`
     def __init__(self, data: dict):
         self.id = int(data.get("id", 0))
         self.name = data.get("name")
+
 
 class message:
     # Message object
@@ -23,20 +26,14 @@ class message:
         self.channel_id = int(data.get("channel_id", 0))
         self.components, self.buttons = walker(
             components=data.get("components", {}),
-            message_details= {
+            message_details={
                 "message_channel": self.channel_id,
                 "message_id": self.id,
                 "message_flag": self.flags,
-                "message_author_id": self.author.id
-            }
+                "message_author_id": self.author.id,
+            },
         )
-        
 
 
 def get_message_obj(msg: str):
     return message(msg)
-
-
-
-
-    

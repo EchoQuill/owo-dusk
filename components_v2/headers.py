@@ -129,11 +129,11 @@ async def generate_headers() -> dict:
 
         return {
             "accept": "*/*",
-            "accept-language": f"{props.get('system_locale','en-US')},en;q=0.5",
-            #"priority": "u=1, i",
-            #"referer": "https://discord.com/channels/@me",
-            "sec-ch-ua": f'"Not:A-Brand";v="24", "Chromium";v="{props.get("browser_version","124")}"',
-            "sec-ch-ua-platform": f"\"{props.get('os','Windows')}\"",
+            "accept-language": f"{props.get('system_locale', 'en-US')},en;q=0.5",
+            # "priority": "u=1, i",
+            # "referer": "https://discord.com/channels/@me",
+            "sec-ch-ua": f'"Not:A-Brand";v="24", "Chromium";v="{props.get("browser_version", "124")}"',
+            "sec-ch-ua-platform": f'"{props.get("os", "Windows")}"',
             "sec-fetch-dest": "empty",
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
@@ -152,7 +152,9 @@ async def generate_headers() -> dict:
             "TE": "trailers",
         }
 
+
 if __name__ == "__main__":
     import asyncio
+
     headers = asyncio.run(generate_headers())
     print(headers)

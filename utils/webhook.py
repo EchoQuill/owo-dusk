@@ -15,15 +15,13 @@ import threading
 from queue import Queue
 import aiohttp
 
+
 class webhookSender:
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url
         self.queue = Queue()
         self.loop = asyncio.new_event_loop()
-        self.thread = threading.Thread(
-            target=self.start_loop,
-            daemon=True
-        )
+        self.thread = threading.Thread(target=self.start_loop, daemon=True)
         self.thread.start()
 
     def start_loop(self):
@@ -54,11 +52,11 @@ class webhookSender:
                 try:
                     async with session.post(
                         self.webhook_url,
-                        json=data, #payload
+                        json=data,  # payload
                         headers={"Content-Type": "application/json"},
                     ) as resp:
-                        #text = await resp.text()
-                        #print(f"[Webhook] {resp.status}: {text}")
+                        # text = await resp.text()
+                        # print(f"[Webhook] {resp.status}: {text}")
                         pass
                 finally:
                     self.queue.task_done()

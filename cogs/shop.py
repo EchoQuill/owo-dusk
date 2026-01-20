@@ -25,15 +25,8 @@ SHOP-
 
 cash_regex = r"for \*\*(\d+)\*\* <:cowoncy:\d+>"
 
-cash_required = {
-    1:10,
-    2:100,
-    3:1000,
-    4:10000,
-    5:100000,
-    6:1000000,
-    7:10000000
-}
+cash_required = {1: 10, 2: 100, 3: 1000, 4: 10000, 5: 100000, 6: 1000000, 7: 10000000}
+
 
 class Shop(commands.Cog):
     def __init__(self, bot):
@@ -43,7 +36,7 @@ class Shop(commands.Cog):
             "cmd_arguments": "",
             "prefix": True,
             "checks": True,
-            "id": "shop"
+            "id": "shop",
         }
 
     async def cog_load(self):
@@ -63,23 +56,30 @@ class Shop(commands.Cog):
         valid_items = [item for item in cnf["itemsToBuy"] if item in range(1, 8)]
 
         if not valid_items:
-            await self.bot.log("Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!", "#924444")
+            await self.bot.log(
+                "Warn: No valid gem ids provided to buy. Note: Only rings (1-7) are allowed!",
+                "#924444",
+            )
             return
 
         item = self.bot.random.choice(valid_items)
 
         if startup:
-            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["shortCooldown"])
+            await self.bot.sleep_till(
+                self.bot.settings_dict["defaultCooldowns"]["shortCooldown"]
+            )
         else:
             await self.bot.remove_queue(id="shop")
             await self.bot.sleep_till(cnf["cooldown"])
 
-        if cash_required[item] <= self.bot.user_status["balance"] or not self.bot.settings_dict["cashCheck"]:
+        if (
+            cash_required[item] <= self.bot.user_status["balance"]
+            or not self.bot.settings_dict["cashCheck"]
+        ):
             self.cmd["cmd_arguments"] = item
             await self.bot.put_queue(self.cmd)
         else:
             await self.send_buy()
-
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -89,9 +89,11 @@ class Shop(commands.Cog):
             return
         if nick not in message.content:
             return
-        
+
         if "**, you bought a " in message.content:
-            await self.bot.update_cash(int(re.search(cash_regex, message.content).group(1)), reduce=True)
+            await self.bot.update_cash(
+                int(re.search(cash_regex, message.content).group(1)), reduce=True
+            )
             await self.send_buy()
 
 

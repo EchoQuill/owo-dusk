@@ -45,11 +45,12 @@ def get_shard_id(server_id, total_shards):
     if len(binary_str) > 22:
         sliced_binary_str = binary_str[:-22]
     else:
-        sliced_binary_str = '0' #this will never be executed.
-    sliced_int = int(sliced_binary_str, 2) # the ,2) makes it back into integer
-    shard_id = sliced_int % total_shards # the final modulus (i hope thats what its called) calc.
+        sliced_binary_str = "0"  # this will never be executed.
+    sliced_int = int(sliced_binary_str, 2)  # the ,2) makes it back into integer
+    shard_id = (
+        sliced_int % total_shards
+    )  # the final modulus (i hope thats what its called) calc.
     return shard_id
-
 
 
 # Calculate and print the shard ID
@@ -72,7 +73,6 @@ async def delaycheck(session, server_id):
                 if i["shard"] == shard_id:
                     return i
     return None
-
 
 
 # delaycheck(None, server_id)

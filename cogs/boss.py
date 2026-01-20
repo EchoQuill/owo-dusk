@@ -17,15 +17,22 @@ import json
 
 import components_v2 as comp
 
+
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
 
+
 lock = threading.Lock()
+
+
 def load_dict():
     global accounts_dict
     accounts_dict = load_json_dict()
+
+
 load_dict()
+
 
 class Boss(commands.Cog):
     def __init__(self, bot):
@@ -46,13 +53,19 @@ class Boss(commands.Cog):
             if self.time_diff < 0:
                 self.last_daily_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
+                await asyncio.sleep(
+                    self.bot.calc_time()
+                )  # Wait until next 12:00 AM PST
 
-            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+            await self.bot.sleep_till(
+                self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
+            )
 
             with lock:
                 load_dict()
-                accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
+                accounts_dict[str(self.bot.user.id)]["daily"] = (
+                    self.bot.time_in_seconds()
+                )
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
 
@@ -62,41 +75,50 @@ class Boss(commands.Cog):
         https://discordpy-self.readthedocs.io/en/latest/api.html?highlight=on_socket_raw_receive#discord.on_socket_raw_receive
         For this to work enable_debug_events argument was passed as True in client.
 
-        Right now we are getting the message object directly through on_socket_raw_receive 
+        Right now we are getting the message object directly through on_socket_raw_receive
         we may want to consider getting message once and sharing them instead to reduce unneccesory parsing of raw input.
         """
         if self.clicked:
             return
-        
+
         parsed_msg = json.loads(msg)
         if parsed_msg["t"] != "MESSAGE_CREATE":
             return
 
         message = comp.message.get_message_obj(parsed_msg["d"])
 
-        if (
-            message.author.id == self.bot.owo_bot_id
-        ):
+        if message.author.id == self.bot.owo_bot_id:
             if message.components:
                 for component in message.components:
                     # Boss Embed
                     if component.component_name == "section":
-                        if component.component[0].content and "runs away" in component.component[0].content:
+                        if (
+                            component.component[0].content
+                            and "runs away" in component.component[0].content
+                        ):
                             await self.bot.log("Boss component Detected!", "#B5C1CE")
                             # Boss Fight button
-                            if component.accessory and component.accessory.component_name == "button":
+                            if (
+                                component.accessory
+                                and component.accessory.component_name == "button"
+                            ):
                                 if component.accessory.custom_id == "guildboss_fight":
-                                    boss_channel = await self.bot.fetch_channel(message.channel_id)
-                                    await self.bot.log("Boss component - clicking..", "#B5C1CE")
-                                    await asyncio.sleep(0.5) 
+                                    boss_channel = await self.bot.fetch_channel(
+                                        message.channel_id
+                                    )
+                                    await self.bot.log(
+                                        "Boss component - clicking..", "#B5C1CE"
+                                    )
+                                    await asyncio.sleep(0.5)
                                     await component.accessory.click(
                                         self.bot.ws.session_id,
                                         self.bot.local_headers,
-                                        boss_channel.guild.id
+                                        boss_channel.guild.id,
                                     )
-                                    await self.bot.log("Boss component - clicked!", "#B5C1CE")
+                                    await self.bot.log(
+                                        "Boss component - clicked!", "#B5C1CE"
+                                    )
                                     self.clicked = True
-
 
 
 async def setup(bot):

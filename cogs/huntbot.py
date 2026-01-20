@@ -22,6 +22,7 @@ from utils.hbCalc import allocate_essence
 password_reset_regex = r"(?<=Password will reset in )(\d+)"
 huntbot_time_regex = r"(\d+)([DHM])"
 
+
 def fetch_level_and_progress(value):
     if "[MAX]" in value:
         # Level 1000, will return max.
@@ -34,6 +35,7 @@ def fetch_level_and_progress(value):
     2: essence investment
     """
     return int(match.group(1)), int(match.group(2))
+
 
 def fetch_essence(name):
     """Fetch essence from the given field.name"""
@@ -72,10 +74,11 @@ class Huntbot(commands.Cog):
             "radar": {"enabled": False, "current_level": 0, "invested": 0},
         }
 
-        for trait, value in self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["traits"].items():
+        for trait, value in self.bot.settings_dict["commands"]["autoHuntBot"][
+            "upgrader"
+        ]["traits"].items():
             if value:
                 self.upgrade_details[trait]["enabled"] = True
-
 
     async def cog_load(self):
         if not self.bot.settings_dict["commands"]["autoHuntBot"]["enabled"]:
@@ -89,12 +92,15 @@ class Huntbot(commands.Cog):
     async def cog_unload(self):
         await self.bot.remove_queue(id="huntbot")
 
-    async def send_ah(self, startup=False, no_cash_arg=True, timeToSleep=None, ans=None):
+    async def send_ah(
+        self, startup=False, no_cash_arg=True, timeToSleep=None, ans=None
+    ):
         if startup:
             await asyncio.sleep(
                 self.bot.random_float(
                     self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
-                )+5
+                )
+                + 5
             )
         else:
             await self.bot.remove_queue(id="huntbot")
@@ -105,7 +111,7 @@ class Huntbot(commands.Cog):
                 await self.bot.sleep_till(timeToSleep, cd_list=False, noise=30)
 
         """send the cmd"""
-        
+
         if no_cash_arg:
             self.cmd["cmd_arguments"] = ""
         else:
@@ -113,27 +119,29 @@ class Huntbot(commands.Cog):
                 self.bot.settings_dict["commands"]["autoHuntBot"]["cashToSpend"]
             )
         if ans:
-            self.cmd["cmd_arguments"] = f"{self.bot.settings_dict['commands']['autoHuntBot']['cashToSpend']} {ans}"
-
+            self.cmd["cmd_arguments"] = (
+                f"{self.bot.settings_dict['commands']['autoHuntBot']['cashToSpend']} {ans}"
+            )
 
         await self.bot.put_queue(self.cmd)
 
     async def upgrade_confirmation(self):
         await self.upgrade_event.wait()
         self.upgrade_event.clear()
-        await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+        await self.bot.sleep_till(
+            self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
+        )
 
     def get_experience(self, embed):
         for field in embed.fields:
             for trait in {"efficiency", "duration", "cost", "gain", "exp", "radar"}:
                 if trait in field.name.lower():
-                    level,essence = fetch_level_and_progress(field.value)
+                    level, essence = fetch_level_and_progress(field.value)
                     self.upgrade_details[trait]["current_level"] = level
                     self.upgrade_details[trait]["invested"] = essence
                     break
             if "animal essence" in field.name.lower():
                 self.upgrade_details["essence"] = fetch_essence(field.name)
-
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -149,16 +157,23 @@ class Huntbot(commands.Cog):
                 await self.bot.remove_queue(id="upgrade")
             elif "Here is your password!" in message.content:
                 ans = await solveHbCaptcha(message.attachments[0].url, self.bot.session)
-                await self.bot.log("huntbot receieved password, attempting to solve!", "#afaf87")
+                await self.bot.log(
+                    "huntbot receieved password, attempting to solve!", "#afaf87"
+                )
                 await self.send_ah(
-                    timeToSleep=self.bot.settings_dict["defaultCooldowns"]["briefCooldown"],
+                    timeToSleep=self.bot.settings_dict["defaultCooldowns"][
+                        "briefCooldown"
+                    ],
                     ans=ans,
                 )
             elif "Please include your password!" in message.content:
                 total_seconds_hb = (
                     int(re.findall(password_reset_regex, message.content)[0]) * 60
                 )
-                await self.bot.log(f"huntbot stuck in password, retrying in {total_seconds_hb}s", "#afaf87")
+                await self.bot.log(
+                    f"huntbot stuck in password, retrying in {total_seconds_hb}s",
+                    "#afaf87",
+                )
                 await self.send_ah(timeToSleep=total_seconds_hb)
 
             elif "I WILL BE BACK IN" in message.content:
@@ -170,7 +185,9 @@ class Huntbot(commands.Cog):
                         total_seconds_hb += int(amount) * 3600
                     elif unit == "D":
                         total_seconds_hb += int(amount) * 86400
-                await self.bot.log(f"huntbot will be back in {total_seconds_hb}s", "#afaf87")
+                await self.bot.log(
+                    f"huntbot will be back in {total_seconds_hb}s", "#afaf87"
+                )
                 await self.send_ah(timeToSleep=total_seconds_hb)
 
         if message.embeds:
@@ -181,38 +198,61 @@ class Huntbot(commands.Cog):
                     await self.bot.set_stat(False)
                     if embed.fields:
                         self.get_experience(embed)
-                        data = allocate_essence(self.upgrade_details, self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["priorities"])
-                        await self.bot.sleep_till(self.bot.settings_dict["commands"]["autoHuntBot"]["upgrader"]["sleeptime"])
+                        data = allocate_essence(
+                            self.upgrade_details,
+                            self.bot.settings_dict["commands"]["autoHuntBot"][
+                                "upgrader"
+                            ]["priorities"],
+                        )
+                        await self.bot.sleep_till(
+                            self.bot.settings_dict["commands"]["autoHuntBot"][
+                                "upgrader"
+                            ]["sleeptime"]
+                        )
                         for trait, essence_alloc in data.items():
-                            self.upgrade_cmd["cmd_arguments"] = f"{trait} {essence_alloc}"
+                            self.upgrade_cmd["cmd_arguments"] = (
+                                f"{trait} {essence_alloc}"
+                            )
                             if essence_alloc > 0:
-                                #print(self.upgrade_cmd["cmd_arguments"])
-                                await self.bot.put_queue(self.upgrade_cmd, priority=True)
+                                # print(self.upgrade_cmd["cmd_arguments"])
+                                await self.bot.put_queue(
+                                    self.upgrade_cmd, priority=True
+                                )
                                 await self.upgrade_confirmation()
-                                #print(self.upgrade_details)
+                                # print(self.upgrade_details)
                         await self.bot.set_stat(True)
 
-                    # Running/handling huntbot
+                        # Running/handling huntbot
                         if len(embed.fields) > 8:
                             field = embed.fields[8]
                             if "HUNTBOT is currently hunting!" in field.name:
                                 total_seconds_hb = 0
-                                for amount, unit in re.findall(huntbot_time_regex, field.value):
+                                for amount, unit in re.findall(
+                                    huntbot_time_regex, field.value
+                                ):
                                     if unit == "M":
                                         total_seconds_hb += int(amount) * 60
                                     elif unit == "H":
                                         total_seconds_hb += int(amount) * 3600
                                     elif unit == "D":
                                         total_seconds_hb += int(amount) * 86400
-                                await self.bot.log(f"huntbot will be back in {total_seconds_hb}s", "#afaf87")
+                                await self.bot.log(
+                                    f"huntbot will be back in {total_seconds_hb}s",
+                                    "#afaf87",
+                                )
                                 await self.send_ah(timeToSleep=total_seconds_hb)
 
                         else:
                             # Can proceed with running huntbot, no current hunting ongoing
                             await self.send_ah(
-                                timeToSleep=self.bot.settings_dict["defaultCooldowns"]["briefCooldown"], no_cash_arg=False
+                                timeToSleep=self.bot.settings_dict["defaultCooldowns"][
+                                    "briefCooldown"
+                                ],
+                                no_cash_arg=False,
                             )
-                            await self.bot.log("huntbot back! sending next huntbot command.", "#afaf87")
+                            await self.bot.log(
+                                "huntbot back! sending next huntbot command.", "#afaf87"
+                            )
 
 
 async def setup(bot):

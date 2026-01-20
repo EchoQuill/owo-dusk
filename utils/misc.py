@@ -6,14 +6,15 @@ import threading
 def is_termux():
     termux_prefix = os.environ.get("PREFIX")
     termux_home = os.environ.get("HOME")
-    
+
     if termux_prefix and "com.termux" in termux_prefix:
         return True
     elif termux_home and "com.termux" in termux_home:
         return True
     else:
         return os.path.isdir("/data/data/com.termux")
-    
+
+
 def run_system_command(command, timeout, retry=False, delay=5):
     def target():
         try:
@@ -35,6 +36,7 @@ def run_system_command(command, timeout, retry=False, delay=5):
             print(f"Retrying '{command}' after {delay}s")
             time.sleep(delay)
             run_system_command(command, timeout)
+
 
 def generate_nonce():
     """Generate a Discord-style snowflake nonce."""

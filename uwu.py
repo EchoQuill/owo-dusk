@@ -29,6 +29,7 @@ from importlib.metadata import version as import_ver
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from threading import Thread
+
 # Third-Party Libraries
 import aiohttp
 import discord
@@ -41,6 +42,7 @@ from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
 from queue import Queue
+
 # Local
 import components_v2
 from utils.misspell import misspell_word
@@ -49,13 +51,16 @@ from utils.webhook import webhookSender
 from utils.database import databaseWorker
 
 
-
 """Cntrl+c detect"""
+
+
 def handle_sigint(signal_number, frame):
     print("\nCtrl+C detected. stopping code!")
     os._exit(0)
 
+
 signal.signal(signal.SIGINT, handle_sigint)
+
 
 def compare_versions(current_version, latest_version):
     current_version = current_version.lstrip("v")
@@ -71,13 +76,14 @@ def compare_versions(current_version, latest_version):
             return False
 
     if len(latest) > len(current):
-        return any(x > 0 for x in latest[len(current):])
-    
+        return any(x > 0 for x in latest[len(current) :])
+
     return False
 
 
 def clear():
-    os.system('cls') if os.name == 'nt' else os.system('clear')
+    os.system("cls") if os.name == "nt" else os.system("clear")
+
 
 console = Console()
 lock = threading.Lock()
@@ -87,6 +93,7 @@ clear()
 def load_accounts_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
+
 
 with open("config/global_settings.json", "r") as config_file:
     global_settings_dict = json.load(config_file)
@@ -120,6 +127,7 @@ app = Flask(__name__)
 website_logs = []
 config_updated = None
 
+
 def merge_dicts(main, small):
     for key, value in small.items():
         if key in main and isinstance(main[key], dict) and isinstance(value, dict):
@@ -127,14 +135,15 @@ def merge_dicts(main, small):
         else:
             main[key] = value
 
+
 def get_from_db(command):
     with sqlite3.connect("utils/data/db.sqlite") as conn:
-        conn.row_factory = sqlite3.Row 
+        conn.row_factory = sqlite3.Row
         cur = conn.cursor()
 
         cur.execute("PRAGMA journal_mode;")
         mode = cur.fetchone()[0]
-        if mode.lower() != 'wal':
+        if mode.lower() != "wal":
             cur.execute("PRAGMA journal_mode=WAL;")
 
         cur.execute(command)
@@ -148,50 +157,61 @@ def home():
     return render_template("index.html", version=version)
 
 
-@app.route('/api/console', methods=['GET'])
+@app.route("/api/console", methods=["GET"])
 def get_console_logs():
-    password = request.headers.get('password')
+    password = request.headers.get("password")
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     try:
-        log_string = '\n'.join(website_logs)
+        log_string = "\n".join(website_logs)
         return log_string
     except Exception as e:
         print(f"Error fetching logs: {e}")
-        return jsonify({"status": "error", "message": "An error occurred while fetching logs"}), 500
+        return jsonify(
+            {"status": "error", "message": "An error occurred while fetching logs"}
+        ), 500
 
-@app.route('/api/fetch_gamble_data', methods=['GET'])
+
+@app.route("/api/fetch_gamble_data", methods=["GET"])
 def fetch_gamble_data():
-    password = request.headers.get('password')
+    password = request.headers.get("password")
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     try:
         # Fetch table data
-        rows = get_from_db("SELECT hour, wins, losses FROM gamble_winrate ORDER BY hour")
+        rows = get_from_db(
+            "SELECT hour, wins, losses FROM gamble_winrate ORDER BY hour"
+        )
 
         # Extract columns as lists
         win_data = [row["wins"] for row in rows]
         lose_data = [row["losses"] for row in rows]
 
         # Return Data
-        return jsonify({
-            "status": "success",
-            "win_data": win_data,
-            "lose_data": lose_data
-        })
-        
+        return jsonify(
+            {"status": "success", "win_data": win_data, "lose_data": lose_data}
+        )
+
     except Exception as e:
         print(f"Error fetching gamble data: {e}")
-        return jsonify({"status": "error", "message": "An error occurred while fetching gamble data"}), 500
+        return jsonify(
+            {
+                "status": "error",
+                "message": "An error occurred while fetching gamble data",
+            }
+        ), 500
 
-@app.route('/api/fetch_cowoncy_data', methods=['GET'])
+
+@app.route("/api/fetch_cowoncy_data", methods=["GET"])
 def fetch_cowoncy_data():
-    password = request.headers.get('password')
+    password = request.headers.get("password")
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
 
     try:
-        rows = get_from_db("SELECT user_id, hour, earnings FROM cowoncy_earnings ORDER BY hour")
+        rows = get_from_db(
+            "SELECT user_id, hour, earnings FROM cowoncy_earnings ORDER BY hour"
+        )
         user_data = {}
         for row in rows:
             user_id = row["user_id"]
@@ -205,10 +225,7 @@ def fetch_cowoncy_data():
             user_data[user_id][hour] = earnings
 
         # Base data
-        base_data = {
-            "labels": [f"Hour {i}" for i in range(24)],
-            "datasets": []
-        }
+        base_data = {"labels": [f"Hour {i}" for i in range(24)], "datasets": []}
 
         for user_id, hourly_data in user_data.items():
             color_hue = random.randint(0, 360)
@@ -223,30 +240,33 @@ def fetch_cowoncy_data():
             }
             base_data["datasets"].append(dataset)
 
-        
         rows = get_from_db("SELECT cowoncy, captchas FROM user_stats")
         total_cowoncy = sum(row["cowoncy"] for row in rows)
         # I understand this area is for cowoncy, but accessing thro here since lazy lol.
         total_captchas = sum(row["captchas"] for row in rows)
 
-
-        return jsonify({
-            "status": "success",
-            "data": base_data,
-            "total_cash": total_cowoncy,
-            "total_captchas": total_captchas
-        }), 200
+        return jsonify(
+            {
+                "status": "success",
+                "data": base_data,
+                "total_cash": total_cowoncy,
+                "total_captchas": total_captchas,
+            }
+        ), 200
 
     except Exception as e:
         print(f"Error fetching cowoncy data: {e}")
-        return jsonify({
-            "status": "error",
-            "message": "An error occurred while fetching cowoncy data"
-        }), 500
+        return jsonify(
+            {
+                "status": "error",
+                "message": "An error occurred while fetching cowoncy data",
+            }
+        ), 500
 
-@app.route('/api/fetch_cmd_data', methods=['GET'])
+
+@app.route("/api/fetch_cmd_data", methods=["GET"])
 def fetch_cmd_data():
-    password = request.headers.get('password')
+    password = request.headers.get("password")
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     try:
@@ -262,42 +282,56 @@ def fetch_cmd_data():
                 command_names.pop(idx)
                 count.pop(idx)
 
-
         # Return Data
-        return jsonify({
-            "status": "success",
-            "command_names": command_names,
-            "count": count
-        })
-        
+        return jsonify(
+            {"status": "success", "command_names": command_names, "count": count}
+        )
+
     except Exception as e:
         print(f"Error fetching command data: {e}")
-        return jsonify({"status": "error", "message": "An error occurred while fetching command data"}), 500
+        return jsonify(
+            {
+                "status": "error",
+                "message": "An error occurred while fetching command data",
+            }
+        ), 500
 
-@app.route('/api/fetch_weekly_runtime', methods=['GET'])
+
+@app.route("/api/fetch_weekly_runtime", methods=["GET"])
 def fetch_weekly_runtime():
-    password = request.headers.get('password')
+    password = request.headers.get("password")
     if not password or password != global_settings_dict["website"]["password"]:
         return "Invalid Password", 401
     try:
         # Fetch json data
         with open("utils/data/weekly_runtime.json", "r") as config_file:
             data_dict = json.load(config_file)
-        
-        runtime_data = [(val[1] - val[0]) / 60 for val in data_dict.values() if isinstance(val, list)]
+
+        runtime_data = [
+            (val[1] - val[0]) / 60
+            for val in data_dict.values()
+            if isinstance(val, list)
+        ]
 
         cur_hour = get_weekday()
 
         # Return Data
-        return jsonify({
-            "status": "success",
-            "runtime_data": runtime_data,
-            "current_uptime": data_dict[cur_hour]
-        })
-        
+        return jsonify(
+            {
+                "status": "success",
+                "runtime_data": runtime_data,
+                "current_uptime": data_dict[cur_hour],
+            }
+        )
+
     except Exception as e:
         print(f"Error fetching weekly runtime: {e}")
-        return jsonify({"status": "error", "message": "An error occurred while fetching weekly runtime"}), 500
+        return jsonify(
+            {
+                "status": "error",
+                "message": "An error occurred while fetching weekly runtime",
+            }
+        ), 500
 
 
 def web_start():
@@ -309,11 +343,14 @@ def web_start():
         debug=False,
         use_reloader=False,
         port=global_settings_dict["website"]["port"],
-        host="0.0.0.0" if global_settings_dict["website"]["enableHost"] else "127.0.0.1",
+        host="0.0.0.0"
+        if global_settings_dict["website"]["enableHost"]
+        else "127.0.0.1",
     )
 
 
 """"""
+
 
 def printBox(text, color, title=None):
     test_panel = Panel(text, style=color, title=title)
@@ -322,24 +359,28 @@ def printBox(text, color, title=None):
     else:
         console.print(text, style=color)
 
+
 def resource_path(relative_path):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
+
 def install_package(package_name):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+
 
 def is_termux():
     termux_prefix = os.environ.get("PREFIX")
     termux_home = os.environ.get("HOME")
-    
+
     if termux_prefix and "com.termux" in termux_prefix:
         return True
     elif termux_home and "com.termux" in termux_home:
         return True
     else:
         return os.path.isdir("/data/data/com.termux")
+
 
 on_mobile = is_termux()
 
@@ -356,9 +397,11 @@ def get_weekday():
     # 0 = monday, 6 = sunday
     return str(datetime.today().weekday())
 
+
 def get_hour():
     # only from 0 to 23 (24hr format)
     return datetime.now().hour
+
 
 def get_date():
     return datetime.now().date().isoformat()  # e.g. "2025-05-31"
@@ -375,13 +418,17 @@ def batteryCheckFunc():
                     battery_status = os.popen("termux-battery-status").read()
                 except Exception as e:
                     console.print(
-                        f"system - Battery check failed!! - {e}".center(console_width - 2),
+                        f"system - Battery check failed!! - {e}".center(
+                            console_width - 2
+                        ),
                         style="red ",
                     )
                 battery_data = json.loads(battery_status)
                 percentage = battery_data["percentage"]
                 console.print(
-                    f"system - Current battery •> {percentage}".center(console_width - 2),
+                    f"system - Current battery •> {percentage}".center(
+                        console_width - 2
+                    ),
                     style="blue ",
                 )
                 if percentage < int(cnf["minPercentage"]):
@@ -394,19 +441,24 @@ def batteryCheckFunc():
                     if battery is not None:
                         percentage = int(battery.percent)
                         console.print(
-                            f"system - Current battery •> {percentage}".center(console_width - 2),
+                            f"system - Current battery •> {percentage}".center(
+                                console_width - 2
+                            ),
                             style="blue ",
                         )
                         if percentage < int(cnf["minPercentage"]):
                             break
                 except Exception as e:
                     console.print(
-                        f"-system - Battery check failed!! - {e}".center(console_width - 2),
+                        f"-system - Battery check failed!! - {e}".center(
+                            console_width - 2
+                        ),
                         style="red ",
                     )
     except Exception as e:
         print("battery check", e)
     os._exit(0)
+
 
 if global_settings_dict["batteryCheck"]["enabled"]:
     loop_thread = threading.Thread(target=batteryCheckFunc, daemon=True)
@@ -449,9 +501,7 @@ def popup_main_loop():
         popup.geometry(f"{popup_width}x{popup_height}+{x_position}+{y_position}")
 
         label_text = msg.format(
-            username=username,
-            channelname=channelname,
-            captchatype=captchatype
+            username=username, channelname=channelname, captchatype=captchatype
         )
 
         label = tk.Label(
@@ -462,7 +512,7 @@ def popup_main_loop():
             padx=20,
             pady=20,
             bg="#000000",
-            fg="#be7dff"
+            fg="#be7dff",
         )
         label.pack(fill="both", expand=True)
 
@@ -481,12 +531,13 @@ def popup_main_loop():
     root.mainloop()
 
 
-
-
-
 class MyClient(commands.Bot):
-    def __init__(self, token, channel_id, global_settings_dict, token_len, *args, **kwargs):
-        super().__init__(command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs)
+    def __init__(
+        self, token, channel_id, global_settings_dict, token_len, *args, **kwargs
+    ):
+        super().__init__(
+            command_prefix="-", self_bot=True, enable_debug_events=True, *args, **kwargs
+        )
         self.token = token
         self.token_len = token_len
         self.channel_id = int(channel_id)
@@ -500,7 +551,7 @@ class MyClient(commands.Bot):
         self.cash_check = False
         self.gain_or_lose = 0
         self.checks = []
-        self.dm, self.cm = None,None
+        self.dm, self.cm = None, None
         self.hunt_disabled = False
         self.username = None
         self.nick_name = None
@@ -519,14 +570,14 @@ class MyClient(commands.Bot):
             "no_gems": False,
             "no_cash": False,
             "balance": 0,
-            "net_earnings": 0
+            "net_earnings": 0,
         }
 
         self.command_handler_status = {
             "state": True,
             "captcha": False,
             "sleep": False,
-            "hold_handler": False
+            "hold_handler": False,
         }
 
         with open("config/misc.json", "r") as config_file:
@@ -534,16 +585,12 @@ class MyClient(commands.Bot):
 
         self.alias = self.misc["alias"]
 
-        self.cmds_state = {
-            "global": {
-                "last_ran": 0
-            }
-        }
+        self.cmds_state = {"global": {"last_ran": 0}}
         for key in self.misc["command_info"]:
             self.cmds_state[key] = {
                 "in_queue": False,
                 "in_monitor": False,
-                "last_ran": 0
+                "last_ran": 0,
             }
 
     async def set_stat(self, value):
@@ -558,7 +605,9 @@ class MyClient(commands.Bot):
 
     async def empty_checks_and_switch(self, channel):
         self.command_handler_status["hold_handler"] = True
-        await self.sleep_till(self.global_settings_dict["channelSwitcher"]["delayBeforeSwitch"])
+        await self.sleep_till(
+            self.global_settings_dict["channelSwitcher"]["delayBeforeSwitch"]
+        )
         self.cm = channel
         self.channel_id = self.cm.id
         self.command_handler_status["hold_handler"] = False
@@ -568,8 +617,8 @@ class MyClient(commands.Bot):
         if self.status != discord.Status.invisible:
             try:
                 await self.change_presence(
-                status=discord.Status.invisible, activity=self.activity
-            )
+                    status=discord.Status.invisible, activity=self.activity
+                )
                 self.presence.stop()
             except Exception:
                 pass
@@ -602,9 +651,14 @@ class MyClient(commands.Bot):
 
         if compare_versions(version, safety_check["version"]):
             self.command_handler_status["captcha"] = True
-            await self.log(f"There seems to be something wrong...\nStopping code for reason: {safety_check['reason']}\n(This was triggered by {safety_check['author']})", "#5c0018")
+            await self.log(
+                f"There seems to be something wrong...\nStopping code for reason: {safety_check['reason']}\n(This was triggered by {safety_check['author']})",
+                "#5c0018",
+            )
             if compare_versions(latest_version["version"], safety_check["version"]):
-                await self.log(f"please update to: v{latest_version['version']}", "#33245e")
+                await self.log(
+                    f"please update to: v{latest_version['version']}", "#33245e"
+                )
 
     async def start_cogs(self):
         files = os.listdir(resource_path("./cogs"))  # Get the list of files
@@ -612,7 +666,6 @@ class MyClient(commands.Bot):
         self.refresh_commands_dict()
         for filename in files:
             if filename.endswith(".py"):
-
                 extension = f"cogs.{filename[:-3]}"
                 if extension in self.extensions:
                     """skip if already loaded"""
@@ -621,15 +674,23 @@ class MyClient(commands.Bot):
                         await self.unload_cog(extension)
                     continue
                 try:
-                    await asyncio.sleep(self.random_float(self.global_settings_dict["account"]["commandsStartDelay"]))
+                    await asyncio.sleep(
+                        self.random_float(
+                            self.global_settings_dict["account"]["commandsStartDelay"]
+                        )
+                    )
                     if self.commands_dict.get(str(filename[:-3]), False):
                         await self.load_extension(extension)
 
                 except Exception as e:
-                    await self.log(f"Error - Failed to load extension {extension}: {e}", "#c25560")
+                    await self.log(
+                        f"Error - Failed to load extension {extension}: {e}", "#c25560"
+                    )
 
         if "cogs.captcha" not in self.extensions:
-            await self.log("Error - Failed to load captcha extension,\nStopping code!!", "#c25560")
+            await self.log(
+                "Error - Failed to load captcha extension,\nStopping code!!", "#c25560"
+            )
             os._exit(0)
 
     async def update_config(self):
@@ -637,7 +698,9 @@ class MyClient(commands.Bot):
             custom_path = f"config/{self.user.id}.settings.json"
             default_config_path = "config/settings.json"
 
-            config_path = custom_path if os.path.exists(custom_path) else default_config_path
+            config_path = (
+                custom_path if os.path.exists(custom_path) else default_config_path
+            )
 
             with open(config_path, "r") as config_file:
                 self.settings_dict = json.load(config_file)
@@ -662,7 +725,9 @@ class MyClient(commands.Bot):
 
     async def update_priorities(self):
         # Check if already in db
-        res = await database_handler.get_from_db("SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),))
+        res = await database_handler.get_from_db(
+            "SELECT * FROM command_priority WHERE user_id = ?", (str(self.user.id),)
+        )
         if res:
             for row in res:
                 # 0 -> user_id
@@ -673,7 +738,9 @@ class MyClient(commands.Bot):
             # Group items using tiers
             tiers_map = {}
             for key, value in self.misc["command_info"].items():
-                tiers_map[value["priority"]] = tiers_map.get(value["priority"], []) + [key]
+                tiers_map[value["priority"]] = tiers_map.get(value["priority"], []) + [
+                    key
+                ]
 
             # randomising based on these tiers
             base_priority = 0
@@ -682,12 +749,12 @@ class MyClient(commands.Bot):
                 self.random.shuffle(temp_list)
                 for item in temp_list:
                     # This way base_priority will remain above 0, ensuring it doesn't hit quick send.
-                    base_priority+=1
+                    base_priority += 1
                     self.cmd_priorities[item] = base_priority
                     database_handler.update_database(
                         """INSERT OR REPLACE INTO command_priority (user_id, command_name, priority)
                         VALUES (?, ?, ?)""",
-                        (str(self.user.id), item, base_priority)
+                        (str(self.user.id), item, base_priority),
                     )
 
         # print(self.user.name, "->", self.cmd_priorities)
@@ -699,30 +766,29 @@ class MyClient(commands.Bot):
             """UPDATE cowoncy_earnings
             SET earnings = ?
             WHERE user_id = ? AND hour = ?""",
-            (self.user_status["net_earnings"], self.user.id, hr)
+            (self.user_status["net_earnings"], self.user.id, hr),
         )
 
         database_handler.update_database(
             "UPDATE user_stats SET cowoncy = ? WHERE user_id = ?",
-            (self.user_status["balance"], self.user.id)
+            (self.user_status["balance"], self.user.id),
         )
 
     async def update_captcha_db(self):
         database_handler.update_database(
             "UPDATE user_stats SET captchas = captchas + 1 WHERE user_id = ?",
-            (self.user.id,)
+            (self.user.id,),
         )
 
     async def update_giveaway_db(self, last_ran):
         database_handler.update_database(
             "UPDATE user_stats SET giveaways = ? WHERE user_id = ?",
-            (last_ran, self.user.id)
+            (last_ran, self.user.id),
         )
 
     async def fetch_giveaway_db(self):
         results = await database_handler.get_from_db(
-            "SELECT giveaways FROM user_stats WHERE user_id = ?", 
-            (self.user.id,)
+            "SELECT giveaways FROM user_stats WHERE user_id = ?", (self.user.id,)
         )
         if results:
             return results[0]["giveaways"]
@@ -731,7 +797,7 @@ class MyClient(commands.Bot):
     async def populate_stats_db(self):
         database_handler.update_database(
             "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (self.user.id, 0, 0, 0, 0, 0, 0)
+            (self.user.id, 0, 0, 0, 0, 0, 0),
         )
 
     async def populate_cowoncy_earnings(self, update=False):
@@ -741,24 +807,24 @@ class MyClient(commands.Bot):
             if not update:
                 database_handler.update_database(
                     "INSERT OR IGNORE INTO cowoncy_earnings (user_id, hour, earnings) VALUES (?, ?, ?)",
-                    (self.user.id, i, 0)
+                    (self.user.id, i, 0),
                 )
 
         rows = await database_handler.get_from_db(
-            "SELECT value FROM meta_data WHERE key = ?", 
-            ("cowoncy_earnings_last_checked",)
+            "SELECT value FROM meta_data WHERE key = ?",
+            ("cowoncy_earnings_last_checked",),
         )
 
-        last_reset_str = rows[0]['value'] if rows else "0"
+        last_reset_str = rows[0]["value"] if rows else "0"
 
         if last_reset_str == today_str:
             # Handle gap between cowoncy chart
             cur_hr = get_hour()
             last_cash = 0
-            for hr in range(cur_hr+1):
+            for hr in range(cur_hr + 1):
                 hr_row = await database_handler.get_from_db(
-                    "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? AND hour = ?", 
-                    (self.user.id, hr)
+                    "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? AND hour = ?",
+                    (self.user.id, hr),
                 )
                 # Note: negative values are allowed.
                 if hr_row and hr_row[0]["earnings"] != 0:
@@ -766,7 +832,7 @@ class MyClient(commands.Bot):
                 elif last_cash != 0:
                     database_handler.update_database(
                         "UPDATE cowoncy_earnings SET earnings = ? WHERE hour = ? AND user_id = ?",
-                        (last_cash, hr, self.user.id)
+                        (last_cash, hr, self.user.id),
                     )
             # Return once done as we don't want reset.
             return
@@ -774,19 +840,19 @@ class MyClient(commands.Bot):
         for i in range(24):
             database_handler.update_database(
                 "UPDATE cowoncy_earnings SET earnings = 0 WHERE user_id = ? AND hour = ?",
-                (self.user.id, i)
+                (self.user.id, i),
             )
 
         database_handler.update_database(
             "UPDATE meta_data SET value = ? WHERE key = ?",
-            (today_str, "cowoncy_earnings_last_checked")
+            (today_str, "cowoncy_earnings_last_checked"),
         )
 
     async def fetch_net_earnings(self):
         self.user_status["net_earnings"] = 0
         rows = await database_handler.get_from_db(
             "SELECT earnings FROM cowoncy_earnings WHERE user_id = ? ORDER BY hour",
-            (self.user.id,)
+            (self.user.id,),
         )
 
         cowoncy_list = [row["earnings"] for row in rows]
@@ -800,11 +866,11 @@ class MyClient(commands.Bot):
         today_str = get_date()
 
         rows = await database_handler.get_from_db(
-            "SELECT value FROM meta_data WHERE key = ?", 
-            ("gamble_winrate_last_checked",)
+            "SELECT value FROM meta_data WHERE key = ?",
+            ("gamble_winrate_last_checked",),
         )
 
-        last_reset_str = rows[0]['value'] if rows else "0"
+        last_reset_str = rows[0]["value"] if rows else "0"
 
         if last_reset_str == today_str:
             return
@@ -812,18 +878,17 @@ class MyClient(commands.Bot):
         for hour in range(24):
             database_handler.update_database(
                 "UPDATE gamble_winrate SET wins = 0, losses = 0, net = 0 WHERE hour = ?",
-                (hour,)
+                (hour,),
             )
 
         database_handler.update_database(
             "UPDATE meta_data SET value = ? WHERE key = ?",
-            (today_str, "gamble_winrate_last_checked")
+            (today_str, "gamble_winrate_last_checked"),
         )
 
     async def update_cmd_db(self, cmd):
         database_handler.update_database(
-            "UPDATE commands SET count = count + 1 WHERE name = ?",
-            (cmd,)
+            "UPDATE commands SET count = count + 1 WHERE name = ?", (cmd,)
         )
 
     async def update_gamble_db(self, item="wins"):
@@ -833,8 +898,7 @@ class MyClient(commands.Bot):
             raise ValueError("Invalid column name.")
 
         database_handler.update_database(
-            f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?",
-            (hr,)
+            f"UPDATE gamble_winrate SET {item} = {item} + 1 WHERE hour = ?", (hr,)
         )
 
     async def unload_cog(self, cog_name):
@@ -850,18 +914,24 @@ class MyClient(commands.Bot):
 
         # Reaction Bot:
         if (
-            (reaction_bot_dict["hunt_and_battle"] and (commands_dict["hunt"]["enabled"] or commands_dict["battle"]["enabled"]))
-            or
-            (reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"])
-            or
-            reaction_bot_dict["pray_and_curse"] and (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"])
+            (
+                reaction_bot_dict["hunt_and_battle"]
+                and (
+                    commands_dict["hunt"]["enabled"]
+                    or commands_dict["battle"]["enabled"]
+                )
+            )
+            or (reaction_bot_dict["owo"] and commands_dict["owo"]["enabled"])
+            or reaction_bot_dict["pray_and_curse"]
+            and (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"])
         ):
             reactionbot = True
         else:
             reactionbot = False
 
         self.commands_dict = {
-            "battle": commands_dict["battle"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
+            "battle": commands_dict["battle"]["enabled"]
+            and not reaction_bot_dict["hunt_and_battle"],
             "blackjack": self.settings_dict["gamble"]["blackjack"]["enabled"],
             "captcha": True,
             "channelswitcher": self.global_settings_dict["channelSwitcher"]["enabled"],
@@ -872,37 +942,35 @@ class MyClient(commands.Bot):
             "daily": self.settings_dict["autoDaily"],
             "gems": self.settings_dict["autoUse"]["gems"]["enabled"],
             "giveaway": self.settings_dict["giveawayJoiner"]["enabled"],
-            "hunt": commands_dict["hunt"]["enabled"] and not reaction_bot_dict["hunt_and_battle"],
+            "hunt": commands_dict["hunt"]["enabled"]
+            and not reaction_bot_dict["hunt_and_battle"],
             "huntbot": commands_dict["autoHuntBot"]["enabled"],
             "level": commands_dict["lvlGrind"]["enabled"],
             "lottery": commands_dict["lottery"]["enabled"],
             "others": True,
             "owo": commands_dict["owo"]["enabled"] and not reaction_bot_dict["owo"],
-            "pray": (commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"]) and not reaction_bot_dict["pray_and_curse"],
+            "pray": (
+                commands_dict["pray"]["enabled"] or commands_dict["curse"]["enabled"]
+            )
+            and not reaction_bot_dict["pray_and_curse"],
             "reactionbot": reactionbot,
             "sell": commands_dict["sell"]["enabled"] or commands_dict["sac"]["enabled"],
             "shop": commands_dict["shop"]["enabled"],
             "slots": self.settings_dict["gamble"]["slots"]["enabled"],
             "customcommands": self.settings_dict["customCommands"]["enabled"],
-            "boss": True # remove this
+            "boss": True,  # remove this
         }
 
     """To make the code cleaner when accessing cooldowns from config."""
+
     def random_float(self, cooldown_list):
-        return self.random.uniform(cooldown_list[0],cooldown_list[1])
+        return self.random.uniform(cooldown_list[0], cooldown_list[1])
 
     async def sleep_till(self, cooldown, cd_list=True, noise=3):
         if cd_list:
-            await asyncio.sleep(
-                self.random.uniform(cooldown[0],cooldown[1])
-            )
+            await asyncio.sleep(self.random.uniform(cooldown[0], cooldown[1]))
         else:
-            await asyncio.sleep(
-                self.random.uniform(
-                    cooldown,
-                    cooldown + noise
-                )
-            )
+            await asyncio.sleep(self.random.uniform(cooldown, cooldown + noise))
 
     async def upd_cmd_state(self, id, reactionBot=False):
         async with self.lock:
@@ -913,7 +981,7 @@ class MyClient(commands.Bot):
             await self.update_cmd_db(id)
 
     def construct_command(self, data):
-        prefix = self.settings_dict['setprefix'] if data.get("prefix") else ""
+        prefix = self.settings_dict["setprefix"] if data.get("prefix") else ""
         return f"{prefix}{data['cmd_name']} {data.get('cmd_arguments', '')}".strip()
 
     async def put_queue(self, cmd_data, priority=False, quick=False):
@@ -937,30 +1005,41 @@ class MyClient(commands.Bot):
                 # Add exception for custom commands
                 if cmd_data["id"] != "customcommand":
                     # Ensure command already in queue is not readded to prevent spam
-                    await self.log(f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.", "#c25560")
+                    await self.log(
+                        f"Error - command with id: {cmd_data['id']} already in queue, being attempted to be added back.",
+                        "#c25560",
+                    )
                     return
 
             # Get priority
             # priority_int = cnf[cmd_data["id"]].get("priority") if not quick else 0
             priority_int = self.cmd_priorities.get(cmd_data["id"])
 
-            if not priority_int and priority_int!=0:
-                await self.log(f"Error - command with id: {cmd_data['id']} is missing priority.", "#c25560")
+            if not priority_int and priority_int != 0:
+                await self.log(
+                    f"Error - command with id: {cmd_data['id']} is missing priority.",
+                    "#c25560",
+                )
                 return
 
             async with self.lock:
-                await self.queue.put((
-                    priority_int,  # Priority to sort commands with
-                    next(self.cmd_counter),               # A counter to serve as a tie-breaker
-                    deepcopy(cmd_data)                # actual data
-                ))
+                await self.queue.put(
+                    (
+                        priority_int,  # Priority to sort commands with
+                        next(self.cmd_counter),  # A counter to serve as a tie-breaker
+                        deepcopy(cmd_data),  # actual data
+                    )
+                )
                 self.cmds_state[cmd_data["id"]]["in_queue"] = True
         except Exception as e:
             await self.log(f"Error - {e}, during put_queue", "#c25560")
 
     async def remove_queue(self, cmd_data=None, id=None):
         if not cmd_data and not id:
-            await self.log("Error: No id or command data provided for removing item from queue.", "#c25560")
+            await self.log(
+                "Error: No id or command data provided for removing item from queue.",
+                "#c25560",
+            )
             return
         try:
             async with self.lock:
@@ -997,9 +1076,13 @@ class MyClient(commands.Bot):
             popup_queue.put(
                 (
                     (
-                        global_settings_dict["captcha"]["toastOrPopup"]["captchaContent"]
+                        global_settings_dict["captcha"]["toastOrPopup"][
+                            "captchaContent"
+                        ]
                         if captcha_type != "Ban"
-                        else global_settings_dict["captcha"]["toastOrPopup"]["bannedContent"]
+                        else global_settings_dict["captcha"]["toastOrPopup"][
+                            "bannedContent"
+                        ]
                     ),
                     self.user.name,
                     channel_name,
@@ -1007,7 +1090,14 @@ class MyClient(commands.Bot):
                 )
             )
 
-    async def log(self, text, color="#ffffff", bold=False, web_log=global_settings_dict["website"]["enabled"], webhook_useless_log=global_settings_dict["webhook"]["webhookUselessLog"]):
+    async def log(
+        self,
+        text,
+        color="#ffffff",
+        bold=False,
+        web_log=global_settings_dict["website"]["enabled"],
+        webhook_useless_log=global_settings_dict["webhook"]["webhookUselessLog"],
+    ):
         global website_logs
         current_time = datetime.now().strftime("%H:%M:%S")
         if self.misc["debug"]["enabled"]:
@@ -1016,24 +1106,26 @@ class MyClient(commands.Bot):
             lineno = frame_info.lineno
 
             content_to_print = f"[#676585]❲{current_time}❳[/#676585] {self.username} - {text} | [#676585]❲{filename}:{lineno}❳[/#676585]"
-            console.print(
-                content_to_print,
-                style=color,
-                markup=True
-            )
+            console.print(content_to_print, style=color, markup=True)
             with lock:
                 if self.misc["debug"]["logInTextFile"]:
                     with open("logs.txt", "a", encoding="utf-8") as log:
                         log.write(f"{content_to_print}\n")
         else:
-            console.print(f"{self.username}| {text}".center(console_width - 2), style=color)
+            console.print(
+                f"{self.username}| {text}".center(console_width - 2), style=color
+            )
         if web_log:
             with lock:
-                website_logs.append(f"<div class='message'><span class='timestamp'>[{current_time}]</span><span class='text'>{self.username}| {text}</span></div>")
+                website_logs.append(
+                    f"<div class='message'><span class='timestamp'>[{current_time}]</span><span class='text'>{self.username}| {text}</span></div>"
+                )
                 if len(website_logs) > 300:
                     website_logs.pop(0)
         if webhook_useless_log:
-            await self.webhookSender(footer=f"[{current_time}] {self.username} - {text}", colors=color)
+            await self.webhookSender(
+                footer=f"[{current_time}] {self.username} - {text}", colors=color
+            )
 
     async def webhookSender(
         self,
@@ -1045,7 +1137,7 @@ class MyClient(commands.Bot):
         author_name=None,
         author_img_url=None,
         footer=None,
-        webhook_url=None
+        webhook_url=None,
     ):
         global webhook_handler
         if colors:
@@ -1056,11 +1148,7 @@ class MyClient(commands.Bot):
         else:
             color = 0x412280
 
-        embed = {
-            "title": title,
-            "description": desc,
-            "color": color
-        }
+        embed = {"title": title, "description": desc, "color": color}
 
         if footer:
             embed["footer"] = {"text": footer}
@@ -1071,13 +1159,10 @@ class MyClient(commands.Bot):
         if author_img_url:
             embed["author"] = {
                 "name": author_name if author_name else "OwO-Dusk",
-                "icon_url": author_img_url
+                "icon_url": author_img_url,
             }
 
-        payload = {
-            "username": "OwO-Dusk",
-            "embeds": [embed]
-        }
+        payload = {"username": "OwO-Dusk", "embeds": [embed]}
 
         if msg:
             payload["content"] = msg
@@ -1090,15 +1175,28 @@ class MyClient(commands.Bot):
 
     def calculate_correction_time(self, command):
         command = command.replace(" ", "")  # Remove spaces for accurate timing
-        base_delay = self.random_float(self.settings_dict["misspell"]["baseDelay"]) 
-        rectification_time = sum(self.random_float(self.settings_dict["misspell"]["errorRectificationTimePerLetter"]) for _ in command)  
+        base_delay = self.random_float(self.settings_dict["misspell"]["baseDelay"])
+        rectification_time = sum(
+            self.random_float(
+                self.settings_dict["misspell"]["errorRectificationTimePerLetter"]
+            )
+            for _ in command
+        )
         total_time = base_delay + rectification_time
         return total_time
 
     # send commands
-    async def send(self, message, color=None, bypass=False, channel=None, silent=global_settings_dict["silentTextMessages"], typingIndicator=global_settings_dict["typingIndicator"]):
+    async def send(
+        self,
+        message,
+        color=None,
+        bypass=False,
+        channel=None,
+        silent=global_settings_dict["silentTextMessages"],
+        typingIndicator=global_settings_dict["typingIndicator"],
+    ):
         """
-            TASK: Refactor
+        TASK: Refactor
         """
 
         if not channel:
@@ -1107,7 +1205,10 @@ class MyClient(commands.Bot):
         msg = message
         misspelled = False
         if self.settings_dict["misspell"]["enabled"]:
-            if self.random.uniform(1,100) < self.settings_dict["misspell"]["frequencyPercentage"]:
+            if (
+                self.random.uniform(1, 100)
+                < self.settings_dict["misspell"]["frequencyPercentage"]
+            ):
                 msg = misspell_word(message)
                 misspelled = True
                 # left off here!
@@ -1147,11 +1248,24 @@ class MyClient(commands.Bot):
             await self.log(f"Error: {e}, during slashCommandSender", "#c25560")
 
     def calc_time(self):
-        pst_timezone = pytz.timezone('US/Pacific') #gets timezone
-        current_time_pst = datetime.now(timezone.utc).astimezone(pst_timezone) #current pst time
-        midnight_pst = pst_timezone.localize(datetime(current_time_pst.year, current_time_pst.month, current_time_pst.day, 0, 0, 0)) #gets 00:00 of the day
-        time_until_12am_pst = midnight_pst + timedelta(days=1) - current_time_pst # adds a day to the midnight to get time till next midnight, then subract it with current time
-        total_seconds = time_until_12am_pst.total_seconds() # turn that time to seconds
+        pst_timezone = pytz.timezone("US/Pacific")  # gets timezone
+        current_time_pst = datetime.now(timezone.utc).astimezone(
+            pst_timezone
+        )  # current pst time
+        midnight_pst = pst_timezone.localize(
+            datetime(
+                current_time_pst.year,
+                current_time_pst.month,
+                current_time_pst.day,
+                0,
+                0,
+                0,
+            )
+        )  # gets 00:00 of the day
+        time_until_12am_pst = (
+            midnight_pst + timedelta(days=1) - current_time_pst
+        )  # adds a day to the midnight to get time till next midnight, then subract it with current time
+        total_seconds = time_until_12am_pst.total_seconds()  # turn that time to seconds
         # 12am = 00:00, I might need this the next time I take a look here.
         return total_seconds
 
@@ -1159,7 +1273,7 @@ class MyClient(commands.Bot):
         """
         timestamp is basically seconds passed after 1970 jan 1st
         """
-        time_now = datetime.now(timezone.utc).astimezone(pytz.timezone('US/Pacific'))
+        time_now = datetime.now(timezone.utc).astimezone(pytz.timezone("US/Pacific"))
         return time_now.timestamp()
 
     async def check_for_cash(self):
@@ -1170,7 +1284,7 @@ class MyClient(commands.Bot):
                 "prefix": True,
                 "checks": True,
                 "id": "cash",
-                "removed": False
+                "removed": False,
             }
         )
 
@@ -1208,11 +1322,25 @@ class MyClient(commands.Bot):
         self.webhook_lock = asyncio.Lock()
         if self.misc["debug"]["hideUser"]:
             x = [
-                "Sunny", "River", "Echo", "Sky", "Shadow", "Nova", "Jelly", "Pixel",
-                "Cloud", "Mint", "Flare", "Breeze", "Dusty", "Blip"
+                "Sunny",
+                "River",
+                "Echo",
+                "Sky",
+                "Shadow",
+                "Nova",
+                "Jelly",
+                "Pixel",
+                "Cloud",
+                "Mint",
+                "Flare",
+                "Breeze",
+                "Dusty",
+                "Blip",
             ]
             random_part = self.random.choice(x)
-            self.username = f"{random_part}_{abs(hash(str(self.user.id) + random_part)) % 10000}"
+            self.username = (
+                f"{random_part}_{abs(hash(str(self.user.id) + random_part)) % 10000}"
+            )
         else:
             self.username = self.user.name
 
@@ -1221,7 +1349,10 @@ class MyClient(commands.Bot):
         self.local_headers["Authorization"] = self.token
         if self.session is None:
             self.session = aiohttp.ClientSession()
-        printBox(f'-Loaded {self.username}[*].'.center(console_width - 2), 'bold royal_blue1 ')
+        printBox(
+            f"-Loaded {self.username}[*].".center(console_width - 2),
+            "bold royal_blue1 ",
+        )
         listUserIds.append(self.user.id)
 
         await self.update_priorities()
@@ -1233,13 +1364,21 @@ class MyClient(commands.Bot):
             try:
                 self.cm = await self.fetch_channel(self.channel_id)
             except discord.NotFound:
-                await self.log(f"Error - Channel with ID {self.channel_id} does not exist.", "#c25560")
+                await self.log(
+                    f"Error - Channel with ID {self.channel_id} does not exist.",
+                    "#c25560",
+                )
                 return
             except discord.Forbidden:
-                await self.log(f"Bot lacks permissions to access channel {self.channel_id}.", "#c25560")
+                await self.log(
+                    f"Bot lacks permissions to access channel {self.channel_id}.",
+                    "#c25560",
+                )
                 return
             except discord.HTTPException as e:
-                await self.log(f"Failed to fetch channel {self.channel_id}: {e}", "#c25560")
+                await self.log(
+                    f"Failed to fetch channel {self.channel_id}: {e}", "#c25560"
+                )
                 return
 
         self.cm_slowmode_cd = self.cm.slowmode_delay
@@ -1262,7 +1401,7 @@ class MyClient(commands.Bot):
                 "lottery": 0,
                 "cookie": 0,
                 "banned": [],
-                "giveaways": 0
+                "giveaways": 0,
             }
         }
 
@@ -1284,8 +1423,10 @@ class MyClient(commands.Bot):
         # Start various tasks and updates
         # self.config_update_checker.start()
         # disabled since unnecessory
-        if self.token_len>1:
-            time_to_sleep = self.random_float(global_settings_dict["account"]["startupDelay"])
+        if self.token_len > 1:
+            time_to_sleep = self.random_float(
+                global_settings_dict["account"]["startupDelay"]
+            )
             await self.log(f"{self.username} sleeping {time_to_sleep}s before starting")
             await asyncio.sleep(time_to_sleep)
 
@@ -1303,17 +1444,19 @@ class MyClient(commands.Bot):
 
 def get_local_ip():
     if not global_settings_dict["website"]["enableHost"]:
-        return 'localhost'
+        return "localhost"
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             """10.255.255.255 is fake"""
-            s.connect(('10.255.255.255', 1))
+            s.connect(("10.255.255.255", 1))
             return s.getsockname()[0]
     except Exception:
-        return 'localhost'
+        return "localhost"
 
 
 """Handle Weekly runtime"""
+
+
 def handle_weekly_runtime(path="utils/data/weekly_runtime.json"):
     while True:
         try:
@@ -1322,7 +1465,10 @@ def handle_weekly_runtime(path="utils/data/weekly_runtime.json"):
             weekday = get_weekday()
 
             if weekly_runtime_dict[weekday][0] == 0:
-                weekly_runtime_dict[weekday][0], weekly_runtime_dict[weekday][1] = time.time(), time.time()
+                weekly_runtime_dict[weekday][0], weekly_runtime_dict[weekday][1] = (
+                    time.time(),
+                    time.time(),
+                )
             else:
                 weekly_runtime_dict[weekday][1] = time.time()
 
@@ -1335,6 +1481,7 @@ def handle_weekly_runtime(path="utils/data/weekly_runtime.json"):
         # update every 15 seconds
         time.sleep(15)
 
+
 def start_runtime_loop(path="utils/data/weekly_runtime.json"):
     try:
         with open(path, "r") as config_file:
@@ -1343,7 +1490,7 @@ def start_runtime_loop(path="utils/data/weekly_runtime.json"):
         now = time.time()
         last_checked = weekly_runtime_dict.get("last_checked", 0)
 
-        if now - last_checked > 604800: # 604800 -> seconds in a week
+        if now - last_checked > 604800:  # 604800 -> seconds in a week
             for day in map(str, range(7)):
                 weekly_runtime_dict[day] = [0, 0]
 
@@ -1360,6 +1507,8 @@ def start_runtime_loop(path="utils/data/weekly_runtime.json"):
 
 
 """Create SQLight database"""
+
+
 def create_database(db_path="utils/data/db.sqlite"):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
@@ -1390,14 +1539,26 @@ def create_database(db_path="utils/data/db.sqlite"):
     # -- gamble_winrate
     for hr in range(24):
         # hour does not have 24 in 24 hr format!!
-        c.execute("INSERT OR IGNORE INTO gamble_winrate (hour, wins, losses, net) VALUES (?, ?, ?, ?)", (hr, 0, 0, 0))
+        c.execute(
+            "INSERT OR IGNORE INTO gamble_winrate (hour, wins, losses, net) VALUES (?, ?, ?, ?)",
+            (hr, 0, 0, 0),
+        )
 
     # -- meta data
-    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("gamble_winrate_last_checked", 0))
-    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("cowoncy_earnings_last_checked", 0))
+    c.execute(
+        "INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)",
+        ("gamble_winrate_last_checked", 0),
+    )
+    c.execute(
+        "INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)",
+        ("cowoncy_earnings_last_checked", 0),
+    )
 
     # `INSERT OR UPDATE` is not used since we will be comparing old value (if any) ------ (check!!)
-    c.execute("INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)", ("version", version))
+    c.execute(
+        "INSERT OR IGNORE INTO meta_data (key, value) VALUES (?, ?)",
+        ("version", version),
+    )
 
     # -- command priority
     c.execute("SELECT * FROM command_priority WHERE user_id = ?", ("default",))
@@ -1438,12 +1599,16 @@ def create_database(db_path="utils/data/db.sqlite"):
             # This is to ensure we do update in two cases:
             # 1) when priority is changed
             # 3) when a new item is added to priority
-            c.execute("INSERT OR IGNORE INTO command_priority (user_id, command_name, priority) VALUES (?, ?, ?)", ("default", key, value.get("priority")))
-
+            c.execute(
+                "INSERT OR IGNORE INTO command_priority (user_id, command_name, priority) VALUES (?, ?, ?)",
+                ("default", key, value.get("priority")),
+            )
 
     # -- commands
     for cmd in misc_dict["command_info"].keys():
-        c.execute("INSERT OR IGNORE INTO commands (name, count) VALUES (?, ?)", (cmd, 0))
+        c.execute(
+            "INSERT OR IGNORE INTO commands (name, count) VALUES (?, ?)", (cmd, 0)
+        )
 
     # -- end --#
     conn.commit()
@@ -1460,10 +1625,14 @@ def fetch_json(url, description="data"):
         printBox(f"Failed to fetch {description}: {e}", "bold red")
         return {}
 
+
 def run_bots(tokens_and_channels):
     threads = []
     for token, channel_id in tokens_and_channels:
-        thread = Thread(target=run_bot, args=(token, channel_id, global_settings_dict, len(tokens_and_channels)))
+        thread = Thread(
+            target=run_bot,
+            args=(token, channel_id, global_settings_dict, len(tokens_and_channels)),
+        )
         thread.start()
         threads.append(thread)
     for thread in threads:
@@ -1500,19 +1669,27 @@ def run_bot(token, channel_id, global_settings_dict, token_len):
                     client.run(token, log_level=logging.ERROR)
                 except Exception as e:
                     printBox(f"Unknown error when running bot: {e}", "bold red")
-                break 
+                break
 
     except Exception as e:
         printBox(f"Error starting bot: {e}", "bold red")
 
+
 if __name__ == "__main__":
-    notify("OwO-Dusk starting... If any issue arises visit out discord support server (link available in console or github)", "Starting OwO-Dusk! :>")
+    notify(
+        "OwO-Dusk starting... If any issue arises visit out discord support server (link available in console or github)",
+        "Starting OwO-Dusk! :>",
+    )
     try:
         discord_cur_version = import_ver("discord.py-self")
         discord_req_version = "2.1.0a5097+g20ae80b3"
         if discord_cur_version != discord_req_version:
-            install_package("git+https://github.com/dolfies/discord.py-self@20ae80b398ec83fa272f0a96812140e14868c88f")
-            raise SystemExit("discord.py-self was reinstalled. Please restart the program.")
+            install_package(
+                "git+https://github.com/dolfies/discord.py-self@20ae80b398ec83fa272f0a96812140e14868c88f"
+            )
+            raise SystemExit(
+                "discord.py-self was reinstalled. Please restart the program."
+            )
     except ImportError as e:
         print(e)
 
@@ -1522,16 +1699,19 @@ if __name__ == "__main__":
     version_json = fetch_json(f"{owo_dusk_api}/version.json", "version info")
 
     if compare_versions(version, version_json["version"]):
-        printBox(f"""Update Detected - {version_json["version"]}
+        printBox(
+            f"""Update Detected - {version_json["version"]}
     Changelog:-
-        {version_json["changelog"]}""",'bold gold3')
+        {version_json["changelog"]}""",
+            "bold gold3",
+        )
         if version_json["important_update"]:
-            printBox('It is reccomended to update....','bold light_yellow3' )
+            printBox("It is reccomended to update....", "bold light_yellow3")
 
     tokens_and_channels = [line.strip().split() for line in open("tokens.txt", "r")]
     token_len = len(tokens_and_channels)
 
-    printBox(f'-Recieved {token_len} tokens.'.center(console_width - 2 ),'bold magenta' )
+    printBox(f"-Recieved {token_len} tokens.".center(console_width - 2), "bold magenta")
 
     # Create database or modify if required
     create_database()
@@ -1545,48 +1725,64 @@ if __name__ == "__main__":
         web_thread.start()
         # get ip
         ip = get_local_ip()
-        printBox(f'Website Dashboard: http://{ip}:{global_settings_dict["website"]["port"]}'.center(console_width - 2 ), 'dark_magenta')
+        printBox(
+            f"Website Dashboard: http://{ip}:{global_settings_dict['website']['port']}".center(
+                console_width - 2
+            ),
+            "dark_magenta",
+        )
     try:
         if misc_dict["news"]:
             news_json = fetch_json(f"{owo_dusk_api}/news.json", "news")
             if news_json.get("available"):
                 printBox(
-                    f'{news_json.get("content", "no content found..? this is an error! should be safe to ignore")}'.center(console_width - 2),
+                    f"{news_json.get('content', 'no content found..? this is an error! should be safe to ignore')}".center(
+                        console_width - 2
+                    ),
                     f"bold {news_json.get('color', 'white')}",
-                    title=news_json.get("title", "???")
+                    title=news_json.get("title", "???"),
                 )
     except Exception as e:
         print(f"Error - {e}, while attempting to fetch news")
 
     if not misc_dict["console"]["hideStarRepoMessage"]:
-        console.print("Star the repo in our github page if you want us to continue maintaining this proj :>.", style = "thistle1")
+        console.print(
+            "Star the repo in our github page if you want us to continue maintaining this proj :>.",
+            style="thistle1",
+        )
 
         if global_settings_dict["webhook"]["enabled"]:
-            webhook = SyncWebhook.from_url(global_settings_dict["webhook"]["webhookUrl"])
+            webhook = SyncWebhook.from_url(
+                global_settings_dict["webhook"]["webhookUrl"]
+            )
 
-            color = discord.Color(0xc48dc3)
+            color = discord.Color(0xC48DC3)
             emb = discord.Embed(
                 title="Star the github repo!",
                 description="Starring the GitHub repo motivates us to keep adding new and better features! It takes less than 5 minutes to do that, so do star the GitHub repo at https://github.com/echoquill/owo-dusk .",
-                color=color
+                color=color,
             )
-            emb.set_thumbnail(url="https://cdn.discordapp.com/emojis/723856770249916447.gif")
+            emb.set_thumbnail(
+                url="https://cdn.discordapp.com/emojis/723856770249916447.gif"
+            )
 
             webhook.send(embed=emb)
-
 
     console.rule(style="navy_blue")
 
     webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
     database_handler = databaseWorker()
 
-    
-    if global_settings_dict["captcha"]["toastOrPopup"] and not on_mobile and not misc_dict["hostMode"]:
+    if (
+        global_settings_dict["captcha"]["toastOrPopup"]
+        and not on_mobile
+        and not misc_dict["hostMode"]
+    ):
         try:
             import tkinter as tk
         except Exception as e:
             print(f"ImportError: {e}")
-            
+
         popup_queue = Queue()
 
         bot_threads = threading.Thread(target=run_bots, args=(tokens_and_channels,))

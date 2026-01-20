@@ -18,21 +18,22 @@ import re
 from discord.ext import commands
 from discord.ext.commands import ExtensionNotLoaded
 
+
 def load_json_dict(file_path="utils/stats.json"):
     with open(file_path, "r") as config_file:
         return json.load(config_file)
 
-cmd = {
-    "cmd_name": "daily",
-    "prefix": True,
-    "checks": True,
-    "id": "daily"
-}
+
+cmd = {"cmd_name": "daily", "prefix": True, "checks": True, "id": "daily"}
 
 lock = threading.Lock()
+
+
 def load_dict():
     global accounts_dict
     accounts_dict = load_json_dict()
+
+
 load_dict()
 
 
@@ -51,15 +52,21 @@ class Daily(commands.Cog):
             if self.time_diff < 0:
                 self.last_daily_time = self.current_time_seconds
             if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
-                await asyncio.sleep(self.bot.calc_time())  # Wait until next 12:00 AM PST
+                await asyncio.sleep(
+                    self.bot.calc_time()
+                )  # Wait until next 12:00 AM PST
 
-            await self.bot.sleep_till(self.bot.settings_dict["defaultCooldowns"]["briefCooldown"])
+            await self.bot.sleep_till(
+                self.bot.settings_dict["defaultCooldowns"]["briefCooldown"]
+            )
             await self.bot.put_queue(cmd, priority=True)
             await self.bot.set_stat(False)
 
             with lock:
                 load_dict()
-                accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
+                accounts_dict[str(self.bot.user.id)]["daily"] = (
+                    self.bot.time_in_seconds()
+                )
                 with open("utils/stats.json", "w") as f:
                     json.dump(accounts_dict, f, indent=4)
 
@@ -71,6 +78,7 @@ class Daily(commands.Cog):
                 pass
         else:
             asyncio.create_task(self.start_daily())
+
     async def cog_unload(self):
         await self.bot.remove_queue(id="daily")
 
@@ -78,7 +86,11 @@ class Daily(commands.Cog):
     async def on_message(self, message):
         nick = self.bot.get_nick(message)
 
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id and nick in message.content:
+        if (
+            message.channel.id == self.bot.cm.id
+            and message.author.id == self.bot.owo_bot_id
+            and nick in message.content
+        ):
             if "Here is your daily **<:cowoncy:416043450337853441>" in message.content:
                 """Task: add cash check regex here"""
                 await self.bot.remove_queue(cmd)
@@ -96,12 +108,18 @@ class Daily(commands.Cog):
                     )
                 )
 
-                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(
+                    self.random_float(
+                        self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
+                    )
+                )
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)
                 with lock:
                     load_dict()
-                    accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
+                    accounts_dict[str(self.bot.user.id)]["daily"] = (
+                        self.bot.time_in_seconds()
+                    )
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 
@@ -114,16 +132,25 @@ class Daily(commands.Cog):
                         author_img_url="https://i.imgur.com/6zeCgXo.png",
                     )
 
-            if "**⏱ |** Nu! **" in message.content and "! You need to wait" in message.content:
+            if (
+                "**⏱ |** Nu! **" in message.content
+                and "! You need to wait" in message.content
+            ):
                 await self.bot.remove_queue(cmd)
                 await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(self.random_float(self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]))
+                await asyncio.sleep(
+                    self.random_float(
+                        self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
+                    )
+                )
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)
                 with lock:
                     load_dict()
-                    accounts_dict[str(self.bot.user.id)]["daily"] = self.bot.time_in_seconds()
+                    accounts_dict[str(self.bot.user.id)]["daily"] = (
+                        self.bot.time_in_seconds()
+                    )
                     with open("utils/stats.json", "w") as f:
                         json.dump(accounts_dict, f, indent=4)
 

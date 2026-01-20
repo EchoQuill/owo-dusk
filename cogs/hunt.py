@@ -19,7 +19,7 @@ from discord.ext.commands import ExtensionNotLoaded
 
 
 try:
-    with open("utils/emojis.json", 'r', encoding="utf-8") as file:
+    with open("utils/emojis.json", "r", encoding="utf-8") as file:
         emoji_dict = json.load(file)
 except FileNotFoundError:
     print("The file emojis.json was not found.")
@@ -28,10 +28,15 @@ except json.JSONDecodeError:
 
 
 def get_emoji_cost(text, emoji_dict=emoji_dict):
-    pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
+    pattern = re.compile(
+        r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]"
+    )
     emojis = pattern.findall(text)
-    emoji_names = [emoji_dict[char]["sell_price"] for char in emojis if char in emoji_dict]
+    emoji_names = [
+        emoji_dict[char]["sell_price"] for char in emojis if char in emoji_dict
+    ]
     return emoji_names
+
 
 def get_emoji_values(text):
     emoji_costs = get_emoji_cost(text)
@@ -52,13 +57,15 @@ class Hunt(commands.Cog):
             "checks": True,
             "id": "hunt",
             "slash_cmd_name": "hunt",
-            "removed": False
+            "removed": False,
         }
         self.was_recently_disabled = False
 
     def get_emoji_tier(self, text, emoji_dict=emoji_dict):
         # https://emojiapi.dev/api/v1/lady_beetle/100.png
-        pattern = re.compile(r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]")
+        pattern = re.compile(
+            r"<a:[a-zA-Z0-9_]+:[0-9]+>|:[a-zA-Z0-9_]+:|[\U0001F300-\U0001F6FF\U0001F700-\U0001F77F]"
+        )
         emojis = pattern.findall(text)
 
         result_list = []
@@ -74,16 +81,15 @@ class Hunt(commands.Cog):
             "fabled": (8, "<a:fabled:438857004493307907>"),
             "hidden": (9, "<a:hidden:459203677438083074>"),
         }
-        highest_rank = {
-            "rarity": "",
-            "emoji": ""
-        }
+        highest_rank = {"rarity": "", "emoji": ""}
 
         for emoji in emojis:
             emoji_data = emoji_dict.get(emoji)
 
             if emoji_data:
-                if self.bot.global_settings_dict["webhook"]["animal_log"]["rank"][emoji_data["rank"]]:
+                if self.bot.global_settings_dict["webhook"]["animal_log"]["rank"][
+                    emoji_data["rank"]
+                ]:
                     if emoji.startswith("<a:"):
                         emoji_id = emoji[3:-1]
                         url = f"https://cdn.discordapp.com/emojis/{emoji_id}.gif"
@@ -97,28 +103,36 @@ class Hunt(commands.Cog):
 
                     result_list.append(
                         {
-                            #"name": emoji_id,
+                            # "name": emoji_id,
                             "rank": emoji_data["rank"],
                             "emoji_url": url,
-                            "emoji": emoji
+                            "emoji": emoji,
                         }
                     )
-                    if rank_map[emoji_data["rank"]][0] > rank_map.get(highest_rank["rarity"], (0, ""))[0]:
+                    if (
+                        rank_map[emoji_data["rank"]][0]
+                        > rank_map.get(highest_rank["rarity"], (0, ""))[0]
+                    ):
                         highest_rank["rarity"] = emoji_data["rank"]
                         highest_rank["emoji"] = rank_map[emoji_data["rank"]][1]
 
         return result_list, highest_rank
 
     async def cog_load(self):
-        if not self.bot.settings_dict["commands"]["hunt"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
+        if (
+            not self.bot.settings_dict["commands"]["hunt"]["enabled"]
+            or self.bot.settings_dict["defaultCooldowns"]["reactionBot"][
+                "hunt_and_battle"
+            ]
+        ):
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.hunt"))
             except ExtensionNotLoaded:
                 pass
         else:
             self.cmd["cmd_name"] = (
-                self.bot.alias["hunt"]["shortform"] 
-                if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
+                self.bot.alias["hunt"]["shortform"]
+                if self.bot.settings_dict["commands"]["hunt"]["useShortForm"]
                 else self.bot.alias["hunt"]["normal"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
@@ -131,7 +145,7 @@ class Hunt(commands.Cog):
         nick = self.bot.get_nick(message)
         if nick not in message.content:
             return
-        
+
         if self.bot.hunt_disabled:
             # Ensure hunt is currently not in queue
             if not self.was_recently_disabled:
@@ -141,32 +155,47 @@ class Hunt(commands.Cog):
         elif self.was_recently_disabled:
             self.was_recently_disabled = False
             self.cmd["cmd_name"] = (
-                    self.bot.alias["hunt"]["shortform"] 
-                    if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
-                    else self.bot.alias["hunt"]["normal"]
-                )
+                self.bot.alias["hunt"]["shortform"]
+                if self.bot.settings_dict["commands"]["hunt"]["useShortForm"]
+                else self.bot.alias["hunt"]["normal"]
+            )
             await self.bot.put_queue(self.cmd)
-        
-        if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
-            if 'you found:' in message.content.lower() or "caught" in message.content.lower():
+
+        if (
+            message.channel.id == self.bot.cm.id
+            and message.author.id == self.bot.owo_bot_id
+        ):
+            if (
+                "you found:" in message.content.lower()
+                or "caught" in message.content.lower()
+            ):
                 await self.bot.remove_queue(id="hunt")
 
                 msg_lines = message.content.splitlines()
-                msg_line = msg_lines[0] if "caught" in message.content.lower() else msg_lines[1]
+                msg_line = (
+                    msg_lines[0]
+                    if "caught" in message.content.lower()
+                    else msg_lines[1]
+                )
 
                 sell_value = get_emoji_values(msg_line)
                 await self.bot.update_cash(sell_value - 5, assumed=True)
                 await self.bot.update_cash(5, reduce=True)
 
-                if self.bot.global_settings_dict["webhook"]["enabled"] and self.bot.global_settings_dict["webhook"]["animal_log"]["enabled"]:
+                if (
+                    self.bot.global_settings_dict["webhook"]["enabled"]
+                    and self.bot.global_settings_dict["webhook"]["animal_log"][
+                        "enabled"
+                    ]
+                ):
                     result_list, highest_rank = self.get_emoji_tier(msg_line)
                     if result_list:
                         if len(result_list) > 1:
                             description = f"User: <@{self.bot.user.id}> caught the following pets:\n> "
                             for item in result_list:
-                                description+=f"{item["emoji"]} "
+                                description += f"{item['emoji']} "
                             # Multiple items, compact mode.
-                            description+=f"\n-# Best catch: {highest_rank["emoji"]} {highest_rank["rarity"]}"
+                            description += f"\n-# Best catch: {highest_rank['emoji']} {highest_rank['rarity']}"
                             await self.bot.webhookSender(
                                 title="Caught multiple animals from hunt!",
                                 desc=description,
@@ -176,23 +205,21 @@ class Hunt(commands.Cog):
                             )
                         else:
                             await self.bot.webhookSender(
-                                title=f"Caught {highest_rank["emoji"]} {result_list[0]["emoji"]} from hunt!",
-                                desc=f"> User: <@{self.bot.user.id}> caught a(an) {result_list[0]["rank"]} {result_list[0]["emoji"]}.",
+                                title=f"Caught {highest_rank['emoji']} {result_list[0]['emoji']} from hunt!",
+                                desc=f"> User: <@{self.bot.user.id}> caught a(an) {result_list[0]['rank']} {result_list[0]['emoji']}.",
                                 colors="#5B0B74",
-                                img_url=result_list[0]["emoji_url"]
+                                img_url=result_list[0]["emoji_url"],
                             )
-                        
 
-                await self.bot.sleep_till(self.bot.settings_dict["commands"]["hunt"]["cooldown"])
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["commands"]["hunt"]["cooldown"]
+                )
                 self.cmd["cmd_name"] = (
-                    self.bot.alias["hunt"]["shortform"] 
-                    if self.bot.settings_dict["commands"]["hunt"]["useShortForm"] 
+                    self.bot.alias["hunt"]["shortform"]
+                    if self.bot.settings_dict["commands"]["hunt"]["useShortForm"]
                     else self.bot.alias["hunt"]["normal"]
                 )
                 await self.bot.put_queue(self.cmd)
-
-                
-
 
 
 async def setup(bot):

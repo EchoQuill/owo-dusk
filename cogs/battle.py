@@ -25,23 +25,27 @@ class Battle(commands.Cog):
             "checks": True,
             "id": "battle",
             "slash_cmd_name": "battle",
-            "removed": False
+            "removed": False,
         }
-    
+
     async def cog_load(self):
-        if not self.bot.settings_dict["commands"]["battle"]["enabled"] or self.bot.settings_dict["defaultCooldowns"]["reactionBot"]["hunt_and_battle"]:
+        if (
+            not self.bot.settings_dict["commands"]["battle"]["enabled"]
+            or self.bot.settings_dict["defaultCooldowns"]["reactionBot"][
+                "hunt_and_battle"
+            ]
+        ):
             try:
                 asyncio.create_task(self.bot.unload_cog("cogs.battle"))
             except Exception:
                 pass
         else:
             self.cmd["cmd_name"] = (
-                self.bot.alias["battle"]["shortform"] 
-                if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
+                self.bot.alias["battle"]["shortform"]
+                if self.bot.settings_dict["commands"]["battle"]["useShortForm"]
                 else self.bot.alias["battle"]["normal"]
             )
             asyncio.create_task(self.bot.put_queue(self.cmd))
-
 
     async def cog_unload(self):
         await self.bot.remove_queue(id="battle")
@@ -49,42 +53,67 @@ class Battle(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         try:
-            if message.channel.id == self.bot.cm.id and message.author.id == self.bot.owo_bot_id:
+            if (
+                message.channel.id == self.bot.cm.id
+                and message.author.id == self.bot.owo_bot_id
+            ):
                 if message.embeds:
                     for embed in message.embeds:
-                        if embed.author.name is not None and f"{self.bot.user.display_name} goes into battle!" in embed.author.name:
+                        if (
+                            embed.author.name is not None
+                            and f"{self.bot.user.display_name} goes into battle!"
+                            in embed.author.name
+                        ):
                             if embed.footer:
-                                if self.bot.settings_dict["commands"]["battle"]["showStreakInConsole"]:
-                                    await self.bot.log(f"{embed.footer.text}", "#292252")
+                                if self.bot.settings_dict["commands"]["battle"][
+                                    "showStreakInConsole"
+                                ]:
+                                    await self.bot.log(
+                                        f"{embed.footer.text}", "#292252"
+                                    )
                                 if "You lost your streak of" in embed.footer.text:
-                                    if self.bot.settings_dict["commands"]["battle"]["notifyStreakLoss"]:
-                                        notify(embed.footer.text, "You lost your streak!")
+                                    if self.bot.settings_dict["commands"]["battle"][
+                                        "notifyStreakLoss"
+                                    ]:
+                                        notify(
+                                            embed.footer.text, "You lost your streak!"
+                                        )
                             if message.reference is not None:
-
                                 """Return if embed"""
-                                #print(message.reference.message_id)
-                                referenced_message = await message.channel.fetch_message(message.reference.message_id)
-                                #print(referenced_message, referenced_message.content)
+                                # print(message.reference.message_id)
+                                referenced_message = (
+                                    await message.channel.fetch_message(
+                                        message.reference.message_id
+                                    )
+                                )
+                                # print(referenced_message, referenced_message.content)
 
-                                if not referenced_message.embeds and "You found a **weapon crate**!" in referenced_message.content:
+                                if (
+                                    not referenced_message.embeds
+                                    and "You found a **weapon crate**!"
+                                    in referenced_message.content
+                                ):
                                     # Ignore reply and proceeding!
                                     pass
                                 else:
                                     # Return from battle embed reply
                                     return
-                                
-                            
+
                             await self.bot.remove_queue(id="battle")
-                            await self.bot.sleep_till(self.bot.settings_dict["commands"]["battle"]["cooldown"])
+                            await self.bot.sleep_till(
+                                self.bot.settings_dict["commands"]["battle"]["cooldown"]
+                            )
                             self.cmd["cmd_name"] = (
-                                self.bot.alias["battle"]["shortform"] 
-                                if self.bot.settings_dict["commands"]["battle"]["useShortForm"] 
+                                self.bot.alias["battle"]["shortform"]
+                                if self.bot.settings_dict["commands"]["battle"][
+                                    "useShortForm"
+                                ]
                                 else self.bot.alias["battle"]["normal"]
                             )
                             await self.bot.put_queue(self.cmd)
         except Exception as e:
             await self.bot.log(f"Error - {e}, During battle on_message()", "#c25560")
 
+
 async def setup(bot):
     await bot.add_cog(Battle(bot))
-    

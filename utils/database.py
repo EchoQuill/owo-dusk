@@ -50,7 +50,7 @@ class databaseWorker:
                 try:
                     await db.execute(sql, params or ())
                     await db.commit()
-                    #print("success!")
+                    # print("success!")
                 except Exception as e:
                     print(f"Database Error: {e}")
                 finally:
