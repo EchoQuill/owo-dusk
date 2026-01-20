@@ -91,7 +91,7 @@ class Shop(commands.Cog):
             return
 
         if "**, you bought a " in message.content:
-            await self.bot.update_cash(
+            self.bot.update_cash(
                 int(re.search(cash_regex, message.content).group(1)), reduce=True
             )
             await self.send_buy()

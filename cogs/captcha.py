@@ -295,7 +295,7 @@ class Captcha(commands.Cog):
                 )
                 await asyncio.sleep(time_to_sleep)
                 self.bot.command_handler_status["captcha"] = False
-                await self.bot.update_captcha_db()
+                self.bot.update_captcha_db()
                 await self.handle_solves()
                 return
 

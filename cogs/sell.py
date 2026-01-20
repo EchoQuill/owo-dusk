@@ -101,7 +101,7 @@ class Sell(commands.Cog):
 
                 if self.bot.settings_dict["cashCheck"]:
                     try:
-                        await self.bot.update_cash(
+                        self.bot.update_cash(
                             int(
                                 re.search(
                                     r"for a total of \*\*<:cowoncy:\d+> ([\d,]+)",

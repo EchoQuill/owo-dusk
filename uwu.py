@@ -759,7 +759,7 @@ class MyClient(commands.Bot):
 
         # print(self.user.name, "->", self.cmd_priorities)
 
-    async def update_cash_db(self):
+    def update_cash_db(self):
         hr = get_hour()
 
         database_handler.update_database(
@@ -774,13 +774,13 @@ class MyClient(commands.Bot):
             (self.user_status["balance"], self.user.id),
         )
 
-    async def update_captcha_db(self):
+    def update_captcha_db(self):
         database_handler.update_database(
             "UPDATE user_stats SET captchas = captchas + 1 WHERE user_id = ?",
             (self.user.id,),
         )
 
-    async def update_giveaway_db(self, last_ran):
+    def update_giveaway_db(self, last_ran):
         database_handler.update_database(
             "UPDATE user_stats SET giveaways = ? WHERE user_id = ?",
             (last_ran, self.user.id),
@@ -794,10 +794,33 @@ class MyClient(commands.Bot):
             return results[0]["giveaways"]
         return None
 
-    async def populate_stats_db(self):
+    def populate_stats_db(self):
         database_handler.update_database(
-            "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (self.user.id, 0, 0, 0, 0, 0, 0),
+            "INSERT OR IGNORE INTO user_stats (user_id, daily, lottery, cookie, giveaways, captchas, cowoncy, boss, boss_ticket) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (self.user.id, 0, 0, 0, 0, 0, 0, 0, 0),
+        )
+
+    def update_stats_db(self, column_name, value):
+        if column_name not in {"daily", "lottery", "cookie", "giveaways"}:
+            # Captcha and cowoncy handled seperately
+            raise ValueError("Invalid column name.")
+
+        database_handler.update_database(
+            "UPDATE user_stats SET ? = ? WHERE user_id = ?",
+            (column_name, value, self.user.id),
+        )
+
+    def consume_boss_ticket(self):
+        database_handler.update_database(
+            "UPDATE user_stats SET boss_ticket = boss_ticket - 1 WHERE user_id = ?",
+            (self.user.id,),
+        )
+
+    def reset_boss_ticket(self):
+        # We have a total of 3 tickets per day.
+        database_handler.update_database(
+            "UPDATE user_stats SET boss_ticket = ? WHERE user_id = ?",
+            (3, self.user.id),
         )
 
     async def populate_cowoncy_earnings(self, update=False):
@@ -886,12 +909,12 @@ class MyClient(commands.Bot):
             (today_str, "gamble_winrate_last_checked"),
         )
 
-    async def update_cmd_db(self, cmd):
+    def update_cmd_db(self, cmd):
         database_handler.update_database(
             "UPDATE commands SET count = count + 1 WHERE name = ?", (cmd,)
         )
 
-    async def update_gamble_db(self, item="wins"):
+    def update_gamble_db(self, item="wins"):
         hr = get_hour()
 
         if item not in {"wins", "losses"}:
@@ -978,7 +1001,7 @@ class MyClient(commands.Bot):
             self.cmds_state[id]["last_ran"] = time.time()
             if not reactionBot:
                 self.cmds_state[id]["in_queue"] = False
-            await self.update_cmd_db(id)
+            self.update_cmd_db(id)
 
     def construct_command(self, data):
         prefix = self.settings_dict["setprefix"] if data.get("prefix") else ""
@@ -1288,7 +1311,7 @@ class MyClient(commands.Bot):
             }
         )
 
-    async def update_cash(self, amount, override=False, reduce=False, assumed=False):
+    def update_cash(self, amount, override=False, reduce=False, assumed=False):
         if override and self.settings_dict["cashCheck"]:
             self.user_status["balance"] = amount
         else:
@@ -1302,7 +1325,7 @@ class MyClient(commands.Bot):
                 self.user_status["net_earnings"] -= amount
             else:
                 self.user_status["net_earnings"] += amount
-        await self.update_cash_db()
+        self.update_cash_db()
 
     def get_nick(self, msg):
         if not msg.guild:
@@ -1413,7 +1436,7 @@ class MyClient(commands.Bot):
                     json.dump(accounts_dict, f, indent=4)
 
         # Charts
-        await self.populate_stats_db()
+        self.populate_stats_db()
 
         await self.populate_cowoncy_earnings()
         await self.reset_gamble_wins_or_losses()
@@ -1523,7 +1546,7 @@ def create_database(db_path="utils/data/db.sqlite"):
         "CREATE TABLE IF NOT EXISTS gamble_winrate (hour INTEGER PRIMARY KEY, wins INTEGER, losses INTEGER, net INTEGER)"
     )
     c.execute(
-        "CREATE TABLE IF NOT EXISTS user_stats (user_id TEXT PRIMARY KEY, daily REAL, lottery REAL, cookie REAL, giveaways REAL, captchas INTEGER, cowoncy INTEGER)"
+        "CREATE TABLE IF NOT EXISTS user_stats (user_id TEXT PRIMARY KEY, daily REAL, lottery REAL, cookie REAL, giveaways REAL, captchas INTEGER, cowoncy INTEGER, boss REAL, boss_ticket INTEGER)"
     )
     c.execute(
         "CREATE TABLE IF NOT EXISTS meta_data (key TEXT PRIMARY KEY, value INTEGER)"

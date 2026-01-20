@@ -1,3 +1,15 @@
+# This file is part of owo-dusk.
+#
+# Copyright (c) 2024-present EchoQuill
+#
+# Portions of this file are based on code by EchoQuill, licensed under the
+# GNU General Public License v3.0 (GPL-3.0).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
 import json
 import base64
 import uuid
@@ -65,7 +77,7 @@ async def get_browser_version(session: aiohttp.ClientSession) -> int:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
             data = await resp.json()
         return int(data["versions"][0]["version"].split(".")[0])
-    except:
+    except Exception:
         return 134
 
 

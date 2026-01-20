@@ -92,7 +92,7 @@ class Giveaway(commands.Cog):
 
             await self.bot.set_stat(True)
         # Set prev_time for future use
-        await self.bot.update_giveaway_db(time.time())
+        self.bot.update_giveaway_db(time.time())
 
     """gets executed when the cog is first loaded"""
 

@@ -285,7 +285,7 @@ class Blackjack(commands.Cog):
                                 .replace(",", "")
                             )
 
-                            await self.bot.update_cash(lost_amt, reduce=True)
+                            self.bot.update_cash(lost_amt, reduce=True)
                             self.bot.gain_or_lose -= lost_amt
                             self.turns_lost += 1
 
@@ -294,7 +294,7 @@ class Blackjack(commands.Cog):
                                 "#993f3f",
                             )
                             await self.send_blackjack()
-                            await self.bot.update_gamble_db("losses")
+                            self.bot.update_gamble_db("losses")
 
                         elif "🎲 ~ You won" in embed.footer.text:
                             self.game_event.set()
@@ -305,7 +305,7 @@ class Blackjack(commands.Cog):
                                 .replace(",", "")
                             )
 
-                            await self.bot.update_cash(win_amt)
+                            self.bot.update_cash(win_amt)
                             self.bot.gain_or_lose += win_amt
 
                             await self.bot.log(
@@ -313,7 +313,7 @@ class Blackjack(commands.Cog):
                                 "#536448",
                             )
                             await self.send_blackjack()
-                            await self.bot.update_gamble_db("wins")
+                            self.bot.update_gamble_db("wins")
                         elif any(
                             item in embed.footer.text
                             for item in ["🎲 ~ You tied!", "🎲 ~ You both bust!"]

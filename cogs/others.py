@@ -83,7 +83,7 @@ class Others(commands.Cog):
             # Cash Check
             if "you currently have **__" in message.content and nick in message.content:
                 """task: add checks for cash at ready."""
-                await self.bot.update_cash(
+                self.bot.update_cash(
                     int(
                         re.search(
                             r"(\d{1,3}(?:,\d{3})*)(?= cowoncy)",

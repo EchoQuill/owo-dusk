@@ -179,8 +179,9 @@ class Hunt(commands.Cog):
                 )
 
                 sell_value = get_emoji_values(msg_line)
-                await self.bot.update_cash(sell_value - 5, assumed=True)
-                await self.bot.update_cash(5, reduce=True)
+                # Wait why are reducing 5 again when we are alrady reducing that from sell val? checkk
+                self.bot.update_cash(sell_value - 5, assumed=True)
+                self.bot.update_cash(5, reduce=True)
 
                 if (
                     self.bot.global_settings_dict["webhook"]["enabled"]

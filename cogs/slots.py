@@ -189,7 +189,7 @@ class Slots(commands.Cog):
                     re.search(lose_pattern, after.content).group(1).replace(",", "")
                 )
 
-                await self.bot.update_cash(match, reduce=True)
+                self.bot.update_cash(match, reduce=True)
                 self.bot.gain_or_lose -= match
 
                 self.turns_lost += 1
@@ -198,7 +198,7 @@ class Slots(commands.Cog):
                     "#993f3f",
                 )
                 await self.start_slots()
-                await self.bot.update_gamble_db("losses")
+                self.bot.update_gamble_db("losses")
             else:
                 if (
                     "<:eggplant:417475705719226369>" in after.content.lower()
@@ -218,7 +218,7 @@ class Slots(commands.Cog):
                     )
                     profit = won_match - lose_match
 
-                    await self.bot.update_cash(profit)
+                    self.bot.update_cash(profit)
                     self.bot.gain_or_lose += profit
 
                     self.turns_lost = 0
@@ -227,7 +227,7 @@ class Slots(commands.Cog):
                         "#536448",
                     )
                     await self.start_slots()
-                    await self.bot.update_gamble_db("wins")
+                    self.bot.update_gamble_db("wins")
 
 
 async def setup(bot):

@@ -97,7 +97,7 @@ class Daily(commands.Cog):
                 await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
 
-                await self.bot.update_cash(
+                self.bot.update_cash(
                     int(
                         re.search(
                             r"Here is your daily \*\*<:cowoncy:\d+> ([\d,]+)",
