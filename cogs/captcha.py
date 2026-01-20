@@ -395,29 +395,6 @@ class Captcha(commands.Cog):
                             "webhookCaptchaUrl", None
                         ),
                     )
-            """elif message.embeds:
-                for embed in message.embeds:
-                    items = {
-                        embed.title if embed.title else "",
-                        embed.author.name if embed.author else "",
-                        embed.footer.text if embed.footer else "",
-                    }
-                    for i in items:
-                        if any(b in clean(i) for b in list_captcha):
-                            self.bot.command_handler_status["captcha"] = True
-                            await self.bot.log(f"Captcha detected...?", "#d70000")
-                            break
-
-                    if embed.fields:
-                        for field in embed.fields:
-                            if field.name and any(b in clean(field.name) for b in list_captcha):
-                                self.bot.command_handler_status["captcha"] = True
-                                await self.bot.log(f"Captcha detected...?", "#d70000")
-                                break
-                            if field.value and any(b in clean(field.value) for b in list_captcha):
-                                self.bot.command_handler_status["captcha"] = True
-                                await self.bot.log(f"Captcha detected...?", "#d70000")
-                                break"""
 
 
 async def setup(bot):
