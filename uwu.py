@@ -118,7 +118,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.3.2"
+version = "2.3.3"
 
 
 """FLASK APP"""
@@ -564,8 +564,6 @@ class MyClient(commands.Bot):
 
         # discord.py-self's module sets global random to fixed seed. reset that, locally.
         self.random = random.Random()
-        # print(f"These will be printed at start: {self.random.randint(1,2)} {self.random.randint(1,5)} {self.random.uniform(3,6.2)}")
-
         # Task: Update code to have checks using status instead of individual variables
         self.user_status = {
             "no_gems": False,
@@ -814,12 +812,12 @@ class MyClient(commands.Bot):
     def consume_boss_ticket(self, revert=False):
         if not revert:
             database_handler.update_database(
-                "UPDATE user_stats SET boss_ticket = boss_ticket - 1 WHERE user_id = ?",
+                "UPDATE user_stats SET boss_ticket = boss_ticket - 1 WHERE user_id = ? and boss_ticket > 0",
                 (self.user.id,),
             )
         else:
             database_handler.update_database(
-                "UPDATE user_stats SET boss_ticket = boss_ticket + 1 WHERE user_id = ?",
+                "UPDATE user_stats SET boss_ticket = boss_ticket + 1 WHERE user_id = ? and boss_ticket < 3",
                 (self.user.id,),
             )
 

@@ -167,7 +167,7 @@ class section:
         self.component_name = COMPONENT_NAMES[component["type"]]
         self.accessory = accessory(component.get("accessory", {}), message_details)
 
-        self.component, self.buttons = walker(
+        self.components, self.buttons = walker(
             component.get("components", []), message_details
         )
 
@@ -206,6 +206,7 @@ class media:
     def __init__(self, data: dict):
         self.url = data.get("url")
         self.proxy_url = data.get("proxy_url")
+        self.placeholder = data.get("placeholder")
 
 
 class accessory:
@@ -278,6 +279,8 @@ class accessory:
                         if resp.status != 204:
                             text = await resp.text()
                             print(f"Button click failed ({resp.status}): {text}")
+                            return False
+                        return True
         else:
             print(
                 f"Code attempted to click on a button... but not a clickable button  -> {self.custom_id}"

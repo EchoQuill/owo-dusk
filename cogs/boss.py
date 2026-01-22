@@ -23,6 +23,7 @@ class Boss(commands.Cog):
         self.bot = bot
         self.boss_tickets = 3
         self.sleeping = True
+        self.joined_boss_ids = []
 
     def should_join(self, percentage):
         boss_dict = self.bot.settings_dict["bossBattle"]
@@ -49,6 +50,11 @@ class Boss(commands.Cog):
     async def time_check(self):
         last_reset_ts, self.boss_tickets = await self.bot.fetch_boss_stats()
 
+        if self.boss_tickets > 3 or self.boss_tickets < 0:
+            # Termporary fix reverting issues with bad logic in prev version.
+            self.bot.reset_boss_ticket()
+            self.boss_tickets = 3
+
         today_midnight_ts = self.bot.pst_midnight_timestamp()
 
         if not last_reset_ts or last_reset_ts < today_midnight_ts:
@@ -64,6 +70,19 @@ class Boss(commands.Cog):
     def consume_boss_ticket(self):
         self.boss_tickets -= 1
         self.bot.consume_boss_ticket()
+
+    def return_battle_id(self, components):
+        for component in components:
+            if component.component_name == "media_gallery":
+                media_item = component.items[0].media
+                if "reward" in media_item.url:
+                    return media_item.placeholder
+
+    def check_if_joined(self, battle_id):
+        if battle_id and battle_id not in self.joined_boss_ids:
+            return False
+
+        return True
 
     @commands.Cog.listener()
     async def on_socket_raw_receive(self, msg):
@@ -101,15 +120,27 @@ class Boss(commands.Cog):
                     # Boss Embed
                     if component.component_name == "section":
                         if (
-                            component.component[0].content
-                            and "runs away" in component.component[0].content
+                            component.components[0].content
+                            and "runs away" in component.components[0].content
                         ):
+                            # Check if battle has already been joined
+                            battle_id = self.return_battle_id(message.components)
+                            if not battle_id or self.check_if_joined(battle_id):
+                                return
+                            else:
+                                # We won't be handling boss battles already skipped or joined
+                                # which will be done below
+                                self.joined_boss_ids.append(battle_id)
+
                             if not self.should_join(
                                 self.bot.settings_dict["bossBattle"][
                                     "joinChancePercent"
                                 ]
                             ):
-                                await self.bot.log("Skipping boss battle..", "#6F7C8A")
+                                await self.bot.log(
+                                    "Skipping boss battle..",
+                                    "#6F7C8A",
+                                )
                                 return
 
                             # Boss Fight button
@@ -136,15 +167,21 @@ class Boss(commands.Cog):
                                             return
 
                                         await asyncio.sleep(0.5)
-                                        click_status = await component.accessory.click(
-                                            self.bot.ws.session_id,
-                                            self.bot.local_headers,
-                                            boss_channel.guild.id,
-                                        )
-                                        if click_status:
-                                            await self.bot.log(
-                                                "Joined Boss battle!", "#B5C1CE"
+                                        if not self.bot.command_handler_status[
+                                            "captcha"
+                                        ]:
+                                            click_status = (
+                                                await component.accessory.click(
+                                                    self.bot.ws.session_id,
+                                                    self.bot.local_headers,
+                                                    boss_channel.guild.id,
+                                                )
                                             )
+                                            if click_status:
+                                                await self.bot.log(
+                                                    "Joined Boss battle!", "#B5C1CE"
+                                                )
+                                                self.bot.consume_boss_ticket()
 
                     if component.component_name == "text_display":
                         if (
@@ -152,7 +189,7 @@ class Boss(commands.Cog):
                             in component.content
                         ):
                             await self.bot.log(
-                                "Boss battle was already joined..", "#B5C1CE"
+                                "Boss battle was already joined.", "#B5C1CE"
                             )
                             # redo changes made earlier..
                             self.bot.consume_boss_ticket(revert=True)
@@ -161,6 +198,7 @@ class Boss(commands.Cog):
                         if "You don't have any boss tickets!" in component.content:
                             # Reset previous entry
                             self.boss_tickets = 0
+                            self.joined_boss_ids = []
                             self.bot.reset_boss_ticket(empty=True)
 
 

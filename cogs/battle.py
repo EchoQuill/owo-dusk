@@ -80,13 +80,11 @@ class Battle(commands.Cog):
                                         )
                             if message.reference is not None:
                                 """Return if embed"""
-                                # print(message.reference.message_id)
                                 referenced_message = (
                                     await message.channel.fetch_message(
                                         message.reference.message_id
                                     )
                                 )
-                                # print(referenced_message, referenced_message.content)
 
                                 if (
                                     not referenced_message.embeds
