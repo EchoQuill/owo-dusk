@@ -828,7 +828,8 @@ class MyClient(commands.Bot):
         )
         if results:
             return results[0]["boss"], results[0]["boss_ticket"]
-        return None, None
+        print(f"seems like user_stats have not been properly initialised -> {self.user.name}")
+        return 0, 3
 
     def reset_boss_ticket(self, empty=False):
         if not empty:
@@ -1841,3 +1842,4 @@ if __name__ == "__main__":
         popup_main_loop()
     else:
         run_bots(tokens_and_channels)
+
