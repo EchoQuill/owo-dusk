@@ -15,7 +15,7 @@
 Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also support reaction bot, and have a custom dashboard for solving captchas (image ones) through your browser!
 
 > [!IMPORTANT]
-> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are agains discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in private servers, And not openly sharing the fact that you use selfbot to grind owo.
+> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are against discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in private servers, And not openly sharing the fact that you use selfbot to grind owo.
 
 
 ---
