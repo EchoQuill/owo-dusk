@@ -180,8 +180,8 @@
         }
     },
     "bossBattle": {
-        "enabled": true,
-        "joinChancePercent": 50,
+        "enabled": false,
+        "joinChancePercent": 80,
         "joinAllGuilds": {
             "enabled": true,
             "guildIdsToIgnore": []
