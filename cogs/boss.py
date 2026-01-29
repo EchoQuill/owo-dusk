@@ -67,9 +67,12 @@ class Boss(commands.Cog):
 
         self.sleeping = False
 
-    def consume_boss_ticket(self):
-        self.boss_tickets -= 1
-        self.bot.consume_boss_ticket()
+    def consume_boss_ticket(self, revert=False):
+        if not revert:
+            self.boss_tickets -= 1
+        else:
+            self.boss_tickets += 1
+        self.bot.consume_boss_ticket(revert)
 
     def return_battle_id(self, components):
         for component in components:
@@ -181,7 +184,7 @@ class Boss(commands.Cog):
                                                 await self.bot.log(
                                                     "Joined Boss battle!", "#B5C1CE"
                                                 )
-                                                self.bot.consume_boss_ticket()
+                                                self.consume_boss_ticket()
 
                     if component.component_name == "text_display":
                         if (
@@ -192,8 +195,7 @@ class Boss(commands.Cog):
                                 "Boss battle was already joined.", "#B5C1CE"
                             )
                             # redo changes made earlier..
-                            self.bot.consume_boss_ticket(revert=True)
-                            self.boss_tickets += 1
+                            self.consume_boss_ticket(revert=True)
 
                         if "You don't have any boss tickets!" in component.content:
                             # Reset previous entry
