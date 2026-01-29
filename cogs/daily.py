@@ -108,10 +108,8 @@ class Daily(commands.Cog):
                     )
                 )
 
-                await asyncio.sleep(
-                    self.random_float(
-                        self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
-                    )
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
                 )
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)
@@ -139,10 +137,8 @@ class Daily(commands.Cog):
                 await self.bot.remove_queue(cmd)
                 await self.bot.set_stat(True)
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(
-                    self.random_float(
-                        self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
-                    )
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
                 )
                 await self.bot.put_queue(cmd, priority=True)
                 await self.bot.set_stat(False)

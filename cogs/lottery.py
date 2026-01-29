@@ -103,12 +103,10 @@ class Lottery(commands.Cog):
                     ):
                         await self.bot.remove_queue(id="lottery")
                         await asyncio.sleep(self.bot.calc_time())
-                        await asyncio.sleep(
-                            self.random_float(
-                                self.bot.settings_dict["defaultCooldowns"][
-                                    "moderateCooldown"
-                                ]
-                            )
+                        await self.bot.sleep_till(
+                            self.bot.settings_dict["defaultCooldowns"][
+                                "moderateCooldown"
+                            ]
                         )
                         await self.bot.put_queue(self.cmd)
                         with lock:
@@ -122,10 +120,8 @@ class Lottery(commands.Cog):
             if "You can only bet up to 250,000 cowoncy!" in message.content:
                 await self.bot.remove_queue(id="lottery")
                 await asyncio.sleep(self.bot.calc_time())
-                await asyncio.sleep(
-                    self.random_float(
-                        self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
-                    )
+                await self.bot.sleep_till(
+                    self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
                 )
                 await self.bot.put_queue(self.cmd)
                 with lock:

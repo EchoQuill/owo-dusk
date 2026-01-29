@@ -94,11 +94,7 @@ class Commands(commands.Cog):
         if betweenCommands[0] > self.bot.cm_slowmode_cd:
             await self.bot.sleep_till(betweenCommands)
         else:
-            await asyncio.sleep(
-                self.bot.random_float(
-                    [self.bot.cm_slowmode_cd + 1, self.bot.cm_slowmode_cd + 3]
-                )
-            )
+            await self.bot.sleep_till(self.bot.cm_slowmode_cd, cd_list=False)
             if not self.updated_between_cd:
                 await self.bot.log(
                     f"Channel has a cooldown of {self.bot.cm_slowmode_cd}s, increasing delay between commands!",

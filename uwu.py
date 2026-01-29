@@ -634,7 +634,7 @@ class MyClient(commands.Bot):
     @tasks.loop(seconds=1)
     async def random_sleep(self):
         sleep_dict = self.settings_dict["sleep"]
-        await asyncio.sleep(self.random_float(sleep_dict["checkTime"]))
+        await self.sleep_till(sleep_dict["checkTime"])
         if self.random.randint(1, 100) > (100 - sleep_dict["frequencyPercentage"]):
             await self.set_stat(False)
             sleep_time = self.random_float(sleep_dict["sleeptime"])
@@ -673,10 +673,8 @@ class MyClient(commands.Bot):
                         await self.unload_cog(extension)
                     continue
                 try:
-                    await asyncio.sleep(
-                        self.random_float(
-                            self.global_settings_dict["account"]["commandsStartDelay"]
-                        )
+                    await self.sleep_till(
+                        self.global_settings_dict["account"]["commandsStartDelay"]
                     )
                     if self.commands_dict.get(str(filename[:-3]), False):
                         await self.load_extension(extension)
@@ -828,7 +826,9 @@ class MyClient(commands.Bot):
         )
         if results:
             return results[0]["boss"], results[0]["boss_ticket"]
-        print(f"seems like user_stats have not been properly initialised -> {self.user.name}")
+        print(
+            f"seems like user_stats have not been properly initialised -> {self.user.name}"
+        )
         return 0, 3
 
     def reset_boss_ticket(self, empty=False):
@@ -1012,7 +1012,7 @@ class MyClient(commands.Bot):
 
     async def sleep_till(self, cooldown, cd_list=True, noise=3):
         if cd_list:
-            await asyncio.sleep(self.random.uniform(cooldown[0], cooldown[1]))
+            await asyncio.sleep(self.random_float(cooldown))
         else:
             await asyncio.sleep(self.random.uniform(cooldown, cooldown + noise))
 
@@ -1842,4 +1842,3 @@ if __name__ == "__main__":
         popup_main_loop()
     else:
         run_bots(tokens_and_channels)
-

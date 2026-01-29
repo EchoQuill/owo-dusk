@@ -111,12 +111,8 @@ class Cookie(commands.Cog):
                     await self.bot.remove_queue(id="cookie")
 
                     await asyncio.sleep(self.bot.calc_time())
-                    await asyncio.sleep(
-                        self.random_float(
-                            self.bot.settings_dict["defaultCooldowns"][
-                                "moderateCooldown"
-                            ]
-                        )
+                    await self.bot.sleep_till(
+                        self.bot.settings_dict["defaultCooldowns"]["moderateCooldown"]
                     )
                     await self.bot.put_queue(self.cmd, priority=True)
                     with lock:
