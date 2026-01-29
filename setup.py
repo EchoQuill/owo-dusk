@@ -128,7 +128,7 @@ if scratchSetup:
                 )
 
         """Downgrade discord.py-self"""
-        try:
+        """try:
             subprocess.check_call(
                 [
                     sys.executable,
@@ -142,7 +142,7 @@ if scratchSetup:
         except Exception as e:
             print(
                 f"\033[1;31m[x]error when trying to downgrade discord.py-self:-\n {e}\033[m"
-            )
+            )"""
 
     except Exception as e:
         print(f"\033[1;31m[x]error when trying to install requirements:-\n {e}\033[m")
