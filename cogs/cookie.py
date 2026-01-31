@@ -49,17 +49,9 @@ class Cookie(commands.Cog):
 
     async def start_cookie(self):
         if str(self.bot.user.id) in accounts_dict:
-            self.current_time_seconds = self.bot.time_in_seconds()
-            self.last_cookie_time = accounts_dict[str(self.bot.user.id)].get(
-                "cookie", 0
-            )
+            last_cookie_time = accounts_dict[str(self.bot.user.id)].get("cookie", 0)
 
-            # Time difference calculation
-            self.time_diff = self.current_time_seconds - self.last_cookie_time
-
-            if self.time_diff < 0:
-                self.last_cookie_time = self.current_time_seconds
-            if self.time_diff < 86400:  # 86400 = seconds till a day(24hrs).
+            if not self.bot.should_run(last_cookie_time):
                 await asyncio.sleep(
                     self.bot.calc_time()
                 )  # Wait until next 12:00 AM PST
