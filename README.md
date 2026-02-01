@@ -5,17 +5,17 @@
   <br/>
   <a href="https://discord.gg/hDDrKhWPqr"><img src="https://invidget.switchblade.xyz/hDDrKhWPqr" alt="Discord Invite"/> </a>
   <br/>
-  <p>join our discord! (Join with an **CLEAN** alt please , one that hasn't and won't use owobot!)</p>
-  <p>Alternatively, send a friend request to `@echoquill` on discord for help!</p>
+  <small><p>join our discord! (Join with an alt please, one that hasn't and won't use owobot!)<br>
+  Alternatively, send a friend request to `@echoquill` on discord for help!</p></small>
 </div>
 
 
 ---
 
-Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also support reaction bot, and have a custom dashboard for solving captchas (image ones) through your browser!
+Best selfbot for owobot currently with alot of cool features like Boss battles, Captcha notifications, Basic commands, Reactionbot and so many more!
 
 > [!IMPORTANT]
-> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are against discord tos and also breaks owo bots rules. If you do plan on using it still then atleast take some steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in private servers, And not openly sharing the fact that you use selfbot to grind owo.
+> ⚠️🚨 WE ARE NOT responsible if you get banned using our selfbots. Selfbots are against discord tos and also breaks owo bots rules. If you do plan on using it then make sure to take steps to ensure that you won't be getting banned like no more than one/two account grinding in one servers, Only grinding in private servers, And not openly sharing the fact that you use selfbot to grind OwO Bot.
 
 
 ---
@@ -28,13 +28,14 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
   python setup.py
   python uwu.py
   ```
-  > make sure git and python is installed and that terminal is open in `Desktop` for easier access
   > Run in order
+  > Make sure git and python is installed and that terminal is open in `Desktop` for easier access (you can simply run `cd %USERPROFILE%\Desktop` if your on windows, command prompt)
+  
 * Termux
   ```
   pkg update && pkg upgrade -y && termux-setup-storage && pkg install python -y && pkg install git -y && pkg install termux-api -y && cd storage/downloads && git clone https://github.com/echoquill/owo-dusk.git && cd owo-dusk && python setup.py && python uwu.py
   ```
-  > Make sure to install termux and termux:api app from fdroid or github.
+  > Make sure to install termux and termux:api (give this `notifications` permission) app from fdroid or github.
   > after the above is done, do the steps setup.py asks you to.
   > 
   > simpily run `cd storage/downloads/owo-dusk && python uwu.py` next time to re-run code
@@ -42,7 +43,7 @@ Supports BOTH MOBILE AND DESKTOP with captcha Notifiers for both. And we also su
   
 
 > [!TIP]
-> For help with setup, please join our discord server(or send `echoquill` a friend request) and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutoriales for it laters!
+> For help with setup, please join our discord server(or send `echoquill` a friend request) and I'll help you set it up on both termux(android) and desktop/laptop devices. Ill make tutorials for it laters!
 
 
 ---

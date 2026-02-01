@@ -96,4 +96,3 @@ class Level(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Level(bot))
-
