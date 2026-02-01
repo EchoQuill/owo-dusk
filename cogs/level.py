@@ -33,8 +33,9 @@ async def fetch_quotes(session):
     async with session.get(quotes_url) as response:
         if response.status == 200:
             data = await response.json()
-            quote = data["quote"]["body"]  # data[0]["quote"]
-            return quote
+            # quote = data["quote"]["body"]
+            if data.get("quote"):
+                return data["quote"].get("body", None)
 
 
 class Level(commands.Cog):
@@ -51,6 +52,14 @@ class Level(commands.Cog):
             await self.bot.sleep_till(cnf["cooldown"])
             if cnf["useQuoteInstead"]:
                 self.last_level_grind_message = await fetch_quotes(self.bot.session)
+                if not self.last_level_grind_message:
+                    await self.bot.log(
+                        "Error - start_level_grind: Fetching quotes failed, using a random string of text instead.",
+                        "#c25560",
+                    )
+                    self.last_level_grind_message = generate_random_string(
+                        cnf["minLengthForRandomString"], cnf["maxLengthForRandomString"]
+                    )
             else:
                 self.last_level_grind_message = generate_random_string(
                     cnf["minLengthForRandomString"], cnf["maxLengthForRandomString"]
@@ -87,3 +96,4 @@ class Level(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Level(bot))
+
