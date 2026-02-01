@@ -118,7 +118,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.3.6"
+version = "2.3.7"
 
 
 """FLASK APP"""
@@ -570,6 +570,7 @@ class MyClient(commands.Bot):
             "no_cash": False,
             "balance": 0,
             "net_earnings": 0,
+            "checked_cash": False,
         }
 
         self.command_handler_status = {

@@ -49,7 +49,9 @@ class Cookie(commands.Cog):
 
     async def start_cookie(self):
         if str(self.bot.user.id) in accounts_dict:
-            last_cookie_time = accounts_dict[str(self.bot.user.id)].get("cookie", 0)
+            last_cookie_time = accounts_dict[str(self.bot.user.id)].get(
+                "cookie", 0
+            )
 
             if not self.bot.should_run(last_cookie_time):
                 await asyncio.sleep(

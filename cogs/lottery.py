@@ -48,7 +48,9 @@ class Lottery(commands.Cog):
 
     async def start_lottery(self):
         if str(self.bot.user.id) in accounts_dict:
-            last_lottery_time = accounts_dict[str(self.bot.user.id)].get("lottery", 0)
+            last_lottery_time = accounts_dict[str(self.bot.user.id)].get(
+                "lottery", 0
+            )
 
             if not self.bot.should_run(last_lottery_time):
                 await asyncio.sleep(

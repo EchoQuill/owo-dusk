@@ -98,7 +98,7 @@ class Coinflip(commands.Cog):
             # Balance check
             if (
                 amount_to_gamble > self.bot.user_status["balance"]
-                and not self.bot.settings_dict["cashCheck"]
+                and self.bot.user_status["checked_cash"]
             ):
                 if not self.gamble_flags["no_balance"]:
                     self.gamble_flags["no_balance"] = True

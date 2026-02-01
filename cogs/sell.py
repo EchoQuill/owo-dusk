@@ -142,6 +142,9 @@ class Sell(commands.Cog):
                         self.sac_cmd,
                         self.bot.settings_dict["commands"]["sac"]["cooldown"],
                     )
+            elif "you don't have enough animals! >:c" in message.content.lower():
+                await self.bot.remove_queue(id="sell")
+
 
 
 async def setup(bot):

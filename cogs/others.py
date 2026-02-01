@@ -97,6 +97,8 @@ class Others(commands.Cog):
                 await self.bot.log(
                     f"Has {self.bot.user_status['balance']} cowoncy!", "#d787d7"
                 )
+                if not self.bot.user_status["checked_cash"]:
+                    self.bot.user_status["checked_cash"] = True
                 await self.bot.remove_queue(id="cash")
 
             # Lootbox and Crate
