@@ -76,6 +76,15 @@ def merge_json_carry_over(path, prev_dict):
         json.dump(updated_data, f, indent=4)
 
 
+def ensure_git_safe_directory():
+    repo_path = os.path.abspath(".")
+    subprocess.run(
+        ["git", "config", "--global", "--add", "safe.directory", repo_path],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
 def merge_custom_user_settings():
     """
     Merge each <user_id>.settings.json with the new base settings.json.
@@ -107,6 +116,7 @@ def merge_custom_user_settings():
 
 
 def pull_latest_changes_git():
+    ensure_git_safe_directory()
     previous_tokens = read_tokens_file()
     repo_dir = "."
     os.chdir(repo_dir)

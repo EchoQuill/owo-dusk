@@ -146,6 +146,5 @@ class Sell(commands.Cog):
                 await self.bot.remove_queue(id="sell")
 
 
-
 async def setup(bot):
     await bot.add_cog(Sell(bot))

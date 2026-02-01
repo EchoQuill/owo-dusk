@@ -1313,16 +1313,15 @@ class MyClient(commands.Bot):
         total_seconds = time_until_12am_pst.total_seconds()  # turn that time to seconds
         # 12am = 00:00, I might need this the next time I take a look here.
         return total_seconds
-    
+
     def should_run(self, last_timestamp):
         # gets timezone
         pst = pytz.timezone("US/Pacific")
 
-        now_pst = datetime.now(timezone.utc).astimezone(pst) # current pst time
+        now_pst = datetime.now(timezone.utc).astimezone(pst)  # current pst time
         last_pst = datetime.fromtimestamp(last_timestamp, timezone.utc).astimezone(pst)
 
         return now_pst.date() != last_pst.date()
-
 
     def time_in_seconds(self):
         """

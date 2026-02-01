@@ -39,13 +39,15 @@ load_dict()
 
 class Daily(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot 
+        self.bot = bot
 
     async def start_daily(self):
         if str(self.bot.user.id) in accounts_dict:
             last_daily_time = accounts_dict[str(self.bot.user.id)].get("daily", 0)
 
-            if not self.bot.should_run(last_daily_time):  # 86400 = seconds till a day(24hrs).
+            if not self.bot.should_run(
+                last_daily_time
+            ):  # 86400 = seconds till a day(24hrs).
                 await asyncio.sleep(
                     self.bot.calc_time()
                 )  # Wait until next 12:00 AM PST
