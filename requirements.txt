@@ -26,3 +26,4 @@ urllib3==2.6.3
 Werkzeug==3.1.5
 yarl==1.22.0
 aiosqlite==0.22.1
+curl_cffi==0.15.0b3
