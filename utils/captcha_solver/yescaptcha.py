@@ -68,9 +68,18 @@ class captchaClient:
     async def solve_owo_bot_captcha(self, discord_headers):
         discord_headers["Referer"] = self._auth_url
         self.update_balance()
+        itr = 0
         if self.balance < 30:
-            print("Not enough balance to solve captcha")
-            return False
+            while itr != 3:
+                print("Not enough balance to solve captcha")
+                itr+=1
+                if self.balance < 30:
+                    break
+                await asyncio.sleep(0.5)
+            if self.balance < 30:
+                return False
+
+
         async with AsyncSession(impersonate="chrome120") as session:
             # Authorize via Discord
             oauth_resp = await session.post(
@@ -91,6 +100,10 @@ class captchaClient:
 
             if not auth_data or auth_data.get("banned"):
                 print("Auth Failed or Account Banned.")
+                return False
+
+            if not auth_data.get("captcha", {}).get("active"):
+                print("No active captcha?")
                 return False
 
             try:
