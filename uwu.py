@@ -25,7 +25,7 @@ import sys
 import threading
 import time
 import traceback
-from importlib.metadata import version as import_ver
+import tomllib
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from threading import Thread
@@ -49,6 +49,7 @@ from utils.misspell import misspell_word
 from utils.notification import notify
 from utils.webhook import webhookSender
 from utils.database import databaseWorker
+from utils.captcha_solver.yescaptcha import captchaClient
 
 
 """Cntrl+c detect"""
@@ -101,6 +102,11 @@ with open("config/global_settings.json", "r") as config_file:
 with open("config/misc.json", "r") as config_file:
     misc_dict = json.load(config_file)
 
+
+with open("config/captcha.toml", "rb") as f:
+    captcha_settings_dict = tomllib.load(f)
+
+
 """with open("config/settings.json", "r") as config_file:
     settings_dict = json.load(config_file)"""
 
@@ -118,7 +124,7 @@ owoArt = r"""
  \__/ (_/\_) \__/     (____/\____/(____/(__\_)
 """
 owoPanel = Panel(Align.center(owoArt), style="purple ", highlight=False)
-version = "2.3.8"
+version = "2.4.0"
 
 
 """FLASK APP"""
@@ -548,6 +554,7 @@ class MyClient(commands.Bot):
         self.queue = asyncio.PriorityQueue()
         self.settings_dict = None
         self.global_settings_dict = global_settings_dict
+        self.captcha_settings_dict = captcha_settings_dict
         self.commands_dict = {}
         self.cash_check = False
         self.gain_or_lose = 0
@@ -561,6 +568,7 @@ class MyClient(commands.Bot):
         self.owo_bot_id = 408785106942164992
         self.cmd_counter = itertools.count()
         self.cmd_priorities = {}
+        self.captcha_handler = hcaptcha_solver
 
         # discord.py-self's module sets global random to fixed seed. reset that, locally.
         self.random = random.Random()
@@ -1740,18 +1748,6 @@ if __name__ == "__main__":
         "OwO-Dusk starting... If any issue arises visit out discord support server (link available in console or github)",
         "Starting OwO-Dusk! :>",
     )
-    try:
-        discord_cur_version = import_ver("discord.py-self")
-        discord_req_version = "2.1.0a5097+g20ae80b3"
-        if discord_cur_version != discord_req_version:
-            install_package(
-                "git+https://github.com/dolfies/discord.py-self@20ae80b398ec83fa272f0a96812140e14868c88f"
-            )
-            raise SystemExit(
-                "discord.py-self was reinstalled. Please restart the program."
-            )
-    except ImportError as e:
-        print(e)
 
     if not misc_dict["console"]["compactMode"]:
         console.print(owoPanel)
@@ -1831,6 +1827,33 @@ if __name__ == "__main__":
     console.rule(style="navy_blue")
 
     webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
+    hcaptcha_solver = None
+    if (
+        captcha_settings_dict["image_solver"]["enabled"]
+        or captcha_settings_dict["hcaptcha_solver"]["enabled"]
+    ):
+        console.print(
+            "Be Warned, Captcha solving is not well tested.. You are using on your own risk..",
+            style="red1",
+        )
+        if captcha_settings_dict["hcaptcha_solver"]["enabled"]:
+            # Setup hcaptcha solver..
+            hcaptcha_solver = captchaClient(
+                captcha_settings_dict["hcaptcha_solver"]["api_key"]
+            )
+            if hcaptcha_solver.balance == 0:
+                console.print(
+                    "Yescaptcha API has no balance...",
+                    style="red1",
+                )
+                os._exit(0)
+            else:
+                bal = hcaptcha_solver.balance
+                console.print(
+                    f"Yescaptcha API has a balance of {bal}, which is approximately {round(bal / 30)} hcaptcha solves.",
+                    style="red1",
+                )
+
     database_handler = databaseWorker()
 
     if (

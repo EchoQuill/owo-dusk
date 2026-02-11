@@ -402,6 +402,8 @@ class Captcha(commands.Cog):
                     if not solved:
                         await self.bot.log("FAILED to solve hcaptcha", "#d70000")
                         self.captcha_handler(message.channel, "Link")
+                    else:
+                        await self.bot.log(f"solved, {round(self.bot.captcha_handler.balance/30)} solves left", "#d70000")
 
                 elif cap_dict["image_solver"]["enabled"] and image_captcha:
                     await self.bot.log("Attempting to solve image captcha", "#656b66")

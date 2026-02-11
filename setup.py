@@ -127,23 +127,6 @@ if scratchSetup:
                     f"\033[1;31m[x]Error when trying to install numpy and PIL: {e}\033[m"
                 )
 
-        """Downgrade discord.py-self"""
-        """try:
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "git+https://github.com/dolfies/discord.py-self@20ae80b398ec83fa272f0a96812140e14868c88f",
-                ]
-            )
-            print("\033[1;36m[0]downgraded discord.py-self successfully!\033[m")
-        except Exception as e:
-            print(
-                f"\033[1;31m[x]error when trying to downgrade discord.py-self:-\n {e}\033[m"
-            )"""
-
     except Exception as e:
         print(f"\033[1;31m[x]error when trying to install requirements:-\n {e}\033[m")
 
