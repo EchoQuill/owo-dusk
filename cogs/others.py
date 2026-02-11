@@ -147,7 +147,7 @@ class Others(commands.Cog):
 
             # Add animals to team
             elif (
-                "Create a team with the command `owo team add {animal}`"
+                "Create one with `owo team add {animal}`"
                 in message.content
             ):
                 await self.bot.set_stat(False)

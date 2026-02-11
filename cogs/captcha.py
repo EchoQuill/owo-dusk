@@ -14,12 +14,14 @@ import time
 import re
 import os
 import asyncio
+import tomllib
 
 from discord.ext import commands, tasks
 from discord import DMChannel
 
 from utils.misc import is_termux, run_system_command
 from utils.notification import notify
+
 
 list_captcha = ["human", "captcha", "link", "letterword"]
 
@@ -50,6 +52,16 @@ on_mobile = is_termux()
 if not on_mobile:
     # desktop
     from playsound3 import playsound
+
+def load_json_dict(file_path="config/captcha.toml"):
+    with open(file_path, "rb") as config_file:
+        return tomllib.load(config_file)
+
+cap_cnf_dict = load_json_dict()
+
+if cap_cnf_dict:
+    if cap_cnf_dict["image_solver"]["enabled"]:
+        from utils.captcha_solver.image_captcha import solveImageCaptcha
 
 
 def get_channel_name(channel):
@@ -351,7 +363,17 @@ class Captcha(commands.Cog):
                         return
                 self.bot.command_handler_status["captcha"] = True
                 await self.bot.log("Captcha detected!", "#d70000")
-                self.captcha_handler(message.channel, "Link")
+                image_captcha = False
+                if message.attachments:
+                    image_captcha = True
+                cap_dict = self.bot.captcha_settings_dict
+
+                if cap_dict["notifications"]["notify_when_attempting_to_solve"] or not (cap_dict["hcaptcha_solver"]["enabled"] or cap_dict["image_solver"]["enabled"]):
+                    self.captcha_handler(message.channel, "Link")
+                elif (image_captcha and not cap_dict["image_solver"]["enabled"]) or (not image_captcha and not cap_dict["hcaptcha_solver"]["enabled"]):
+                    self.captcha_handler(message.channel, "Link")
+
+                    
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
                         title=f"-{self.bot.username} - CAPTCHA Detected",
@@ -372,7 +394,25 @@ class Captcha(commands.Cog):
                     )
                 console_handler(self.bot.global_settings_dict["console"])
 
-            elif "**☠ |** You have been banned" in message.content:
+                if cap_dict["hcaptcha_solver"]["enabled"] and not image_captcha:
+                    await self.bot.log("Attempting to solve hcaptcha", "#656b66")
+                    solved = await self.bot.captcha_handler.solve_owo_bot_captcha(
+                        self.bot.local_headers
+                    )
+                    if not solved:
+                        await self.bot.log("FAILED to solve hcaptcha", "#d70000")
+                        self.captcha_handler(message.channel, "Link")
+
+                elif cap_dict["image_solver"]["enabled"] and image_captcha:
+                    await self.bot.log("Attempting to solve image captcha", "#656b66")
+                    letters = int(re.findall(r'(\d+)(?=letterword)', clean(message.content.lower()))[0])
+                    ans = await solveImageCaptcha(message.attachments[0].url, letters, self.bot.session)
+                    if ans:
+                        await self.bot.log(f"answer of image captcha -> {ans}", "#656b66")
+                        await message.author.send(ans)
+                    
+
+            elif "You have been banned for" in message.content:
                 self.bot.command_handler_status["captcha"] = True
                 await self.bot.log("Ban detected!", "#d70000")
                 self.captcha_handler(message.channel, "Ban")

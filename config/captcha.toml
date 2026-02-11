@@ -1,0 +1,53 @@
+# ===============================================
+#  Hello, Please read everything carefully
+#  before proceeding!
+# ===============================================
+
+# Two captcha solvers exist in OwO-Dusk.
+# Image captcha and Hcaptcha solvers
+
+# Hcaptcha is PAID, as we are using 3rd party solver ->  https://yescaptcha.com/i/MNaKrh
+# I don't intend on spending any money for maintaining OwO-Dusk so to the most party
+# Hcaptcha solver will be user tested.
+
+# Then we have Image captcha solver, this is entirely FREE.
+# There is little to no risk here since solver has a solve rate of 90%.
+
+# Hcaptcha solver is risky, solver is somewhat average..
+# Hcaptcha updates frequently so its a pointless battle to fight against
+# In my opinion. That said, you can still of your own risk enable the captcha solver
+# Through here, but do note few things:
+
+# -- For Hcaptcha -- #
+
+# 1. OwObot logs ip when verifying for captchas, so if any of your alts
+#    Get caught your other accounts may be banned as well. I personally reccoment
+#    Using vpn or more preferably TOR browser to verify manually instead
+# 2. Paid.
+
+# -- For Image captcha -- #
+# 1. Free, and all but uses 60~ MB extra storage
+# 2. To use this you will need to enable Image Captcha solver and rerun `setup.py`
+#    to install the required modules (won't be installed by default..)
+
+# If possible, do keep an eye on for captchas, and don't blindly rely on solvers
+
+
+# ----- SETTINGS ----- #
+
+[notifications]
+# If you want to go silent, set this to false. But not reccomended
+notify_when_attempting_to_solve = true
+
+[image_solver]
+enabled = false # Change this to true to enable
+
+[hcaptcha_solver]
+enabled = false # Change this to true to enable
+
+# Enter your API key from https://yescaptcha.com/i/MNaKrh
+# Leave empty if not using hCaptcha solver
+api_key = ""
+
+
+# ---------- #
