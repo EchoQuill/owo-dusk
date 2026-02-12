@@ -1269,8 +1269,8 @@ class MyClient(commands.Bot):
         """
         TASK: remove repition here
         """
+        await self.wait_until_ready()
         if not self.command_handler_status["captcha"] or bypass:
-            await self.wait_until_ready()
             if typingIndicator:
                 async with channel.typing():
                     await channel.send(msg, silent=silent)
@@ -1828,19 +1828,14 @@ if __name__ == "__main__":
 
     webhook_handler = webhookSender(global_settings_dict["webhook"]["webhookUrl"])
     hcaptcha_solver = None
-    if (
-        captcha_settings_dict["image_solver"]["enabled"]
-        or captcha_settings_dict["hcaptcha_solver"]["enabled"]
-    ):
+    if captcha_settings_dict["image_solver"]["enabled"] or captcha_settings_dict["hcaptcha_solver"]["enabled"]:
         console.print(
             "Be Warned, Captcha solving is not well tested.. You are using on your own risk..",
             style="red1",
         )
         if captcha_settings_dict["hcaptcha_solver"]["enabled"]:
             # Setup hcaptcha solver..
-            hcaptcha_solver = captchaClient(
-                captcha_settings_dict["hcaptcha_solver"]["api_key"]
-            )
+            hcaptcha_solver = captchaClient(captcha_settings_dict["hcaptcha_solver"]["api_key"])
             if hcaptcha_solver.balance == 0:
                 console.print(
                     "Yescaptcha API has no balance...",
@@ -1850,9 +1845,12 @@ if __name__ == "__main__":
             else:
                 bal = hcaptcha_solver.balance
                 console.print(
-                    f"Yescaptcha API has a balance of {bal}, which is approximately {round(bal / 30)} hcaptcha solves.",
+                    f"Yescaptcha API has a balance of {bal}, which is approximately {round(bal/30)} hcaptcha solves.",
                     style="red1",
                 )
+
+
+
 
     database_handler = databaseWorker()
 
