@@ -93,6 +93,7 @@ class Captcha(commands.Cog):
         self.reccured = 0
         self.content_to_notify = ""
         self.kill_task = None
+        self.solve_in_progress = False
 
     async def kill_code(self):
         await asyncio.sleep(590)
@@ -401,18 +402,32 @@ class Captcha(commands.Cog):
                 console_handler(self.bot.global_settings_dict["console"])
 
                 if cap_dict["hcaptcha_solver"]["enabled"] and not image_captcha:
-                    await self.bot.log("Attempting to solve hcaptcha", "#656b66")
-                    solved = await self.bot.captcha_handler.solve_owo_bot_captcha(
-                        self.bot.local_headers
-                    )
-                    if not solved:
-                        await self.bot.log("FAILED to solve hcaptcha", "#d70000")
-                        self.captcha_handler(message.channel, "Link")
-                    else:
-                        await self.bot.log(
-                            f"solved, {round(self.bot.captcha_handler.balance / 30)} solves left",
-                            "#d70000",
+                    if not self.solve_in_progress:
+                        self.solve_in_progress = True
+                        await self.bot.log("Attempting to solve hcaptcha", "#656b66")
+                        solved = await self.bot.captcha_handler.solve_owo_bot_captcha(
+                            self.bot.local_headers
                         )
+                        if not solved:
+                            await self.bot.log("FAILED to solve hcaptcha", "#d70000")
+                            self.captcha_handler(message.channel, "Link")
+                        else:
+                            balance = self.bot.captcha_handler.balance
+                            solves_left = balance // 30
+
+                            await self.bot.log(
+                                f"solved, {solves_left} solves left (balance: {balance})",
+                                "#d70000",
+                            )
+
+                            if solves_left < 1:
+                                self.bot.command_handler_status["captcha"] = True
+                                await self.bot.log(
+                                    f"credits exhausted - balance: {balance}, stopping...",
+                                    "#d70000",
+                                )
+                                os._exit(0)
+                        self.solve_in_progress = False
 
                 elif cap_dict["image_solver"]["enabled"] and image_captcha:
                     await self.bot.log("Attempting to solve image captcha", "#656b66")
