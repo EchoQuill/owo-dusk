@@ -234,10 +234,6 @@ class Captcha(commands.Cog):
                 "termux-open https://owobot.com/captcha", timeout=5, retry=True
             )
 
-        if cnf["stopCodeIfFailedToSolve"]:
-            """Kill code if failure in solving captcha within time"""
-            self.kill_task = asyncio.create_task(self.kill_code())
-
     async def handle_solves(self):
         if self.bot.misc["hostMode"]:
             return
@@ -370,6 +366,11 @@ class Captcha(commands.Cog):
                 if message.attachments:
                     image_captcha = True
                 cap_dict = self.bot.captcha_settings_dict
+                cnf = self.bot.global_settings_dict["captcha"]
+
+                if cnf["stopCodeIfFailedToSolve"]:
+                    """Kill code if failure in solving captcha within time"""
+                    self.kill_task = asyncio.create_task(self.kill_code())
 
                 if cap_dict["notifications"]["notify_when_attempting_to_solve"] or not (
                     cap_dict["hcaptcha_solver"]["enabled"]
