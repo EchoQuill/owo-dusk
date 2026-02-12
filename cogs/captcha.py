@@ -407,11 +407,14 @@ class Captcha(commands.Cog):
                         self.solve_in_progress = True
                         await self.bot.log("Attempting to solve hcaptcha", "#656b66")
                         solved = await self.bot.captcha_handler.solve_owo_bot_captcha(
-                            self.bot.local_headers
+                            self.bot.local_headers,
+                            cap_dict["hcaptcha_solver"]["retries"]
                         )
                         if not solved:
                             await self.bot.log("FAILED to solve hcaptcha", "#d70000")
                             self.captcha_handler(message.channel, "Link")
+                            print("stopping code.... Reason -> Failed Hcaptcha attempt")
+                            os._exit(0)
                         else:
                             balance = self.bot.captcha_handler.balance
                             solves_left = balance // 30

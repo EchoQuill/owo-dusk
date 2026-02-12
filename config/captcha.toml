@@ -3,26 +3,27 @@
 #  before proceeding!
 # ===============================================
 
-# Two captcha solvers exist in OwO-Dusk.
-# Image captcha and Hcaptcha solvers
+# Two captcha solvers, Image captcha and Hcaptcha solvers
 
 # Hcaptcha is PAID, as we are using 3rd party solver ->  https://yescaptcha.com/i/MNaKrh
-# I don't intend on spending any money for maintaining OwO-Dusk so to the most party
+# I don't intend on spending any money for maintaining OwO-Dusk so to the most part
 # Hcaptcha solver will be user tested.
 
 # Then we have Image captcha solver, this is entirely FREE.
 # There is little to no risk here since solver has a solve rate of 90%.
 
-# Hcaptcha solver is risky, solver is somewhat average..
-# Hcaptcha updates frequently so its a pointless battle to fight against
-# In my opinion. That said, you can still of your own risk enable the captcha solver
+# Hcaptcha solver is risky
+# That said, you can still of your own risk enable the captcha solver
 # Through here, but do note few things:
 
 # -- For Hcaptcha -- #
 
 # 1. OwObot logs ip when verifying for captchas, so if any of your alts
-#    Get caught your other accounts may be banned as well. I personally reccoment
+#    Get caught your other accounts may be banned as well. I personally reccomend
 #    Using vpn or more preferably TOR browser to verify manually instead
+#    Do note that if you have solved manually before with multiple alts, ips would have
+#    Already been logged. 
+#    If your just running with one account, then this risk is not there!
 # 2. Paid.
 
 # -- For Image captcha -- #
@@ -48,6 +49,10 @@ enabled = false # Change this to true to enable
 # Enter your API key from https://yescaptcha.com/i/MNaKrh
 # Leave empty if not using hCaptcha solver
 api_key = ""
+
+# How may times to retry incase of failures.
+# Recommended -> 3
+retries = 3
 
 
 # ---------- #

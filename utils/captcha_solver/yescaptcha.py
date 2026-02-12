@@ -33,9 +33,14 @@ class captchaClient:
     def update_balance(self):
         self.balance = self.get_yescaptcha_balance()
 
-    async def solve_hcaptcha_logic(self):
-        """Use Yescaptcha api to solve captcha"""
+    async def solve_hcaptcha_logic(self, retries = 3):
+        """
+        Attempts to solve the captcha using Yescaptcha.
+        Retries creating a new task 'retries' times upon failure.
+        """
         create_url = "https://api.yescaptcha.com/createTask"
+        result_url = "https://api.yescaptcha.com/getTaskResult"
+        
         payload = {
             "clientKey": self.api,
             "task": {
@@ -47,46 +52,61 @@ class captchaClient:
         }
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(create_url, json=payload) as resp:
-                if resp.status != 200:
-                    raise Exception(f"Create task failed with HTTP {resp.status}")
-                data = await resp.json()
+            for attempt in range(retries):
+                try:
+                    print(f"Solving captcha... Attempt {attempt + 1}/{retries}")
+                    
+                    async with session.post(create_url, json=payload) as resp:
+                        if resp.status != 200:
+                            raise Exception(f"Create task failed with HTTP {resp.status}")
+                        data = await resp.json()
 
-            if data.get("errorId") != 0:
-                raise Exception(data.get("errorDescription"))
+                    if data.get("errorId") != 0:
+                        raise Exception(f"API Error: {data.get('errorDescription')}")
 
-            task_id = data.get("taskId")
-            if not task_id:
-                raise Exception("No taskId returned")
+                    task_id = data.get("taskId")
+                    if not task_id:
+                        raise Exception("No taskId returned from API")
 
-            for _ in range(20):
-                await asyncio.sleep(3)
+                    for _ in range(20):
+                        await asyncio.sleep(3)
 
-                async with session.post(
-                    "https://api.yescaptcha.com/getTaskResult",
-                    json={"clientKey": self.api, "taskId": task_id},
-                ) as result_resp:
-                    if result_resp.status != 200:
-                        raise Exception(
-                            f"Result check failed with HTTP {result_resp.status}"
-                        )
+                        async with session.post(
+                            result_url,
+                            json={"clientKey": self.api, "taskId": task_id},
+                        ) as result_resp:
+                            if result_resp.status != 200:
+                                raise Exception(f"Result check failed with HTTP {result_resp.status}")
+                            
+                            res = await result_resp.json()
 
-                    res = await result_resp.json()
+                        if res.get("errorId") != 0:
+                            # Logic error from solver side
+                            raise Exception(f"Polling API Error: {res.get('errorDescription')}")
 
-                if res.get("errorId") != 0:
-                    raise Exception(res.get("errorDescription"))
+                        if res.get("status") == "ready":
+                            return res["solution"]["gRecaptchaResponse"]
 
-                if res.get("status") == "ready":
-                    return res["solution"]["gRecaptchaResponse"]
+                    raise Exception("Task timed out without becoming 'ready'")
+
+                except Exception as e:
+                    print(f"Attempt {attempt + 1} failed: {e}")
+                    if attempt < retries:
+                        print("Retrying with a new task...")
+                        await asyncio.sleep(1)
+                    else:
+                        print("All retry attempts exhausted.")
 
             return None
 
-    async def solve_owo_bot_captcha(self, discord_headers):
+    async def solve_owo_bot_captcha(self, discord_headers, tries):
         discord_headers["Referer"] = self._auth_url
         self.update_balance()
         if self.balance < 30:
             print("Not enough balance")
             return False
+
+
 
         async with aiohttp.ClientSession() as session:
             # Authorize via Discord
@@ -96,6 +116,7 @@ class captchaClient:
                 headers=discord_headers,
                 allow_redirects=True,
             ) as oauth_resp:
+
                 if oauth_resp.status != 200:
                     print(f"OAuth failed with HTTP {oauth_resp.status}")
                     return False
@@ -131,10 +152,15 @@ class captchaClient:
 
                 auth_data = await auth_resp.json()
 
-            print(auth_data)
+            if not auth_data:
+                print("Auth data None")
+                return False
 
             try:
-                solution = await self.solve_hcaptcha_logic()
+                solution = await self.solve_hcaptcha_logic(tries)
+                if not solution:
+                    print("No solution result found for Hcaptcha")
+                    return False
             except Exception as e:
                 print(f"Solver Error: {e}")
                 return False
@@ -149,8 +175,8 @@ class captchaClient:
                     "Content-Type": "application/json",
                 },
             ) as verify_resp:
+
                 if verify_resp.status == 200:
-                    print("Verification successful!")
                     self.update_balance()
                     return True
                 else:
