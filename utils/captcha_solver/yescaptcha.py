@@ -1,5 +1,5 @@
-from curl_cffi.requests import AsyncSession
-from curl_cffi import requests
+import aiohttp
+import requests
 import asyncio
 import json
 
@@ -46,65 +46,92 @@ class captchaClient:
             "softID": 94493,
         }
 
-        async with AsyncSession() as session:
-            resp = await session.post(create_url, json=payload)
-            data = resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(create_url, json=payload) as resp:
+                if resp.status != 200:
+                    raise Exception(f"Create task failed with HTTP {resp.status}")
+                data = await resp.json()
+
             if data.get("errorId") != 0:
                 raise Exception(data.get("errorDescription"))
 
             task_id = data.get("taskId")
-            while True:
+            if not task_id:
+                raise Exception("No taskId returned")
+
+            for _ in range(20):
                 await asyncio.sleep(3)
-                result_resp = await session.post(
+
+                async with session.post(
                     "https://api.yescaptcha.com/getTaskResult",
                     json={"clientKey": self.api, "taskId": task_id},
-                )
-                res = result_resp.json()
-                if res.get("status") == "ready":
-                    return res["solution"]["gRecaptchaResponse"]
+                ) as result_resp:
+                    if result_resp.status != 200:
+                        raise Exception(
+                            f"Result check failed with HTTP {result_resp.status}"
+                        )
+
+                    res = await result_resp.json()
+
                 if res.get("errorId") != 0:
                     raise Exception(res.get("errorDescription"))
+
+                if res.get("status") == "ready":
+                    return res["solution"]["gRecaptchaResponse"]
+
+            return None
 
     async def solve_owo_bot_captcha(self, discord_headers):
         discord_headers["Referer"] = self._auth_url
         self.update_balance()
-        itr = 0
         if self.balance < 30:
-            while itr != 3:
-                print("Not enough balance to solve captcha")
-                itr+=1
-                if self.balance < 30:
-                    break
-                await asyncio.sleep(0.5)
-            if self.balance < 30:
-                return False
+            print("Not enough balance")
+            return False
 
-
-        async with AsyncSession(impersonate="chrome120") as session:
+        async with aiohttp.ClientSession() as session:
             # Authorize via Discord
-            oauth_resp = await session.post(
+            async with session.post(
                 self._auth_url,
                 json=self._payload,
                 headers=discord_headers,
                 allow_redirects=True,
-            )
+            ) as oauth_resp:
+                if oauth_resp.status != 200:
+                    print(f"OAuth failed with HTTP {oauth_resp.status}")
+                    return False
 
-            await session.get(json.loads(oauth_resp.text).get("location"))
+                oauth_text = await oauth_resp.text()
 
-            await session.get("https://owobot.com/captcha")
+            # 2. Follow redirect if present
+            try:
+                oauth_json = json.loads(oauth_text)
+                redirect_url = oauth_json.get("location")
 
-            # 3. Verify Session is active
-            auth_resp = await session.get("https://owobot.com/api/auth")
-            auth_data = auth_resp.json()
+                if redirect_url:
+                    async with session.get(redirect_url) as redirect_resp:
+                        if redirect_resp.status != 200:
+                            print(f"Redirect failed with HTTP {redirect_resp.status}")
+                            return False
+            except Exception as e:
+                print(f"OAuth parsing failed: {e}")
+                print(f"Raw response: {oauth_text}")
+                return False
+
+            # 3. Hit captcha page to ensure session cookies are set
+            async with session.get("https://owobot.com/captcha") as captcha_resp:
+                if captcha_resp.status != 200:
+                    print(f"Captcha page failed with HTTP {captcha_resp.status}")
+                    return False
+
+            # 4. Verify session is active
+            async with session.get("https://owobot.com/api/auth") as auth_resp:
+                if auth_resp.status != 200:
+                    print(f"Auth check failed with HTTP {auth_resp.status}")
+                    return False
+
+                auth_data = await auth_resp.json()
+
             print(auth_data)
-
-            if not auth_data or auth_data.get("banned"):
-                print("Auth Failed or Account Banned.")
-                return False
-
-            if not auth_data.get("captcha", {}).get("active"):
-                print("No active captcha?")
-                return False
 
             try:
                 solution = await self.solve_hcaptcha_logic()
@@ -112,7 +139,7 @@ class captchaClient:
                 print(f"Solver Error: {e}")
                 return False
 
-            verify_resp = await session.post(
+            async with session.post(
                 "https://owobot.com/api/captcha/verify",
                 json={"token": solution},
                 headers={
@@ -121,13 +148,13 @@ class captchaClient:
                     "Accept": "application/json, text/plain, */*",
                     "Content-Type": "application/json",
                 },
-            )
-
-            if verify_resp.status_code == 200:
-                print("Verification successful!")
-                self.update_balance()
-                return True
-            else:
-                print(f"Verification failed (Status {verify_resp.status_code})")
-                print(f"Server Response: {verify_resp.text}")
-                return False
+            ) as verify_resp:
+                if verify_resp.status == 200:
+                    print("Verification successful!")
+                    self.update_balance()
+                    return True
+                else:
+                    error_text = await verify_resp.text()
+                    print(f"Verification failed (Status {verify_resp.status})")
+                    print(f"Server Response: {error_text}")
+                    return False
