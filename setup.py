@@ -13,6 +13,7 @@
 import os
 import sys
 import subprocess
+import tomllib
 
 try:
     os.system("cls") if os.name == "nt" else os.system("clear")
@@ -21,6 +22,14 @@ except Exception:
 print(
     "\033[1;32mwelcome to OwO-Dusk\nThis setup will guide you through with the setup of OwO-Dusk\nThankyou for your trust in OwO-Dusk\033[m"
 )
+
+
+def load_json_dict(file_path="config/captcha.toml"):
+    with open(file_path, "rb") as config_file:
+        return tomllib.load(config_file)
+
+
+cap_cnf_dict = load_json_dict()
 
 
 def is_termux():
@@ -104,23 +113,36 @@ if scratchSetup:
                 print(
                     f"\033[1;31m[x]error when trying to install termux-api:-\n {e}\033[m"
                 )
+            if cap_cnf_dict["image_solver"]["enabled"]:
+                print("\033[1;36m[0]Attepmting to install onnxruntime...\033[m")
+                try:
+                    subprocess.check_call(
+                        ["pkg", "install", "python-onnxruntime", "-y"]
+                    )
+                    print("\033[1;36m[0]installed onnxruntime successfully!\033[m")
+                except Exception as e:
+                    print(
+                        f"\033[1;31m[x]error when trying to install Onnxruntime:-\n {e}\033[m"
+                    )
 
         else:
             print("\033[1;36minstalling normally...\033[m")
+            to_install = [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "numpy",
+                "pillow",
+                "playsound3",
+                "plyer",
+                "psutil",
+            ]
+            if cap_cnf_dict["image_solver"]["enabled"]:
+                to_install.append("onnxruntime")
+
             try:
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "numpy",
-                        "pillow",
-                        "playsound3",
-                        "plyer",
-                        "psutil",
-                    ]
-                )
+                subprocess.check_call(to_install)
                 print("\033[1;36m[0]Installed numpy and PIL successfully!\033[m")
             except Exception as e:
                 print(
@@ -274,7 +296,7 @@ if scratchSetup:
                         "\033[1;36m[0]Finished editing tokens.txt successfully!\033[m"
                     )
                     print(
-                        "\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file then\ntype `python uwu.py` to start the code\033[m"
+                        "\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit configs (settings, global_settings) from configs folder then\ntype `python uwu.py` to start the code\033[m"
                     )
                     break
                 except Exception as e:
@@ -283,7 +305,7 @@ if scratchSetup:
                     )
             else:
                 print(
-                    "\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit `config.json` file and `tokens.txt` file then\ntype `python uwu.py` to start the code\033[m"
+                    "\033[1;32m[*]exiting code as basic installation is complete\nplease make sure to edit configuration files from config folder and `tokens.txt` file then\ntype `python uwu.py` to start the code\033[m"
                 )
                 break
         else:
