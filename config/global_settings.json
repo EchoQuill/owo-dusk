@@ -62,6 +62,7 @@
         "commandToRunOnBan": "command to run goes here"
     },
     "captcha": {
+        "openCaptchaWebsite": false,
         "notifications": {
             "enabled": true,
             "captchaContent": "Captcha Detected: {username} in {channelname}, captcha type: {captchatype}",
@@ -94,8 +95,7 @@
                 "enabled": false,
                 "captchaContent": "Captcha detected! owo",
                 "bannedContent": "Banned from OwO!"
-            },
-            "openCaptchaWebsite": false
+            }
         },
         "stopCodeIfFailedToSolve": true
     },

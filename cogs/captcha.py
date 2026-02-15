@@ -229,9 +229,13 @@ class Captcha(commands.Cog):
             except Exception as e:
                 print(f"{e} - at Toast/Popup")
         """Termux - open captcha website"""
-        if cnf["termux"]["openCaptchaWebsite"] and on_mobile:
+        if cnf["openCaptchaWebsite"] :
             run_system_command(
                 "termux-open https://owobot.com/captcha", timeout=5, retry=True
+            )
+        else:
+            run_system_command(
+                "start https://owobot.com/captcha", timeout=5, retry=True
             )
 
     async def handle_solves(self):
