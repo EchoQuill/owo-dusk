@@ -655,7 +655,7 @@ class MyClient(commands.Bot):
     @tasks.loop(seconds=7)
     async def safety_check_loop(self):
         safety_check = requests.get(f"{owo_dusk_api}/safety_check.json").json()
-        latest_version = requests.get(f"{owo_dusk_api}/safety_check.json").json()
+        latest_version = requests.get(f"{owo_dusk_api}/version.json").json()
 
         if compare_versions(version, safety_check["version"]):
             self.command_handler_status["captcha"] = True
@@ -665,7 +665,7 @@ class MyClient(commands.Bot):
             )
             if compare_versions(latest_version["version"], safety_check["version"]):
                 await self.log(
-                    f"please update to: v{latest_version['version']}", "#33245e"
+                    f"please update to: v{latest_version['version']} to continue using owo-dusk!", "#33245e"
                 )
 
     async def start_cogs(self):
