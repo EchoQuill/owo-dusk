@@ -44,7 +44,7 @@ def get_path(path):
 
 
 def clean(msg):
-    return re.sub(r"[^a-zA-Z]", "", msg)
+    return re.sub(r"[^a-zA-Z0-9]", "", msg)
 
 
 on_mobile = is_termux()
