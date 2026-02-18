@@ -13,6 +13,7 @@
 import time
 import re
 import os
+import sys
 import asyncio
 import tomllib
 
@@ -44,7 +45,7 @@ def get_path(path):
 
 
 def clean(msg):
-    return re.sub(r"[^a-zA-Z]", "", msg)
+    return re.sub(r"[^a-zA-Z0-9]", "", msg)
 
 
 on_mobile = is_termux()
@@ -229,10 +230,18 @@ class Captcha(commands.Cog):
             except Exception as e:
                 print(f"{e} - at Toast/Popup")
         """Termux - open captcha website"""
-        if cnf["termux"]["openCaptchaWebsite"] and on_mobile:
-            run_system_command(
-                "termux-open https://owobot.com/captcha", timeout=5, retry=True
-            )
+        if cnf["openCaptchaWebsite"]:
+            if on_mobile:
+                run_system_command(f"termux-open {url}", timeout=5, retry=True)
+            else:
+                if sys.platform.startswith("win"):
+                    run_system_command(f"start {url}", timeout=5, retry=True)
+                elif sys.platform == "darwin":
+                    # Macos
+                    run_system_command(f"open {url}", timeout=5, retry=True)
+                else:
+                    # Linux
+                    run_system_command(f"xdg-open {url}", timeout=5, retry=True)
 
     async def handle_solves(self):
         if self.bot.misc["hostMode"]:
