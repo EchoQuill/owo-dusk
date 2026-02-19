@@ -23,6 +23,6 @@ requests==2.32.5
 rich==14.3.2
 tzlocal==5.3.1
 urllib3==2.6.3
-Werkzeug==3.1.5
+Werkzeug==3.1.6
 yarl==1.22.0
 aiosqlite==0.22.1
