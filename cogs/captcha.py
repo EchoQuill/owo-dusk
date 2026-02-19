@@ -136,7 +136,7 @@ class Captcha(commands.Cog):
         cnf = self.bot.global_settings_dict["captcha"]
         channel_name = get_channel_name(channel)
         content = "captchaContent" if not captcha_type == "Ban" else "bannedContent"
-        url = "https://owobot.con/captcha"
+        url = "https://owobot.com/captcha"
 
         """Notifications"""
         if cnf["notifications"]["enabled"]:
