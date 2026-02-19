@@ -328,9 +328,12 @@ class Captcha(commands.Cog):
                 self.bot.command_handler_status["captcha"] = True
                 self.captcha_solved = False
                 await self.bot.log("Captcha detected!", "#d70000")
-                image_captcha = False
-                if message.attachments:
+                if not message.attachments:
+                    image_captcha = False
+                    captcha_type = "Link"
+                else:
                     image_captcha = True
+                    captcha_type = "Letter Word"
                 cap_dict = self.bot.captcha_settings_dict
                 cnf = self.bot.global_settings_dict["captcha"]
 
@@ -342,11 +345,11 @@ class Captcha(commands.Cog):
                     cap_dict["hcaptcha_solver"]["enabled"]
                     or cap_dict["image_solver"]["enabled"]
                 ):
-                    self.captcha_handler(message.channel, "Link")
+                    await self.captcha_handler(message.channel, captcha_type)
                 elif (image_captcha and not cap_dict["image_solver"]["enabled"]) or (
                     not image_captcha and not cap_dict["hcaptcha_solver"]["enabled"]
                 ):
-                    self.captcha_handler(message.channel, "Link")
+                    await self.captcha_handler(message.channel, captcha_type)
 
                 if self.bot.global_settings_dict["webhook"]["enabled"]:
                     await self.bot.webhookSender(
@@ -378,7 +381,7 @@ class Captcha(commands.Cog):
                         )
                         if not solved:
                             await self.bot.log("FAILED to solve hcaptcha", "#d70000")
-                            self.captcha_handler(message.channel, "Link")
+                            self.captcha_handler(message.channel, captcha_type)
                             print("stopping code.... Reason -> Failed Hcaptcha attempt")
                             os._exit(0)
                         else:
