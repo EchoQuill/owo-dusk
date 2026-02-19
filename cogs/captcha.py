@@ -263,9 +263,8 @@ class Captcha(commands.Cog):
             and message.author.id == self.bot.owo_bot_id
         ):
             if "I have verified that you are human! Thank you! :3" in message.content:
-                time_to_sleep = self.bot.random_float(
-                    self.bot.settings_dict["defaultCooldowns"]["captchaRestart"]
-                )
+                time_to_sleep = round(self.bot.random_float(
+                    self.bot.settings_dict["defaultCooldowns"]["captchaRestart"]), 2)
                 await self.bot.log(
                     f"Captcha solved! - sleeping {time_to_sleep}s before restart.",
                     "#5fd700",
